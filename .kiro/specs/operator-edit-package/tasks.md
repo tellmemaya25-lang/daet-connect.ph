@@ -105,7 +105,8 @@ The implementation is structured in waves to support parallel development: datab
     - Check max 50 items total
     - Validate item_text: 1-500 chars per item
     - Verify display_order unique and sequential
-    - Return validation result with errors
+    - Return validation re
+    sult with errors
     - _Requirements: 6.1-6.10, 12.1-12.7_
   
   - [ ] 2.9 Implement validateStops function
