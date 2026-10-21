@@ -1,0 +1,394 @@
+"use client";
+
+import React, { useCallback, useState } from "react";
+import type { EditStop, EditPackageStatus, ValidationErrors, StepProps } from "./edit-types";
+import { EDIT_LIMITS, DEFAULT_COORDINATES } from "./edit-constants";
+import { getEditPermissions } from "./permissions";
+
+type StopsStepProps = StepProps<EditStop[]>;
+
+/**
+ * StopsStep Component
+ *
+ * Manages tour stops with:
+ * - Table display of existing stops sorted by stop_order
+ * - Add stop form/modal
+ * - Edit stop functionality
+ * - Delete stop with confirmation
+ * - Reorder functionality
+ */
+export function StopsStep({
+  data,
+  originalData,
+  packageStatus,
+  onUpdate,
+  errors,
+  loading,
+}: StopsStepProps) {
+  const permissions = getEditPermissions(packageStatus);
+  const [showAddForm, setShowAddForm] = useState(false);
+  const [editingId, setEditingId] = useState<string | undefined>();
+  const [formData, setFormData] = useState<Partial<EditStop>>({
+    locationName: "",
+    description: "",
+    latitude: DEFAULT_COORDINATES.latitude,
+    longitude: DEFAULT_COORDINATES.longitude,
+    estimatedDurationMinutes: null,
+  });
+
+  const canAddStops = permissions.stops.add;
+  const canEditStops = permissions.stops.editDetails;
+  const canRemoveStops = permissions.stops.remove;
+
+  // Get stops errors
+  const getStopsErrors = useCallback(() => {
+    const stepErrors: Record<string, string> = {};
+    Object.entries(errors).forEach(([key, value]) => {
+      if (key.startsWith("stops")) {
+        stepErrors[key] = value;
+      }
+    });
+    return stepErrors;
+  }, [errors]);
+
+  const sortedStops = [...data].sort((a, b) => a.stopOrder - b.stopOrder);
+
+  const handleAddStop = useCallback(() => {
+    if (
+      !formData.locationName?.trim() ||
+      formData.latitude === undefined ||
+      formData.longitude === undefined
+    ) {
+      return;
+    }
+
+    const newStop: EditStop = {
+      id: editingId || `new-${Date.now()}`,
+      locationName: formData.locationName,
+      description: formData.description || null,
+      latitude: formData.latitude,
+      longitude: formData.longitude,
+      estimatedDurationMinutes: formData.estimatedDurationMinutes ?? null,
+      stopOrder: editingId
+        ? data.find((s) => s.id === editingId)?.stopOrder ?? data.length
+        : data.length,
+    };
+
+    let updated: EditStop[];
+    if (editingId) {
+      updated = data.map((s) => (s.id === editingId ? newStop : s));
+    } else {
+      updated = [...data, newStop];
+    }
+
+    onUpdate(updated);
+    setShowAddForm(false);
+    setEditingId(undefined);
+    setFormData({
+      locationName: "",
+      description: "",
+      latitude: DEFAULT_COORDINATES.latitude,
+      longitude: DEFAULT_COORDINATES.longitude,
+      estimatedDurationMinutes: null,
+    });
+  }, [formData, editingId, data, onUpdate]);
+
+  const handleEdit = useCallback((stop: EditStop) => {
+    setFormData(stop);
+    setEditingId(stop.id);
+    setShowAddForm(true);
+  }, []);
+
+  const handleDelete = useCallback(
+    (id: string | undefined) => {
+      if (!id) return;
+      if (data.length <= 1) {
+        alert("At least one stop is required");
+        return;
+      }
+      onUpdate(data.filter((s) => s.id !== id));
+    },
+    [data, onUpdate]
+  );
+
+  const handleReorder = useCallback(
+    (direction: "up" | "down", index: number) => {
+      if (direction === "up" && index === 0) return;
+      if (direction === "down" && index === sortedStops.length - 1) return;
+
+      const newOrder = [...sortedStops];
+      const [removed] = newOrder.splice(index, 1);
+      newOrder.splice(direction === "up" ? index - 1 : index + 1, 0, removed);
+
+      const reordered = newOrder.map((stop, i) => ({
+        ...stop,
+        stopOrder: i,
+      }));
+
+      onUpdate(reordered);
+    },
+    [sortedStops, onUpdate]
+  );
+
+  const stopsErrors = getStopsErrors();
+
+  return (
+    <div className="border rounded-lg p-6 bg-white">
+      <div className="flex items-center justify-between mb-6">
+        <h2 className="text-xl font-semibold text-gray-900">Tour Stops</h2>
+        {canAddStops && (
+          <button
+            type="button"
+            onClick={() => {
+              setShowAddForm(true);
+              setFormData({
+                locationName: "",
+                description: "",
+                latitude: DEFAULT_COORDINATES.latitude,
+                longitude: DEFAULT_COORDINATES.longitude,
+                estimatedDurationMinutes: null,
+              });
+            }}
+            disabled={loading}
+            className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            + Add Stop
+          </button>
+        )}
+      </div>
+
+      {/* Stops Table */}
+      <div className="overflow-x-auto">
+        <table className="w-full text-sm">
+          <thead>
+            <tr className="border-b border-gray-200 bg-gray-50">
+              <th className="px-4 py-2 text-left font-semibold text-gray-700">#</th>
+              <th className="px-4 py-2 text-left font-semibold text-gray-700">Location</th>
+              <th className="px-4 py-2 text-left font-semibold text-gray-700">Description</th>
+              <th className="px-4 py-2 text-left font-semibold text-gray-700">Coordinates</th>
+              <th className="px-4 py-2 text-left font-semibold text-gray-700">Actions</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-gray-200">
+            {sortedStops.map((stop, index) => (
+              <tr key={stop.id} className="hover:bg-gray-50">
+                <td className="px-4 py-3 text-gray-900 font-medium">{index + 1}</td>
+                <td className="px-4 py-3 text-gray-900">{stop.locationName}</td>
+                <td className="px-4 py-3 text-gray-600">
+                  {stop.description ? stop.description.substring(0, 50) + (stop.description.length > 50 ? "..." : "") : "-"}
+                </td>
+                <td className="px-4 py-3 text-gray-600 text-xs font-mono">
+                  {stop.latitude.toFixed(4)}, {stop.longitude.toFixed(4)}
+                </td>
+                <td className="px-4 py-3 space-x-2">
+                  {permissions.stops.reorder && (
+                    <>
+                      <button
+                        type="button"
+                        onClick={() => handleReorder("up", index)}
+                        disabled={index === 0 || loading}
+                        className="text-gray-600 hover:text-gray-900 disabled:opacity-50 disabled:cursor-not-allowed"
+                        title="Move up"
+                      >
+                        <svg className="w-4 h-4 inline" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M14.707 12.707a1 1 0 01-1.414 0L10 9.414l-3.293 3.293a1 1 0 01-1.414-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 010 1.414z" clipRule="evenodd" />
+                        </svg>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleReorder("down", index)}
+                        disabled={index === sortedStops.length - 1 || loading}
+                        className="text-gray-600 hover:text-gray-900 disabled:opacity-50 disabled:cursor-not-allowed"
+                        title="Move down"
+                      >
+                        <svg className="w-4 h-4 inline" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
+                        </svg>
+                      </button>
+                    </>
+                  )}
+                  {canEditStops && (
+                    <button
+                      type="button"
+                      onClick={() => handleEdit(stop)}
+                      disabled={loading}
+                      className="text-blue-600 hover:text-blue-800 text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      Edit
+                    </button>
+                  )}
+                  {canRemoveStops && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (window.confirm("Delete this stop? This action cannot be undone.")) {
+                          handleDelete(stop.id);
+                        }
+                      }}
+                      disabled={loading}
+                      className="text-red-600 hover:text-red-800 text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      Delete
+                    </button>
+                  )}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+
+        {data.length === 0 && (
+          <div className="text-center py-8 text-gray-500">
+            <p>No stops yet. Add one to get started.</p>
+          </div>
+        )}
+      </div>
+
+      {/* Validation Errors */}
+      {Object.keys(stopsErrors).length > 0 && (
+        <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded text-sm text-red-800">
+          <p className="font-medium">Stop errors:</p>
+          <ul className="mt-1 space-y-1">
+            {Object.entries(stopsErrors).map(([key, message]) => (
+              <li key={key}>• {message}</li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      {/* Add/Edit Form Modal */}
+      {showAddForm && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg shadow-lg max-w-md w-full p-6 max-h-[90vh] overflow-y-auto">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">
+              {editingId ? "Edit Stop" : "Add Stop"}
+            </h3>
+
+            <div className="space-y-4">
+              {/* Location Name */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Location <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  value={formData.locationName || ""}
+                  onChange={(e) =>
+                    setFormData({ ...formData, locationName: e.target.value })
+                  }
+                  maxLength={EDIT_LIMITS.stopLocation.max}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                  placeholder="e.g., Taal Volcano"
+                />
+              </div>
+
+              {/* Description */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Description
+                </label>
+                <textarea
+                  value={formData.description || ""}
+                  onChange={(e) =>
+                    setFormData({ ...formData, description: e.target.value || null })
+                  }
+                  maxLength={EDIT_LIMITS.stopDescription.max}
+                  rows={3}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none resize-none"
+                  placeholder="Optional description of the stop"
+                />
+              </div>
+
+              {/* Latitude */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Latitude <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="number"
+                  step="0.0001"
+                  min={-90}
+                  max={90}
+                  value={formData.latitude ?? ""}
+                  onChange={(e) =>
+                    setFormData({ ...formData, latitude: parseFloat(e.target.value) || 0 })
+                  }
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                  placeholder="e.g., 14.1122"
+                />
+              </div>
+
+              {/* Longitude */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Longitude <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="number"
+                  step="0.0001"
+                  min={-180}
+                  max={180}
+                  value={formData.longitude ?? ""}
+                  onChange={(e) =>
+                    setFormData({ ...formData, longitude: parseFloat(e.target.value) || 0 })
+                  }
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                  placeholder="e.g., 122.9553"
+                />
+              </div>
+
+              {/* Duration */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Estimated Duration (minutes)
+                </label>
+                <input
+                  type="number"
+                  min="0"
+                  max="1440"
+                  value={formData.estimatedDurationMinutes ?? ""}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      estimatedDurationMinutes: e.target.value ? parseInt(e.target.value) : null,
+                    })
+                  }
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                  placeholder="e.g., 60"
+                />
+              </div>
+
+              {/* Buttons */}
+              <div className="flex gap-3 pt-4">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowAddForm(false);
+                    setEditingId(undefined);
+                  }}
+                  className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={handleAddStop}
+                  className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+                >
+                  {editingId ? "Update" : "Add"}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Help text */}
+      {data.length === 0 && (
+        <div className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded text-sm text-yellow-800">
+          ⚠️ At least one stop is required before submitting for review.
+        </div>
+      )}
+    </div>
+  );
+}

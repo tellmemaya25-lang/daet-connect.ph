@@ -1,0 +1,466 @@
+"use client";
+
+import React, { useState, useCallback, useMemo, ReactNode } from "react";
+import { useRouter } from "next/navigation";
+import type {
+  EditPackageRecord,
+  EditPackageFormData,
+  UpdatePackageResponse,
+  ValidationErrors,
+  ActionStatusCode,
+} from "./edit-types";
+import { updatePackageCore, submitPackageForReview } from "./actions";
+import { detectChanges, hasConcurrencyConflict } from "./change-detection";
+import { EDIT_MESSAGES, SUCCESS_TOAST_MS } from "./edit-constants";
+import { getEditPermissions } from "./permissions";
+import { RejectionNotice } from "./RejectionNotice";
+import { BasicDetailsStep } from "./BasicDetailsStep";
+import { CoverImageStep } from "./CoverImageStep";
+import { PricingStep } from "./PricingStep";
+import { InclusionsStep } from "./InclusionsStep";
+import { StopsStep } from "./StopsStep";
+import { GalleryStep } from "./GalleryStep";
+
+interface FormState {
+  originalData: EditPackageFormData;
+  formData: EditPackageFormData;
+  hasChanges: boolean;
+  isSubmitting: boolean;
+  submissionError: string | null;
+  successMessage: string | null;
+  concurrencyError: string | null;
+  validationErrors: ValidationErrors;
+}
+
+interface EditPackageFormProps {
+  packageData: EditPackageRecord;
+}
+
+/**
+ * Toast notification component
+ */
+function Toast({
+  message,
+  type,
+  onClose,
+}: {
+  message: string;
+  type: "success" | "error";
+  onClose: () => void;
+}) {
+  return (
+    <div
+      className={`fixed bottom-4 right-4 px-6 py-4 rounded-lg text-white shadow-lg z-50 flex items-center gap-3 animate-in fade-in slide-in-from-bottom-4 duration-300 ${
+        type === "success" ? "bg-green-500" : "bg-red-500"
+      }`}
+    >
+      {type === "success" ? (
+        <svg className="w-5 h-5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+          <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+        </svg>
+      ) : (
+        <svg className="w-5 h-5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+          <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+        </svg>
+      )}
+      <span className="text-sm font-medium">{message}</span>
+      <button onClick={onClose} className="ml-4 text-white hover:opacity-75">
+        <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+          <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+        </svg>
+      </button>
+    </div>
+  );
+}
+
+/**
+ * Loading overlay component
+ */
+function LoadingOverlay() {
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div className="bg-white rounded-lg shadow-lg p-8 flex flex-col items-center gap-4">
+        <div className="animate-spin">
+          <svg className="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+            <path
+              className="opacity-75"
+              fill="currentColor"
+              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+            />
+          </svg>
+        </div>
+        <p className="text-gray-700 font-medium">Saving changes...</p>
+      </div>
+    </div>
+  );
+}
+
+/**
+ * Error banner component
+ */
+function ErrorBanner({ message, onDismiss }: { message: string; onDismiss: () => void }) {
+  return (
+    <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg flex items-start gap-4">
+      <svg className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+      </svg>
+      <div className="flex-1">
+        <p className="text-red-800 text-sm font-medium">{message}</p>
+      </div>
+      <button onClick={onDismiss} className="text-red-500 hover:text-red-700">
+        <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+          <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+        </svg>
+      </button>
+    </div>
+  );
+}
+
+/**
+ * Concurrency conflict banner component
+ */
+function ConcurrencyConflictBanner({
+  onReload,
+  onDismiss,
+}: {
+  onReload: () => void;
+  onDismiss: () => void;
+}) {
+  return (
+    <div className="mb-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg flex items-start gap-4">
+      <svg className="w-5 h-5 text-yellow-600 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+        <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+      </svg>
+      <div className="flex-1">
+        <p className="text-yellow-800 text-sm font-medium mb-2">{EDIT_MESSAGES.conflict}</p>
+        <div className="flex gap-2">
+          <button
+            onClick={onReload}
+            className="px-3 py-1 bg-yellow-600 text-white text-sm rounded hover:bg-yellow-700 transition"
+          >
+            Reload
+          </button>
+          <button
+            onClick={onDismiss}
+            className="px-3 py-1 border border-yellow-300 text-yellow-700 text-sm rounded hover:bg-yellow-100 transition"
+          >
+            Dismiss
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/**
+ * EditPackageForm Component
+ *
+ * Main client component for editing a package with:
+ * - Form state management (originalData, formData, hasChanges, isSubmitting)
+ * - Change detection for dirty state
+ * - Field change handlers with validation
+ * - Save Draft and Submit for Review handlers
+ * - Proper error handling and user feedback
+ * - Step-based form rendering
+ * - Status-aware field disabling
+ */
+export function EditPackageForm({ packageData }: EditPackageFormProps) {
+  const router = useRouter();
+
+  // Initialize form state
+  const [state, setState] = useState<FormState>({
+    originalData: packageData.formData,
+    formData: { ...packageData.formData },
+    hasChanges: false,
+    isSubmitting: false,
+    submissionError: null,
+    successMessage: null,
+    concurrencyError: null,
+    validationErrors: {},
+  });
+
+  // Get edit permissions based on package status
+  const permissions = useMemo(() => getEditPermissions(packageData.status), [packageData.status]);
+
+  // Handle field changes
+  const handleFieldChange = useCallback(
+    (field: keyof EditPackageFormData, value: unknown) => {
+      setState((prev) => {
+        const updated = { ...prev.formData, [field]: value };
+        const hasChanges = detectChanges(prev.originalData, updated);
+
+        return {
+          ...prev,
+          formData: updated,
+          hasChanges,
+        };
+      });
+    },
+    []
+  );
+
+  // Handle Save Draft
+  const handleSaveDraft = useCallback(async () => {
+    if (!state.hasChanges || state.isSubmitting) return;
+
+    setState((prev) => ({
+      ...prev,
+      isSubmitting: true,
+      submissionError: null,
+      concurrencyError: null,
+    }));
+
+    try {
+      const response: UpdatePackageResponse = await updatePackageCore(packageData.id, state.formData, packageData.updatedAt);
+
+      if (response.success) {
+        setState((prev) => ({
+          ...prev,
+          originalData: state.formData,
+          hasChanges: false,
+          isSubmitting: false,
+          successMessage: EDIT_MESSAGES.saved,
+          submissionError: null,
+          concurrencyError: null,
+        }));
+
+        // Auto-dismiss success message
+        setTimeout(() => {
+          setState((prev) => ({
+            ...prev,
+            successMessage: null,
+          }));
+        }, SUCCESS_TOAST_MS);
+      } else {
+        if (response.status === 409) {
+          setState((prev) => ({
+            ...prev,
+            isSubmitting: false,
+            concurrencyError: EDIT_MESSAGES.conflict,
+            submissionError: null,
+          }));
+        } else {
+          setState((prev) => ({
+            ...prev,
+            isSubmitting: false,
+            submissionError: response.message || EDIT_MESSAGES.unexpected,
+            validationErrors: response.errors || {},
+          }));
+        }
+      }
+    } catch (error) {
+      setState((prev) => ({
+        ...prev,
+        isSubmitting: false,
+        submissionError: EDIT_MESSAGES.unexpected,
+      }));
+    }
+  }, [state, packageData.id, packageData.updatedAt]);
+
+  // Handle Submit for Review
+  const handleSubmitForReview = useCallback(async () => {
+    if (!state.hasChanges || state.isSubmitting) return;
+
+    setState((prev) => ({
+      ...prev,
+      isSubmitting: true,
+      submissionError: null,
+      concurrencyError: null,
+    }));
+
+    try {
+      const response: UpdatePackageResponse = await submitPackageForReview(packageData.id, state.formData, packageData.updatedAt);
+
+      if (response.success) {
+        setState((prev) => ({
+          ...prev,
+          isSubmitting: false,
+          successMessage: EDIT_MESSAGES.submitted,
+        }));
+
+        // Redirect after success
+        setTimeout(() => {
+          router.push(`/tours/operator/packages/${packageData.id}`);
+        }, 500);
+      } else {
+        if (response.status === 409) {
+          setState((prev) => ({
+            ...prev,
+            isSubmitting: false,
+            concurrencyError: EDIT_MESSAGES.conflict,
+            submissionError: null,
+          }));
+        } else {
+          setState((prev) => ({
+            ...prev,
+            isSubmitting: false,
+            submissionError: response.message || EDIT_MESSAGES.unexpected,
+            validationErrors: response.errors || {},
+          }));
+        }
+      }
+    } catch (error) {
+      setState((prev) => ({
+        ...prev,
+        isSubmitting: false,
+        submissionError: EDIT_MESSAGES.unexpected,
+      }));
+    }
+  }, [state, packageData.id, packageData.updatedAt, router]);
+
+  // Determine button states
+  const isButtonDisabled =
+    state.isSubmitting ||
+    !state.hasChanges ||
+    Object.keys(state.validationErrors).length > 0;
+
+  const hasPermissionToSubmit = permissions.canSubmitForReview;
+
+  // Handle reload for concurrency conflict
+  const handleReloadPage = useCallback(() => {
+    window.location.reload();
+  }, []);
+
+  // Handle dismiss concurrency error
+  const handleDismissConcurrency = useCallback(() => {
+    setState((prev) => ({
+      ...prev,
+      concurrencyError: null,
+    }));
+  }, []);
+
+  // Handle dismiss submission error
+  const handleDismissError = useCallback(() => {
+    setState((prev) => ({
+      ...prev,
+      submissionError: null,
+    }));
+  }, []);
+
+  return (
+    <form
+      onSubmit={(e) => {
+        e.preventDefault();
+      }}
+      className="space-y-8"
+    >
+      {state.isSubmitting && <LoadingOverlay />}
+
+      {/* Rejection Notice */}
+      {packageData.status === "rejected" && packageData.rejectionReason && (
+        <RejectionNotice reason={packageData.rejectionReason} />
+      )}
+
+      {/* Concurrency Conflict Banner */}
+      {state.concurrencyError && (
+        <ConcurrencyConflictBanner onReload={handleReloadPage} onDismiss={handleDismissConcurrency} />
+      )}
+
+      {/* Error Banner */}
+      {state.submissionError && (
+        <ErrorBanner message={state.submissionError} onDismiss={handleDismissError} />
+      )}
+
+      {/* Success Toast */}
+      {state.successMessage && (
+        <Toast
+          message={state.successMessage}
+          type="success"
+          onClose={() =>
+            setState((prev) => ({
+              ...prev,
+              successMessage: null,
+            }))
+          }
+        />
+      )}
+
+      {/* Basic Details Step */}
+      <BasicDetailsStep
+        data={state.formData}
+        originalData={state.originalData}
+        packageStatus={packageData.status}
+        onUpdate={(data) => handleFieldChange("title", data.title) || handleFieldChange("locationName", data.locationName) || handleFieldChange("description", data.description) || handleFieldChange("durationValue", data.durationValue) || handleFieldChange("durationType", data.durationType)}
+        errors={state.validationErrors}
+        loading={state.isSubmitting}
+      />
+
+      {/* Cover Image Step */}
+      <CoverImageStep
+        data={{
+          coverImageUrl: state.formData.coverImageUrl,
+        }}
+        originalData={{
+          coverImageUrl: state.originalData.coverImageUrl,
+        }}
+        packageStatus={packageData.status}
+        onUpdate={(data) => handleFieldChange("coverImageUrl", data.coverImageUrl)}
+        errors={state.validationErrors}
+        loading={state.isSubmitting}
+      />
+
+      {/* Pricing Step */}
+      <PricingStep
+        data={state.formData.priceVariants}
+        originalData={state.originalData.priceVariants}
+        packageStatus={packageData.status}
+        onUpdate={(data) => handleFieldChange("priceVariants", data)}
+        errors={state.validationErrors}
+        loading={state.isSubmitting}
+      />
+
+      {/* Inclusions Step */}
+      <InclusionsStep
+        data={state.formData.inclusions}
+        originalData={state.originalData.inclusions}
+        packageStatus={packageData.status}
+        onUpdate={(data) => handleFieldChange("inclusions", data)}
+        errors={state.validationErrors}
+        loading={state.isSubmitting}
+      />
+
+      {/* Stops Step */}
+      <StopsStep
+        data={state.formData.stops}
+        originalData={state.originalData.stops}
+        packageStatus={packageData.status}
+        onUpdate={(data) => handleFieldChange("stops", data)}
+        errors={state.validationErrors}
+        loading={state.isSubmitting}
+      />
+
+      {/* Gallery Step */}
+      <GalleryStep
+        data={state.formData.galleryImages}
+        originalData={state.originalData.galleryImages}
+        packageStatus={packageData.status}
+        onUpdate={(data) => handleFieldChange("galleryImages", data)}
+        errors={state.validationErrors}
+        loading={state.isSubmitting}
+      />
+
+      {/* Action Buttons */}
+      <div className="flex gap-4 justify-end pt-8 border-t">
+        <button
+          type="button"
+          onClick={handleSaveDraft}
+          disabled={isButtonDisabled}
+          className="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg font-medium hover:bg-gray-50 transition disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          Save as Draft
+        </button>
+        {hasPermissionToSubmit && (
+          <button
+            type="button"
+            onClick={handleSubmitForReview}
+            disabled={isButtonDisabled}
+            className="px-6 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            Submit for Review
+          </button>
+        )}
+      </div>
+    </form>
+  );
+}
