@@ -34,7 +34,7 @@ export default async function DashboardPage() {
 
     if (operator) {
       if (operator.accreditation_status === 'approved') {
-        redirect('/tours/operator/packages');
+        redirect('/tours/operator/dashboard');
       } else {
         redirect('/tours/operator/pending');
       }

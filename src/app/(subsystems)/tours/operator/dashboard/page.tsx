@@ -28,13 +28,25 @@ export default async function OperatorDashboardPage() {
   }
 
   const supabase = await createSupabaseServerClient();
+  
+  // Debug logging
+  console.log("🔍 Dashboard Debug:");
+  console.log("  User ID:", session.user.id);
+  console.log("  OPERATOR_TABLE:", OPERATOR_TABLE);
+  console.log("  OPERATOR_USER_ID_COLUMN:", OPERATOR_USER_ID_COLUMN);
+  console.log("  OPERATOR_OWN_STATUS_SELECT:", OPERATOR_OWN_STATUS_SELECT);
+  
   const { data: application, error } = await supabase
     .from(OPERATOR_TABLE)
     .select(OPERATOR_OWN_STATUS_SELECT)
     .eq(OPERATOR_USER_ID_COLUMN, session.user.id)
     .maybeSingle();
 
+  console.log("  Query result:", application);
+  console.log("  Query error:", error);
+
   if (error) {
+    console.error("❌ Dashboard query error:", error);
     return <PageFrame><Notice variant="error" title="Accreditation could not be checked">Access is paused until your accreditation status can be verified.</Notice></PageFrame>;
   }
   if (!application) redirect("/tours/operator/register");
@@ -106,6 +118,12 @@ export default async function OperatorDashboardPage() {
             className="inline-flex min-h-10 items-center rounded-full border border-daet-forest/20 px-5 text-sm font-bold text-daet-forest transition hover:bg-daet-forest/5"
           >
             Manage bookings →
+          </a>
+          <a
+            href="/tours/operator/settings"
+            className="inline-flex min-h-10 items-center rounded-full border border-daet-forest/20 px-5 text-sm font-bold text-daet-forest transition hover:bg-daet-forest/5"
+          >
+            ⚙️ Payment Settings →
           </a>
         </div>
       </section>

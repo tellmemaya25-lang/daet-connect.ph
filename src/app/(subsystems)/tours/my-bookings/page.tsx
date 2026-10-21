@@ -30,7 +30,11 @@ export default async function MyBookingsPage() {
     redirect(`/login?next=${encodeURIComponent("/tours/my-bookings")}`);
   }
 
-  // Fetch all bookings for this user with operator payment details
+  // Debug: Log user info
+  console.log("🔍 User ID:", user.id);
+  console.log("🔍 User email:", user.email);
+
+  // Fetch all bookings for this user (without operator payment details for now)
   const { data: bookings, error } = await supabase
     .from("tours_bookings")
     .select(
@@ -40,27 +44,24 @@ export default async function MyBookingsPage() {
         id,
         title,
         location_name,
-        duration_value,
-        duration_type,
-        cover_image_url,
-        tours_operators (
-          business_name,
-          contact_phone,
-          gcash_number,
-          gcash_name,
-          bank_name,
-          bank_account_number,
-          bank_account_name,
-          payment_instructions
-        )
+        cover_image_url
       )
     `
     )
     .eq("user_id", user.id)
     .order("created_at", { ascending: false });
 
+  // Debug: Log query results
+  console.log("📊 Bookings data:", bookings);
+  console.log("❌ Bookings error:", error);
+  console.log("📊 Bookings count:", bookings?.length || 0);
+
   if (error) {
     console.error("Bookings fetch error:", error);
+    console.error("Error message:", error.message);
+    console.error("Error details:", error.details);
+    console.error("Error hint:", error.hint);
+    console.error("Error code:", error.code);
   }
 
   const statusColors: Record<string, string> = {

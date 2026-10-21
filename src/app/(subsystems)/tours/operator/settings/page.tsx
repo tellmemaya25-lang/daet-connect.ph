@@ -2,9 +2,10 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import { PageFrame } from "@/components/ui/page-frame";
 import { Notice } from "@/components/ui/notice";
-import { DashboardHeader } from "@/components/ui/dashboard-header";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { getAuthenticatedSession } from "@/lib/tours/server-auth";
+import { OPERATOR_TABLE, OPERATOR_USER_ID_COLUMN } from "@/lib/tours/operator-contract";
 import { PaymentSettingsForm } from "./payment-settings-form";
 
 export const dynamic = "force-dynamic";
@@ -20,25 +21,36 @@ export default async function OperatorSettingsPage() {
     );
   }
 
-  const supabase = await createSupabaseServerClient();
+  let session;
+  try {
+    session = await getAuthenticatedSession();
+  } catch {
+    session = { user: null, role: null, error: "Supabase could not be reached." };
+  }
 
-  // Get current user
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
+  if (!session.user) {
     redirect(`/login?next=${encodeURIComponent("/tours/operator/settings")}`);
   }
 
-  // Get operator profile
+  const supabase = await createSupabaseServerClient();
+
+  // Debug logging
+  console.log("🔍 Settings Page Debug:");
+  console.log("  User ID:", session.user.id);
+  console.log("  OPERATOR_USER_ID_COLUMN:", OPERATOR_USER_ID_COLUMN);
+
+  // Get operator profile - select specific columns to avoid missing column errors
   const { data: operator, error } = await supabase
-    .from("tours_operators")
-    .select("*")
-    .eq("profile_id", user.id)
+    .from(OPERATOR_TABLE)
+    .select("id, profile_id, business_name, contact_person, contact_email, contact_phone, business_address, accreditation_status, gcash_number, gcash_name, bank_name, bank_account_number, bank_account_name, payment_instructions")
+    .eq(OPERATOR_USER_ID_COLUMN, session.user.id)
     .maybeSingle();
 
+  console.log("  Query result:", operator);
+  console.log("  Query error:", error);
+
   if (error || !operator) {
+    console.error("❌ Settings query error:", error);
     return (
       <PageFrame>
         <Notice variant="error" title="Operator profile not found">
@@ -48,10 +60,18 @@ export default async function OperatorSettingsPage() {
     );
   }
 
+  if (operator.accreditation_status !== "approved") {
+    return (
+      <PageFrame>
+        <Notice variant="warning" title="Accreditation pending">
+          Your operator account must be approved before accessing settings.
+        </Notice>
+      </PageFrame>
+    );
+  }
+
   return (
     <PageFrame>
-      <DashboardHeader role="operator" />
-
       <div className="mx-auto max-w-4xl">
         {/* Header */}
         <div className="mb-8">
