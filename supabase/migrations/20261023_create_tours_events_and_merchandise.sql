@@ -3,6 +3,9 @@
 -- Tourism Office admins publish local events (festivals, cultural
 -- shows, markets) and advertise Daet merchandise (t-shirts, mugs,
 -- souvenirs). The public can read published/active rows only.
+--
+-- Applied to the live project on 2026-10-23 (in several smaller steps;
+-- this file is the equivalent single script).
 -- ================================================================
 
 -- ----------------------------------------------------------------
@@ -58,6 +61,7 @@ CREATE INDEX IF NOT EXISTS idx_tours_merchandise_active ON tours_merchandise(is_
 CREATE OR REPLACE FUNCTION tours_touch_updated_at()
 RETURNS TRIGGER
 LANGUAGE plpgsql
+SET search_path = public
 AS $$
 BEGIN
   NEW.updated_at = now();
@@ -81,27 +85,27 @@ FOR EACH ROW EXECUTE FUNCTION tours_touch_updated_at();
 ALTER TABLE tours_events ENABLE ROW LEVEL SECURITY;
 ALTER TABLE tours_merchandise ENABLE ROW LEVEL SECURITY;
 
-DROP POLICY IF EXISTS "Public can view published events" ON tours_events;
-CREATE POLICY "Public can view published events"
+DROP POLICY IF EXISTS tours_events_public_read ON tours_events;
+CREATE POLICY tours_events_public_read
 ON tours_events FOR SELECT
 TO anon, authenticated
 USING (is_published = true);
 
-DROP POLICY IF EXISTS "Admins manage events" ON tours_events;
-CREATE POLICY "Admins manage events"
+DROP POLICY IF EXISTS tours_events_admin_all ON tours_events;
+CREATE POLICY tours_events_admin_all
 ON tours_events FOR ALL
 TO authenticated
 USING (get_my_role() = 'admin')
 WITH CHECK (get_my_role() = 'admin');
 
-DROP POLICY IF EXISTS "Public can view active merchandise" ON tours_merchandise;
-CREATE POLICY "Public can view active merchandise"
+DROP POLICY IF EXISTS tours_merchandise_public_read ON tours_merchandise;
+CREATE POLICY tours_merchandise_public_read
 ON tours_merchandise FOR SELECT
 TO anon, authenticated
 USING (is_active = true);
 
-DROP POLICY IF EXISTS "Admins manage merchandise" ON tours_merchandise;
-CREATE POLICY "Admins manage merchandise"
+DROP POLICY IF EXISTS tours_merchandise_admin_all ON tours_merchandise;
+CREATE POLICY tours_merchandise_admin_all
 ON tours_merchandise FOR ALL
 TO authenticated
 USING (get_my_role() = 'admin')
@@ -115,20 +119,20 @@ VALUES ('tours-promo-images', 'tours-promo-images', true, 5242880,
         ARRAY['image/jpeg', 'image/png', 'image/webp'])
 ON CONFLICT (id) DO NOTHING;
 
-DROP POLICY IF EXISTS "Public can view promo images" ON storage.objects;
-CREATE POLICY "Public can view promo images"
+DROP POLICY IF EXISTS tours_promo_images_public_read ON storage.objects;
+CREATE POLICY tours_promo_images_public_read
 ON storage.objects FOR SELECT
 TO public
 USING (bucket_id = 'tours-promo-images');
 
-DROP POLICY IF EXISTS "Admins upload promo images" ON storage.objects;
-CREATE POLICY "Admins upload promo images"
+DROP POLICY IF EXISTS tours_promo_images_admin_insert ON storage.objects;
+CREATE POLICY tours_promo_images_admin_insert
 ON storage.objects FOR INSERT
 TO authenticated
 WITH CHECK (bucket_id = 'tours-promo-images' AND get_my_role() = 'admin');
 
-DROP POLICY IF EXISTS "Admins delete promo images" ON storage.objects;
-CREATE POLICY "Admins delete promo images"
+DROP POLICY IF EXISTS tours_promo_images_admin_delete ON storage.objects;
+CREATE POLICY tours_promo_images_admin_delete
 ON storage.objects FOR DELETE
 TO authenticated
 USING (bucket_id = 'tours-promo-images' AND get_my_role() = 'admin');

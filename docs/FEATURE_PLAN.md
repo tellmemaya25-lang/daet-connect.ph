@@ -91,6 +91,16 @@ F0 blocks everything. After it, three tracks can run in parallel: **Transactions
 
 **Acceptance:** green CI on `main`; Vercel preview deploys; rejecting a package works; the advisor list shows no WARN items except ones documented as intentional.
 
+**Status (2026-10-23): done, except the follow-ups below.**
+- Build, types (0 errors), 541 tests green; `npm ci` works; CI workflow added; `src/proxy.ts` refreshes sessions; debug page removed; UI kit in `src/components/ui/`.
+- Applied to the live DB: events/merch tables, `package_status` `'rejected'`, resubmission of rejected packages, `search_path` on all functions, `handle_new_user` RPC access revoked. The advisor now shows only the intentional items (see `20261024_f0_security_hardening.sql`) plus leaked-password protection.
+- Bugs found and fixed along the way: edit-package page crashed; image upload/delete in the edit flow always failed; operator registration and approve/reject wrote a nonexistent column; admin package pages and the booking page selected nonexistent columns (`business_permit_number`, `contact_number`, `profiles.email`, `estimated_duration`); NaN duration accepted; button labels never rendered bold.
+
+**F0 follow-ups**
+1. **Saving an edited package fails in production:** the RPCs `concurrency_check` and `update_package_and_relations` don't exist in the live DB. The fix is `supabase/migrations/20261021_fix_update_package_and_relations.sql` (adds `NOT NULL display_order`, a unique constraint and a gallery trigger). Review it and apply it before anyone relies on editing.
+2. After (1), type the Supabase clients with `Database` from `src/lib/supabase/database.types.ts`. About 14 strict-typing fixes remain (enum literals, `Json` payloads, nullable fields).
+3. Turn on **leaked password protection** in Supabase Dashboard → Authentication → Settings (dashboard-only setting).
+
 ---
 
 ## F1 — Payments: PayMongo sandbox + unified ledger (Weeks 2–3)

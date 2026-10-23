@@ -72,7 +72,7 @@ export default async function BookPackagePage({ params }: PageProps) {
   // Get user profile for pre-filling form
   const { data: profile } = await supabase
     .from("profiles")
-    .select("full_name, email")
+    .select("full_name")
     .eq("id", user.id)
     .maybeSingle();
 
@@ -123,7 +123,7 @@ export default async function BookPackagePage({ params }: PageProps) {
           priceVariants={pkg.tours_package_price_variants || []}
           userProfile={{
             fullName: profile?.full_name || "",
-            email: profile?.email || user.email || "",
+            email: user.email ?? "",
           }}
         />
       </div>

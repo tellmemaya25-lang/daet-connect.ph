@@ -49,7 +49,7 @@ export default async function AdminPackageReviewPage({
   // Get operator details separately
   const { data: operatorData } = await supabase
     .from('tours_operators')
-    .select('id, business_name, business_permit_number, contact_person, contact_number, profile_id')
+    .select('id, business_name, contact_person, contact_phone, contact_email, profile_id')
     .eq('id', packageData.operator_id)
     .single();
 
@@ -58,7 +58,7 @@ export default async function AdminPackageReviewPage({
   if (operatorData?.profile_id) {
     const { data: profile } = await supabase
       .from('profiles')
-      .select('full_name, email')
+      .select('full_name')
       .eq('id', operatorData.profile_id)
       .single();
     operatorProfile = profile;
@@ -160,23 +160,18 @@ export default async function AdminPackageReviewPage({
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Permit Number</label>
-              <p className="text-gray-900">{operator?.business_permit_number || 'N/A'}</p>
-            </div>
-
-            <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Contact Person</label>
               <p className="text-gray-900">{operator?.contact_person || 'N/A'}</p>
             </div>
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Contact Number</label>
-              <p className="text-gray-900">{operator?.contact_number || 'N/A'}</p>
+              <p className="text-gray-900">{operator?.contact_phone || 'N/A'}</p>
             </div>
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
-              <p className="text-gray-900">{operator?.profiles?.email || 'N/A'}</p>
+              <p className="text-gray-900">{operator?.contact_email || 'N/A'}</p>
             </div>
           </div>
         </div>
@@ -239,8 +234,8 @@ export default async function AdminPackageReviewPage({
                   <div className="flex-1 pb-6">
                     <h3 className="font-semibold text-gray-900 mb-1">{stop.location_name}</h3>
                     <p className="text-gray-600 text-sm">{stop.description}</p>
-                    {stop.estimated_duration && (
-                      <p className="text-gray-500 text-sm mt-1">Duration: {stop.estimated_duration}</p>
+                    {stop.estimated_duration_minutes && (
+                      <p className="text-gray-500 text-sm mt-1">Duration: {stop.estimated_duration_minutes} min</p>
                     )}
                   </div>
                 </div>
