@@ -1,4 +1,5 @@
 import "server-only";
+import { cache } from "react";
 import type { User } from "@supabase/supabase-js";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
@@ -24,8 +25,11 @@ export function normalizeRole(value: unknown): string | null {
   return null;
 }
 
-/** Always obtains the user from Supabase Auth and reads the role server-side. */
-export async function getAuthenticatedSession(): Promise<AuthenticatedSession> {
+/**
+ * Always obtains the user from Supabase Auth and reads the role server-side.
+ * Cached per request so the page frame and the page share one lookup.
+ */
+export const getAuthenticatedSession = cache(async function getAuthenticatedSession(): Promise<AuthenticatedSession> {
   const supabase = await createSupabaseServerClient();
   const {
     data: { user },
@@ -46,4 +50,4 @@ export async function getAuthenticatedSession(): Promise<AuthenticatedSession> {
   }
 
   return { user, role: normalizeRole(roleData), error: null };
-}
+});

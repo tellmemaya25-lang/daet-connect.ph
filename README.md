@@ -104,6 +104,17 @@ To turn on push to phones and desktops:
   - Results are cached in memory per preference set.
 - **Saved plans:** `/tours/my-itineraries` (view, share link, delete) and `/tours/itineraries/shared/[token]` (read-only, no owner details). After saving, "Book matching tours" lists published packages with a stop within 1.5 km of a planned place.
 
+## Dashboards
+
+- `/dashboard` sends each user to their own dashboard:
+  - tourists to `/tours/me`;
+  - operators to `/tours/operator/dashboard`;
+  - guides to `/tours/guide/dashboard`;
+  - Tourism Office admins to `/tours/admin`, with KPIs at `/tours/admin/analytics`.
+- On phones, signed-in users get a bottom tab bar for their role.
+- Admin KPIs come from the `tours_admin_analytics(from, to)` database function, which only admins can run.
+- Guides set their availability on their dashboard; operators see it when assigning a guide.
+
 ## Reviews & ratings
 
 - A tourist can review a booking once, after the operator marks it **completed**. The form is on the booking page, and the "How was your tour?" notification links to it.

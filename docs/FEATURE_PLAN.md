@@ -13,7 +13,7 @@ I inspected the production Supabase project (`CONNECT-DAET.ph`, Postgres 17) rea
 | Table (live) | Rows | Used by code? | Feature that should own it |
 |---|---|---|---|
 | `tours_package_availability` (date, capacity_total, capacity_booked) | 0 | ❌ | F2 Availability |
-| `tours_guide_availability` (guide_id, available_date, is_available) | 0 | ❌ | F9 Guide dashboard |
+| `tours_guide_availability` (guide_id, available_date, is_available) | 0 | ✅ F9 | F9 Guide dashboard |
 | `tours_booking_participants` (full_name, age, special_requirements) | 0 | ❌ | F2 Booking / F3 Roster |
 | `tours_cancellations` (enum `cancellation_status`) | 0 | ❌ | F2 Cancellations |
 | `tours_payments` (method, status, reference, receipt) | 2 | ✅ manual recording | F1 **canonical ledger** |
@@ -414,6 +414,42 @@ _Ch. 4.3 §3 RBAC matrix; ISO 25010 Functional Completeness._
 | Shared | Unified role-aware `/dashboard` redirect; bottom tab bar on mobile for each role |
 
 **Acceptance:** each of the 4 evaluator personas can do their whole job from their dashboard without typing URLs.
+
+**Status: done** (migration `20261102_f9_dashboards.sql`, applied live).
+- **Shared:**
+  - `/dashboard` sends each role to its own home, including pending or rejected accreditation states.
+  - Signed-in users get a five-tab bar at the bottom on phones, plus a "My dashboard" link in the header.
+  - The header nav now scrolls instead of overflowing at tablet widths.
+- **Tourist `/tours/me`:**
+  - upcoming tours with booking and payment status, a ticket QR button and a "Pay ₱…" button that jumps to the payment panel;
+  - completed tours still waiting for a review;
+  - unread messages, saved trip plans and the push opt-in.
+- **Operator dashboard:**
+  - bookings waiting for confirmation;
+  - money received this month, linking to the revenue report;
+  - occupancy (seats sold out of seats offered on open dates this month);
+  - rating and reviews waiting for a reply;
+  - a booking calendar (pax per day; tap a day for its bookings), today's tours, revenue by package with CSV, and quick links.
+  - The payments ledger is now "Revenue & payments", with month, method and package breakdowns and CSV.
+- **Guide dashboard:**
+  - today's tours with roster and scanner shortcuts, next tours, rating and badge;
+  - an availability calendar: tap a day to cycle available → not available → clear.
+  - Operators see this availability in the guide picker: available guides are listed first, and there's a warning when picking a guide who marked the date unavailable.
+- **Admin `/tours/admin/analytics`:** filtered by 7/30/90-day or 12-month presets, or custom dates.
+  - KPI tiles: check-ins, bookings and pax, revenue, cancellation rate.
+  - An arrivals-per-day chart with hover and a table view.
+  - Revenue and bookings per operator; top packages; top attractions in saved trip plans; rating distribution.
+  - Accreditation queue ageing (under 3 days, 3–7 days, over 7 days, the last flagged as overdue).
+  - All figures come from one admin-only database function, `tours_admin_analytics`.
+- **Security:** guide availability was readable by anyone, including logged-out visitors. Now only operators and admins can read it; guides still manage their own rows.
+- **Verified:**
+  - Live dry-run, rolled back: the admin gets every section; a bad date range is rejected; operators and logged-out visitors can't run analytics; operators can read guide availability, guides only their own, logged-out visitors nothing.
+  - Unit tests for tabs, redirects, calendar load, occupancy (property test), ranges and analytics parsing.
+  - Build passes. Screenshots of all four dashboards at 375, 640, 768, 1024 and 1280px, with no horizontal overflow.
+- **Deviations from the plan:**
+  - Charts are hand-built SVG/CSS (one colour, thin bars, labelled values) instead of Recharts, to avoid a dependency.
+  - Rewards points wait for F10.
+  - Arrivals count check-ins, so they depend on guides scanning tickets.
 
 ---
 
