@@ -38,6 +38,7 @@ The repository is public, so anyone could sign in as the Tourism Office admin. F
 | Service-role usage | Created only in `src/lib/supabase/admin.ts` (`server-only`). Used by server code only: PayMongo webhook, push dispatch route, operator/guide accreditation review, notification actions, the route cache |
 | Signed QR | HMAC-SHA256 tokens with expiry, verified server-side (`src/lib/tours/qr-token.ts`, tests) |
 | Webhook | PayMongo signature verified with a timing-safe compare and timestamp tolerance (`src/lib/paymongo/signature.ts`, tests); replay-safe (event id primary key, unique `(provider, provider_ref)`), covered by `supabase/tests/integration.sql` |
+| Open redirect after login | Fixed in F12: `?next=` accepted any URL (`/login?next=https://evil.example`). Now only same-site paths, via `safeNextPath` (tests) |
 | Privilege escalation | Fixed in F10: users could set their own `profiles.role`; browser updates are now limited to `full_name` and `avatar_url` |
 | RLS per role | `supabase/tests/integration.sql`: 31 checks across anon, tourist, operator, guide and admin. **31 pass** on the live project (rolled back) |
 

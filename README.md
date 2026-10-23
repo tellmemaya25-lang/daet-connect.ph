@@ -104,6 +104,18 @@ To turn on push to phones and desktops:
   - Results are cached in memory per preference set.
 - **Saved plans:** `/tours/my-itineraries` (view, share link, delete) and `/tours/itineraries/shared/[token]` (read-only, no owner details). After saving, "Book matching tours" lists published packages with a stop within 1.5 km of a planned place.
 
+## Testing & evaluation
+
+| What | Command |
+|---|---|
+| Unit and property tests | `npm test` |
+| E2E + accessibility at 375px (mock Supabase) | `npm run test:e2e:tours` (set `PW_CHROMIUM_PATH` to use a local Chromium) |
+| Database integration (rolls back) | `psql "$DATABASE_URL" -f supabase/tests/integration.sql` |
+| Demo accounts and data for a staging project | `DEMO_PASSWORD=… DEMO_GROUPS=3 npm run seed:demo` |
+
+- Evaluator walkthroughs and the credentials sheet: `docs/EVALUATION_KIT.md`.
+- Security findings and what to do about them: `docs/SECURITY_REVIEW.md`.
+
 ## Rewards (CONNECT-Daet points)
 
 - Points live in the shared `rewards_ledger` table. `UNIQUE (source, ref_id)` makes every award once-only.

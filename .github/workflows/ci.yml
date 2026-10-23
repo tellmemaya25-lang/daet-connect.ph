@@ -29,6 +29,8 @@ jobs:
         run: npx tsc --noEmit
       - name: Unit tests
         run: npm test
+      - name: Script tests
+        run: npm run test:scripts
       - name: Build
         run: npx next build
 

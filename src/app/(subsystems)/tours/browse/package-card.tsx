@@ -54,9 +54,9 @@ export function PackageCard({ package: pkg, rating = null }: PackageCardProps) {
 
         {/* Content */}
         <div className="p-5">
-          <h3 className="line-clamp-2 min-h-[3rem] font-black text-daet-ink group-hover:text-daet-forest">
+          <h2 className="line-clamp-2 min-h-[3rem] font-black text-daet-ink group-hover:text-daet-forest">
             {pkg.title}
-          </h3>
+          </h2>
 
           <div className="mt-3 flex items-center gap-4 text-sm text-daet-ink/70">
             <span className="flex items-center gap-1">
