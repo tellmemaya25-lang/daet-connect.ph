@@ -13,6 +13,12 @@ export function SiteHeader({ showAdminLink = false }: { showAdminLink?: boolean 
         </div>
         <nav className="-mx-1 flex w-full items-center gap-1 overflow-x-auto pb-1 sm:mx-0 sm:w-auto sm:gap-2 sm:overflow-visible sm:pb-0 lg:gap-4" aria-label="Main navigation">
           <Link
+            href="/tours/plan"
+            className="inline-flex min-h-11 shrink-0 items-center rounded-full px-3 text-sm font-semibold text-daet-ink transition hover:bg-daet-sand sm:px-4"
+          >
+            Plan a trip
+          </Link>
+          <Link
             href="/tours/attractions"
             className="inline-flex min-h-11 shrink-0 items-center rounded-full px-3 text-sm font-semibold text-daet-ink transition hover:bg-daet-sand sm:px-4"
           >

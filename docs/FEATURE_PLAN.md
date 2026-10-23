@@ -344,6 +344,26 @@ Follow the context doc's feasibility guidance: **no custom ML training.**
 
 **Acceptance:** a tourist generates a valid 2-day plan in under 5 seconds, sees it on the map, saves it, and books a suggested package.
 
+**Status (2026-10-23): built, migration `20261031_f7_itineraries.sql` applied. AI polish is optional (`ITINERARY_LLM=on` + `ANTHROPIC_API_KEY`).**
+- 7a engine: filter, score, greedy schedule, and `validate.ts`. It respects opening hours for the whole visit, travel time, a lunch break between 11:30 and 12:30 (day trips cover it), pace, budget, and no repeats. A 2-day plan is generated in about 0.2 s in the browser test, and 300 attractions over 5 days take under 2 s in the unit test.
+- 7b: Claude (`claude-opus-5-5`) via the Anthropic SDK with structured output (zod), low effort, 15 s timeout, in-memory cache by preference hash. The model only returns an order of known ids plus tips; the engine re-times it and `validatePlan` must pass, otherwise the draft is kept.
+- UI: `/tours/plan` (details → editable timeline with ↑/↓, swap, remove, add, live validation, map per day → save → matching packages), `/tours/my-itineraries` (+ detail with share link and delete), `/tours/itineraries/shared/[token]`.
+- DB:
+  - items gain `attraction_id`, `item_kind`, `end_time`, `travel_minutes`, `cost` and `tip`;
+  - itineraries gain `preferences`, `summary`, `plan_source` and `share_token`;
+  - `anon` lost its full grants, and the shared view goes through `tours_shared_itinerary` (no owner data).
+- Verified:
+  - Property tests (fast-check): 300 random datasets and preference sets always produce plans that pass `validatePlan`; edits that break travel time are always caught; 500 random or garbage "LLM outputs" never yield an invalid plan.
+  - 34 new tests in total; RLS checked against the live DB (spoofed owner blocked, other users can't read or edit, anon blocked, shared view hides the owner).
+  - Build and mobile/desktop screenshots of generate and edit.
+- Not verified: a live Claude call (no API key in this environment); saving through the UI against the real project.
+- Deviations from the plan:
+  - Travel uses the Haversine estimate, not the Routes API matrix, to stay fast and free. Package pages still use Routes when configured.
+  - There is no accessibility filter yet (no data).
+  - Lunch is a generic break unless the dataset lists food places.
+  - The budget covers entrance fees only.
+- Follow-ups: use cached Routes legs in the planner; accessibility and popularity data; add food places to the dataset.
+
 ---
 
 ## F8 — Reviews & ratings (Week 7)
