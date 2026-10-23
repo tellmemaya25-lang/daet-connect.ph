@@ -13,6 +13,12 @@ export function SiteHeader({ showAdminLink = false }: { showAdminLink?: boolean 
         </div>
         <nav className="-mx-1 flex w-full items-center gap-1 overflow-x-auto pb-1 sm:mx-0 sm:w-auto sm:gap-2 sm:overflow-visible sm:pb-0 lg:gap-4" aria-label="Main navigation">
           <Link
+            href="/tours/attractions"
+            className="inline-flex min-h-11 shrink-0 items-center rounded-full px-3 text-sm font-semibold text-daet-ink transition hover:bg-daet-sand sm:px-4"
+          >
+            Attractions
+          </Link>
+          <Link
             href="/tours/events"
             className="inline-flex min-h-11 shrink-0 items-center rounded-full px-3 text-sm font-semibold text-daet-ink transition hover:bg-daet-sand sm:px-4"
           >
@@ -40,25 +46,25 @@ export function SiteHeader({ showAdminLink = false }: { showAdminLink?: boolean 
             <>
               <Link
                 href="/tours/admin"
-                className="hidden min-h-11 items-center rounded-full bg-daet-forest px-4 text-sm font-semibold text-white transition hover:bg-daet-ink md:inline-flex"
+                className="hidden min-h-11 shrink-0 items-center whitespace-nowrap rounded-full bg-daet-forest px-4 text-sm font-semibold text-white transition hover:bg-daet-ink md:inline-flex"
               >
                 Admin Dashboard
               </Link>
               <Link
                 href="/tours/admin/operators"
-                className="hidden min-h-11 items-center rounded-full border border-daet-forest/20 px-4 text-sm font-semibold text-daet-forest transition hover:bg-daet-forest/5 md:inline-flex"
+                className="hidden min-h-11 shrink-0 items-center whitespace-nowrap rounded-full border border-daet-forest/20 px-4 text-sm font-semibold text-daet-forest transition hover:bg-daet-forest/5 md:inline-flex"
               >
                 Operators
               </Link>
               <Link
                 href="/tours/admin/guides"
-                className="hidden min-h-11 items-center rounded-full border border-daet-forest/20 px-4 text-sm font-semibold text-daet-forest transition hover:bg-daet-forest/5 md:inline-flex"
+                className="hidden min-h-11 shrink-0 items-center whitespace-nowrap rounded-full border border-daet-forest/20 px-4 text-sm font-semibold text-daet-forest transition hover:bg-daet-forest/5 md:inline-flex"
               >
                 Guides
               </Link>
               <Link
                 href="/tours/admin/packages"
-                className="hidden min-h-11 items-center rounded-full border border-daet-forest/20 px-4 text-sm font-semibold text-daet-forest transition hover:bg-daet-forest/5 md:inline-flex"
+                className="hidden min-h-11 shrink-0 items-center whitespace-nowrap rounded-full border border-daet-forest/20 px-4 text-sm font-semibold text-daet-forest transition hover:bg-daet-forest/5 md:inline-flex"
               >
                 Packages
               </Link>

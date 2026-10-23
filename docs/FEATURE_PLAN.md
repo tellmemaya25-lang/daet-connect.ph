@@ -301,6 +301,19 @@ New `tours_route_cache` (origin_id, dest_id, mode, distance_m, duration_s, polyl
 
 **Acceptance:** the attraction directory is live with real data, and package pages show the route with total distance and travel time.
 
+**Status (2026-10-23): built, migration `20261030_f6_attractions.sql` applied. Data collection still open.**
+- Public directory and detail pages: category and open-now filters, Manila-time hours, map, directions link, and the source shown on each place.
+- Admin CRUD with photos, plus a CSV import (all rows validated first, existing slugs skipped, swapped or far-away pins caught).
+- Package pages show the route map, per-leg and total distance and time, and an "Open in Google Maps" link.
+- Routes API client: `computeRoutes` per leg, 30-day cache in `tours_route_cache` (service role only), stale cache used if the API fails, then Haversine × 1.4 at 30 km/h. Maps JS when a browser key is set; otherwise an SVG sketch map.
+- **Data:** I couldn't reach the Tourism Office data or open map services from the build environment, so the seed has only **8 places with citable public sources** (Wikipedia, PhilAtlas, travel guides). All pins are unconfirmed (`location_verified = false`), two have no pin yet, and unknown hours and fees are left empty. **The team must import the MTO list (30+ places) via `/tours/admin/attractions` to meet the acceptance criterion.**
+- Verified: RLS against the live DB (anon reads only active rows, can't write or read the cache; tourists can't edit; admins can; half-entered coordinates rejected). 38 new unit tests: opening hours (overnight windows, Manila time, text round-trip property), Haversine (symmetry property), polyline decoding, leg caching and fallback, attraction and CSV validation. Build and screenshots also checked.
+- Deviations from the plan:
+  - Coordinates are optional, with `location_verified` and a required `source`.
+  - Added a `park` category.
+  - Route cache is keyed by coordinates (works for package stops and attractions) instead of attraction ids.
+- Follow-ups: replace the seed with MTO data; enable the Maps keys with a budget alert; link package stops to attractions (F7 planner).
+
 ---
 
 ## F7 — AI-assisted itinerary planner (Weeks 7–8)

@@ -1,4 +1,7 @@
 import { notFound } from "next/navigation";
+import { RouteMap } from "@/components/maps/route-map";
+import { directionsUrl, formatDistance, formatDuration } from "@/lib/maps/geo";
+import { planRoute, type RouteSummary } from "@/lib/maps/routes";
 import Link from "next/link";
 import { PageFrame } from "@/components/ui/page-frame";
 import { Notice } from "@/components/ui/notice";
@@ -106,6 +109,21 @@ export default async function PackageDetailPage({ params }: PageProps) {
   // Sort stops by stop_order (using correct column name)
   const stops = (pkg.tours_package_stops || []).sort((a: any, b: any) => a.stop_order - b.stop_order);
 
+  // Route between stops that have a map pin (Routes API, cached; estimate as fallback).
+  const pinnedStops = stops
+    .map((stop: any) => ({ ...stop, lat: stop.latitude === null ? null : Number(stop.latitude), lng: stop.longitude === null ? null : Number(stop.longitude) }))
+    .filter((stop: any) => Number.isFinite(stop.lat) && Number.isFinite(stop.lng) && stop.lat !== null && stop.lng !== null);
+  let route: RouteSummary | null = null;
+  if (pinnedStops.length >= 2) {
+    try {
+      route = await planRoute(pinnedStops.map((stop: any) => ({ lat: stop.lat, lng: stop.lng })));
+    } catch (routeError) {
+      console.error("Package route error:", routeError);
+    }
+  }
+  const mapPoints = pinnedStops.map((stop: any) => ({ lat: stop.lat, lng: stop.lng, label: stop.location_name }));
+  const routeLink = directionsUrl(mapPoints);
+
   // Sort gallery by display order
   const gallery = (pkg.tours_package_gallery || []).sort((a: any, b: any) => a.display_order - b.display_order);
 
@@ -202,6 +220,43 @@ export default async function PackageDetailPage({ params }: PageProps) {
                     </div>
                   ))}
                 </div>
+              </div>
+            )}
+
+            {/* Route map */}
+            {mapPoints.length > 0 && (
+              <div className="mt-6 rounded-2xl border border-daet-ink/10 bg-white p-6">
+                <div className="flex flex-wrap items-baseline justify-between gap-2">
+                  <h2 className="font-black text-daet-ink">Route</h2>
+                  {route ? (
+                    <p className="text-sm font-bold text-daet-forest">
+                      {route.estimated ? "About " : ""}
+                      {formatDistance(route.distanceM)} · {formatDuration(route.durationS)} of travel
+                    </p>
+                  ) : null}
+                </div>
+                <div className="mt-4">
+                  <RouteMap points={mapPoints} polylines={route?.legs.map((leg) => leg.polyline) ?? []} connect title={`Route map for ${pkg.title}`} />
+                </div>
+                {route && route.legs.length > 0 ? (
+                  <ol className="mt-4 space-y-1 text-sm text-daet-ink/75">
+                    {route.legs.map((leg, i) => (
+                      <li key={i}>
+                        <span className="font-bold text-daet-ink">{mapPoints[i].label}</span> → <span className="font-bold text-daet-ink">{mapPoints[i + 1].label}</span>:{" "}
+                        {leg.estimated ? "about " : ""}
+                        {formatDistance(leg.distanceM)}, {formatDuration(leg.durationS)}
+                      </li>
+                    ))}
+                  </ol>
+                ) : null}
+                {route?.estimated ? (
+                  <p className="mt-2 text-xs text-daet-ink/55">Some distances are estimated from straight-line distance; actual roads and boat crossings may differ.</p>
+                ) : null}
+                {routeLink ? (
+                  <a href={routeLink} target="_blank" rel="noopener noreferrer" className="mt-4 inline-flex min-h-11 items-center justify-center rounded-full border border-daet-forest/30 px-5 text-sm font-bold text-daet-forest hover:bg-daet-forest/5">
+                    Open route in Google Maps
+                  </a>
+                ) : null}
               </div>
             )}
 

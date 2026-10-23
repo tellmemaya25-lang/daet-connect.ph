@@ -117,6 +117,72 @@ export type Database = {
           },
         ]
       }
+      tours_attractions: {
+        Row: {
+          address: string | null
+          category: string
+          created_at: string
+          description: string | null
+          dwell_minutes: number | null
+          entrance_fee: number | null
+          hours_note: string | null
+          id: string
+          is_active: boolean
+          latitude: number | null
+          location_verified: boolean
+          longitude: number | null
+          municipality: string
+          name: string
+          opening_hours: Json | null
+          photo_url: string | null
+          slug: string
+          source: string
+          updated_at: string
+        }
+        Insert: {
+          address?: string | null
+          category: string
+          created_at?: string
+          description?: string | null
+          dwell_minutes?: number | null
+          entrance_fee?: number | null
+          hours_note?: string | null
+          id?: string
+          is_active?: boolean
+          latitude?: number | null
+          location_verified?: boolean
+          longitude?: number | null
+          municipality?: string
+          name: string
+          opening_hours?: Json | null
+          photo_url?: string | null
+          slug: string
+          source: string
+          updated_at?: string
+        }
+        Update: {
+          address?: string | null
+          category?: string
+          created_at?: string
+          description?: string | null
+          dwell_minutes?: number | null
+          entrance_fee?: number | null
+          hours_note?: string | null
+          id?: string
+          is_active?: boolean
+          latitude?: number | null
+          location_verified?: boolean
+          longitude?: number | null
+          municipality?: string
+          name?: string
+          opening_hours?: Json | null
+          photo_url?: string | null
+          slug?: string
+          source?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       tours_booking_participants: {
         Row: {
           age: number | null
@@ -1622,6 +1688,36 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      tours_route_cache: {
+        Row: {
+          dest_key: string
+          distance_m: number
+          duration_s: number
+          fetched_at: string
+          mode: string
+          origin_key: string
+          polyline: string | null
+        }
+        Insert: {
+          dest_key: string
+          distance_m: number
+          duration_s: number
+          fetched_at?: string
+          mode: string
+          origin_key: string
+          polyline?: string | null
+        }
+        Update: {
+          dest_key?: string
+          distance_m?: number
+          duration_s?: number
+          fetched_at?: string
+          mode?: string
+          origin_key?: string
+          polyline?: string | null
+        }
+        Relationships: []
       }
     }
     Views: {

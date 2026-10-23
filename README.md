@@ -80,6 +80,13 @@ To turn on push to phones and desktops:
    For each new notification whose recipient has a device, the trigger `tours_notifications_dispatch_push` calls that URL through `pg_net` after the transaction commits. The route re-reads the notification with the service role, sends it with `web-push`, drops subscriptions that return 404/410, and marks it pushed so retries don't send twice.
 3. Users opt in from the prompt on their booking page or from `/tours/notifications`. On iPhone, Web Push needs the site added to the Home Screen (iOS 16.4+).
 
+## Attractions & maps
+
+- **Directory:** `/tours/attractions` (filter by category or "Open now") and `/tours/attractions/[slug]` (hours in Manila time, fee, typical visit, map, Google Maps link, source). Admins manage the dataset at `/tours/admin/attractions`: add/edit/delete, photos, and a **CSV import** (template on the page; validates every row first, skips slugs that already exist).
+- **Data:** the database (`tours_attractions`) is seeded only with places that have a citable public source (`supabase/seed/attractions.sql`). Every pin is marked unconfirmed until the Tourism Office checks it, and unknown hours or fees stay empty rather than guessed. **The team still needs to load the Municipal Tourism Office list (target: 30+ places) through the CSV import.**
+- **Routes:** package pages draw the route through stops that have coordinates and show the distance and travel time. With `GOOGLE_MAPS_SERVER_KEY` (Routes API only), each leg comes from `computeRoutes` and is cached in `tours_route_cache` for 30 days. Without it, or when a call fails, legs are estimated as straight-line distance × 1.4 at 30 km/h and labelled "about".
+- **Map display:** with `NEXT_PUBLIC_GOOGLE_MAPS_BROWSER_KEY` (Maps JavaScript API only, restricted to your domains by HTTP referrer), maps use Google Maps. Otherwise the page draws a sketch map. Set a monthly budget alert in Google Cloud.
+
 ## Events calendar & merchandise showcase
 
 - Public pages: `/tours/events` (monthly calendar, category filter, day view, "Add to my calendar" `.ics` download) and `/tours/merch` (t-shirts, mugs, souvenirs, pasalubong with seller contact). The home page shows upcoming events and featured products.
