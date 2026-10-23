@@ -104,6 +104,14 @@ To turn on push to phones and desktops:
   - Results are cached in memory per preference set.
 - **Saved plans:** `/tours/my-itineraries` (view, share link, delete) and `/tours/itineraries/shared/[token]` (read-only, no owner details). After saving, "Book matching tours" lists published packages with a stop within 1.5 km of a planned place.
 
+## Reviews & ratings
+
+- A tourist can review a booking once, after the operator marks it **completed**. The form is on the booking page, and the "How was your tour?" notification links to it.
+- Ratings come from the `tours_package_ratings`, `tours_operator_ratings` and `tours_guide_ratings` views. They are shown on browse cards and package pages.
+- Operators post one public reply per review at `/tours/operator/reviews`.
+- Tourism Office admins hide abusive reviews, with a reason, at `/tours/admin/reviews`. Hidden reviews leave the public pages and the averages.
+- All writes go through the `tours_submit_review`, `tours_reply_to_review` and `tours_set_review_hidden` database functions.
+
 ## Events calendar & merchandise showcase
 
 - Public pages: `/tours/events` (monthly calendar, category filter, day view, "Add to my calendar" `.ics` download) and `/tours/merch` (t-shirts, mugs, souvenirs, pasalubong with seller contact). The home page shows upcoming events and featured products.

@@ -1664,38 +1664,60 @@ export type Database = {
           comment: string | null
           created_at: string
           guide_id: string | null
+          hidden_reason: string | null
           id: string
+          is_hidden: boolean
           operator_id: string
+          operator_reply: string | null
           package_id: string
           photos: string[] | null
           rating: number
+          replied_at: string | null
           tourist_id: string
+          updated_at: string
         }
         Insert: {
           booking_id: string
           comment?: string | null
           created_at?: string
           guide_id?: string | null
+          hidden_reason?: string | null
           id?: string
+          is_hidden?: boolean
           operator_id: string
+          operator_reply?: string | null
           package_id: string
           photos?: string[] | null
           rating: number
+          replied_at?: string | null
           tourist_id: string
+          updated_at?: string
         }
         Update: {
           booking_id?: string
           comment?: string | null
           created_at?: string
           guide_id?: string | null
+          hidden_reason?: string | null
           id?: string
+          is_hidden?: boolean
           operator_id?: string
+          operator_reply?: string | null
           package_id?: string
           photos?: string[] | null
           rating?: number
+          replied_at?: string | null
           tourist_id?: string
+          updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "tours_reviews_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: true
+            referencedRelation: "tours_bookings"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "tours_reviews_guide_id_fkey"
             columns: ["guide_id"]
@@ -1758,7 +1780,54 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      tours_guide_ratings: {
+        Row: {
+          average_rating: number | null
+          guide_id: string | null
+          review_count: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tours_reviews_guide_id_fkey"
+            columns: ["guide_id"]
+            isOneToOne: false
+            referencedRelation: "tours_guides"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tours_operator_ratings: {
+        Row: {
+          average_rating: number | null
+          operator_id: string | null
+          review_count: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tours_reviews_operator_id_fkey"
+            columns: ["operator_id"]
+            isOneToOne: false
+            referencedRelation: "tours_operators"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tours_package_ratings: {
+        Row: {
+          average_rating: number | null
+          package_id: string | null
+          review_count: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tours_reviews_package_id_fkey"
+            columns: ["package_id"]
+            isOneToOne: false
+            referencedRelation: "tours_packages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
       generate_booking_reference: { Args: never; Returns: string }
@@ -1846,6 +1915,10 @@ export type Database = {
         Args: { p_conversation_id: string }
         Returns: boolean
       }
+      tours_is_my_operator: {
+        Args: { p_operator_id: string }
+        Returns: boolean
+      }
       tours_mark_conversation_read: {
         Args: { p_conversation_id: string }
         Returns: undefined
@@ -1878,6 +1951,10 @@ export type Database = {
         Args: { p_booking_id: string }
         Returns: number
       }
+      tours_reply_to_review: {
+        Args: { p_reply: string; p_review_id: string }
+        Returns: undefined
+      }
       tours_request_cancellation: {
         Args: { p_booking_id: string; p_reason: string }
         Returns: string
@@ -1886,7 +1963,15 @@ export type Database = {
         Args: { p_approve: boolean; p_cancellation_id: string; p_notes: string }
         Returns: string
       }
+      tours_set_review_hidden: {
+        Args: { p_hidden: boolean; p_reason: string; p_review_id: string }
+        Returns: undefined
+      }
       tours_shared_itinerary: { Args: { p_token: string }; Returns: Json }
+      tours_submit_review: {
+        Args: { p_booking_id: string; p_comment: string; p_rating: number }
+        Returns: string
+      }
     }
     Enums: {
       accreditation_status: "pending" | "approved" | "rejected" | "suspended"

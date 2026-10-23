@@ -56,6 +56,12 @@ export function DashboardHeader({
                 >
                   Bookings
                 </Link>
+                <Link
+                  href="/tours/operator/reviews"
+                  className="text-sm font-bold text-daet-ink/60 transition hover:text-daet-ink"
+                >
+                  Reviews
+                </Link>
               </>
             )}
             {(role === 'operator' || role === 'guide') && (
