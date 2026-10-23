@@ -1,0 +1,82 @@
+import type { ReactNode } from "react";
+
+export const promoInputClass =
+  "mt-1 block min-h-11 w-full rounded-xl border border-daet-ink/20 bg-white px-3 py-2 text-base text-daet-ink focus:border-daet-forest focus:outline-none focus:ring-2 focus:ring-daet-forest/20 aria-[invalid=true]:border-rose-500";
+
+export function PromoField({
+  id,
+  label,
+  hint,
+  error,
+  required = false,
+  children,
+}: {
+  id: string;
+  label: string;
+  hint?: string;
+  error?: string;
+  required?: boolean;
+  children: ReactNode;
+}) {
+  return (
+    <div>
+      <label htmlFor={id} className="block text-sm font-bold text-daet-ink">
+        {label}
+        {required ? <span className="text-rose-600"> *</span> : null}
+      </label>
+      {children}
+      {hint && !error ? <p className="mt-1 text-xs text-daet-ink/55">{hint}</p> : null}
+      {error ? (
+        <p id={`${id}-error`} className="mt-1 text-sm font-semibold text-rose-700">
+          {error}
+        </p>
+      ) : null}
+    </div>
+  );
+}
+
+export function PromoCheckbox({
+  name,
+  label,
+  description,
+  defaultChecked,
+}: {
+  name: string;
+  label: string;
+  description?: string;
+  defaultChecked: boolean;
+}) {
+  return (
+    <label className="flex min-h-11 cursor-pointer items-start gap-3 rounded-2xl border border-daet-ink/10 bg-daet-sand/40 p-3">
+      <input type="checkbox" name={name} defaultChecked={defaultChecked} className="mt-1 h-5 w-5 accent-daet-forest" />
+      <span>
+        <span className="block text-sm font-bold text-daet-ink">{label}</span>
+        {description ? <span className="block text-xs text-daet-ink/60">{description}</span> : null}
+      </span>
+    </label>
+  );
+}
+
+export function PromoImageField({ currentUrl, error }: { currentUrl: string | null; error?: string }) {
+  return (
+    <PromoField id="image" label="Image" hint="JPG, PNG, or WebP up to 5 MB." error={error}>
+      {currentUrl ? (
+        <div className="mt-2 flex items-center gap-3">
+          <img src={currentUrl} alt="Current image" className="h-20 w-20 rounded-xl object-cover" />
+          <label className="flex min-h-11 items-center gap-2 text-sm text-daet-ink/70">
+            <input type="checkbox" name="removeImage" className="h-5 w-5 accent-rose-600" />
+            Remove current image
+          </label>
+        </div>
+      ) : null}
+      <input
+        id="image"
+        name="image"
+        type="file"
+        accept="image/jpeg,image/png,image/webp"
+        aria-invalid={error ? true : undefined}
+        className="mt-2 block w-full text-sm text-daet-ink file:mr-3 file:min-h-11 file:rounded-full file:border-0 file:bg-daet-forest file:px-4 file:text-sm file:font-bold file:text-white"
+      />
+    </PromoField>
+  );
+}

@@ -1,10 +1,33 @@
 import Link from "next/link";
 import { PageFrame } from "@/components/ui/page-frame";
+import { EventCard } from "@/components/tours/event-card";
+import { MerchCard } from "@/components/tours/merch-card";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { EVENT_COLUMNS, MERCH_COLUMNS, type MerchItem, type TourEvent } from "@/lib/tours/promo-validation";
 
 export default async function HomePage() {
   const supabase = await createSupabaseServerClient();
   const { data: { user } } = await supabase.auth.getUser();
+
+  // Both sections hide themselves when empty (or before the migration is applied).
+  const [eventsResult, merchResult] = await Promise.all([
+    supabase
+      .from("tours_events")
+      .select(EVENT_COLUMNS)
+      .eq("is_published", true)
+      .gte("ends_at", new Date().toISOString())
+      .order("starts_at", { ascending: true })
+      .limit(3),
+    supabase
+      .from("tours_merchandise")
+      .select(MERCH_COLUMNS)
+      .eq("is_active", true)
+      .eq("is_featured", true)
+      .order("created_at", { ascending: false })
+      .limit(4),
+  ]);
+  const upcomingEvents = (eventsResult.data ?? []) as TourEvent[];
+  const featuredMerch = (merchResult.data ?? []) as MerchItem[];
 
   return (
     <PageFrame adminNav>
@@ -100,6 +123,54 @@ export default async function HomePage() {
           <p className="mt-2 text-sm leading-6 text-daet-ink/65">Review applications and packages</p>
         </Link>
       </section>
+
+      {/* Upcoming Events */}
+      <section aria-labelledby="home-events" className="mt-10">
+        <div className="mb-4 flex items-end justify-between gap-3">
+          <div>
+            <p className="text-xs font-black uppercase tracking-[0.16em] text-daet-leaf">What&apos;s on</p>
+            <h2 id="home-events" className="mt-1 text-2xl font-black text-daet-ink">Upcoming events</h2>
+          </div>
+          <Link href="/tours/events" className="inline-flex min-h-11 shrink-0 items-center text-sm font-bold text-daet-forest underline underline-offset-4">
+            Full calendar →
+          </Link>
+        </div>
+        {upcomingEvents.length > 0 ? (
+          <ul className="grid gap-3 md:grid-cols-3">
+            {upcomingEvents.map((event) => (
+              <li key={event.id}>
+                <EventCard event={event} compact />
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <Link href="/tours/events" className="block rounded-2xl border border-dashed border-daet-ink/20 bg-white p-6 text-center text-sm text-daet-ink/65 hover:bg-daet-sand/40">
+            🗓️ No upcoming events posted yet. Open the calendar to check later dates.
+          </Link>
+        )}
+      </section>
+
+      {/* Featured Merchandise */}
+      {featuredMerch.length > 0 ? (
+        <section aria-labelledby="home-merch" className="mt-10">
+          <div className="mb-4 flex items-end justify-between gap-3">
+            <div>
+              <p className="text-xs font-black uppercase tracking-[0.16em] text-daet-leaf">Souvenirs &amp; pasalubong</p>
+              <h2 id="home-merch" className="mt-1 text-2xl font-black text-daet-ink">Daet merchandise</h2>
+            </div>
+            <Link href="/tours/merch" className="inline-flex min-h-11 shrink-0 items-center text-sm font-bold text-daet-forest underline underline-offset-4">
+              See all →
+            </Link>
+          </div>
+          <ul className="grid grid-cols-1 gap-4 min-[420px]:grid-cols-2 lg:grid-cols-4">
+            {featuredMerch.map((item) => (
+              <li key={item.id} className="flex">
+                <MerchCard item={item} />
+              </li>
+            ))}
+          </ul>
+        </section>
+      ) : null}
 
       {/* Test Accounts Section (only in development) */}
       {process.env.NODE_ENV === 'development' && !user && (

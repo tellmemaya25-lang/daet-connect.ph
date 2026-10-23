@@ -203,6 +203,18 @@ export default async function AdminDashboardPage() {
           >
             Review Packages
           </Link>
+          <Link
+            href="/tours/admin/events"
+            className="inline-flex min-h-11 items-center justify-center rounded-full border border-daet-forest/30 px-6 text-sm font-bold text-daet-forest hover:bg-daet-forest/5 transition"
+          >
+            Manage Events Calendar
+          </Link>
+          <Link
+            href="/tours/admin/merch"
+            className="inline-flex min-h-11 items-center justify-center rounded-full border border-daet-forest/30 px-6 text-sm font-bold text-daet-forest hover:bg-daet-forest/5 transition"
+          >
+            Manage Merchandise
+          </Link>
         </div>
       </div>
 

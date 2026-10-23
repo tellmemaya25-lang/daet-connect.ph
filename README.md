@@ -44,3 +44,11 @@ No guide schema is created or migrated. The existing database should enforce at 
 - `tours_guide_sensitive_info` (service_role only, with a unique `guide_id` for upsert): `guide_id`, `full_legal_name`, `id_type`, `id_number`, and `id_document_path`.
 
 Verify those names against the existing locked schema before production use, and ensure the existing `profiles.role` type/policies already accept the `guide` role value. The Server Action rejects unchecked consent before upload or database writes, generates `consent_given_at` on the server, writes consent and the timestamp to the public guide row, and writes the full legal name and ID details only to the sensitive row via the server-side service-role client. No Client Component or Server Component queries the sensitive table. Existing RLS policies must allow an authenticated applicant to read their own status and insert/update their own guide row, allow the admin queue’s authenticated query to select pending public rows and their corresponding profile names, and prevent public readers from seeing unapproved profiles; the private sensitive table and private Storage bucket must remain inaccessible to browser clients. No policy or schema changes are bundled here.
+
+## Events calendar & merchandise showcase
+
+- Public pages: `/tours/events` (monthly calendar, category filter, day view, "Add to my calendar" `.ics` download) and `/tours/merch` (t-shirts, mugs, souvenirs, pasalubong with seller contact). The home page shows upcoming events and featured products.
+- Admin pages: `/tours/admin/events` and `/tours/admin/merch` (create, edit, publish/hide, feature, delete). Linked from the admin dashboard's Quick Actions.
+- Setup: apply `supabase/migrations/20261023_create_tours_events_and_merchandise.sql`. It creates `tours_events` and `tours_merchandise` with RLS (the public reads published/active rows; only `get_my_role() = 'admin'` can write) and the public `tours-promo-images` Storage bucket (admin upload, public read, 5 MB, JPG/PNG/WebP).
+- All event times are entered and shown in Philippine time (UTC+8); date logic lives in `src/lib/tours/events-calendar.ts`.
+- Merchandise listings are advertisements only. Checkout belongs to the Shop subsystem (Team 7).
