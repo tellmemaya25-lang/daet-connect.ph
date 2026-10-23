@@ -148,12 +148,20 @@ export default async function BookingDetailPage({ params, searchParams }: PagePr
         </div>
 
         {/* Status Badge */}
-        <div className="mb-6 flex justify-center">
+        <div className="mb-6 flex flex-col items-center gap-3">
           <span
             className={`rounded-full px-6 py-2 text-sm font-bold ${statusColors[booking.status] || "bg-gray-100 text-gray-800"}`}
           >
             {statusLabels[booking.status] || booking.status}
           </span>
+          {booking.status === "confirmed" ? (
+            <Link
+              href={`/tours/bookings/${booking.id}/ticket`}
+              className="inline-flex min-h-11 items-center justify-center rounded-full bg-daet-forest px-6 text-sm font-bold text-white transition hover:bg-daet-ink"
+            >
+              Show my ticket QR
+            </Link>
+          ) : null}
         </div>
 
         {(booking.status === "cancelled" || booking.status === "rejected") && booking.cancellation_reason ? (
