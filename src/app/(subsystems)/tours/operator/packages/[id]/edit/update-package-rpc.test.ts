@@ -580,7 +580,7 @@ describe("update_package_and_relations RPC Function", () => {
       const ownerUserId = "user-123";
       const operatorId = "operator-456";
       const packageId = "package-789";
-      const packageOperatorId = "operator-456"; // Same as ownerUserId's operator
+      const packageOperatorId: string = "operator-456"; // Same as ownerUserId's operator
 
       // Expected: owner can update
       expect(packageOperatorId === operatorId).toBe(true);
@@ -590,9 +590,9 @@ describe("update_package_and_relations RPC Function", () => {
       // Scenario: Operator A created the package
       //           Operator B tries to update it
 
-      const ownerOperatorId = "operator-A";
-      const packageOperatorId = "operator-A";
-      const attemptingOperatorId = "operator-B";
+      const ownerOperatorId: string = "operator-A";
+      const packageOperatorId: string = "operator-A";
+      const attemptingOperatorId: string = "operator-B";
 
       // Expected: non-owner should be rejected
       expect(attemptingOperatorId === packageOperatorId).toBe(false);
@@ -605,7 +605,7 @@ describe("update_package_and_relations RPC Function", () => {
    */
   describe("Immutable Status Restrictions", () => {
     it("should block all updates to pending_review packages", () => {
-      const packageStatus = "pending_review";
+      const packageStatus: string = "pending_review";
       const isEditableStatus = packageStatus === "draft" || packageStatus === "rejected";
 
       // Expected: pending_review should not be editable
@@ -613,7 +613,7 @@ describe("update_package_and_relations RPC Function", () => {
     });
 
     it("should block all updates to archived packages", () => {
-      const packageStatus = "archived";
+      const packageStatus: string = "archived";
       const isEditableStatus = packageStatus === "draft" || packageStatus === "rejected";
 
       // Expected: archived should not be editable
@@ -621,7 +621,7 @@ describe("update_package_and_relations RPC Function", () => {
     });
 
     it("should allow updates to draft packages", () => {
-      const packageStatus = "draft";
+      const packageStatus: string = "draft";
       const isEditableStatus = packageStatus === "draft" || packageStatus === "rejected";
 
       // Expected: draft should be editable
@@ -629,7 +629,7 @@ describe("update_package_and_relations RPC Function", () => {
     });
 
     it("should allow updates to rejected packages", () => {
-      const packageStatus = "rejected";
+      const packageStatus: string = "rejected";
       const isEditableStatus = packageStatus === "draft" || packageStatus === "rejected";
 
       // Expected: rejected should be editable

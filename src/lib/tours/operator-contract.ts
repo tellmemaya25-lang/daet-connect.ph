@@ -12,6 +12,8 @@ export const PROFILE_ID_COLUMN = "id";
 export const PROFILE_ROLE_COLUMN = "role";
 export const OPERATOR_USER_ID_COLUMN = "profile_id";
 export const OPERATOR_STATUS_COLUMN = "accreditation_status";
+/** Reviewer's note shown to the applicant when an application is rejected. */
+export const OPERATOR_REVIEW_NOTE_COLUMN = "accreditation_notes";
 
 export const OPERATOR_DOCUMENT_BUCKET =
   process.env.TOURS_OPERATOR_DOCUMENTS_BUCKET ?? "tours-operator-documents";
@@ -20,7 +22,7 @@ export const OPERATOR_APPLICATION_SELECT =
   "id,profile_id,business_name,contact_person,contact_email,contact_phone,business_address,dti_registration_url,business_permit_url,gcash_qr_url,accreditation_status,reviewed_by,reviewed_at,created_at";
 
 export const OPERATOR_OWN_STATUS_SELECT =
-  "id,accreditation_status,created_at";
+  "id,accreditation_status,accreditation_notes,created_at";
 
 export const OPERATOR_FILE_COLUMNS = {
   dtiDocument: "dti_registration_url",

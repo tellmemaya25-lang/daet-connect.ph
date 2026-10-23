@@ -513,7 +513,7 @@ describe('Package Form Data Validation', () => {
       expect(result.errors.durationValue).toBeDefined();
     });
 
-    it('accepts NaN durationValue (treated as valid number by typeof check)', () => {
+    it('rejects NaN durationValue', () => {
       const data = {
         title: 'Title',
         locationName: 'Location',
@@ -521,8 +521,9 @@ describe('Package Form Data Validation', () => {
         durationType: 'hours',
       };
       const result = validatePackageFormData(data as any);
-      // NaN is technically typeof 'number', but fails the range check
-      expect(result.valid).toBe(true);
+      // NaN is typeof 'number' and slips past range comparisons, so it must be rejected explicitly.
+      expect(result.valid).toBe(false);
+      expect(result.errors.durationValue).toBeDefined();
     });
 
     it('rejects string durationValue', () => {

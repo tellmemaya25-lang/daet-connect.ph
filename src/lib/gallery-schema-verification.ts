@@ -96,7 +96,7 @@ export async function verifyGallerySchema(
     const { data: columns, error: columnError } = await supabase.rpc(
       'get_table_columns',
       { table_name: 'tours_package_gallery' }
-    ).catch(() => ({ data: null, error: null }));
+    );
 
     if (columnError) {
       // Fallback: check known columns by trying to query them
@@ -155,7 +155,7 @@ export async function verifyGallerySchema(
     const { data: constraints, error: constraintError } = await supabase.rpc(
       'get_table_constraints',
       { table_name: 'tours_package_gallery' }
-    ).catch(() => ({ data: null, error: null }));
+    );
 
     if (constraints) {
       result.details.constraints = constraints;
@@ -195,7 +195,7 @@ export async function verifyGallerySchema(
     const { data: indexes, error: indexError } = await supabase.rpc(
       'get_table_indexes',
       { table_name: 'tours_package_gallery' }
-    ).catch(() => ({ data: null, error: null }));
+    );
 
     if (indexes) {
       result.details.indexes = indexes;

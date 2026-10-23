@@ -23,6 +23,7 @@ import {
   replacePackageStops,
   submitPackageForReview,
   getPackageDetail,
+  type PackageCoreInput,
 } from "@/app/(subsystems)/tours/operator/packages/actions";
 import { getAuthenticatedSession } from "@/lib/tours/server-auth";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
@@ -30,7 +31,6 @@ import {
   PACKAGE_TABLE,
   PRICE_VARIANT_TABLE,
   STOP_TABLE,
-  type PackageCoreInput,
   type PackageDetailRecord,
   type PriceVariantInput,
   type PackageStopInput,

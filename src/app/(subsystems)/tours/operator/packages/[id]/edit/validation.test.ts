@@ -338,6 +338,7 @@ describe("Package Stops Validation", () => {
               latitude: 14.0,
               longitude: 120.0,
               stopOrder: 1,
+              estimatedDurationMinutes: null,
             },
             {
               locationName: "Stop 2",
@@ -345,6 +346,7 @@ describe("Package Stops Validation", () => {
               latitude: 15.0,
               longitude: 121.0,
               stopOrder: 2,
+              estimatedDurationMinutes: null,
             },
             {
               locationName: "Stop 3",
@@ -352,6 +354,7 @@ describe("Package Stops Validation", () => {
               latitude: 16.0,
               longitude: 122.0,
               stopOrder: 3,
+              estimatedDurationMinutes: null,
             },
           ];
           const result = validateStops(stops);

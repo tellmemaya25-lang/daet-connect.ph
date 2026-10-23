@@ -12,6 +12,7 @@ interface CoverImageStepData {
 }
 
 interface CoverImageStepProps {
+  packageId: string;
   data: CoverImageStepData;
   originalData: CoverImageStepData;
   packageStatus: EditPackageStatus;
@@ -30,6 +31,7 @@ interface CoverImageStepProps {
  * - Error handling
  */
 export function CoverImageStep({
+  packageId,
   data,
   originalData,
   packageStatus,
@@ -79,13 +81,13 @@ export function CoverImageStep({
         formData.append("file", file);
 
         setUploadProgress(50);
-        const result = await uploadPackageImage(formData);
+        const result = await uploadPackageImage(packageId, formData);
 
-        if (result.success && result.url) {
+        if (result.success && result.imageUrl) {
           setUploadProgress(100);
           onUpdate({
             ...data,
-            coverImageUrl: result.url,
+            coverImageUrl: result.imageUrl,
           });
 
           // Reset after success
@@ -94,7 +96,7 @@ export function CoverImageStep({
             setUploadLoading(false);
           }, 500);
         } else {
-          setUploadError(result.error || "Failed to upload image");
+          setUploadError(result.error?.message ?? "Failed to upload image");
           setUploadProgress(0);
           setUploadLoading(false);
         }
@@ -107,7 +109,7 @@ export function CoverImageStep({
       // Reset file input
       event.target.value = "";
     },
-    [data, onUpdate]
+    [data, onUpdate, packageId]
   );
 
   return (

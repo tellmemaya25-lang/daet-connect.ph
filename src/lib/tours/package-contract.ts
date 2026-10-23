@@ -25,13 +25,14 @@ export const PACKAGE_TABLE = "tours_packages";
 export const PRICE_VARIANT_TABLE = "tours_package_price_variants";
 export const STOP_TABLE = "tours_package_stops";
 
-export type PackageStatus = "draft" | "pending_review" | "published" | "archived";
+export type PackageStatus = "draft" | "pending_review" | "published" | "rejected" | "archived";
 export type DurationType = "hours" | "days";
 
 export const PACKAGE_STATUS = {
   DRAFT: "draft",
   PENDING_REVIEW: "pending_review",
   PUBLISHED: "published",
+  REJECTED: "rejected",
   ARCHIVED: "archived",
 } as const satisfies Record<string, PackageStatus>;
 

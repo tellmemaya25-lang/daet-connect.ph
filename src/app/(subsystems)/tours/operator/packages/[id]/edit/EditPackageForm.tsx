@@ -381,13 +381,20 @@ export function EditPackageForm({ packageData }: EditPackageFormProps) {
         data={state.formData}
         originalData={state.originalData}
         packageStatus={packageData.status}
-        onUpdate={(data) => handleFieldChange("title", data.title) || handleFieldChange("locationName", data.locationName) || handleFieldChange("description", data.description) || handleFieldChange("durationValue", data.durationValue) || handleFieldChange("durationType", data.durationType)}
+        onUpdate={(data) => {
+          handleFieldChange("title", data.title);
+          handleFieldChange("locationName", data.locationName);
+          handleFieldChange("description", data.description);
+          handleFieldChange("durationValue", data.durationValue);
+          handleFieldChange("durationType", data.durationType);
+        }}
         errors={state.validationErrors}
         loading={state.isSubmitting}
       />
 
       {/* Cover Image Step */}
       <CoverImageStep
+        packageId={packageData.id}
         data={{
           coverImageUrl: state.formData.coverImageUrl,
         }}
@@ -432,6 +439,7 @@ export function EditPackageForm({ packageData }: EditPackageFormProps) {
 
       {/* Gallery Step */}
       <GalleryStep
+        packageId={packageData.id}
         data={state.formData.galleryImages}
         originalData={state.originalData.galleryImages}
         packageStatus={packageData.status}

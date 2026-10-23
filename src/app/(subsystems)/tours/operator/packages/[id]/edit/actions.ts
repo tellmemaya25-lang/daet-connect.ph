@@ -22,6 +22,8 @@ import {
   type PackageStopRecord,
 } from "@/lib/tours/package-contract";
 import { OPERATOR_TABLE } from "@/lib/tours/operator-contract";
+import { EDIT_PACKAGE_SELECT, mapPackageRowToRecord } from "./edit-mappers";
+import type { EditPackageRecord } from "./edit-types";
 
 type SessionClient = Awaited<ReturnType<typeof createSupabaseServerClient>>;
 
@@ -73,6 +75,8 @@ interface EditablePackageStatusResult {
  */
 interface UpdatePackageResponse {
   success: boolean;
+  /** HTTP-style code for cases the client handles specially (409 = concurrency conflict). */
+  status?: 409;
   message: string;
   error?: string;
   errors?: Record<string, string>;
@@ -328,7 +332,7 @@ export async function requirePackageOwnership(
  *   const result = requireEditablePackageStatus("pending_review", []);
  *   // Returns: { error: { status: 403, message: "Package is under review and cannot be edited" } }
  */
-export function requireEditablePackageStatus(
+export async function requireEditablePackageStatus(
   packageStatus: PackageStatus,
   fieldsBeingEdited?: string[],
 ): Promise<
@@ -487,14 +491,7 @@ export function requireEditablePackageStatus(
 export async function loadPackageForEdit(
   packageId: string
 ): Promise<
-  | { success: true; data: EditPackageFormInput & {
-      id: string;
-      operatorId: string;
-      status: PackageStatus;
-      rejectionReason: string | null;
-      createdAt: string;
-      updatedAt: string;
-    }}
+  | { success: true; data: EditPackageRecord }
   | { success: false; error: { status: 401 | 403 | 404 | 500; message: string } }
 > {
   try {
@@ -503,7 +500,7 @@ export async function loadPackageForEdit(
 
     // Step 1: Verify authentication and get operator details
     const authResult = await requireAuthenticated(sessionClient);
-    if (authResult.error) {
+    if ("error" in authResult) {
       return {
         success: false,
         error: {
@@ -521,7 +518,7 @@ export async function loadPackageForEdit(
       packageId,
       operatorId
     );
-    if (ownershipResult.error) {
+    if ("error" in ownershipResult) {
       return {
         success: false,
         error: {
@@ -534,24 +531,7 @@ export async function loadPackageForEdit(
     // Step 3: Load complete package with all related tables
     const { data: pkg, error: pkgError } = await sessionClient
       .from(PACKAGE_TABLE)
-      .select(
-        `id,
-        operator_id,
-        title,
-        description,
-        location_name,
-        duration_value,
-        duration_type,
-        cover_image_url,
-        status,
-        rejection_reason,
-        created_at,
-        updated_at,
-        ${PRICE_VARIANT_TABLE}(*),
-        tours_package_inclusions(*),
-        tours_package_stops(*),
-        tours_package_gallery(*)`
-      )
+      .select(EDIT_PACKAGE_SELECT)
       .eq("id", packageId)
       .maybeSingle();
 
@@ -566,99 +546,10 @@ export async function loadPackageForEdit(
       };
     }
 
-    // Step 4: Normalize database records to form data structure
-    const priceVariants = (
-      pkg[PRICE_VARIANT_TABLE] as unknown as PriceVariantRecord[]
-    )
-      .sort((a, b) => (a.is_default ? -1 : 1)) // Put default variant first
-      .map((variant) => ({
-        id: variant.id,
-        variantName: variant.variant_name,
-        minPax: variant.min_pax,
-        maxPax: variant.max_pax,
-        pricePerPax: variant.price_per_pax,
-        flatPrice: variant.flat_price,
-        isDefault: variant.is_default,
-      }));
-
-    const inclusions = (
-      pkg["tours_package_inclusions"] as unknown as Array<{
-        id: string;
-        item_text: string;
-        is_included: boolean;
-        display_order: number;
-      }>
-    )
-      .sort((a, b) => a.display_order - b.display_order)
-      .map((inclusion) => ({
-        id: inclusion.id,
-        text: inclusion.item_text,
-        isIncluded: inclusion.is_included,
-        displayOrder: inclusion.display_order,
-      }));
-
-    const stops = (
-      pkg["tours_package_stops"] as unknown as PackageStopRecord[]
-    )
-      .sort((a, b) => a.stop_order - b.stop_order)
-      .map((stop) => ({
-        id: stop.id,
-        locationName: stop.location_name,
-        description: stop.description,
-        latitude: stop.latitude,
-        longitude: stop.longitude,
-        estimatedDurationMinutes: stop.estimated_duration_minutes,
-      }));
-
-    const galleryImages = (
-      pkg["tours_package_gallery"] as unknown as Array<{
-        id: string;
-        image_url: string;
-        caption: string | null;
-        display_order: number;
-      }>
-    )
-      .sort((a, b) => a.display_order - b.display_order)
-      .map((image) => ({
-        id: image.id,
-        imageUrl: image.image_url,
-        caption: image.caption,
-        displayOrder: image.display_order,
-      }));
-
-    // Separate inclusions and exclusions
-    const inclusionItems = inclusions.filter((i) => i.isIncluded);
-    const exclusionItems = inclusions.filter((i) => !i.isIncluded);
-
-    // Step 5: Return success with complete normalized package data
+    // Step 4: Normalize database records to the edit form structure
     return {
       success: true,
-      data: {
-        id: pkg.id,
-        operatorId: pkg.operator_id,
-        title: pkg.title,
-        description: pkg.description,
-        locationName: pkg.location_name,
-        durationValue: pkg.duration_value,
-        durationType: pkg.duration_type,
-        coverImageUrl: pkg.cover_image_url,
-        status: pkg.status,
-        rejectionReason: pkg.rejection_reason,
-        priceVariants,
-        inclusions: inclusionItems,
-        exclusions: exclusionItems,
-        stops,
-        galleryImages,
-        createdAt: pkg.created_at,
-        updatedAt: pkg.updated_at,
-      } as EditPackageFormInput & {
-        id: string;
-        operatorId: string;
-        status: PackageStatus;
-        rejectionReason: string | null;
-        createdAt: string;
-        updatedAt: string;
-      },
+      data: mapPackageRowToRecord(pkg as unknown as Record<string, unknown>),
     };
   } catch (error) {
     // Log unexpected errors (for debugging)
@@ -694,7 +585,7 @@ export async function loadPackageForEdit(
  * 
  * Validates: Requirements 3.1-3.8, 12.1-12.7
  */
-export function validatePackageFormData(data: unknown): {
+function validatePackageFormData(data: unknown): {
   valid: boolean;
   errors: Record<string, string>;
 } {
@@ -791,7 +682,7 @@ export function validatePackageFormData(data: unknown): {
  * 
  * Validates: Requirements 5.1-5.8, 12.1-12.7
  */
-export function validatePricingVariants(variants: unknown[]): {
+function validatePricingVariants(variants: unknown[]): {
   valid: boolean;
   errors: Record<string, string>;
 } {
@@ -950,7 +841,7 @@ export function validatePricingVariants(variants: unknown[]): {
  * 
  * Validates: Requirements 6.1-6.10, 12.1-12.7
  */
-export function validateInclusions(inclusions: unknown[]): {
+function validateInclusions(inclusions: unknown[]): {
   valid: boolean;
   errors: Record<string, string>;
 } {
@@ -1065,7 +956,7 @@ export function validateInclusions(inclusions: unknown[]): {
  * 
  * Validates: Requirements 7.1-7.13, 12.1-12.7
  */
-export function validateStops(stops: unknown[]): {
+function validateStops(stops: unknown[]): {
   valid: boolean;
   errors: Record<string, string>;
 } {
@@ -1213,7 +1104,7 @@ export function validateStops(stops: unknown[]): {
  * 
  * Validates: Requirements 8.1-8.13, 12.1-12.7
  */
-export function validateGalleryImages(images: unknown[]): {
+function validateGalleryImages(images: unknown[]): {
   valid: boolean;
   errors: Record<string, string>;
 } {
@@ -1428,6 +1319,7 @@ export async function updatePackageCore(
         return {
           success: false,
           message: "This package was modified by another session. Please refresh and try again.",
+          status: 409,
           error: "Concurrency conflict",
           errors: {},
         };
@@ -1693,15 +1585,10 @@ export async function uploadPackageImage(
 
     // Step 2: Verify authentication and operator status
     const authResult = await requireAuthenticated(sessionClient);
-    if (authResult.error) {
+    if ("error" in authResult) {
       return {
         success: false,
-        error: {
-          message:
-            authResult.error.status === 401
-              ? "Authentication required. Please log in."
-              : "Access denied: operator role required",
-        },
+        error: { message: authResult.error.message },
       };
     }
 
@@ -1846,15 +1733,10 @@ export async function deletePackageImage(
 
     // Step 2: Verify authentication and operator status
     const authResult = await requireAuthenticated(sessionClient);
-    if (authResult.error) {
+    if ("error" in authResult) {
       return {
         success: false,
-        error: {
-          message:
-            authResult.error.status === 401
-              ? "Authentication required. Please log in."
-              : "Access denied: operator role required",
-        },
+        error: { message: authResult.error.message },
       };
     }
 
@@ -1874,7 +1756,7 @@ export async function deletePackageImage(
       packageId,
       operatorId
     );
-    if (ownershipResult.error) {
+    if ("error" in ownershipResult) {
       return {
         success: false,
         error: {

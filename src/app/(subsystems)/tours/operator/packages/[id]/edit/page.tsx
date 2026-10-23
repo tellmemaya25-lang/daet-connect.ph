@@ -118,10 +118,10 @@ async function EditPackageContent({ packageId }: { packageId: string }) {
   const result = await loadPackageForEdit(packageId);
 
   if (!result.success) {
-    if (result.status === 404) {
+    if (result.error.status === 404) {
       return <NotFoundDisplay />;
     }
-    if (result.status === 403) {
+    if (result.error.status === 403) {
       return <AccessDeniedDisplay />;
     }
     return <ServerErrorDisplay />;
