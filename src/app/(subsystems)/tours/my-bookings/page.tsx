@@ -83,19 +83,27 @@ export default async function MyBookingsPage() {
     <PageFrame>
       <div className="mx-auto max-w-5xl">
         {/* Header */}
-        <div className="mb-8 flex items-center justify-between">
+        <div className="mb-8 flex flex-wrap items-center justify-between gap-4">
           <div>
             <h1 className="text-4xl font-black text-daet-ink">My Bookings</h1>
             <p className="mt-2 text-sm text-daet-ink/60">
               View and manage your tour bookings
             </p>
           </div>
+          <div className="flex flex-wrap gap-3">
+          <Link
+            href="/tours/messages"
+            className="inline-flex min-h-11 items-center rounded-full border border-daet-forest/30 bg-white px-6 text-sm font-bold text-daet-forest transition hover:bg-daet-forest/5"
+          >
+            Messages
+          </Link>
           <Link
             href="/tours/browse"
             className="rounded-full bg-daet-forest px-6 py-3 text-sm font-bold text-white transition hover:bg-daet-ink"
           >
             Browse Tours
           </Link>
+          </div>
         </div>
 
         {/* Back Button */}

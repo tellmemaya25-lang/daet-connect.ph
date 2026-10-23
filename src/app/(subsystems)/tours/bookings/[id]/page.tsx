@@ -6,6 +6,7 @@ import { isSupabaseConfigured } from "@/lib/supabase/env";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { isPaymongoConfigured } from "@/lib/paymongo/client";
 import { cancellationOption } from "@/lib/tours/cancellation";
+import { OpenChatButton } from "@/app/(subsystems)/tours/messages/open-chat-button";
 import { CancelBookingPanel, type MyCancellation } from "./cancel-booking-panel";
 import { BookingPaymentPanel, type PanelPayment, type PanelProof } from "./booking-payment-panel";
 
@@ -154,6 +155,9 @@ export default async function BookingDetailPage({ params, searchParams }: PagePr
           >
             {statusLabels[booking.status] || booking.status}
           </span>
+          {booking.status !== "cancelled" && booking.status !== "rejected" ? (
+            <OpenChatButton bookingId={booking.id} label="Message the operator" />
+          ) : null}
           {booking.status === "confirmed" ? (
             <Link
               href={`/tours/bookings/${booking.id}/ticket`}
