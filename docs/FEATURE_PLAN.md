@@ -494,6 +494,31 @@ _Team guide §5; Ch. 4.2 §3 DB synchronization._
 - Optional: let approved operators submit merchandise for admin approval (`submitted_by_operator_id`, status `pending|approved`).
 - Link events to attractions (F6) and show "Tours happening during this event" on the event page.
 
+**Status: done** (migration `20261104_f11_events_merch.sql`, applied live).
+- **D5:** the events and merchandise tables were already live.
+- **Calendar seed:** only events with a sourced 2026 date were added, each with a `source` note that only admins see:
+  - Pinyasan Festival (15–24 June, Tourism Promotions Board calendar);
+  - Undas (1–2 November, national holidays);
+  - Simbang Gabi (16–24 December).
+- **For the Tourism Office to add:**
+  - **Bagasbas surf competition:** no 2026 date has been published. The 2025 regionals ran 2–4 May; the 2024 event was cancelled.
+  - **Daet's Christmas lighting and other Christmas events:** no source found.
+  - The admin event form now has a "Source of the date" field.
+- **Events ↔ attractions:**
+  - Events can link to an attraction (`attraction_id`), chosen in the admin form.
+  - The event page shows the attraction card and **"Tours happening during this event"**: published packages with seats left on an event day (from today on). Packages with a stop within 5 km of the attraction come first, with the distance shown.
+- **Operator merchandise:**
+  - Approved operators submit products at `/tours/operator/merch`, with photos uploaded to their own folder only.
+  - Every save, including edits to an approved product, goes back to `pending`.
+  - Operators can't feature or approve, and can't set review notes.
+  - The public sees only approved, active products.
+  - Admins see a "Waiting for approval" queue on `/tours/admin/merch` and approve, or reject with a note.
+  - Notifications go to the admins on each submission and to the operator on each decision.
+- **Verified:**
+  - Live dry-run, rolled back: self-approval and self-featuring blocked; notes stripped; operator approval blocked while edits work; anon can't see pending items; tourists can't submit; rejection notes are kept when the operator resubmits; notifications fire.
+  - Unit tests for the event form fields, the review parser and the event-tours ranking.
+  - Build passes. Screenshots of the event page, operator merch list and form, and the admin queue at 375 and 1280px.
+
 ---
 
 ## F12 — Testing, hardening & ISO 25010 evaluation readiness (Weeks 10–11)

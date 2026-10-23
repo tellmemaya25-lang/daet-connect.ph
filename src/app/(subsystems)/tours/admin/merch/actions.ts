@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { removePromoImage, requirePromoAdmin, uploadPromoImage } from "@/lib/tours/promo-admin";
-import { parseMerchForm, readPromoImage, type PromoFormState } from "@/lib/tours/promo-validation";
+import { parseMerchForm, parseMerchReview, readPromoImage, type PromoFormState } from "@/lib/tours/promo-validation";
 
 function revalidateMerchPages() {
   revalidatePath("/");
@@ -85,4 +85,25 @@ export async function deleteMerch(formData: FormData): Promise<void> {
   await removePromoImage(admin.supabase, deleted?.image_url ?? null);
   revalidateMerchPages();
   redirect("/tours/admin/merch?deleted=1");
+}
+
+/** Approve or reject an operator's product; the database notifies the operator. */
+export async function reviewMerch(formData: FormData): Promise<{ success: boolean; error?: string }> {
+  const admin = await requirePromoAdmin();
+  if (!admin.ok) return { success: false, error: admin.error };
+  const id = formData.get("id");
+  if (typeof id !== "string" || !id) return { success: false, error: "Product not found." };
+  const review = parseMerchReview(formData);
+  if (!review.ok) return { success: false, error: review.error };
+  const { data, error } = await admin.supabase
+    .from("tours_merchandise")
+    .update({ review_status: review.status, review_notes: review.notes })
+    .eq("id", id)
+    .not("submitted_by_operator_id", "is", null)
+    .select("id")
+    .maybeSingle();
+  if (error || !data) return { success: false, error: "The decision could not be saved." };
+  revalidateMerchPages();
+  revalidatePath("/tours/operator/merch");
+  return { success: true };
 }

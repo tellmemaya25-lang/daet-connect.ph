@@ -41,6 +41,10 @@ export type TourEvent = {
   ends_at: string;
   image_url: string | null;
   is_published: boolean;
+  /** Linked attraction (F6), shown on the event page. */
+  attraction_id: string | null;
+  /** Where the date came from, for the Tourism Office (admin only). */
+  source: string | null;
 };
 
 export type MerchItem = {
@@ -57,10 +61,37 @@ export type MerchItem = {
   is_active: boolean;
 };
 
+export type MerchReviewStatus = "pending" | "approved" | "rejected";
+export type MerchSubmission = MerchItem & {
+  review_status: MerchReviewStatus;
+  review_notes: string | null;
+  reviewed_at: string | null;
+  submitted_by_operator_id: string | null;
+};
+export const MERCH_REVIEW_LABELS: Record<MerchReviewStatus, string> = {
+  pending: "Waiting for approval",
+  approved: "Approved",
+  rejected: "Not approved",
+};
+
+/** Admin decision on an operator's product: approving needs nothing, rejecting needs a reason. */
+export function parseMerchReview(formData: FormData): { ok: true; status: "approved" | "rejected"; notes: string | null } | { ok: false; error: string } {
+  const decision = formData.get("decision");
+  const notes = String(formData.get("notes") ?? "").trim();
+  if (notes.length > 300) return { ok: false, error: "Keep the note under 300 characters." };
+  if (decision === "approved") return { ok: true, status: "approved", notes: notes || null };
+  if (decision === "rejected") {
+    if (notes.length < 3) return { ok: false, error: "Tell the operator what to change." };
+    return { ok: true, status: "rejected", notes };
+  }
+  return { ok: false, error: "Choose approve or reject." };
+}
+
 export const EVENT_COLUMNS =
-  "id,title,description,category,venue,organizer,starts_at,ends_at,image_url,is_published";
+  "id,title,description,category,venue,organizer,starts_at,ends_at,image_url,is_published,attraction_id,source";
 export const MERCH_COLUMNS =
   "id,name,description,category,price,seller_name,where_to_buy,contact_info,image_url,is_featured,is_active";
+export const MERCH_SUBMISSION_COLUMNS = `${MERCH_COLUMNS},review_status,review_notes,reviewed_at,submitted_by_operator_id`;
 
 export type EventInput = Omit<TourEvent, "id" | "image_url">;
 export type MerchInput = Omit<MerchItem, "id" | "image_url">;
@@ -71,6 +102,8 @@ export type FieldErrors = Record<string, string>;
 export type PromoFormState = { message: string | null; errors: FieldErrors };
 export const INITIAL_PROMO_FORM_STATE: PromoFormState = { message: null, errors: {} };
 export type ParseResult<T> = { ok: true; data: T } | { ok: false; errors: FieldErrors };
+
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 function text(formData: FormData, name: string): string {
   const value = formData.get(name);
@@ -106,6 +139,10 @@ export function parseEventForm(formData: FormData): ParseResult<EventInput> {
   checkLength(errors, "venue", venue, "Venue", 2, 160);
   checkLength(errors, "organizer", organizer, "Organizer", 0, 120);
   if (!isEventCategory(category)) errors.category = "Choose an event category.";
+  const attractionId = optionalText(formData, "attractionId");
+  if (attractionId && !UUID_RE.test(attractionId)) errors.attractionId = "Choose an attraction from the list.";
+  const source = optionalText(formData, "source");
+  checkLength(errors, "source", source, "Source", 0, 300);
 
   const startsAt = manilaLocalToIso(text(formData, "startsAt"));
   const endsAt = manilaLocalToIso(text(formData, "endsAt"));
@@ -132,6 +169,8 @@ export function parseEventForm(formData: FormData): ParseResult<EventInput> {
       starts_at: startsAt!,
       ends_at: endsAt!,
       is_published: checkbox(formData, "isPublished"),
+      attraction_id: attractionId,
+      source,
     },
   };
 }
