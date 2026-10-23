@@ -4,7 +4,6 @@ import { PageFrame } from "@/components/ui/page-frame";
 import { Notice } from "@/components/ui/notice";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-import { PaymentInstructions } from "./payment-instructions";
 
 export const dynamic = "force-dynamic";
 
@@ -215,18 +214,12 @@ export default async function MyBookingsPage() {
                               </p>
                             </div>
                           ) : (
-                            <PaymentInstructions
-                              operatorName={operator?.business_name || "Operator"}
-                              gcashNumber={operator?.gcash_number}
-                              gcashName={operator?.gcash_name}
-                              bankName={operator?.bank_name}
-                              bankAccountNumber={operator?.bank_account_number}
-                              bankAccountName={operator?.bank_account_name}
-                              paymentInstructions={operator?.payment_instructions}
-                              totalAmount={booking.total_amount}
-                              bookingReference={booking.booking_reference}
-                              operatorPhone={operator?.contact_phone}
-                            />
+                            <Link
+                              href={`/tours/bookings/${booking.id}`}
+                              className="flex min-h-11 w-full items-center justify-center rounded-full bg-daet-forest px-6 text-sm font-bold text-white transition hover:bg-daet-ink"
+                            >
+                              {booking.payment_status === "partial" ? "Pay remaining balance" : "Pay now"} →
+                            </Link>
                           )}
                         </div>
                       )}

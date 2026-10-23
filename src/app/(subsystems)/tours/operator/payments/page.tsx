@@ -1,0 +1,142 @@
+import Link from "next/link";
+import { redirect } from "next/navigation";
+import { Badge } from "@/components/ui/badge";
+import { ButtonLink } from "@/components/ui/button";
+import { Card, CardHeader } from "@/components/ui/card";
+import { EmptyState } from "@/components/ui/empty-state";
+import { Notice } from "@/components/ui/notice";
+import { PageFrame } from "@/components/ui/page-frame";
+import { currentManilaMonth, formatMonthLabel, monthKey, parseMonthParam, shiftMonth } from "@/lib/tours/events-calendar";
+import { ledgerMethodLabel, summarizeLedger } from "@/lib/tours/ledger";
+import { loadOperatorLedger } from "./load-ledger";
+
+export const dynamic = "force-dynamic";
+export const metadata = { title: "Payments ledger" };
+
+const peso = (value: number) => `₱${value.toLocaleString("en-PH", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+const dateTime = new Intl.DateTimeFormat("en-PH", { dateStyle: "medium", timeStyle: "short", timeZone: "Asia/Manila" });
+
+export default async function OperatorPaymentsPage({
+  searchParams,
+}: {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}) {
+  const params = await searchParams;
+  const month = parseMonthParam(params.month);
+  const result = await loadOperatorLedger(month);
+
+  if (!result.ok && result.reason === "signed_out") redirect(`/login?next=${encodeURIComponent("/tours/operator/payments")}`);
+  if (!result.ok) {
+    return (
+      <PageFrame>
+        <Notice variant="error" title={result.reason === "not_operator" ? "Operator access required" : "Payments could not be loaded"}>
+          {result.reason === "not_operator"
+            ? "Only approved tour operators can view a payments ledger."
+            : "Please try again in a moment."}
+        </Notice>
+      </PageFrame>
+    );
+  }
+
+  const summary = summarizeLedger(result.rows);
+  const key = monthKey(month);
+  const isCurrentMonth = key === monthKey(currentManilaMonth());
+
+  return (
+    <PageFrame>
+      <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <Link href="/tours/operator/dashboard" className="inline-flex min-h-11 items-center text-sm font-bold text-daet-forest hover:underline">
+            ← Dashboard
+          </Link>
+          <p className="text-xs font-black uppercase tracking-[0.18em] text-daet-leaf">{result.businessName}</p>
+          <h1 className="mt-1 text-3xl font-black tracking-tight text-daet-ink">Payments ledger</h1>
+        </div>
+        <ButtonLink href={`/tours/operator/payments/export?month=${key}`} variant="secondary" prefetch={false}>
+          Download CSV
+        </ButtonLink>
+      </div>
+
+      <nav aria-label="Month" className="mb-6 flex items-center justify-between gap-3 rounded-2xl border border-daet-ink/10 bg-white p-2 shadow-sm">
+        <ButtonLink href={`/tours/operator/payments?month=${monthKey(shiftMonth(month, -1))}`} variant="ghost" size="icon" aria-label="Previous month">
+          ‹
+        </ButtonLink>
+        <p className="font-black text-daet-ink">{formatMonthLabel(month)}</p>
+        {isCurrentMonth ? (
+          <span className="h-11 w-11" aria-hidden="true" />
+        ) : (
+          <ButtonLink href={`/tours/operator/payments?month=${monthKey(shiftMonth(month, 1))}`} variant="ghost" size="icon" aria-label="Next month">
+            ›
+          </ButtonLink>
+        )}
+      </nav>
+
+      <div className="mb-6 grid grid-cols-2 gap-3 lg:grid-cols-4">
+        <Card>
+          <p className="text-xs font-bold text-daet-ink/55">Received</p>
+          <p className="mt-1 text-2xl font-black text-daet-forest">{peso(summary.received)}</p>
+          <p className="text-xs text-daet-ink/55">{summary.count} payment{summary.count === 1 ? "" : "s"}</p>
+        </Card>
+        <Card>
+          <p className="text-xs font-bold text-daet-ink/55">Online (PayMongo)</p>
+          <p className="mt-1 text-2xl font-black text-daet-ink">{peso(summary.online)}</p>
+        </Card>
+        <Card>
+          <p className="text-xs font-bold text-daet-ink/55">Manual / verified receipts</p>
+          <p className="mt-1 text-2xl font-black text-daet-ink">{peso(summary.manual)}</p>
+        </Card>
+        <Card>
+          <p className="text-xs font-bold text-daet-ink/55">Refunded</p>
+          <p className="mt-1 text-2xl font-black text-daet-ink">{peso(summary.refunded)}</p>
+        </Card>
+      </div>
+
+      {summary.byMethod.length > 0 ? (
+        <Card className="mb-6">
+          <CardHeader title="By method" />
+          <ul className="space-y-2">
+            {summary.byMethod.map((entry) => (
+              <li key={entry.method}>
+                <div className="flex justify-between text-sm">
+                  <span className="font-bold text-daet-ink">{entry.method}</span>
+                  <span className="text-daet-ink/70">{peso(entry.amount)}</span>
+                </div>
+                <div className="mt-1 h-2 rounded-full bg-daet-sand" aria-hidden="true">
+                  <div className="h-2 rounded-full bg-daet-forest" style={{ width: `${Math.max(2, (entry.amount / summary.received) * 100)}%` }} />
+                </div>
+              </li>
+            ))}
+          </ul>
+        </Card>
+      ) : null}
+
+      {result.rows.length === 0 ? (
+        <EmptyState icon="🧾" title={`No payments in ${formatMonthLabel(month)}`} description="Online payments and verified receipts will appear here." />
+      ) : (
+        <Card padded={false}>
+          <ul className="divide-y divide-daet-ink/10">
+            {result.rows.map((row) => (
+              <li key={row.id} className="flex items-start justify-between gap-3 p-4">
+                <div className="min-w-0">
+                  <p className="truncate font-bold text-daet-ink">
+                    {row.booking_reference} · {row.tourist_name}
+                  </p>
+                  <p className="truncate text-sm text-daet-ink/60">{row.package_title}</p>
+                  <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-daet-ink/60">
+                    <Badge tone={row.provider === "paymongo" ? "info" : "brand"}>{row.provider === "paymongo" ? "PayMongo" : "Manual"}</Badge>
+                    <span>{ledgerMethodLabel(row)}</span>
+                    {row.reference_number ? <span>Ref {row.reference_number}</span> : null}
+                    {row.payment_date ? <span>{dateTime.format(new Date(row.payment_date))}</span> : null}
+                  </div>
+                </div>
+                <span className={`shrink-0 font-black ${row.payment_status === "completed" ? "text-emerald-700" : "text-daet-ink/50 line-through"}`}>
+                  {peso(Number(row.amount))}
+                </span>
+              </li>
+            ))}
+          </ul>
+        </Card>
+      )}
+    </PageFrame>
+  );
+}

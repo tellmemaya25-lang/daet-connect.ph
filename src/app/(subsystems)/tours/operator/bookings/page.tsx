@@ -8,6 +8,7 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { BookingActionButtons } from "./booking-action-buttons";
 import { GuideAssignment } from "./guide-assignment";
 import { PaymentRecorder } from "./payment-recorder";
+import { ProofReview, type ReviewableProof } from "./proof-review";
 
 export const dynamic = "force-dynamic";
 
@@ -82,6 +83,23 @@ export default async function OperatorBookingsPage({
   }
 
   const { data: bookings, error } = await query;
+
+  // Receipts waiting for verification on these bookings (RLS: operator's own bookings only)
+  const bookingIds = (bookings ?? []).map((b) => b.id);
+  const { data: pendingProofRows } = bookingIds.length
+    ? await supabase
+        .from("tours_payment_proofs")
+        .select("id, booking_id, amount, payment_method, reference_number, submitted_at")
+        .in("booking_id", bookingIds)
+        .eq("verification_status", "pending")
+        .order("submitted_at", { ascending: true })
+    : { data: [] as Array<ReviewableProof & { booking_id: string }> };
+  const proofsByBooking = new Map<string, ReviewableProof[]>();
+  for (const proof of pendingProofRows ?? []) {
+    const list = proofsByBooking.get(proof.booking_id) ?? [];
+    list.push(proof);
+    proofsByBooking.set(proof.booking_id, list);
+  }
 
   if (error) {
     console.error("Bookings fetch error:", error);
@@ -345,6 +363,8 @@ export default async function OperatorBookingsPage({
                               availableGuides={availableGuides || []}
                             />
                           </div>
+
+                          <ProofReview proofs={proofsByBooking.get(booking.id) ?? []} />
 
                           {/* Payment Tracking */}
                           <div className="mb-4">

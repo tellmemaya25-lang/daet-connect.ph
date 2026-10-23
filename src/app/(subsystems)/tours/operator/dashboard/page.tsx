@@ -120,6 +120,12 @@ export default async function OperatorDashboardPage() {
             Manage bookings →
           </a>
           <a
+            href="/tours/operator/payments"
+            className="inline-flex min-h-10 items-center rounded-full border border-daet-forest/20 px-5 text-sm font-bold text-daet-forest transition hover:bg-daet-forest/5"
+          >
+            Payments ledger →
+          </a>
+          <a
             href="/tours/operator/settings"
             className="inline-flex min-h-10 items-center rounded-full border border-daet-forest/20 px-5 text-sm font-bold text-daet-forest transition hover:bg-daet-forest/5"
           >
