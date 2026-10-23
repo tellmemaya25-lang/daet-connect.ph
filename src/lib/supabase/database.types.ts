@@ -73,6 +73,44 @@ export type Database = {
           },
         ]
       }
+      rewards_ledger: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          points: number
+          profile_id: string
+          ref_id: string
+          source: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          points: number
+          profile_id: string
+          ref_id: string
+          source: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          points?: number
+          profile_id?: string
+          ref_id?: string
+          source?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "rewards_ledger_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       tours_admin_audit_log: {
         Row: {
           action: string
@@ -1780,6 +1818,23 @@ export type Database = {
       }
     }
     Views: {
+      rewards_balances: {
+        Row: {
+          balance: number | null
+          earned: number | null
+          entries: number | null
+          profile_id: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "rewards_ledger_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       tours_guide_ratings: {
         Row: {
           average_rating: number | null
@@ -1847,6 +1902,16 @@ export type Database = {
       replace_package_stops_unchecked: {
         Args: { p_package_id: string; p_stops: Json }
         Returns: undefined
+      }
+      rewards_add_points: {
+        Args: {
+          p_description?: string
+          p_points: number
+          p_profile_id: string
+          p_ref_id: string
+          p_source: string
+        }
+        Returns: boolean
       }
       submit_package_for_review: {
         Args: { p_package_id: string }

@@ -463,6 +463,29 @@ _Team guide §5; Ch. 4.2 §3 DB synchronization._
 - Document the shared-table contract (`profiles`, `rewards_ledger`, `impact_logs`) for Chapter 4.2 §3.
 - **Acceptance:** points appear in the tourist dashboard and are never awarded twice for the same booking.
 
+**Status: done** (migration `20261103_f10_rewards.sql`, applied live; contract in `docs/SHARED_TABLES.md`).
+- **The table:** `rewards_ledger` did not exist, so Team 8 created it to the contract above, with `UNIQUE (source, ref_id)`.
+  - Users read only their own points (admins read all); nobody writes from the browser.
+  - Writes go through the idempotent `rewards_add_points`, callable only by the service role and triggers.
+  - `src/lib/rewards.ts` exposes `addPoints(adminClient, …)` for other subsystems, plus `TOURS_REWARD_RULES` and label helpers.
+- **Awards:**
+  - Database triggers commit the award with the event, so the PayMongo webhook, manual payments, guide scans and operator actions are all covered: paid +50, checked in +30 (once per booking), completed +20, review +10, trip plan +5 (max 3 a day).
+  - A refund after full payment deducts the 50 again, once.
+  - Each award sends a "points earned" notification.
+  - Existing paid and completed bookings were backfilled without notifications.
+- **UI:** the tourist dashboard has a "Your points" card with the balance, the last five entries and how to earn more. The notification links to it.
+- **`impact_logs`:** the parent platform hasn't created it, so there's no push yet. The proposed table and the Team 8 metrics are in `docs/SHARED_TABLES.md`, and the numbers are already available from `tours_admin_analytics`.
+- **Security fix:** while documenting `profiles`, I found any signed-in user could set their own `role` to `admin`. The RLS update policy only checked the row owner. Browser updates are now limited to `full_name` and `avatar_url`; role changes stay with the service role.
+- **Verified (live dry-run, rolled back):**
+  - Paying, then partial, then paid again awards once.
+  - Two participant scans award once; completion and review once each.
+  - Two refunds reverse once.
+  - Four trip plans in a day award three times; the balance adds up.
+  - Direct inserts and the RPC are blocked for users.
+  - Other non-admins and anon see nothing.
+  - Self-promotion to admin is now blocked, while name edits and service-role role changes still work.
+- **Deviations:** points for review and trip-plan awards are not removed if an admin later hides the review or the tourist deletes the plan.
+
 ---
 
 ## F11 — Events & merchandise follow-ups (Week 6, small)
