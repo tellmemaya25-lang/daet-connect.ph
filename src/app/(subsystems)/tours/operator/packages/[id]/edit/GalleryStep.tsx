@@ -7,7 +7,7 @@ import { uploadPackageImage, deletePackageImage } from "./actions";
 import { EDIT_LIMITS, ALLOWED_IMAGE_EXTENSIONS, ALLOWED_IMAGE_TYPES } from "./edit-constants";
 import { getEditPermissions } from "./permissions";
 
-type GalleryStepProps = StepProps<EditGalleryImage[]>;
+type GalleryStepProps = StepProps<EditGalleryImage[]> & { packageId: string };
 
 /**
  * GalleryStep Component
@@ -20,6 +20,7 @@ type GalleryStepProps = StepProps<EditGalleryImage[]>;
  * - Reorder functionality
  */
 export function GalleryStep({
+  packageId,
   data,
   originalData,
   packageStatus,
@@ -88,19 +89,19 @@ export function GalleryStep({
         const formData = new FormData();
         formData.append("file", file);
 
-        const result = await uploadPackageImage(formData);
+        const result = await uploadPackageImage(packageId, formData);
 
-        if (result.success && result.url) {
+        if (result.success && result.imageUrl) {
           const newImage: EditGalleryImage = {
             id: `new-${Date.now()}`,
-            imageUrl: result.url,
+            imageUrl: result.imageUrl,
             caption: null,
             displayOrder: data.length,
           };
 
           onUpdate([...data, newImage]);
         } else {
-          setUploadError(result.error || "Failed to upload image");
+          setUploadError(result.error?.message ?? "Failed to upload image");
         }
       } catch (error) {
         setUploadError("An error occurred during upload");
@@ -109,7 +110,7 @@ export function GalleryStep({
         event.target.value = "";
       }
     },
-    [data, onUpdate]
+    [data, onUpdate, packageId]
   );
 
   const handleDeleteImage = useCallback(
@@ -121,7 +122,7 @@ export function GalleryStep({
       try {
         // Try to delete from storage if it's an uploaded image
         if (imageUrl.includes("http")) {
-          await deletePackageImage(imageUrl);
+          await deletePackageImage(packageId, imageUrl);
         }
 
         // Remove from gallery
@@ -132,7 +133,7 @@ export function GalleryStep({
         setDeletingId(undefined);
       }
     },
-    [data, onUpdate]
+    [data, onUpdate, packageId]
   );
 
   const handleUpdateCaption = useCallback(
@@ -146,7 +147,7 @@ export function GalleryStep({
       );
       setEditingCaption(undefined);
     },
-    [data, onUpdate]
+    [data, onUpdate, packageId]
   );
 
   const handleReorder = useCallback(

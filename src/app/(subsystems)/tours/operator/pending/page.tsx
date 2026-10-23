@@ -72,9 +72,9 @@ export default async function OperatorPendingPage() {
           <span className="inline-flex rounded-full bg-rose-50 px-3 py-1 text-xs font-black uppercase tracking-wide text-rose-700">Changes requested</span>
           <h1 className="mt-4 text-3xl font-black text-daet-ink">Please update your application</h1>
           <p className="mt-3 text-sm leading-6 text-daet-ink/70">The Tourism Office could not approve the documents as submitted. You can review the note and send an updated application.</p>
-          {application.rejection_reason ? (
+          {application.accreditation_notes ? (
             <div className="mt-5 rounded-2xl bg-rose-50 p-4 text-sm leading-6 text-rose-950">
-              <p className="font-bold">Reviewer’s note</p><p className="mt-1">{application.rejection_reason}</p>
+              <p className="font-bold">Reviewer’s note</p><p className="mt-1">{application.accreditation_notes}</p>
             </div>
           ) : null}
           <Link href="/tours/operator/register" className="mt-7 inline-flex min-h-12 items-center justify-center rounded-full bg-daet-forest px-6 text-sm font-bold text-white transition hover:bg-daet-ink">Update application</Link>

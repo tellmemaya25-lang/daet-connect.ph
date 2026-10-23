@@ -4,14 +4,19 @@ import { PageFrame } from "@/components/ui/page-frame";
 import { Notice } from "@/components/ui/notice";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { isPaymongoConfigured } from "@/lib/paymongo/client";
+import { cancellationOption } from "@/lib/tours/cancellation";
+import { CancelBookingPanel, type MyCancellation } from "./cancel-booking-panel";
+import { BookingPaymentPanel, type PanelPayment, type PanelProof } from "./booking-payment-panel";
 
 export const dynamic = "force-dynamic";
 
 type PageProps = {
   params: Promise<{ id: string }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
 };
 
-export default async function BookingDetailPage({ params }: PageProps) {
+export default async function BookingDetailPage({ params, searchParams }: PageProps) {
   if (!isSupabaseConfigured()) {
     return (
       <PageFrame>
@@ -23,6 +28,8 @@ export default async function BookingDetailPage({ params }: PageProps) {
   }
 
   const { id } = await params;
+  const { payment } = await searchParams;
+  const paymentReturn = payment === "success" || payment === "cancelled" ? payment : null;
   const supabase = await createSupabaseServerClient();
 
   // Get current user
@@ -48,7 +55,14 @@ export default async function BookingDetailPage({ params }: PageProps) {
         duration_type,
         cover_image_url,
         tours_operators (
-          business_name
+          business_name,
+          contact_phone,
+          gcash_number,
+          gcash_name,
+          bank_name,
+          bank_account_number,
+          bank_account_name,
+          payment_instructions
         )
       )
     `
@@ -70,6 +84,24 @@ export default async function BookingDetailPage({ params }: PageProps) {
     ? pkg.tours_operators[0]
     : pkg?.tours_operators;
 
+  const [{ data: paymentRows }, { data: proofRows }, { data: cancellation }] = await Promise.all([
+    supabase
+      .from("tours_payments")
+      .select("id, amount, payment_method, provider, provider_method, reference_number, payment_date, payment_status")
+      .eq("booking_id", booking.id)
+      .order("payment_date", { ascending: false }),
+    supabase
+      .from("tours_payment_proofs")
+      .select("id, amount, payment_method, reference_number, verification_status, rejection_reason, submitted_at")
+      .eq("booking_id", booking.id)
+      .order("submitted_at", { ascending: false }),
+    supabase
+      .from("tours_cancellations")
+      .select("status, reason, admin_notes")
+      .eq("booking_id", booking.id)
+      .maybeSingle(),
+  ]);
+
   const statusColors: Record<string, string> = {
     pending: "bg-amber-100 text-amber-900",
     confirmed: "bg-emerald-100 text-emerald-800",
@@ -83,7 +115,7 @@ export default async function BookingDetailPage({ params }: PageProps) {
     confirmed: "Confirmed",
     cancelled: "Cancelled",
     completed: "Completed",
-    rejected: "Rejected",
+    rejected: "Declined by operator",
   };
 
   return (
@@ -123,6 +155,13 @@ export default async function BookingDetailPage({ params }: PageProps) {
             {statusLabels[booking.status] || booking.status}
           </span>
         </div>
+
+        {(booking.status === "cancelled" || booking.status === "rejected") && booking.cancellation_reason ? (
+          <Notice variant={booking.status === "rejected" ? "warning" : "info"} className="mb-6" title={booking.status === "rejected" ? "The operator declined this booking" : "This booking was cancelled"}>
+            {booking.cancellation_reason}
+            {Number(booking.total_paid ?? 0) > 0 ? " Any amount you paid will be refunded by the operator." : ""}
+          </Notice>
+        ) : null}
 
         {/* Package Details */}
         {pkg && (
@@ -195,6 +234,23 @@ export default async function BookingDetailPage({ params }: PageProps) {
             </div>
           </div>
         </section>
+
+        {booking.status !== "cancelled" && booking.status !== "rejected" ? (
+          <BookingPaymentPanel
+            booking={booking}
+            operator={operator ?? null}
+            payments={(paymentRows ?? []) as PanelPayment[]}
+            proofs={(proofRows ?? []) as PanelProof[]}
+            onlinePaymentEnabled={isPaymongoConfigured()}
+            paymentReturn={paymentReturn}
+          />
+        ) : null}
+
+        <CancelBookingPanel
+          bookingId={booking.id}
+          option={cancellationOption(booking)}
+          cancellation={(cancellation as MyCancellation | null) ?? null}
+        />
 
         {/* Contact Information */}
         <section className="mb-6 rounded-3xl border border-daet-ink/10 bg-white p-6 shadow-sm">

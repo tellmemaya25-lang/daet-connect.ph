@@ -327,7 +327,7 @@ export function parseValidationErrors(errors: ValidationErrors | undefined | nul
     (["basic", "cover", "pricing", "inclusions", "stops", "gallery", "general"] as ErrorSection[]).map(
       (section) => [section, { messages: [], fields: {} } satisfies SectionErrors],
     ),
-  ) as ParsedValidationErrors;
+  ) as unknown as ParsedValidationErrors;
 
   for (const [key, message] of Object.entries(errors ?? {})) {
     const [root, ...rest] = key.split(".");

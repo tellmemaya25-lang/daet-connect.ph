@@ -5,6 +5,7 @@ import {
   OPERATOR_DOCUMENT_BUCKET,
   OPERATOR_DETAIL_COLUMNS,
   OPERATOR_FILE_COLUMNS,
+  OPERATOR_REVIEW_NOTE_COLUMN,
   OPERATOR_STATUS_COLUMN,
   OPERATOR_TABLE,
   OPERATOR_USER_ID_COLUMN,
@@ -209,7 +210,7 @@ export async function submitOperatorRegistration(
       [OPERATOR_FILE_COLUMNS.businessPermit]: storedPaths.businessPermit,
       [OPERATOR_FILE_COLUMNS.gcashQr]: storedPaths.gcashQr,
       [OPERATOR_STATUS_COLUMN]: "pending",
-      rejection_reason: null,
+      [OPERATOR_REVIEW_NOTE_COLUMN]: null,
       reviewed_by: null,
       reviewed_at: null,
     };
@@ -372,7 +373,7 @@ export async function reviewOperatorApplication(
 
     const reviewValues = {
       [OPERATOR_STATUS_COLUMN]: decision,
-      rejection_reason: decision === "rejected" ? rejectionReason : null,
+      [OPERATOR_REVIEW_NOTE_COLUMN]: decision === "rejected" ? rejectionReason : null,
       reviewed_by: session.user.id,
       reviewed_at: new Date().toISOString(),
     };

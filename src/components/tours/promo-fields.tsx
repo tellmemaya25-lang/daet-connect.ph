@@ -1,39 +1,9 @@
-import type { ReactNode } from "react";
+import { controlClasses, Field } from "@/components/ui/field";
 
-export const promoInputClass =
-  "mt-1 block min-h-11 w-full rounded-xl border border-daet-ink/20 bg-white px-3 py-2 text-base text-daet-ink focus:border-daet-forest focus:outline-none focus:ring-2 focus:ring-daet-forest/20 aria-[invalid=true]:border-rose-500";
+export const promoInputClass = controlClasses;
 
-export function PromoField({
-  id,
-  label,
-  hint,
-  error,
-  required = false,
-  children,
-}: {
-  id: string;
-  label: string;
-  hint?: string;
-  error?: string;
-  required?: boolean;
-  children: ReactNode;
-}) {
-  return (
-    <div>
-      <label htmlFor={id} className="block text-sm font-bold text-daet-ink">
-        {label}
-        {required ? <span className="text-rose-600"> *</span> : null}
-      </label>
-      {children}
-      {hint && !error ? <p className="mt-1 text-xs text-daet-ink/55">{hint}</p> : null}
-      {error ? (
-        <p id={`${id}-error`} className="mt-1 text-sm font-semibold text-rose-700">
-          {error}
-        </p>
-      ) : null}
-    </div>
-  );
-}
+/** Label + hint + error wrapper (shared UI kit `Field`). */
+export const PromoField = Field;
 
 export function PromoCheckbox({
   name,

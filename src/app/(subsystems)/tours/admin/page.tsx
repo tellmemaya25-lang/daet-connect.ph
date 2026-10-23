@@ -54,7 +54,7 @@ export default async function AdminDashboardPage() {
   ] = await Promise.all([
     supabase.from('tours_operators').select('*', { count: 'exact', head: true }).eq('accreditation_status', 'pending'),
     supabase.from('tours_guides').select('*', { count: 'exact', head: true }).eq('accreditation_status', 'pending'),
-    supabase.from('tours_packages').select('*', { count: 'exact', head: true }).eq('status', 'pending'),
+    supabase.from('tours_packages').select('*', { count: 'exact', head: true }).eq('status', 'pending_review'),
     supabase.from('tours_packages').select('*', { count: 'exact', head: true }).eq('status', 'published'),
   ]);
 

@@ -91,6 +91,16 @@ F0 blocks everything. After it, three tracks can run in parallel: **Transactions
 
 **Acceptance:** green CI on `main`; Vercel preview deploys; rejecting a package works; the advisor list shows no WARN items except ones documented as intentional.
 
+**Status (2026-10-23): done, except the follow-ups below.**
+- Build, types (0 errors), 541 tests green; `npm ci` works; CI workflow added; `src/proxy.ts` refreshes sessions; debug page removed; UI kit in `src/components/ui/`.
+- Applied to the live DB: events/merch tables, `package_status` `'rejected'`, resubmission of rejected packages, `search_path` on all functions, `handle_new_user` RPC access revoked. The advisor now shows only the intentional items (see `20261024_f0_security_hardening.sql`) plus leaked-password protection.
+- Bugs found and fixed along the way: edit-package page crashed; image upload/delete in the edit flow always failed; operator registration and approve/reject wrote a nonexistent column; admin package pages and the booking page selected nonexistent columns (`business_permit_number`, `contact_number`, `profiles.email`, `estimated_duration`); NaN duration accepted; button labels never rendered bold.
+
+**F0 follow-ups**
+1. **Saving an edited package fails in production:** the RPCs `concurrency_check` and `update_package_and_relations` don't exist in the live DB. The fix is `supabase/migrations/20261021_fix_update_package_and_relations.sql` (adds `NOT NULL display_order`, a unique constraint and a gallery trigger). Review it and apply it before anyone relies on editing.
+2. After (1), type the Supabase clients with `Database` from `src/lib/supabase/database.types.ts`. About 14 strict-typing fixes remain (enum literals, `Json` payloads, nullable fields).
+3. Turn on **leaked password protection** in Supabase Dashboard → Authentication → Settings (dashboard-only setting).
+
 ---
 
 ## F1 — Payments: PayMongo sandbox + unified ledger (Weeks 2–3)
@@ -122,6 +132,13 @@ _SOP 1 item 7 (x̄ = 3.70, highest pain), item 8; ISO 25010 Functional Appropria
 
 **Acceptance:** in sandbox, a tourist pays a ₱8,500 booking with GCash test credentials. The booking shows **Paid** within seconds without anyone touching it. The operator ledger shows the PayMongo reference.
 
+**Status (2026-10-23): built, migration applied; needs PayMongo sandbox keys for the end-to-end acceptance run.**
+- Checkout action, signed webhook (`/api/webhooks/paymongo`), receipt upload + operator verification, ledger page + CSV. 64 new unit tests.
+- Live DB: ledger columns, `tours_payment_events`, receipt columns + private bucket, DB-computed booking price, money columns writable only by the ledger trigger, and RLS scoped per role. This closed holes where any signed-in user could read/update every booking and read every payment. Verified per role against the live DB.
+- Deviations from the plan: `tours_booking_payments` was locked (all access revoked) instead of dropped. `payment_method` keeps its old values, and the exact PayMongo method goes in `provider_method`. The Supabase tool can't run `DROP` without an interactive confirmation.
+- **To finish:** add `PAYMONGO_SECRET_KEY`, `PAYMONGO_WEBHOOK_SECRET` and `NEXT_PUBLIC_APP_URL` in Vercel, register the webhook (README → Payments), then run the acceptance test.
+- Follow-ups: refunds (F2 cancellations); notify operator/tourist on payment (F5); fix the operator dashboard header overflowing by 21px at 375px.
+
 ---
 
 ## F2 — Availability, capacity & booking lifecycle (Weeks 3–4)
@@ -150,6 +167,19 @@ _SOP 1 items 3–4; ISO 25010 User Error Protection ("double-booking", "invalid 
 **Tests:** concurrent bookings for the last slot → exactly one succeeds (integration test with two parallel RPC calls); past and closed dates rejected; every illegal transition rejected.
 
 **Acceptance:** the platform can't overbook; every status change follows the lifecycle; a tourist can request cancellation and see its outcome.
+
+**Status (2026-10-23): built, migration `20261026_f2_booking_integrity.sql` applied.**
+- Operators open dates in bulk (date range plus weekdays plus seats) and change seats or close a date at `operator/packages/[id]/availability`. The booking form lists only open dates with seats left. Packages with no open dates still accept any future date.
+- The DB counts seats from bookings, and the booking insert trigger locks the date row, so two tourists can't take the last seat. A status-guard trigger enforces the lifecycle, and cancelled or declined bookings release their seats.
+- Tourists cancel unpaid pending bookings instantly; other cancellations become requests the operator approves or declines (with a 48-hour "late" flag). Operators record refunds as `refunded` ledger rows, capped at what was paid.
+- RLS: participants are visible only to the booking's tourist, operator, guide and admins; prices and stops can be edited only while a package is in draft or rejected.
+- Verified with rolled-back scenarios against the live DB (overbooking, closed date, tourist self-confirm, early completion, self-approval, over-refund), 691 unit tests, the build and mobile screenshots.
+- Deviations from the plan:
+  - Kept the existing varchar statuses (`pending/confirmed/completed/cancelled/rejected`) instead of the D3 enum migration.
+  - Used a row-locking insert trigger instead of a `create_booking` RPC.
+  - Dates are a list with bulk weekday opening, not a month grid.
+  - `replace_package_*` RPCs are now wrappers over `*_unchecked` (the Supabase tool can't apply SQL containing `DELETE`/`DROP` without a confirmation it can't show).
+- Follow-ups: participant names on the booking form; notify tourist/operator on status changes (F5); a two-session concurrency integration test (F12).
 
 ---
 

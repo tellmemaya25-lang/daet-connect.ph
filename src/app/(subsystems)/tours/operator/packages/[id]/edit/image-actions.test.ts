@@ -230,7 +230,7 @@ describe("Image Handling Server Actions", () => {
 
         // Get the call arguments to check path structure
         const uploadCall = mockStorage.upload.mock.calls[0];
-        const uploadPath = uploadCall[1]; // Second argument is the path
+        const uploadPath = uploadCall[0]; // First argument is the storage path
 
         // Verify path structure
         expect(uploadPath).toMatch(
@@ -456,10 +456,8 @@ describe("Image Handling Server Actions", () => {
         // Execute
         await deletePackageImage(packageId, imageUrl);
 
-        // Verify path extraction
-        expect(mockStorage.remove).toHaveBeenCalledWith(
-          expect.arrayContaining([expect.stringContaining("tours-package-media")])
-        );
+        // Verify path extraction: everything after /public/<bucket>/
+        expect(mockStorage.remove).toHaveBeenCalledWith(["op/pkg/img.jpg"]);
       });
 
       it("should return 401 error if not authenticated", async () => {

@@ -107,7 +107,7 @@ export function validatePackageFormData(
   }
 
   // Validate durationValue
-  if (typeof data.durationValue !== "number") {
+  if (typeof data.durationValue !== "number" || !Number.isFinite(data.durationValue)) {
     errors.durationValue = ["Duration is required"];
   } else if (data.durationValue < 0.5) {
     errors.durationValue = ["Duration must be at least 0.5"];

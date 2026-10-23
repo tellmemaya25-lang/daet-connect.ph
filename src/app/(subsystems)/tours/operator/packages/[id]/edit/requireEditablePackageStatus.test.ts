@@ -1,5 +1,16 @@
-import { requireEditablePackageStatus } from "./actions";
+import { requireEditablePackageStatus as requireEditablePackageStatusAction } from "./actions";
 import { PackageStatus } from "@/lib/tours/package-contract";
+
+type EditabilityResult = Awaited<ReturnType<typeof requireEditablePackageStatusAction>>;
+type LooseEditabilityResult = Partial<Extract<EditabilityResult, { data: unknown }>> &
+  Partial<Extract<EditabilityResult, { error: unknown }>>;
+
+/** Widens the result union so assertions can read `.data` / `.error` directly. */
+async function requireEditablePackageStatus(
+  ...args: Parameters<typeof requireEditablePackageStatusAction>
+): Promise<LooseEditabilityResult> {
+  return requireEditablePackageStatusAction(...args);
+}
 
 /**
  * Unit tests for requireEditablePackageStatus helper

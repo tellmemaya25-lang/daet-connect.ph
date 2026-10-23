@@ -107,7 +107,7 @@ export default async function OperatorRegistrationPage() {
     <PageFrame>
       <OperatorRegistrationForm
         initialEmail={session.user.email ?? ""}
-        rejectionReason={application?.accreditation_status === "rejected" ? application.rejection_reason : null}
+        rejectionReason={application?.accreditation_status === "rejected" ? application.accreditation_notes : null}
       />
     </PageFrame>
   );

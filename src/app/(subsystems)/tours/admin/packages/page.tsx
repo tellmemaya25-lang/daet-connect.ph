@@ -45,7 +45,7 @@ export default async function AdminPackagesPage() {
     
     const { data: operators } = await supabase
       .from('tours_operators')
-      .select('id, business_name, contact_person, profile_id')
+      .select('id, business_name, contact_person, contact_email, profile_id')
       .in('id', operatorIds);
 
     const operatorMap = new Map(operators?.map(op => [op.id, op]) || []);
@@ -54,7 +54,7 @@ export default async function AdminPackagesPage() {
     const profileIds = operators?.map(op => op.profile_id).filter(Boolean) || [];
     const { data: profiles } = await supabase
       .from('profiles')
-      .select('id, full_name, email')
+      .select('id, full_name')
       .in('id', profileIds);
 
     const profileMap = new Map(profiles?.map(p => [p.id, p]) || []);
@@ -83,10 +83,11 @@ export default async function AdminPackagesPage() {
         base_price: basePrice,
         tours_operators: operator ? {
           business_name: operator.business_name,
-          profiles: profile ? {
-            full_name: profile.full_name,
-            email: profile.email,
-          } : null,
+          // profiles has no email column; the operator's contact email is the business contact.
+          profiles: {
+            full_name: profile?.full_name ?? null,
+            email: operator.contact_email,
+          },
         } : null,
       };
     });

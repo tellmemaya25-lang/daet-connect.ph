@@ -2,6 +2,7 @@
 
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { validateCreateBooking, type CreateBookingInput } from "@/lib/tours/booking-contract";
+import { userFacingDbError } from "@/lib/tours/db-errors";
 
 interface CreateBookingResult {
   success: boolean;
@@ -122,7 +123,9 @@ export async function createBooking(input: CreateBookingInput): Promise<CreateBo
 
     if (bookingError || !booking) {
       console.error("Booking creation error:", bookingError);
-      return { success: false, error: "Failed to create booking. Please try again." };
+      // The database checks the date is open and has seats (row-locked), so
+      // its messages ("Only 2 seat(s) left on this date.") are shown as-is.
+      return { success: false, error: userFacingDbError(bookingError, "Failed to create booking. Please try again.") };
     }
 
     console.log("Booking created successfully:", booking.id, bookingReference);

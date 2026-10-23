@@ -5,9 +5,13 @@ import { Notice } from "@/components/ui/notice";
 import { DashboardHeader } from "@/components/ui/dashboard-header";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { FREE_CANCELLATION_HOURS } from "@/lib/tours/cancellation";
+import { manilaDayStartUtc, toManilaDateKey } from "@/lib/tours/events-calendar";
 import { BookingActionButtons } from "./booking-action-buttons";
+import { CancellationReview, RefundPanel, type CancellationRequest } from "./cancellation-review";
 import { GuideAssignment } from "./guide-assignment";
 import { PaymentRecorder } from "./payment-recorder";
+import { ProofReview, type ReviewableProof } from "./proof-review";
 
 export const dynamic = "force-dynamic";
 
@@ -83,6 +87,46 @@ export default async function OperatorBookingsPage({
 
   const { data: bookings, error } = await query;
 
+  // Receipts waiting for verification on these bookings (RLS: operator's own bookings only)
+  const bookingIds = (bookings ?? []).map((b) => b.id);
+  const { data: pendingProofRows } = bookingIds.length
+    ? await supabase
+        .from("tours_payment_proofs")
+        .select("id, booking_id, amount, payment_method, reference_number, submitted_at")
+        .in("booking_id", bookingIds)
+        .eq("verification_status", "pending")
+        .order("submitted_at", { ascending: true })
+    : { data: [] as Array<ReviewableProof & { booking_id: string }> };
+  const proofsByBooking = new Map<string, ReviewableProof[]>();
+  for (const proof of pendingProofRows ?? []) {
+    const list = proofsByBooking.get(proof.booking_id) ?? [];
+    list.push(proof);
+    proofsByBooking.set(proof.booking_id, list);
+  }
+
+  // Open cancellation requests, and money still to return on cancelled/declined bookings.
+  const { data: requestRows } = bookingIds.length
+    ? await supabase
+        .from("tours_cancellations")
+        .select("id, booking_id, reason, requested_at, status")
+        .in("booking_id", bookingIds)
+        .eq("status", "requested")
+    : { data: [] as Array<CancellationRequest & { booking_id: string }> };
+  const requestByBooking = new Map<string, CancellationRequest>(
+    (requestRows ?? []).map((row) => [row.booking_id, row]),
+  );
+  const refundCandidates = (bookings ?? []).filter(
+    (b) => (b.status === "cancelled" || b.status === "rejected") && Number(b.total_paid ?? 0) > 0,
+  );
+  const refundableByBooking = new Map<string, number>();
+  await Promise.all(
+    refundCandidates.map(async (b) => {
+      const { data } = await supabase.rpc("tours_refundable_amount", { p_booking_id: b.id });
+      if (Number(data ?? 0) > 0) refundableByBooking.set(b.id, Number(data));
+    }),
+  );
+  const today = toManilaDateKey(new Date());
+
   if (error) {
     console.error("Bookings fetch error:", error);
     console.error("Bookings error details:", JSON.stringify(error, null, 2));
@@ -146,7 +190,7 @@ export default async function OperatorBookingsPage({
     confirmed: "Confirmed",
     cancelled: "Cancelled",
     completed: "Completed",
-    rejected: "Rejected",
+    rejected: "Declined",
   };
 
   // Calculate stats
@@ -346,6 +390,8 @@ export default async function OperatorBookingsPage({
                             />
                           </div>
 
+                          <ProofReview proofs={proofsByBooking.get(booking.id) ?? []} />
+
                           {/* Payment Tracking */}
                           <div className="mb-4">
                             <PaymentRecorder
@@ -359,10 +405,36 @@ export default async function OperatorBookingsPage({
                         </>
                       )}
 
+                      {(booking.status === "cancelled" || booking.status === "rejected") && booking.cancellation_reason ? (
+                        <p className="mb-4 rounded-xl bg-daet-sand/40 p-3 text-sm text-daet-ink">
+                          <span className="font-bold">{booking.status === "cancelled" ? "Cancellation reason" : "Declined because"}:</span>{" "}
+                          {booking.cancellation_reason}
+                        </p>
+                      ) : null}
+
+                      {requestByBooking.has(booking.id) ? (
+                        <CancellationReview
+                          bookingId={booking.id}
+                          request={requestByBooking.get(booking.id)!}
+                          late={
+                            manilaDayStartUtc(booking.tour_date).getTime() -
+                              new Date(requestByBooking.get(booking.id)!.requested_at).getTime() <
+                            FREE_CANCELLATION_HOURS * 3600 * 1000
+                          }
+                        />
+                      ) : null}
+
+                      {refundableByBooking.has(booking.id) ? (
+                        <RefundPanel bookingId={booking.id} refundable={refundableByBooking.get(booking.id)!} />
+                      ) : null}
+
                       {/* Actions */}
                       <BookingActionButtons
                         bookingId={booking.id}
                         currentStatus={booking.status}
+                        tourDate={booking.tour_date}
+                        totalPaid={Number(booking.total_paid ?? 0)}
+                        today={today}
                       />
                     </div>
                   </div>

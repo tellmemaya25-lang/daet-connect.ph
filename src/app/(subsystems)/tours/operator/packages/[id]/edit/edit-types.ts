@@ -82,7 +82,7 @@ export type ActionStatusCode = 200 | 400 | 401 | 403 | 404 | 409 | 500;
 
 export interface UpdatePackageResponse {
   success: boolean;
-  status: ActionStatusCode;
+  status?: ActionStatusCode;
   message: string;
   errors?: ValidationErrors;
   updatedAt?: string;

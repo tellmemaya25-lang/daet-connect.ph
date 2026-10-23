@@ -65,9 +65,9 @@ export function PricingStep({
       id: editingId || `new-${Date.now()}`,
       variantName: formData.variantName,
       minPax: formData.minPax,
-      maxPax: formData.maxPax,
-      pricePerPax: formData.pricePerPax,
-      flatPrice: formData.flatPrice,
+      maxPax: formData.maxPax ?? null,
+      pricePerPax: formData.pricePerPax ?? null,
+      flatPrice: formData.flatPrice ?? null,
       isDefault: editingId ? data.find((v) => v.id === editingId)?.isDefault || false : data.length === 0,
     };
 

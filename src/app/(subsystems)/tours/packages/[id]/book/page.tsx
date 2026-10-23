@@ -4,6 +4,8 @@ import { PageFrame } from "@/components/ui/page-frame";
 import { Notice } from "@/components/ui/notice";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { bookableDates, type AvailabilityRow } from "@/lib/tours/availability";
+import { toManilaDateKey } from "@/lib/tours/events-calendar";
 import { BookingForm } from "./booking-form";
 
 export const dynamic = "force-dynamic";
@@ -70,11 +72,19 @@ export default async function BookPackagePage({ params }: PageProps) {
   }
 
   // Get user profile for pre-filling form
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("full_name, email")
-    .eq("id", user.id)
-    .maybeSingle();
+  const today = toManilaDateKey(new Date());
+  const [{ data: profile }, { data: availabilityRows }, { count: openDateCount }] = await Promise.all([
+    supabase.from("profiles").select("full_name").eq("id", user.id).maybeSingle(),
+    supabase
+      .from("tours_package_availability")
+      .select("available_date, capacity_total, capacity_booked")
+      .eq("package_id", pkg.id)
+      .gte("available_date", today)
+      .order("available_date", { ascending: true }),
+    // Any open date (past ones included) switches the package to "open dates only".
+    supabase.from("tours_package_availability").select("id", { count: "exact", head: true }).eq("package_id", pkg.id),
+  ]);
+  const usesOpenDates = (openDateCount ?? 0) > 0;
 
   return (
     <PageFrame>
@@ -121,9 +131,10 @@ export default async function BookPackagePage({ params }: PageProps) {
         <BookingForm
           packageId={pkg.id}
           priceVariants={pkg.tours_package_price_variants || []}
+          dateOptions={usesOpenDates ? bookableDates((availabilityRows ?? []) as AvailabilityRow[], today) : null}
           userProfile={{
             fullName: profile?.full_name || "",
-            email: profile?.email || user.email || "",
+            email: user.email ?? "",
           }}
         />
       </div>
