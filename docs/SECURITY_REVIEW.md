@@ -8,6 +8,8 @@ Commit `eb23857` ("Add .env.local file", 2026-10-16) committed `.env.local` with
 
 The service-role key bypasses all row-level security. Anyone holding it can read, change or delete every table and storage object.
 
+**Status (2026-10-23): keys rotated.** The legacy JWT keys (anon and service_role, including the leaked one) are disabled in the project; the app now needs the new publishable/secret keys in every environment. Steps 2–4 below are still worth doing.
+
 **What to do, in this order:**
 
 1. **Rotate now.** Supabase Dashboard → Project Settings → API Keys. Move to the new API keys (publishable/secret) and disable the legacy JWT keys, or roll the legacy JWT secret; either invalidates the leaked key. Then update `SUPABASE_SERVICE_ROLE_KEY` (or the new secret key) and the anon/publishable key everywhere the app runs (hosting env, local `.env.local`, CI).
