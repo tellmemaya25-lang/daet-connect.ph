@@ -47,7 +47,7 @@ export default async function AdminEventsPage({
         <div className="rounded-2xl border border-dashed border-daet-ink/20 bg-white p-8 text-center">
           <p className="text-4xl" aria-hidden="true">📅</p>
           <p className="mt-2 font-bold text-daet-ink">No events yet</p>
-          <p className="text-sm text-daet-ink/60">Add festivals, cultural shows and markets for tourists to discover.</p>
+          <p className="text-sm text-daet-ink/70">Add festivals, cultural shows and markets for tourists to discover.</p>
         </div>
       ) : (
         <ul className="space-y-3">
@@ -66,7 +66,7 @@ export default async function AdminEventsPage({
                     {isPast ? <span className="rounded-full bg-gray-100 px-2 py-0.5 text-xs font-bold text-gray-600">Past</span> : null}
                   </div>
                   <p className="mt-1 truncate font-black text-daet-ink">{event.title}</p>
-                  <p className="text-sm text-daet-ink/60">{formatEventRange(event.starts_at, event.ends_at)} · {event.venue}</p>
+                  <p className="text-sm text-daet-ink/70">{formatEventRange(event.starts_at, event.ends_at)} · {event.venue}</p>
                 </div>
                 <div className="flex gap-2">
                   <Link href={`/tours/admin/events/${event.id}/edit`} className="inline-flex min-h-11 flex-1 items-center justify-center rounded-full border border-daet-forest/30 px-5 text-sm font-bold text-daet-forest hover:bg-daet-forest/5 sm:flex-none">

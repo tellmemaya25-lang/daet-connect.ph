@@ -57,7 +57,7 @@ export function BookingActionButtons({ bookingId, currentStatus, tourDate, total
         ))}
       </div>
       {waitingForTourDate ? (
-        <p className="mt-2 text-xs text-daet-ink/55">You can mark this tour completed on or after the tour date.</p>
+        <p className="mt-2 text-xs text-daet-ink/70">You can mark this tour completed on or after the tour date.</p>
       ) : null}
 
       <Modal

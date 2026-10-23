@@ -41,7 +41,7 @@ export default async function BookingTicketPage({ params }: PageProps) {
   if (!booking) notFound();
 
   const back = (
-    <Link href={`/tours/bookings/${booking.id}`} className="text-sm font-bold text-daet-ink/60 hover:text-daet-ink print:hidden">
+    <Link href={`/tours/bookings/${booking.id}`} className="text-sm font-bold text-daet-ink/70 hover:text-daet-ink print:hidden">
       ← Back to booking
     </Link>
   );
@@ -89,8 +89,8 @@ export default async function BookingTicketPage({ params }: PageProps) {
           <p className="mt-1 text-sm text-daet-ink/70">
             {booking.number_of_pax} guest{booking.number_of_pax === 1 ? "" : "s"} · {booking.contact_name}
           </p>
-          {pkg?.location_name ? <p className="mt-1 text-xs text-daet-ink/55">📍 {pkg.location_name}</p> : null}
-          <p className="mt-4 text-xs leading-5 text-daet-ink/55">
+          {pkg?.location_name ? <p className="mt-1 text-xs text-daet-ink/70">📍 {pkg.location_name}</p> : null}
+          <p className="mt-4 text-xs leading-5 text-daet-ink/70">
             Show this QR to your guide on the tour day. A screenshot works offline. Valid until the end of the tour day.
           </p>
         </section>

@@ -21,7 +21,7 @@ export function PromoCheckbox({
       <input type="checkbox" name={name} defaultChecked={defaultChecked} className="mt-1 h-5 w-5 accent-daet-forest" />
       <span>
         <span className="block text-sm font-bold text-daet-ink">{label}</span>
-        {description ? <span className="block text-xs text-daet-ink/60">{description}</span> : null}
+        {description ? <span className="block text-xs text-daet-ink/70">{description}</span> : null}
       </span>
     </label>
   );

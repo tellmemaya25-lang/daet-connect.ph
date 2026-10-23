@@ -54,7 +54,7 @@ export function OpenDatesForm({ packageId, today }: { packageId: string; today: 
           ))}
         </div>
         {state.errors.weekday ? <p className="mt-1 text-sm font-semibold text-rose-700">{state.errors.weekday}</p> : null}
-        <p className="mt-1 text-xs text-daet-ink/55">Up to {MAX_DATES_PER_BATCH} dates at a time. Dates already open are left unchanged.</p>
+        <p className="mt-1 text-xs text-daet-ink/70">Up to {MAX_DATES_PER_BATCH} dates at a time. Dates already open are left unchanged.</p>
       </fieldset>
 
       <Button type="submit" loading={pending} loadingText="Opening dates…">
@@ -100,7 +100,7 @@ export function AvailabilityList({ packageId, rows }: { packageId: string; rows:
             <li key={row.id} className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between">
               <div>
                 <p className="font-bold text-daet-ink">{formatDate(row.available_date)}</p>
-                <p className="mt-1 flex items-center gap-2 text-sm text-daet-ink/60">
+                <p className="mt-1 flex items-center gap-2 text-sm text-daet-ink/70">
                   {row.capacity_booked} of {row.capacity_total} booked
                   {left === 0 ? <Badge tone="danger">Full</Badge> : <Badge tone="success">{left} left</Badge>}
                 </p>
@@ -113,7 +113,7 @@ export function AvailabilityList({ packageId, rows }: { packageId: string; rows:
                 }}
               >
                 <input type="hidden" name="availabilityId" value={row.id} />
-                <label className="text-xs font-bold text-daet-ink/60">
+                <label className="text-xs font-bold text-daet-ink/70">
                   Seats
                   <Input
                     name="capacity"

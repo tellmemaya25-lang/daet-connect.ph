@@ -26,7 +26,7 @@ function DocumentLink({ label, url }: { label: string; url: string | null }) {
       Download {label} <span className="ml-2" aria-hidden="true">↗</span>
     </a>
   ) : (
-    <span className="inline-flex min-h-11 items-center rounded-full bg-daet-sand px-4 text-sm font-semibold text-daet-ink/50">{label} unavailable</span>
+    <span className="inline-flex min-h-11 items-center rounded-full bg-daet-sand px-4 text-sm font-semibold text-daet-ink/70">{label} unavailable</span>
   );
 }
 
@@ -50,26 +50,26 @@ export function OperatorReviewCard({
         <div className="min-w-0">
           <span className="inline-flex rounded-full bg-amber-50 px-3 py-1 text-xs font-black uppercase tracking-wide text-amber-900">Pending review</span>
           <h2 className="mt-3 break-words text-xl font-black text-daet-ink">{application.business_name}</h2>
-          <p className="mt-1 text-sm text-daet-ink/55">Submitted {new Date(application.created_at).toLocaleDateString("en-PH", { year: "numeric", month: "short", day: "numeric" })}</p>
+          <p className="mt-1 text-sm text-daet-ink/70">Submitted {new Date(application.created_at).toLocaleDateString("en-PH", { year: "numeric", month: "short", day: "numeric" })}</p>
         </div>
-        <span className="shrink-0 rounded-full bg-daet-sand px-3 py-1.5 text-xs font-bold text-daet-ink/60">ID · {application.id.slice(0, 8)}</span>
+        <span className="shrink-0 rounded-full bg-daet-sand px-3 py-1.5 text-xs font-bold text-daet-ink/70">ID · {application.id.slice(0, 8)}</span>
       </div>
 
       <dl className="mt-6 grid gap-x-6 gap-y-4 border-t border-daet-ink/10 pt-5 sm:grid-cols-2">
-        <div><dt className="text-xs font-bold uppercase tracking-wide text-daet-ink/45">Authorized contact</dt><dd className="mt-1 break-words text-sm font-semibold text-daet-ink">{application.contact_person}</dd></div>
-        <div><dt className="text-xs font-bold uppercase tracking-wide text-daet-ink/45">Phone</dt><dd className="mt-1 break-words text-sm font-semibold text-daet-ink">{application.contact_phone}</dd></div>
-        <div><dt className="text-xs font-bold uppercase tracking-wide text-daet-ink/45">Email</dt><dd className="mt-1 break-all text-sm font-semibold text-daet-ink">{application.contact_email}</dd></div>
-        <div className="sm:col-span-2"><dt className="text-xs font-bold uppercase tracking-wide text-daet-ink/45">Business address</dt><dd className="mt-1 break-words text-sm font-semibold leading-6 text-daet-ink">{application.business_address}</dd></div>
+        <div><dt className="text-xs font-bold uppercase tracking-wide text-daet-ink/70">Authorized contact</dt><dd className="mt-1 break-words text-sm font-semibold text-daet-ink">{application.contact_person}</dd></div>
+        <div><dt className="text-xs font-bold uppercase tracking-wide text-daet-ink/70">Phone</dt><dd className="mt-1 break-words text-sm font-semibold text-daet-ink">{application.contact_phone}</dd></div>
+        <div><dt className="text-xs font-bold uppercase tracking-wide text-daet-ink/70">Email</dt><dd className="mt-1 break-all text-sm font-semibold text-daet-ink">{application.contact_email}</dd></div>
+        <div className="sm:col-span-2"><dt className="text-xs font-bold uppercase tracking-wide text-daet-ink/70">Business address</dt><dd className="mt-1 break-words text-sm font-semibold leading-6 text-daet-ink">{application.business_address}</dd></div>
       </dl>
 
       <div className="mt-5">
-        <p className="text-xs font-bold uppercase tracking-wide text-daet-ink/45">Private uploads</p>
+        <p className="text-xs font-bold uppercase tracking-wide text-daet-ink/70">Private uploads</p>
         <div className="mt-2 flex flex-wrap gap-2">
           <DocumentLink label="DTI / registration" url={documents.dti} />
           <DocumentLink label="Business permit" url={documents.permit} />
           <DocumentLink label="GCash QR" url={documents.gcash} />
         </div>
-        <p className="mt-2 text-xs leading-5 text-daet-ink/50">Links expire after 10 minutes. Do not forward or save these documents outside approved Tourism Office systems.</p>
+        <p className="mt-2 text-xs leading-5 text-daet-ink/70">Links expire after 10 minutes. Do not forward or save these documents outside approved Tourism Office systems.</p>
       </div>
 
       {state.message ? (
@@ -95,7 +95,7 @@ export function OperatorReviewCard({
               aria-describedby={`reason-help-${application.id}${state.fieldErrors?.rejectionReason ? ` reason-error-${application.id}` : ""}`}
               className="mt-2 w-full rounded-2xl border border-daet-ink/15 bg-white px-4 py-3 text-sm outline-none transition placeholder:text-daet-ink/35 focus:border-daet-forest focus:ring-4 focus:ring-daet-forest/10 aria-[invalid=true]:border-rose-400"
             />
-            <span id={`reason-help-${application.id}`} className="mt-1 block text-xs text-daet-ink/50">Keep the note factual and limited to what the applicant needs to fix.</span>
+            <span id={`reason-help-${application.id}`} className="mt-1 block text-xs text-daet-ink/70">Keep the note factual and limited to what the applicant needs to fix.</span>
             {state.fieldErrors?.rejectionReason ? <span id={`reason-error-${application.id}`} className="mt-1 block text-sm font-semibold text-rose-700">{state.fieldErrors.rejectionReason}</span> : null}
           </label>
           <button

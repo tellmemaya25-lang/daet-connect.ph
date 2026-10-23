@@ -66,7 +66,7 @@ export function ProofReview({ proofs }: { proofs: ReviewableProof[] }) {
           <li key={proof.id} className="rounded-xl bg-white p-3 text-sm shadow-sm">
             <div className="flex flex-wrap items-baseline justify-between gap-2">
               <span className="text-base font-black text-daet-ink">{peso(proof.amount)}</span>
-              <span className="text-daet-ink/60">
+              <span className="text-daet-ink/70">
                 {isProofMethod(proof.payment_method) ? PROOF_METHODS[proof.payment_method] : proof.payment_method} · Ref {proof.reference_number}
               </span>
             </div>

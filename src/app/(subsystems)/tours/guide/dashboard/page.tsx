@@ -114,13 +114,13 @@ export default async function GuideDashboardPage({ searchParams }: { searchParam
           <Card>
             <CardHeader eyebrow={formatDayHeading(today)} title="Today" />
             {todays.length === 0 ? (
-              <p className="text-sm text-daet-ink/60">No tours assigned to you today.</p>
+              <p className="text-sm text-daet-ink/70">No tours assigned to you today.</p>
             ) : (
               <ul className="space-y-3">
                 {todays.map((t) => (
                   <li key={t.id} className="rounded-2xl bg-daet-sand/40 p-3">
                     <p className="font-black text-daet-ink">{pkgTitle(t)}</p>
-                    <p className="text-xs text-daet-ink/60">
+                    <p className="text-xs text-daet-ink/70">
                       {t.booking_reference} · {t.contact_name} · {t.number_of_pax} pax
                     </p>
                     <div className="mt-2 flex flex-wrap gap-2">
@@ -138,13 +138,13 @@ export default async function GuideDashboardPage({ searchParams }: { searchParam
           <Card>
             <CardHeader title="Next tours" action={<Link href="/tours/guide/my-tours" className="text-sm font-bold text-daet-forest hover:underline">All</Link>} />
             {later.length === 0 ? (
-              <p className="text-sm text-daet-ink/60">No upcoming assignments yet. Mark the days you can work so operators can assign you.</p>
+              <p className="text-sm text-daet-ink/70">No upcoming assignments yet. Mark the days you can work so operators can assign you.</p>
             ) : (
               <ul className="divide-y divide-daet-ink/10">
                 {later.map((t) => (
                   <li key={t.id} className="py-2">
                     <p className="font-bold text-daet-ink">{pkgTitle(t)}</p>
-                    <p className="text-xs text-daet-ink/60">
+                    <p className="text-xs text-daet-ink/70">
                       {formatDayHeading(t.tour_date)} · {t.number_of_pax} pax
                     </p>
                   </li>

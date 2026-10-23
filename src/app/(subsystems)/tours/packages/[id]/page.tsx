@@ -152,7 +152,7 @@ export default async function PackageDetailPage({ params }: PageProps) {
     <PageFrame>
       <div className="mx-auto max-w-7xl">
         {/* Breadcrumb */}
-        <nav className="mb-6 text-sm text-daet-ink/60">
+        <nav className="mb-6 text-sm text-daet-ink/70">
           <Link href="/tours/browse" className="hover:text-daet-forest">
             Browse packages
           </Link>
@@ -181,7 +181,7 @@ export default async function PackageDetailPage({ params }: PageProps) {
             <a href="#reviews" className="mt-2 inline-flex hover:underline">
               <RatingBadge summary={rating} />
             </a>
-            <p className="mt-2 text-sm text-daet-ink/60">
+            <p className="mt-2 text-sm text-daet-ink/70">
               📍 {pkg.location_name} · ⏱️ {pkg.duration_value}{" "}
               {pkg.duration_type === "hours" ? "hours" : "days"}
             </p>
@@ -211,7 +211,7 @@ export default async function PackageDetailPage({ params }: PageProps) {
 
                 {excluded.length > 0 && (
                   <>
-                    <h3 className="mt-6 text-sm font-bold text-daet-ink/60">Not included</h3>
+                    <h3 className="mt-6 text-sm font-bold text-daet-ink/70">Not included</h3>
                     <ul className="mt-3 space-y-2">
                       {excluded.map((item: any) => (
                         <li key={item.id} className="flex items-start gap-2 text-sm text-daet-ink/80">
@@ -274,7 +274,7 @@ export default async function PackageDetailPage({ params }: PageProps) {
                   </ol>
                 ) : null}
                 {route?.estimated ? (
-                  <p className="mt-2 text-xs text-daet-ink/55">Some distances are estimated from straight-line distance; actual roads and boat crossings may differ.</p>
+                  <p className="mt-2 text-xs text-daet-ink/70">Some distances are estimated from straight-line distance; actual roads and boat crossings may differ.</p>
                 ) : null}
                 {routeLink ? (
                   <a href={routeLink} target="_blank" rel="noopener noreferrer" className="mt-4 inline-flex min-h-11 items-center justify-center rounded-full border border-daet-forest/30 px-5 text-sm font-bold text-daet-forest hover:bg-daet-forest/5">
@@ -297,7 +297,7 @@ export default async function PackageDetailPage({ params }: PageProps) {
                         className="aspect-video w-full object-cover"
                       />
                       {img.caption && (
-                        <p className="p-3 text-xs text-daet-ink/60">{img.caption}</p>
+                        <p className="p-3 text-xs text-daet-ink/70">{img.caption}</p>
                       )}
                     </div>
                   ))}
@@ -313,7 +313,7 @@ export default async function PackageDetailPage({ params }: PageProps) {
                   {pkg.tours_operators[0].business_name}
                 </p>
                 {operatorSummary ? (
-                  <p className="mt-1 text-xs text-daet-ink/60">
+                  <p className="mt-1 text-xs text-daet-ink/70">
                     <RatingBadge summary={operatorSummary} compact /> across all their tours
                   </p>
                 ) : null}
@@ -324,14 +324,14 @@ export default async function PackageDetailPage({ params }: PageProps) {
             <section id="reviews" className="mt-6 rounded-2xl border border-daet-ink/10 bg-white p-6">
               <div className="flex flex-wrap items-end justify-between gap-3">
                 <h2 className="font-black text-daet-ink">Traveller reviews</h2>
-                <p className="text-xs text-daet-ink/55">Only travellers who completed this tour can review it.</p>
+                <p className="text-xs text-daet-ink/70">Only travellers who completed this tour can review it.</p>
               </div>
               {rating ? (
                 <div className="mt-4 grid gap-4 sm:grid-cols-[auto_1fr] sm:items-center">
                   <div className="text-center sm:pr-6">
                     <p className="text-4xl font-black text-daet-ink">{rating.average.toFixed(1)}</p>
                     <Stars value={rating.average} />
-                    <p className="mt-1 text-xs text-daet-ink/55">
+                    <p className="mt-1 text-xs text-daet-ink/70">
                       {rating.count} review{rating.count === 1 ? "" : "s"}
                     </p>
                   </div>
@@ -359,11 +359,11 @@ export default async function PackageDetailPage({ params }: PageProps) {
             <div className="sticky top-6 rounded-3xl border border-daet-ink/10 bg-white p-6 shadow-lg">
               <div className="text-3xl font-black text-daet-ink">
                 ₱{displayPrice.toLocaleString()}
-                <span className="ml-2 text-sm font-normal text-daet-ink/60">{priceLabel}</span>
+                <span className="ml-2 text-sm font-normal text-daet-ink/70">{priceLabel}</span>
               </div>
 
               {pkg.tours_package_price_variants && pkg.tours_package_price_variants.length > 1 && (
-                <p className="mt-2 text-xs text-daet-ink/60">
+                <p className="mt-2 text-xs text-daet-ink/70">
                   {pkg.tours_package_price_variants.length} pricing options available
                 </p>
               )}

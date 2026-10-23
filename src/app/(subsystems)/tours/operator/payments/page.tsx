@@ -73,20 +73,20 @@ export default async function OperatorPaymentsPage({
 
       <div className="mb-6 grid grid-cols-2 gap-3 lg:grid-cols-4">
         <Card>
-          <p className="text-xs font-bold text-daet-ink/55">Received</p>
+          <p className="text-xs font-bold text-daet-ink/70">Received</p>
           <p className="mt-1 text-2xl font-black text-daet-forest">{peso(summary.received)}</p>
-          <p className="text-xs text-daet-ink/55">{summary.count} payment{summary.count === 1 ? "" : "s"}</p>
+          <p className="text-xs text-daet-ink/70">{summary.count} payment{summary.count === 1 ? "" : "s"}</p>
         </Card>
         <Card>
-          <p className="text-xs font-bold text-daet-ink/55">Online (PayMongo)</p>
+          <p className="text-xs font-bold text-daet-ink/70">Online (PayMongo)</p>
           <p className="mt-1 text-2xl font-black text-daet-ink">{peso(summary.online)}</p>
         </Card>
         <Card>
-          <p className="text-xs font-bold text-daet-ink/55">Manual / verified receipts</p>
+          <p className="text-xs font-bold text-daet-ink/70">Manual / verified receipts</p>
           <p className="mt-1 text-2xl font-black text-daet-ink">{peso(summary.manual)}</p>
         </Card>
         <Card>
-          <p className="text-xs font-bold text-daet-ink/55">Refunded</p>
+          <p className="text-xs font-bold text-daet-ink/70">Refunded</p>
           <p className="mt-1 text-2xl font-black text-daet-ink">{peso(summary.refunded)}</p>
         </Card>
       </div>
@@ -137,15 +137,15 @@ export default async function OperatorPaymentsPage({
                   <p className="truncate font-bold text-daet-ink">
                     {row.booking_reference} · {row.tourist_name}
                   </p>
-                  <p className="truncate text-sm text-daet-ink/60">{row.package_title}</p>
-                  <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-daet-ink/60">
+                  <p className="truncate text-sm text-daet-ink/70">{row.package_title}</p>
+                  <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-daet-ink/70">
                     <Badge tone={row.provider === "paymongo" ? "info" : "brand"}>{row.provider === "paymongo" ? "PayMongo" : "Manual"}</Badge>
                     <span>{ledgerMethodLabel(row)}</span>
                     {row.reference_number ? <span>Ref {row.reference_number}</span> : null}
                     {row.payment_date ? <span>{dateTime.format(new Date(row.payment_date))}</span> : null}
                   </div>
                 </div>
-                <span className={`shrink-0 font-black ${row.payment_status === "completed" ? "text-emerald-700" : "text-daet-ink/50 line-through"}`}>
+                <span className={`shrink-0 font-black ${row.payment_status === "completed" ? "text-emerald-700" : "text-daet-ink/70 line-through"}`}>
                   {peso(Number(row.amount))}
                 </span>
               </li>

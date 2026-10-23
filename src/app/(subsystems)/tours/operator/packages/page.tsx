@@ -133,7 +133,7 @@ export default async function OperatorPackagesPage({
               📦
             </span>
             <h2 className="mt-4 text-xl font-black text-daet-ink">No packages yet</h2>
-            <p className="mt-2 text-sm text-daet-ink/60">
+            <p className="mt-2 text-sm text-daet-ink/70">
               Create your first tour package to start receiving bookings.
             </p>
             <Link
@@ -175,7 +175,7 @@ export default async function OperatorPackagesPage({
                             ? "bg-amber-100 text-amber-900"
                             : pkg.status === "archived"
                               ? "bg-gray-100 text-gray-800"
-                              : "bg-daet-sand text-daet-ink/60"
+                              : "bg-daet-sand text-daet-ink/70"
                       }`}
                     >
                       {pkg.status === "published"
@@ -187,8 +187,8 @@ export default async function OperatorPackagesPage({
                             : "Draft"}
                     </span>
                   </div>
-                  <p className="mt-2 text-sm text-daet-ink/60">📍 {pkg.location_name}</p>
-                  <p className="mt-1 text-xs text-daet-ink/45">
+                  <p className="mt-2 text-sm text-daet-ink/70">📍 {pkg.location_name}</p>
+                  <p className="mt-1 text-xs text-daet-ink/70">
                     Updated {new Date(pkg.updated_at).toLocaleDateString()}
                   </p>
                   <Link

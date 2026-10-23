@@ -73,7 +73,7 @@ export default async function OperatorReviewsPage() {
                   <div className="flex flex-wrap items-start justify-between gap-2">
                     <div>
                       <p className="font-black text-daet-ink">{pkg?.title ?? "Tour"}</p>
-                      <p className="text-xs text-daet-ink/55">
+                      <p className="text-xs text-daet-ink/70">
                         {booking?.booking_reference} · reviewed {date(review.created_at)}
                       </p>
                     </div>
@@ -82,10 +82,10 @@ export default async function OperatorReviewsPage() {
                       <Stars value={review.rating} />
                     </div>
                   </div>
-                  {review.comment ? <p className="mt-3 whitespace-pre-line text-sm leading-6 text-daet-ink/80">{review.comment}</p> : <p className="mt-3 text-sm italic text-daet-ink/50">No comment, rating only.</p>}
+                  {review.comment ? <p className="mt-3 whitespace-pre-line text-sm leading-6 text-daet-ink/80">{review.comment}</p> : <p className="mt-3 text-sm italic text-daet-ink/70">No comment, rating only.</p>}
                   {review.operator_reply ? (
                     <div className="mt-3 rounded-xl bg-daet-sand/50 p-3 text-sm">
-                      <p className="text-xs font-bold text-daet-ink/60">Your reply{review.replied_at ? ` · ${date(review.replied_at)}` : ""}</p>
+                      <p className="text-xs font-bold text-daet-ink/70">Your reply{review.replied_at ? ` · ${date(review.replied_at)}` : ""}</p>
                       <p className="mt-1 whitespace-pre-line text-daet-ink/80">{review.operator_reply}</p>
                     </div>
                   ) : null}

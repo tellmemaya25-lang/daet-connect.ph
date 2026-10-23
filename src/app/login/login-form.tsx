@@ -77,7 +77,7 @@ export function LoginForm({ nextUrl }: LoginFormProps) {
         {pending ? "Signing in..." : "Sign in"}
       </button>
 
-      <p className="text-center text-sm text-daet-ink/60">
+      <p className="text-center text-sm text-daet-ink/70">
         Don't have an account?{" "}
         <a href="/signup" className="font-bold text-daet-forest underline underline-offset-4">
           Sign up

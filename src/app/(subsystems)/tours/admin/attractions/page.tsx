@@ -50,7 +50,7 @@ export default async function AdminAttractionsPage({ searchParams }: { searchPar
       </Card>
 
       {attractions.length === 0 ? (
-        <p className="rounded-3xl border border-daet-ink/10 bg-white p-8 text-center text-sm text-daet-ink/60">No attractions yet. Add one or import the Tourism Office list.</p>
+        <p className="rounded-3xl border border-daet-ink/10 bg-white p-8 text-center text-sm text-daet-ink/70">No attractions yet. Add one or import the Tourism Office list.</p>
       ) : (
         <ul className="divide-y divide-daet-ink/10 overflow-hidden rounded-3xl border border-daet-ink/10 bg-white shadow-sm">
           {attractions.map((attraction) => (
@@ -59,7 +59,7 @@ export default async function AdminAttractionsPage({ searchParams }: { searchPar
                 <p className="font-black text-daet-ink">{attraction.name}</p>
                 <div className="mt-1 flex flex-wrap items-center gap-2 text-xs">
                   <Badge tone="brand">{ATTRACTION_CATEGORIES[attraction.category]}</Badge>
-                  <span className="text-daet-ink/60">{attraction.municipality}</span>
+                  <span className="text-daet-ink/70">{attraction.municipality}</span>
                   {!attraction.is_active ? <Badge tone="neutral">Hidden</Badge> : null}
                   {attraction.latitude === null ? <Badge tone="warning">No pin</Badge> : attraction.location_verified ? <Badge tone="success">Pin confirmed</Badge> : <Badge tone="info">Pin unconfirmed</Badge>}
                   {!attraction.opening_hours ? <Badge tone="neutral">No hours</Badge> : null}
@@ -91,7 +91,7 @@ function Stat({ label, value }: { label: string; value: number }) {
   return (
     <div className="rounded-2xl border border-daet-ink/10 bg-white p-4">
       <p className="text-3xl font-black text-daet-ink">{value}</p>
-      <p className="text-xs text-daet-ink/60">{label}</p>
+      <p className="text-xs text-daet-ink/70">{label}</p>
     </div>
   );
 }

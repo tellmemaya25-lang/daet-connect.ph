@@ -17,11 +17,22 @@ The service-role key bypasses all row-level security. Anyone holding it can read
 
 `.gitignore` already ignores `.env*` (except `.env.example`), so it can't happen again by accident. No key-like strings are in the current tree.
 
+## 🔴 Critical: test account passwords published in the repo
+
+The home page (`src/app/page.tsx`, shown in development only) and three archived docs listed sign-in details for:
+- `admin.test@gmail.com`, the project's **only admin account**, last signed in 2026-10-23;
+- the operator account `testguide2@gmail.com`;
+- the guide account `testguide3@gmail.com`.
+
+The repository is public, so anyone could sign in as the Tourism Office admin. F12 removes the passwords from the code and docs, but they remain in git history.
+
+**What to do:** change the passwords of all three accounts now (Dashboard → Authentication → Users, or sign in and change them). Use the *Sign out of all sessions* option if offered. Keep evaluation credentials only in the printed sheet from `docs/EVALUATION_KIT.md`, never in the repo.
+
 ## Checks performed
 
 | Area | Result |
 |---|---|
-| Secret scan of tracked files | Clean: no Supabase, PayMongo, Anthropic, Google or private-key patterns |
+| Secret scan of tracked files | No API keys or private keys. Hard-coded **test passwords** were found and removed (see above) |
 | Secret scan of history | **Leak above** (`.env.local` in `eb23857`, `4c0c450`) |
 | Client bundle | No server env names (`SUPABASE_SERVICE_ROLE_KEY`, `PAYMONGO_*`, `QR_SIGNING_SECRET`, `VAPID_PRIVATE_KEY`, `ANTHROPIC_API_KEY`, `NOTIFICATIONS_PUSH_SECRET`) or the admin client in `.next/static` |
 | Service-role usage | Created only in `src/lib/supabase/admin.ts` (`server-only`). Used by server code only: PayMongo webhook, push dispatch route, operator/guide accreditation review, notification actions, the route cache |

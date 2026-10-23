@@ -31,7 +31,7 @@ export async function PageFrame({
       <main className={`mx-auto w-full max-w-7xl px-4 py-8 sm:px-6 sm:py-12 lg:px-8 ${tabs.length ? "pb-24 sm:pb-12" : ""}`}>
         {children}
       </main>
-      <footer className={`mx-auto max-w-7xl px-4 pt-2 text-xs text-daet-ink/55 sm:px-6 sm:pb-8 lg:px-8 print:hidden ${tabs.length ? "pb-24" : "pb-8"}`}>
+      <footer className={`mx-auto max-w-7xl px-4 pt-2 text-xs text-daet-ink/70 sm:px-6 sm:pb-8 lg:px-8 print:hidden ${tabs.length ? "pb-24" : "pb-8"}`}>
         CONNECT-DAET.ph · Tourism in Daet, Camarines Norte
       </footer>
       <RoleTabBar tabs={tabs} />

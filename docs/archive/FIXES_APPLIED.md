@@ -114,7 +114,7 @@ Hard refresh the browse page:
 
 **Option A: Through the UI**
 
-1. Sign in as `testguide2@gmail.com` / `testguide2`
+1. Sign in as `testguide2@gmail.com` (password shared privately)
 2. Go to `/tours/operator/packages/create`
 3. Fill out the 6-step wizard
 4. Submit for review

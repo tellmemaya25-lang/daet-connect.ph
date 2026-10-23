@@ -158,7 +158,7 @@ export function PaymentSettingsForm({
         {isSubmitting ? "Saving..." : "Save Payment Settings"}
       </button>
 
-      <p className="text-center text-xs text-daet-ink/60">
+      <p className="text-center text-xs text-daet-ink/70">
         These details will be shown to tourists after they book and confirm their tour.
       </p>
     </form>

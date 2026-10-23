@@ -192,7 +192,7 @@ export function OperatorRegistrationForm({
                     className={`grid h-9 w-9 shrink-0 place-items-center rounded-full text-sm font-black ${
                       complete || active
                         ? "bg-daet-forest text-white"
-                        : "bg-daet-sand text-daet-ink/55"
+                        : "bg-daet-sand text-daet-ink/70"
                     }`}
                     aria-current={active ? "step" : undefined}
                   >
@@ -202,7 +202,7 @@ export function OperatorRegistrationForm({
                     <span className={`block truncate text-xs font-bold sm:text-sm ${active ? "text-daet-forest" : "text-daet-ink/65"}`}>
                       {step.title}
                     </span>
-                    <span className="hidden text-xs text-daet-ink/45 sm:block">{step.short}</span>
+                    <span className="hidden text-xs text-daet-ink/70 sm:block">{step.short}</span>
                   </span>
                 </div>
               </li>
@@ -360,7 +360,7 @@ export function OperatorRegistrationForm({
                 <span className="flex flex-wrap items-center gap-2 text-sm font-bold text-daet-ink">
                   {item.title} <span className="text-rose-600">*</span>
                 </span>
-                <span className="mt-1 block text-sm leading-6 text-daet-ink/60">{item.description}</span>
+                <span className="mt-1 block text-sm leading-6 text-daet-ink/70">{item.description}</span>
                 <input
                   data-step-field="2"
                   name={item.field}
@@ -394,7 +394,7 @@ export function OperatorRegistrationForm({
 
           <label className="mt-6 block rounded-2xl border border-dashed border-daet-forest/30 bg-daet-sand/50 p-5 sm:p-7">
             <span className="block text-sm font-bold text-daet-ink">Your business GCash QR <span className="text-rose-600">*</span></span>
-            <span className="mt-1 block text-sm leading-6 text-daet-ink/60">Upload a clear JPG, PNG, or WebP image. Do not upload a screenshot containing your balance or transaction history.</span>
+            <span className="mt-1 block text-sm leading-6 text-daet-ink/70">Upload a clear JPG, PNG, or WebP image. Do not upload a screenshot containing your balance or transaction history.</span>
             <input
               data-step-field="3"
               name="gcashQr"
@@ -457,7 +457,7 @@ export function OperatorRegistrationForm({
         </div>
       </form>
 
-      <p className="mt-4 text-center text-xs leading-5 text-daet-ink/50">
+      <p className="mt-4 text-center text-xs leading-5 text-daet-ink/70">
         By submitting, you confirm these business documents are accurate and agree to the Tourism Office’s accreditation review.
       </p>
     </section>

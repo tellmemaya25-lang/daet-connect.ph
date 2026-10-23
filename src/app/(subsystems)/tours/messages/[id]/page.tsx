@@ -80,12 +80,12 @@ export default async function ConversationPage({ params }: PageProps) {
   return (
     <PageFrame>
       <div className="mx-auto flex max-w-2xl flex-col">
-        <Link href="/tours/messages" className="text-sm font-bold text-daet-ink/60 hover:text-daet-ink">
+        <Link href="/tours/messages" className="text-sm font-bold text-daet-ink/70 hover:text-daet-ink">
           ← All messages
         </Link>
         <header className="mt-3 rounded-2xl border border-daet-ink/10 bg-white p-4 shadow-sm">
           <p className="text-lg font-black text-daet-ink">{pkg?.title ?? "Tour booking"}</p>
-          <p className="text-xs text-daet-ink/60">
+          <p className="text-xs text-daet-ink/70">
             {booking.booking_reference} · {members.operatorName} · {booking.contact_name}
             {members.guideProfileId ? " · guide assigned" : ""}
           </p>

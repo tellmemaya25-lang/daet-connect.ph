@@ -46,8 +46,9 @@ export function PackageFilters({ currentParams }: PackageFiltersProps) {
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {/* Location */}
         <div>
-          <label className="block text-xs font-bold text-daet-ink">Location</label>
+          <label htmlFor="filter-location" className="block text-xs font-bold text-daet-ink">Location</label>
           <input
+            id="filter-location"
             type="text"
             value={location}
             onChange={(e) => setLocation(e.target.value)}
@@ -58,8 +59,9 @@ export function PackageFilters({ currentParams }: PackageFiltersProps) {
 
         {/* Price Range */}
         <div>
-          <label className="block text-xs font-bold text-daet-ink">Min Price (₱)</label>
+          <label htmlFor="filter-min-price" className="block text-xs font-bold text-daet-ink">Min Price (₱)</label>
           <input
+            id="filter-min-price"
             type="number"
             value={minPrice}
             onChange={(e) => setMinPrice(e.target.value)}
@@ -70,8 +72,9 @@ export function PackageFilters({ currentParams }: PackageFiltersProps) {
         </div>
 
         <div>
-          <label className="block text-xs font-bold text-daet-ink">Max Price (₱)</label>
+          <label htmlFor="filter-max-price" className="block text-xs font-bold text-daet-ink">Max Price (₱)</label>
           <input
+            id="filter-max-price"
             type="number"
             value={maxPrice}
             onChange={(e) => setMaxPrice(e.target.value)}
@@ -83,8 +86,9 @@ export function PackageFilters({ currentParams }: PackageFiltersProps) {
 
         {/* Sort */}
         <div>
-          <label className="block text-xs font-bold text-daet-ink">Sort by</label>
+          <label htmlFor="filter-sort" className="block text-xs font-bold text-daet-ink">Sort by</label>
           <select
+            id="filter-sort"
             value={sort}
             onChange={(e) => setSort(e.target.value)}
             className="mt-1 w-full rounded-xl border border-daet-ink/15 px-3 py-2 text-sm outline-none transition focus:border-daet-forest focus:ring-2 focus:ring-daet-forest/20"

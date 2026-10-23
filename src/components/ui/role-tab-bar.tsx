@@ -22,7 +22,7 @@ export function RoleTabBar({ tabs }: { tabs: Tab[] }) {
               <Link
                 href={tab.href}
                 aria-current={active ? "page" : undefined}
-                className={`flex min-h-14 flex-col items-center justify-center gap-0.5 text-[11px] font-bold transition ${active ? "text-daet-forest" : "text-daet-ink/55 hover:text-daet-ink"}`}
+                className={`flex min-h-14 flex-col items-center justify-center gap-0.5 text-[11px] font-bold transition ${active ? "text-daet-forest" : "text-daet-ink/70 hover:text-daet-ink"}`}
               >
                 <span aria-hidden="true" className={`text-lg leading-none ${active ? "" : "opacity-70 grayscale"}`}>
                   {tab.icon}

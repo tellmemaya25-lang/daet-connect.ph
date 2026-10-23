@@ -124,7 +124,7 @@ export default async function TouristDashboardPage() {
                           <Link href={`/tours/bookings/${b.id}`} className="font-black text-daet-ink hover:underline">
                             {pkg?.title ?? "Tour"}
                           </Link>
-                          <p className="text-sm text-daet-ink/60">
+                          <p className="text-sm text-daet-ink/70">
                             {b.tour_date === today ? <strong className="text-daet-forest">Today</strong> : longDate(b.tour_date)} · {b.number_of_pax} pax · {pkg?.location_name}
                           </p>
                         </div>
@@ -163,7 +163,7 @@ export default async function TouristDashboardPage() {
                   <li key={b.id} className="flex flex-wrap items-center justify-between gap-2 rounded-2xl bg-daet-sand/40 p-3">
                     <span className="min-w-0">
                       <span className="block font-bold text-daet-ink">{pkgOf(b)?.title ?? "Tour"}</span>
-                      <span className="text-xs text-daet-ink/60">{longDate(b.tour_date)}</span>
+                      <span className="text-xs text-daet-ink/70">{longDate(b.tour_date)}</span>
                     </span>
                     <ButtonLink href={`/tours/bookings/${b.id}#review`} variant="secondary">
                       ★ Write a review
@@ -180,7 +180,7 @@ export default async function TouristDashboardPage() {
             <CardHeader eyebrow="CONNECT-Daet rewards" title="Your points" />
             <p className="text-4xl font-black text-daet-forest">
               {points.toLocaleString("en-PH")}
-              <span className="ml-1 text-sm font-bold text-daet-ink/55">pts</span>
+              <span className="ml-1 text-sm font-bold text-daet-ink/70">pts</span>
             </p>
             {recentPoints.length > 0 ? (
               <ul className="mt-3 space-y-1.5 text-sm">
@@ -207,7 +207,7 @@ export default async function TouristDashboardPage() {
                   </li>
                 ))}
               </ul>
-              <p className="mt-2 text-xs text-daet-ink/55">Points for a payment are removed if it is refunded.</p>
+              <p className="mt-2 text-xs text-daet-ink/70">Points for a payment are removed if it is refunded.</p>
             </details>
           </Card>
 
@@ -230,7 +230,7 @@ export default async function TouristDashboardPage() {
           <Card>
             <CardHeader title="Saved trip plans" action={<Link href="/tours/my-itineraries" className="text-sm font-bold text-daet-forest hover:underline">All</Link>} />
             {(itineraries ?? []).length === 0 ? (
-              <p className="text-sm text-daet-ink/60">
+              <p className="text-sm text-daet-ink/70">
                 Plan a trip around Daet and save it here. <Link href="/tours/plan" className="font-bold text-daet-forest underline">Start planning</Link>
               </p>
             ) : (
@@ -239,7 +239,7 @@ export default async function TouristDashboardPage() {
                   <li key={it.id}>
                     <Link href={`/tours/my-itineraries/${it.id}`} className="block rounded-xl p-2 hover:bg-daet-sand/50">
                       <span className="block font-bold text-daet-ink">{it.title}</span>
-                      <span className="text-xs text-daet-ink/60">
+                      <span className="text-xs text-daet-ink/70">
                         {it.start_date ? longDate(it.start_date) : "No date"} · {it.tours_itinerary_items?.length ?? 0} stops
                       </span>
                     </Link>

@@ -75,7 +75,7 @@ export function PaymentRecorder({
     <div className="rounded-2xl border border-daet-ink/10 bg-daet-sand/30 p-4">
       <div className="mb-3 flex items-center justify-between">
         <div>
-          <p className="text-xs font-bold uppercase tracking-wider text-daet-ink/60">
+          <p className="text-xs font-bold uppercase tracking-wider text-daet-ink/70">
             Payment Status
           </p>
           <span
@@ -98,15 +98,15 @@ export function PaymentRecorder({
 
       <div className="grid grid-cols-3 gap-3 text-sm">
         <div>
-          <p className="text-daet-ink/60">Total Amount</p>
+          <p className="text-daet-ink/70">Total Amount</p>
           <p className="font-bold text-daet-ink">₱{totalAmount.toLocaleString()}</p>
         </div>
         <div>
-          <p className="text-daet-ink/60">Total Paid</p>
+          <p className="text-daet-ink/70">Total Paid</p>
           <p className="font-bold text-emerald-700">₱{totalPaid.toLocaleString()}</p>
         </div>
         <div>
-          <p className="text-daet-ink/60">Remaining</p>
+          <p className="text-daet-ink/70">Remaining</p>
           <p className="font-bold text-amber-700">₱{remaining.toLocaleString()}</p>
         </div>
       </div>

@@ -21,8 +21,8 @@ export function GuideQrBadge({
         </div>
         <p className="mt-4 text-sm font-bold text-emerald-800 print:text-black">Accredited guide</p>
         {validUntil ? <p className="mt-1 text-xs font-semibold text-daet-ink/65 print:text-black">Badge valid until {validUntil}</p> : null}
-        <p className="mt-1 break-all text-[10px] text-daet-ink/45 print:text-black">Guide reference · {guideId}</p>
-        <p className="mt-3 text-xs leading-5 text-daet-ink/55 print:text-black">Scan to verify. This QR contains only a signed guide reference, not ID information.</p>
+        <p className="mt-1 break-all text-[10px] text-daet-ink/70 print:text-black">Guide reference · {guideId}</p>
+        <p className="mt-3 text-xs leading-5 text-daet-ink/70 print:text-black">Scan to verify. This QR contains only a signed guide reference, not ID information.</p>
       </div>
       <div className="mt-5 flex flex-col gap-3 sm:flex-row print:hidden">
         <a

@@ -183,7 +183,7 @@ export default async function OperatorPackageDetailPage({ params }: PageProps) {
       case "rejected":
         return "bg-rose-100 text-rose-800";
       default:
-        return "bg-daet-sand text-daet-ink/60";
+        return "bg-daet-sand text-daet-ink/70";
     }
   };
 
@@ -204,7 +204,7 @@ export default async function OperatorPackageDetailPage({ params }: PageProps) {
     <PageFrame>
       <div className="mx-auto max-w-7xl">
         {/* Breadcrumb */}
-        <nav className="mb-6 text-sm text-daet-ink/60">
+        <nav className="mb-6 text-sm text-daet-ink/70">
           <Link href="/tours/operator/packages" className="hover:text-daet-forest">
             My packages
           </Link>
@@ -216,7 +216,7 @@ export default async function OperatorPackageDetailPage({ params }: PageProps) {
         <div className="mb-6 flex flex-wrap items-start justify-between gap-4">
           <div>
             <h1 className="text-3xl font-black text-daet-ink">{pkg.title}</h1>
-            <p className="mt-1 text-sm text-daet-ink/60">
+            <p className="mt-1 text-sm text-daet-ink/70">
               Last updated: {new Date(pkg.updated_at).toLocaleDateString()}
             </p>
           </div>
@@ -286,18 +286,18 @@ export default async function OperatorPackageDetailPage({ params }: PageProps) {
               <h2 className="font-black text-daet-ink">Basic information</h2>
               <dl className="mt-4 space-y-3 text-sm">
                 <div>
-                  <dt className="font-bold text-daet-ink/60">Location</dt>
+                  <dt className="font-bold text-daet-ink/70">Location</dt>
                   <dd className="mt-1 text-daet-ink">📍 {pkg.location_name}</dd>
                 </div>
                 <div>
-                  <dt className="font-bold text-daet-ink/60">Duration</dt>
+                  <dt className="font-bold text-daet-ink/70">Duration</dt>
                   <dd className="mt-1 text-daet-ink">
                     ⏱️ {pkg.duration_value}{" "}
                     {pkg.duration_type === "hours" ? "hours" : "days"}
                   </dd>
                 </div>
                 <div>
-                  <dt className="font-bold text-daet-ink/60">Description</dt>
+                  <dt className="font-bold text-daet-ink/70">Description</dt>
                   <dd className="mt-1 leading-7 text-daet-ink">
                     {pkg.description || "No description provided."}
                   </dd>
@@ -323,7 +323,7 @@ export default async function OperatorPackageDetailPage({ params }: PageProps) {
                           )}
                         </p>
                         {(variant.min_pax || variant.max_pax) && (
-                          <p className="mt-1 text-xs text-daet-ink/60">
+                          <p className="mt-1 text-xs text-daet-ink/70">
                             {variant.min_pax && `Min: ${variant.min_pax} pax`}
                             {variant.min_pax && variant.max_pax && " · "}
                             {variant.max_pax && `Max: ${variant.max_pax} pax`}
@@ -339,7 +339,7 @@ export default async function OperatorPackageDetailPage({ params }: PageProps) {
                             0
                           ).toLocaleString()}
                         </p>
-                        <p className="text-xs text-daet-ink/60">
+                        <p className="text-xs text-daet-ink/70">
                           {variant.price_per_pax ? "per person" : "flat rate"}
                         </p>
                       </div>
@@ -356,7 +356,7 @@ export default async function OperatorPackageDetailPage({ params }: PageProps) {
 
                 {included.length > 0 && (
                   <>
-                    <h3 className="mt-4 text-sm font-bold text-daet-ink/60">Included</h3>
+                    <h3 className="mt-4 text-sm font-bold text-daet-ink/70">Included</h3>
                     <ul className="mt-2 space-y-2">
                       {included.map((item: any) => (
                         <li
@@ -373,7 +373,7 @@ export default async function OperatorPackageDetailPage({ params }: PageProps) {
 
                 {excluded.length > 0 && (
                   <>
-                    <h3 className="mt-4 text-sm font-bold text-daet-ink/60">Not included</h3>
+                    <h3 className="mt-4 text-sm font-bold text-daet-ink/70">Not included</h3>
                     <ul className="mt-2 space-y-2">
                       {excluded.map((item: any) => (
                         <li
@@ -408,7 +408,7 @@ export default async function OperatorPackageDetailPage({ params }: PageProps) {
                           </p>
                         )}
                         {(stop.latitude || stop.longitude) && (
-                          <p className="mt-1 text-xs text-daet-ink/50">
+                          <p className="mt-1 text-xs text-daet-ink/70">
                             {stop.latitude}, {stop.longitude}
                           </p>
                         )}
@@ -432,7 +432,7 @@ export default async function OperatorPackageDetailPage({ params }: PageProps) {
                         className="aspect-video w-full object-cover"
                       />
                       {img.caption && (
-                        <p className="p-3 text-xs text-daet-ink/60">{img.caption}</p>
+                        <p className="p-3 text-xs text-daet-ink/70">{img.caption}</p>
                       )}
                     </div>
                   ))}
@@ -448,25 +448,25 @@ export default async function OperatorPackageDetailPage({ params }: PageProps) {
 
               <div className="mt-4 space-y-4">
                 <div>
-                  <p className="text-xs text-daet-ink/60">Base price</p>
+                  <p className="text-xs text-daet-ink/70">Base price</p>
                   <p className="mt-1 text-2xl font-black text-daet-ink">
                     ₱{displayPrice.toLocaleString()}
                   </p>
-                  <p className="text-xs text-daet-ink/60">{priceLabel}</p>
+                  <p className="text-xs text-daet-ink/70">{priceLabel}</p>
                 </div>
 
                 <div className="border-t border-daet-ink/10 pt-4">
-                  <p className="text-xs text-daet-ink/60">Total bookings</p>
+                  <p className="text-xs text-daet-ink/70">Total bookings</p>
                   <p className="mt-1 text-2xl font-black text-daet-ink">0</p>
                 </div>
 
                 <div className="border-t border-daet-ink/10 pt-4">
-                  <p className="text-xs text-daet-ink/60">Revenue</p>
+                  <p className="text-xs text-daet-ink/70">Revenue</p>
                   <p className="mt-1 text-2xl font-black text-daet-ink">₱0</p>
                 </div>
 
                 <div className="border-t border-daet-ink/10 pt-4">
-                  <p className="text-xs text-daet-ink/60">Average rating</p>
+                  <p className="text-xs text-daet-ink/70">Average rating</p>
                   <p className="mt-1 text-2xl font-black text-daet-ink">—</p>
                 </div>
               </div>

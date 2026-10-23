@@ -156,13 +156,13 @@ export default async function BrowsePackagesPage({
               🔍
             </span>
             <h2 className="mt-4 text-xl font-black text-daet-ink">No packages found</h2>
-            <p className="mt-2 text-sm text-daet-ink/60">
+            <p className="mt-2 text-sm text-daet-ink/70">
               Try adjusting your filters or check back later for new tours.
             </p>
           </section>
         ) : (
           <>
-            <p className="mt-6 text-sm text-daet-ink/60">
+            <p className="mt-6 text-sm text-daet-ink/70">
               {filteredPackages.length} package{filteredPackages.length !== 1 ? "s" : ""} available
             </p>
             <div className="mt-4 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">

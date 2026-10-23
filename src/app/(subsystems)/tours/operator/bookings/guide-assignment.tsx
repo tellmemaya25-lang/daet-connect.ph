@@ -84,6 +84,7 @@ export function GuideAssignment({
 
       <div className="flex items-center gap-3">
         <select
+          aria-label="Guide for this booking"
           value={selectedGuideId}
           onChange={(e) => setSelectedGuideId(e.target.value)}
           disabled={isSubmitting}
@@ -126,7 +127,7 @@ export function GuideAssignment({
 
       {currentGuideId && (
         <div className="flex items-center gap-2 text-sm">
-          <span className="text-daet-ink/60">Currently assigned:</span>
+          <span className="text-daet-ink/70">Currently assigned:</span>
           <span className="font-bold text-daet-forest">
             {availableGuides.find((g) => g.id === currentGuideId)?.full_name || "Unknown"}
           </span>

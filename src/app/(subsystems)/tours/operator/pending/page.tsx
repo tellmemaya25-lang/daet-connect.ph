@@ -104,18 +104,18 @@ export default async function OperatorPendingPage() {
           <ol className="space-y-5">
             <li className="flex gap-4">
               <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-emerald-100 text-sm font-black text-emerald-800">✓</span>
-              <div><p className="font-bold">Application submitted</p><p className="mt-1 text-sm text-daet-ink/60">{new Date(application.created_at).toLocaleDateString("en-PH", { year: "numeric", month: "long", day: "numeric" })}</p></div>
+              <div><p className="font-bold">Application submitted</p><p className="mt-1 text-sm text-daet-ink/70">{new Date(application.created_at).toLocaleDateString("en-PH", { year: "numeric", month: "long", day: "numeric" })}</p></div>
             </li>
             <li className="flex gap-4">
               <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-amber-100 text-sm font-black text-amber-900">2</span>
-              <div><p className="font-bold">Tourism Office review</p><p className="mt-1 text-sm leading-6 text-daet-ink/60">Your registration and business permit are checked by an authorized reviewer.</p></div>
+              <div><p className="font-bold">Tourism Office review</p><p className="mt-1 text-sm leading-6 text-daet-ink/70">Your registration and business permit are checked by an authorized reviewer.</p></div>
             </li>
             <li className="flex gap-4">
-              <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-daet-sand text-sm font-black text-daet-ink/50">3</span>
-              <div><p className="font-bold text-daet-ink/60">Operator dashboard unlocked</p><p className="mt-1 text-sm leading-6 text-daet-ink/50">Package and booking tools are unavailable until accreditation is approved.</p></div>
+              <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-daet-sand text-sm font-black text-daet-ink/70">3</span>
+              <div><p className="font-bold text-daet-ink/70">Operator dashboard unlocked</p><p className="mt-1 text-sm leading-6 text-daet-ink/70">Package and booking tools are unavailable until accreditation is approved.</p></div>
             </li>
           </ol>
-          <div className="mt-8 border-t border-daet-ink/10 pt-5 text-sm text-daet-ink/60">You can safely close this page. Check back here for your status.</div>
+          <div className="mt-8 border-t border-daet-ink/10 pt-5 text-sm text-daet-ink/70">You can safely close this page. Check back here for your status.</div>
         </div>
       </section>
     </PageFrame>

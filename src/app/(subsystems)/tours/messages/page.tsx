@@ -67,9 +67,9 @@ export default async function MessagesInboxPage() {
                     <div className="min-w-0 flex-1">
                       <div className="flex items-baseline justify-between gap-2">
                         <p className={`truncate text-daet-ink ${row.unread > 0 ? "font-black" : "font-bold"}`}>{row.package_title ?? "Tour booking"}</p>
-                        <span className="shrink-0 text-xs text-daet-ink/55">{dayLabel(row.last_message_at)}</span>
+                        <span className="shrink-0 text-xs text-daet-ink/70">{dayLabel(row.last_message_at)}</span>
                       </div>
-                      <p className="text-xs text-daet-ink/55">
+                      <p className="text-xs text-daet-ink/70">
                         {row.booking_reference} · {tourDate(row.tour_date)} · {row.tourist_name}
                       </p>
                       <p className={`mt-1 truncate text-sm ${row.unread > 0 ? "font-semibold text-daet-ink" : "text-daet-ink/65"}`}>

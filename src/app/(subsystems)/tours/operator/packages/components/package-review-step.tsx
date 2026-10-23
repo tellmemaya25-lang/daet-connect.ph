@@ -45,8 +45,8 @@ export function PackageReviewStep({
         {/* Title & Location */}
         <div>
           <h3 className="text-xl font-black text-daet-ink">{data.title}</h3>
-          <p className="mt-1 text-sm text-daet-ink/60">📍 {data.locationName}</p>
-          <p className="mt-1 text-sm text-daet-ink/60">
+          <p className="mt-1 text-sm text-daet-ink/70">📍 {data.locationName}</p>
+          <p className="mt-1 text-sm text-daet-ink/70">
             ⏱️ {data.durationValue} {data.durationType}
           </p>
         </div>
@@ -54,7 +54,7 @@ export function PackageReviewStep({
         {/* Description */}
         {data.description && (
           <div>
-            <p className="text-xs font-bold uppercase tracking-wide text-daet-ink/45">
+            <p className="text-xs font-bold uppercase tracking-wide text-daet-ink/70">
               Description
             </p>
             <p className="mt-1 text-sm leading-6 text-daet-ink/70">{data.description}</p>
@@ -64,7 +64,7 @@ export function PackageReviewStep({
         {/* Inclusions */}
         {data.inclusions.length > 0 && (
           <div>
-            <p className="text-xs font-bold uppercase tracking-wide text-daet-ink/45">
+            <p className="text-xs font-bold uppercase tracking-wide text-daet-ink/70">
               Inclusions ({data.inclusions.length})
             </p>
             <ul className="mt-2 space-y-1">
@@ -81,12 +81,12 @@ export function PackageReviewStep({
         {/* Exclusions */}
         {data.exclusions.length > 0 && (
           <div>
-            <p className="text-xs font-bold uppercase tracking-wide text-daet-ink/45">
+            <p className="text-xs font-bold uppercase tracking-wide text-daet-ink/70">
               Exclusions ({data.exclusions.length})
             </p>
             <ul className="mt-2 space-y-1">
               {data.exclusions.map((item, i) => (
-                <li key={i} className="flex items-center gap-2 text-sm text-daet-ink/60">
+                <li key={i} className="flex items-center gap-2 text-sm text-daet-ink/70">
                   <span className="text-xs">✕</span>
                   {item}
                 </li>
@@ -97,7 +97,7 @@ export function PackageReviewStep({
 
         {/* Price Variants */}
         <div>
-          <p className="text-xs font-bold uppercase tracking-wide text-daet-ink/45">
+          <p className="text-xs font-bold uppercase tracking-wide text-daet-ink/70">
             Price variants ({data.priceVariants.length})
           </p>
           <div className="mt-2 space-y-2">
@@ -118,7 +118,7 @@ export function PackageReviewStep({
                         <span className="ml-2 text-xs text-daet-forest">(Default)</span>
                       )}
                     </p>
-                    <p className="text-xs text-daet-ink/60">
+                    <p className="text-xs text-daet-ink/70">
                       {variant.minPax}
                       {variant.maxPax ? `–${variant.maxPax}` : "+"} pax
                     </p>
@@ -136,7 +136,7 @@ export function PackageReviewStep({
 
         {/* Stops */}
         <div>
-          <p className="text-xs font-bold uppercase tracking-wide text-daet-ink/45">
+          <p className="text-xs font-bold uppercase tracking-wide text-daet-ink/70">
             Itinerary stops ({data.stops.length})
           </p>
           <div className="mt-2 space-y-1">

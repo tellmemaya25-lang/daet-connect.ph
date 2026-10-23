@@ -124,7 +124,7 @@ export function RouteMap({
           </g>
         ))}
       </svg>
-      <figcaption className="mt-1 text-xs text-daet-ink/55">Sketch map (not to road scale). North is up.</figcaption>
+      <figcaption className="mt-1 text-xs text-daet-ink/70">Sketch map (not to road scale). North is up.</figcaption>
     </figure>
   );
 }

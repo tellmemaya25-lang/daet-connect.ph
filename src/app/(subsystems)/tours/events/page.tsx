@@ -135,7 +135,7 @@ export default async function EventsCalendarPage({ searchParams }: { searchParam
           </div>
 
           <div role="grid" aria-labelledby="calendar-month">
-            <div role="row" className="grid grid-cols-7 text-center text-[11px] font-black uppercase tracking-wide text-daet-ink/50">
+            <div role="row" className="grid grid-cols-7 text-center text-[11px] font-black uppercase tracking-wide text-daet-ink/70">
               {WEEKDAYS.map((day) => (
                 <div role="columnheader" key={day} className="py-2">
                   <abbr title={day} className="no-underline">{day.slice(0, 1)}<span className="hidden sm:inline">{day.slice(1)}</span></abbr>
@@ -154,7 +154,7 @@ export default async function EventsCalendarPage({ searchParams }: { searchParam
                       ? "bg-daet-forest text-white"
                       : cell.inMonth
                         ? "bg-daet-sand/40 text-daet-ink hover:bg-daet-sand"
-                        : "text-daet-ink/30"
+                        : "text-daet-ink/70"
                   } ${isToday && !isSelected ? "ring-2 ring-daet-sun" : ""}`;
 
                   const content = (
@@ -232,7 +232,7 @@ export default async function EventsCalendarPage({ searchParams }: { searchParam
               <p className="mt-2 font-bold text-daet-ink">
                 {selectedDay ? "No events on this day" : "No events this month yet"}
               </p>
-              <p className="text-sm text-daet-ink/60">Check another date, or browse tour packages in the meantime.</p>
+              <p className="text-sm text-daet-ink/70">Check another date, or browse tour packages in the meantime.</p>
               <Link href="/tours/browse" className="mt-4 inline-flex min-h-11 items-center justify-center rounded-full bg-daet-forest px-6 text-sm font-bold text-white hover:bg-daet-ink">
                 Browse tours
               </Link>

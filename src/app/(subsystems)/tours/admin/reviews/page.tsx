@@ -74,7 +74,7 @@ export default async function AdminReviewsPage({ searchParams }: { searchParams:
                       <Link href={`/tours/packages/${review.package_id}#reviews`} className="font-black text-daet-ink hover:underline">
                         {pkg?.title ?? "Tour"}
                       </Link>
-                      <p className="text-xs text-daet-ink/55">
+                      <p className="text-xs text-daet-ink/70">
                         {operator?.business_name} · {date(review.created_at)}
                       </p>
                     </div>
@@ -83,7 +83,7 @@ export default async function AdminReviewsPage({ searchParams }: { searchParams:
                       <Stars value={review.rating} />
                     </div>
                   </div>
-                  {review.comment ? <p className="mt-3 whitespace-pre-line text-sm leading-6 text-daet-ink/80">{review.comment}</p> : <p className="mt-3 text-sm italic text-daet-ink/50">Rating only.</p>}
+                  {review.comment ? <p className="mt-3 whitespace-pre-line text-sm leading-6 text-daet-ink/80">{review.comment}</p> : <p className="mt-3 text-sm italic text-daet-ink/70">Rating only.</p>}
                   {review.operator_reply ? (
                     <p className="mt-2 rounded-xl bg-daet-sand/50 p-3 text-sm text-daet-ink/80">
                       <span className="font-bold">Operator reply:</span> {review.operator_reply}

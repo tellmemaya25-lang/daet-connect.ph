@@ -97,24 +97,24 @@ export async function OperatorHome({ operatorId, searchParams }: { operatorId: s
 
       <div className="mb-6 grid grid-cols-2 gap-3 lg:grid-cols-4">
         <Card>
-          <p className="text-xs font-bold text-daet-ink/55">Waiting for you</p>
+          <p className="text-xs font-bold text-daet-ink/70">Waiting for you</p>
           <p className="mt-1 text-2xl font-black text-amber-800">{pendingCount ?? 0}</p>
-          <p className="text-xs text-daet-ink/55">booking request{pendingCount === 1 ? "" : "s"}</p>
+          <p className="text-xs text-daet-ink/70">booking request{pendingCount === 1 ? "" : "s"}</p>
         </Card>
         <Card>
-          <p className="text-xs font-bold text-daet-ink/55">Received in {key === monthKey(thisMonth) ? "this month" : key}</p>
+          <p className="text-xs font-bold text-daet-ink/70">Received in {key === monthKey(thisMonth) ? "this month" : key}</p>
           <p className="mt-1 text-2xl font-black text-daet-forest">{revenue ? peso(revenue.received) : "—"}</p>
           <Link href={`/tours/operator/payments?month=${key}`} className="text-xs font-bold text-daet-forest hover:underline">
             Revenue report →
           </Link>
         </Card>
         <Card>
-          <p className="text-xs font-bold text-daet-ink/55">Occupancy</p>
+          <p className="text-xs font-bold text-daet-ink/70">Occupancy</p>
           <p className="mt-1 text-2xl font-black text-daet-ink">{occ.percent === null ? "—" : `${occ.percent}%`}</p>
-          <p className="text-xs text-daet-ink/55">{occ.seats ? `${occ.booked} of ${occ.seats} seats · ${occ.openDays} open days` : "No open dates this month"}</p>
+          <p className="text-xs text-daet-ink/70">{occ.seats ? `${occ.booked} of ${occ.seats} seats · ${occ.openDays} open days` : "No open dates this month"}</p>
         </Card>
         <Card>
-          <p className="text-xs font-bold text-daet-ink/55">Rating</p>
+          <p className="text-xs font-bold text-daet-ink/70">Rating</p>
           <div className="mt-1">
             <RatingBadge summary={rating} />
           </div>
@@ -140,11 +140,13 @@ export async function OperatorHome({ operatorId, searchParams }: { operatorId: s
                   href={`/tours/operator/dashboard?month=${key}&day=${cell.dateKey}`}
                   scroll={false}
                   aria-current={selected ? "date" : undefined}
-                  aria-label={`${formatDayHeading(cell.dateKey)}${day ? `: ${day.bookings} booking${day.bookings === 1 ? "" : "s"}, ${day.pax} pax` : ""}`}
                   className={`flex h-12 flex-col items-center justify-center rounded-xl text-sm transition ${selected ? "bg-daet-forest text-white" : day ? "bg-daet-sand font-bold text-daet-ink hover:bg-daet-sand/70" : "text-daet-ink/70 hover:bg-daet-sand/50"} ${isToday && !selected ? "ring-2 ring-daet-forest/40" : ""}`}
                 >
                   <span>{cell.day}</span>
                   {day ? <span className={`text-[10px] leading-none ${selected ? "text-white/85" : "text-daet-forest"}`}>{day.pax} pax</span> : null}
+                  <span className="sr-only">
+                    {` ${formatDayHeading(cell.dateKey)}${day ? `, ${day.bookings} booking${day.bookings === 1 ? "" : "s"}` : ""}`}
+                  </span>
                 </Link>
               );
             }}
@@ -153,7 +155,7 @@ export async function OperatorHome({ operatorId, searchParams }: { operatorId: s
             <div className="mt-4 border-t border-daet-ink/10 pt-4">
               <p className="mb-2 text-sm font-black text-daet-ink">{formatDayHeading(selectedDay)}</p>
               {dayList.length === 0 ? (
-                <p className="text-sm text-daet-ink/60">No bookings on this day.</p>
+                <p className="text-sm text-daet-ink/70">No bookings on this day.</p>
               ) : (
                 <BookingLines bookings={dayList} title={title} />
               )}
@@ -223,7 +225,7 @@ function BookingLines({ bookings, title }: { bookings: DayBooking[]; title: (b: 
             <Link href={`/tours/operator/bookings?status=${b.status}#booking-${b.id}`} className="block truncate font-bold text-daet-ink hover:underline">
               {title(b)}
             </Link>
-            <p className="truncate text-xs text-daet-ink/60">
+            <p className="truncate text-xs text-daet-ink/70">
               {b.booking_reference} · {b.contact_name} · {b.number_of_pax} pax{b.assigned_guide_id ? "" : " · no guide yet"}
             </p>
           </div>

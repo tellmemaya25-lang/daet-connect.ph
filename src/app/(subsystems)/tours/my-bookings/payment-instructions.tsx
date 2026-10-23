@@ -33,11 +33,11 @@ export function PaymentInstructions({
       <div className="space-y-4">
         {/* Amount to Pay */}
         <div className="rounded-xl bg-white p-4 text-center">
-          <p className="text-sm text-daet-ink/60">Total Amount to Pay</p>
+          <p className="text-sm text-daet-ink/70">Total Amount to Pay</p>
           <p className="text-3xl font-black text-daet-forest">
             ₱{totalAmount.toLocaleString()}
           </p>
-          <p className="mt-1 text-xs text-daet-ink/60">
+          <p className="mt-1 text-xs text-daet-ink/70">
             Reference: {bookingReference}
           </p>
         </div>
@@ -51,12 +51,12 @@ export function PaymentInstructions({
             </p>
             <div className="space-y-2 text-sm">
               <div>
-                <p className="text-daet-ink/60">GCash Number:</p>
+                <p className="text-daet-ink/70">GCash Number:</p>
                 <p className="font-bold text-daet-ink">{gcashNumber}</p>
               </div>
               {gcashName && (
                 <div>
-                  <p className="text-daet-ink/60">Account Name:</p>
+                  <p className="text-daet-ink/70">Account Name:</p>
                   <p className="font-bold text-daet-ink">{gcashName}</p>
                 </div>
               )}
@@ -73,16 +73,16 @@ export function PaymentInstructions({
             </p>
             <div className="space-y-2 text-sm">
               <div>
-                <p className="text-daet-ink/60">Bank:</p>
+                <p className="text-daet-ink/70">Bank:</p>
                 <p className="font-bold text-daet-ink">{bankName}</p>
               </div>
               <div>
-                <p className="text-daet-ink/60">Account Number:</p>
+                <p className="text-daet-ink/70">Account Number:</p>
                 <p className="font-bold text-daet-ink">{bankAccountNumber}</p>
               </div>
               {bankAccountName && (
                 <div>
-                  <p className="text-daet-ink/60">Account Name:</p>
+                  <p className="text-daet-ink/70">Account Name:</p>
                   <p className="font-bold text-daet-ink">{bankAccountName}</p>
                 </div>
               )}
@@ -105,7 +105,7 @@ export function PaymentInstructions({
 
         {/* Contact Operator */}
         <div className="rounded-xl bg-daet-forest/10 p-4 text-center">
-          <p className="text-xs text-daet-ink/60">
+          <p className="text-xs text-daet-ink/70">
             After sending payment, contact the operator:
           </p>
           <p className="mt-2 font-bold text-daet-ink">
@@ -117,7 +117,7 @@ export function PaymentInstructions({
               </>
             )}
           </p>
-          <p className="mt-2 text-xs text-daet-ink/60">
+          <p className="mt-2 text-xs text-daet-ink/70">
             Send proof of payment (screenshot) to confirm your booking.
           </p>
         </div>

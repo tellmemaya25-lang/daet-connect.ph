@@ -56,7 +56,7 @@ export function CancellationReview({ bookingId, request, late }: { bookingId: st
         {late ? <Badge tone="warning">Within 48 hours of the tour</Badge> : null}
       </p>
       <p className="text-sm text-daet-ink">“{request.reason}”</p>
-      <p className="mt-1 text-xs text-daet-ink/55">
+      <p className="mt-1 text-xs text-daet-ink/70">
         Asked on {new Date(request.requested_at).toLocaleString("en-PH", { dateStyle: "medium", timeStyle: "short", timeZone: "Asia/Manila" })}
       </p>
       {result ? <Notice variant={result.tone} className="mt-3">{result.text}</Notice> : null}
