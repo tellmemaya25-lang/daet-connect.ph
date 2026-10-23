@@ -260,6 +260,21 @@ _Ch. 4.3 §3; the context doc names FCM or WebSockets, and this uses Supabase Re
 - **Env:** `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `VAPID_SUBJECT`.
 - **Acceptance:** an operator receives a push on their phone within seconds of a tourist's payment confirming.
 
+**Status (2026-10-23): built, migration `20261029_f5_notifications.sql` applied. Push needs VAPID keys, `NOTIFICATIONS_PUSH_SECRET` and two Vault secrets (README → Notifications).**
+- Database triggers on bookings, payments, receipts, cancellations, check-ins, messages, accreditation, package review and reviews write `tours_notifications` rows. They cover every path, including the PayMongo webhook and SECURITY DEFINER functions. Nobody is notified about their own action, and message notifications are merged per thread for 10 minutes.
+- Header bell with live unread count (Realtime), dropdown and mark-all-read; `/tours/notifications` page with the per-device push switch; opt-in prompt on the booking page.
+- Push path: insert → `pg_net` POST (async, after commit) → `/api/notifications/push` (bearer secret, timing-safe) → `web-push` to each subscription. Expired subscriptions (404/410) are removed, and `pushed_at` prevents double sends. `public/sw.js` shows the notification and opens its in-app link.
+- RLS: users read and mark only their own notifications; nobody can insert or edit text; `tours_notify` isn't client-callable; `push_subscriptions` is no longer reachable by `anon`.
+- Verified with a rolled-back lifecycle against the live DB:
+  - every event produced the expected notification for the expected person;
+  - message dedupe worked;
+  - visibility, column and insert lockdown held.
+- Also: 9 new unit tests, a `web-push` encryption check with generated VAPID keys, the build and mobile/desktop screenshots. Not yet verified: a real push to a phone (needs keys and a public URL).
+- Deviations from the plan:
+  - Rows are written by DB triggers instead of a `notify()` call in app code, so no path can forget to notify.
+  - `NEXT_PUBLIC_VAPID_PUBLIC_KEY` replaces `VAPID_PUBLIC_KEY`, because the browser needs it.
+- Follow-ups: email fallback for important events; per-type notification preferences; pruning notifications older than 90 days.
+
 ---
 
 ## F6 — Daet tourism dataset + Google Maps (Weeks 5–6)

@@ -896,6 +896,50 @@ export type Database = {
           },
         ]
       }
+      tours_notifications: {
+        Row: {
+          body: string | null
+          created_at: string
+          id: string
+          link: string | null
+          profile_id: string
+          pushed_at: string | null
+          read_at: string | null
+          title: string
+          type: string
+        }
+        Insert: {
+          body?: string | null
+          created_at?: string
+          id?: string
+          link?: string | null
+          profile_id: string
+          pushed_at?: string | null
+          read_at?: string | null
+          title: string
+          type: string
+        }
+        Update: {
+          body?: string | null
+          created_at?: string
+          id?: string
+          link?: string | null
+          profile_id?: string
+          pushed_at?: string | null
+          read_at?: string | null
+          title?: string
+          type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tours_notifications_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       tours_operators: {
         Row: {
           accreditation_notes: string | null
@@ -1615,6 +1659,17 @@ export type Database = {
           status: string
         }[]
       }
+      tours_booking_context: {
+        Args: { p_booking_id: string }
+        Returns: {
+          guide_profile: string
+          operator_profile: string
+          reference: string
+          title: string
+          tour_day: string
+          tourist: string
+        }[]
+      }
       tours_check_in: {
         Args: {
           p_booking_id: string
@@ -1662,10 +1717,21 @@ export type Database = {
         Args: { p_conversation_id: string }
         Returns: undefined
       }
+      tours_notify: {
+        Args: {
+          p_body: string
+          p_link: string
+          p_profile_id: string
+          p_title: string
+          p_type: string
+        }
+        Returns: undefined
+      }
       tours_open_booking_conversation: {
         Args: { p_booking_id: string }
         Returns: string
       }
+      tours_peso: { Args: { p_amount: number }; Returns: string }
       tours_record_refund: {
         Args: {
           p_amount: number

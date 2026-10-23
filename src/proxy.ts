@@ -38,7 +38,7 @@ export async function proxy(request: NextRequest) {
 
 export const config = {
   matcher: [
-    // Skip static assets, image optimization, and webhook endpoints (no user session).
-    "/((?!_next/static|_next/image|favicon.ico|api/webhooks|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico|ics)$).*)",
+    // Skip static assets, the service worker, and endpoints called by servers (no user session).
+    "/((?!_next/static|_next/image|favicon.ico|sw.js|api/webhooks|api/notifications/push|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico|ics)$).*)",
   ],
 };

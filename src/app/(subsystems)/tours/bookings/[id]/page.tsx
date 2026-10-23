@@ -6,6 +6,7 @@ import { isSupabaseConfigured } from "@/lib/supabase/env";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { isPaymongoConfigured } from "@/lib/paymongo/client";
 import { cancellationOption } from "@/lib/tours/cancellation";
+import { PushOptIn } from "@/components/tours/push-opt-in";
 import { OpenChatButton } from "@/app/(subsystems)/tours/messages/open-chat-button";
 import { CancelBookingPanel, type MyCancellation } from "./cancel-booking-panel";
 import { BookingPaymentPanel, type PanelPayment, type PanelProof } from "./booking-payment-panel";
@@ -136,6 +137,8 @@ export default async function BookingDetailPage({ params, searchParams }: PagePr
             </p>
           </div>
         )}
+
+        {booking.status === "pending" || booking.status === "confirmed" ? <PushOptIn variant="prompt" /> : null}
 
         {/* Booking Reference */}
         <div className="mb-6 rounded-3xl border border-daet-ink/10 bg-white p-6 text-center shadow-sm">
