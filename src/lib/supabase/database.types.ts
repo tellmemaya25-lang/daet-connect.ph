@@ -408,6 +408,39 @@ export type Database = {
           },
         ]
       }
+      tours_conversation_reads: {
+        Row: {
+          conversation_id: string
+          last_read_at: string
+          profile_id: string
+        }
+        Insert: {
+          conversation_id: string
+          last_read_at?: string
+          profile_id: string
+        }
+        Update: {
+          conversation_id?: string
+          last_read_at?: string
+          profile_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tours_conversation_reads_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "tours_conversations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tours_conversation_reads_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       tours_conversations: {
         Row: {
           booking_id: string | null
@@ -835,7 +868,7 @@ export type Database = {
           id?: string
           is_read?: boolean
           message_text?: string | null
-          sender_id: string
+          sender_id?: string
         }
         Update: {
           attachment_url?: string | null
@@ -1594,6 +1627,21 @@ export type Database = {
         Args: { p_date: string; p_package_id: string }
         Returns: number
       }
+      tours_inbox: {
+        Args: never
+        Returns: {
+          booking_id: string
+          booking_reference: string
+          conversation_id: string
+          last_message: string
+          last_message_at: string
+          last_sender_id: string
+          package_title: string
+          tour_date: string
+          tourist_name: string
+          unread: number
+        }[]
+      }
       tours_is_booking_guide: {
         Args: { p_booking_id: string }
         Returns: boolean
@@ -1605,6 +1653,18 @@ export type Database = {
       tours_is_booking_tourist: {
         Args: { p_booking_id: string }
         Returns: boolean
+      }
+      tours_is_conversation_member: {
+        Args: { p_conversation_id: string }
+        Returns: boolean
+      }
+      tours_mark_conversation_read: {
+        Args: { p_conversation_id: string }
+        Returns: undefined
+      }
+      tours_open_booking_conversation: {
+        Args: { p_booking_id: string }
+        Returns: string
       }
       tours_record_refund: {
         Args: {

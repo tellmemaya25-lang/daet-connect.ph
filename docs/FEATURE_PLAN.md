@@ -231,6 +231,21 @@ _SOP 1 items 3–4; Ch. 4.3 §3 "real-time communication"._
 - Text only plus an optional image attachment (private bucket, signed URLs). Limit 1,000 characters; server-side rate limit of about 20 messages/min.
 - **Acceptance:** tourist and operator chat about a booking in real time on two phones, and no one else can read the thread (RLS test with a third account).
 
+**Status (2026-10-23): built, migration `20261028_f4_messaging.sql` applied.**
+- One conversation per booking, opened from the booking page ("Message the operator"), the operator's bookings ("Message tourist") or the guide's guest list ("Message group"). Inbox at `/tours/messages` with unread counts; thread at `/tours/messages/[id]` with Realtime `postgres_changes` and photo attachments (private bucket, 1-hour signed links). The thread is read-only once a booking is cancelled or declined.
+- Membership is derived from the booking each time (its tourist, the package's operator, the assigned guide), so reassigning a guide moves chat access with it. Admins can read but not post. All writes go through RLS plus triggers:
+  - `sender_id` must be the caller;
+  - 1–1000 characters or a photo;
+  - 20 messages a minute per sender;
+  - attachment paths must sit inside the conversation's folder.
+
+  Conversations are created only by `tours_open_booking_conversation`. `anon` lost all access (it previously had full grants), and the old policy that let any user create a conversation with any operator is disabled.
+- Verified with rolled-back scenarios against the live DB (same conversation reused, length/empty/bad path/spoofed sender/edit rejected, unread counts and mark-read, outsider can't read/post/open/create, rate limit, anon denied), 9 new unit tests, the build and mobile screenshots. Live Realtime delivery still needs checking on two phones against the real project.
+- Deviations from the plan:
+  - Read state is per person (`tours_conversation_reads`) instead of `is_read`, because a thread has up to three people.
+  - Conversations open on first use, not on confirmation, so tourists can ask before the operator confirms.
+- Follow-ups: push and email notifications for new messages (F5); "load older messages" beyond the latest 100.
+
 ---
 
 ## F5 — Notifications: in-app + Web Push (Weeks 5–6)

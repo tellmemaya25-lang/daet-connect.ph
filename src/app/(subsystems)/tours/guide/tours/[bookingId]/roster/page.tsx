@@ -8,6 +8,7 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { toManilaDateKey } from "@/lib/tours/events-calendar";
 import { isUuid } from "@/lib/tours/operator-access";
 import { checkInAllowed } from "@/lib/tours/qr-token";
+import { OpenChatButton } from "@/app/(subsystems)/tours/messages/open-chat-button";
 import { RosterCheckInButton } from "./roster-check-in-button";
 
 export const dynamic = "force-dynamic";
@@ -89,11 +90,12 @@ export default async function GuideRosterPage({ params }: PageProps) {
               <span className="font-bold">Requests:</span> {booking.special_requests}
             </p>
           ) : null}
-          {!party && rule.ok ? (
-            <div className="mt-4">
-              <RosterCheckInButton bookingId={booking.id} label="Check in whole group" />
-            </div>
-          ) : null}
+          <div className="mt-4 flex flex-wrap gap-3">
+            {!party && rule.ok ? <RosterCheckInButton bookingId={booking.id} label="Check in whole group" /> : null}
+            {booking.status === "confirmed" || booking.status === "completed" ? (
+              <OpenChatButton bookingId={booking.id} label="Message group" />
+            ) : null}
+          </div>
         </section>
 
         {guests.length > 0 ? (

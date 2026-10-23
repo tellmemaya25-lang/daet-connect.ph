@@ -7,6 +7,7 @@ import { isSupabaseConfigured } from "@/lib/supabase/env";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { FREE_CANCELLATION_HOURS } from "@/lib/tours/cancellation";
 import { manilaDayStartUtc, toManilaDateKey } from "@/lib/tours/events-calendar";
+import { OpenChatButton } from "@/app/(subsystems)/tours/messages/open-chat-button";
 import { BookingActionButtons } from "./booking-action-buttons";
 import { CancellationReview, RefundPanel, type CancellationRequest } from "./cancellation-review";
 import { GuideAssignment } from "./guide-assignment";
@@ -426,6 +427,12 @@ export default async function OperatorBookingsPage({
 
                       {refundableByBooking.has(booking.id) ? (
                         <RefundPanel bookingId={booking.id} refundable={refundableByBooking.get(booking.id)!} />
+                      ) : null}
+
+                      {booking.status !== "cancelled" && booking.status !== "rejected" ? (
+                        <div className="mb-3">
+                          <OpenChatButton bookingId={booking.id} label="Message tourist" variant="ghost" />
+                        </div>
                       ) : null}
 
                       {/* Actions */}
