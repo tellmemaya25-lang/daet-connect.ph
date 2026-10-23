@@ -4,6 +4,7 @@ import { PageFrame } from "@/components/ui/page-frame";
 import { Notice } from "@/components/ui/notice";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { toManilaDateKey } from "@/lib/tours/events-calendar";
 
 export const dynamic = "force-dynamic";
 
@@ -105,10 +106,12 @@ export default async function GuideMyToursPage() {
   };
 
   // Separate upcoming and completed
+  // Compare Manila calendar days so today's tours stay under "Upcoming".
+  const today = toManilaDateKey(new Date());
   const upcomingTours =
-    assignedTours?.filter((t) => t.status === "confirmed" && new Date(t.tour_date) >= new Date()) || [];
+    assignedTours?.filter((t) => t.status === "confirmed" && t.tour_date >= today) || [];
   const completedTours =
-    assignedTours?.filter((t) => t.status === "completed" || new Date(t.tour_date) < new Date()) || [];
+    assignedTours?.filter((t) => t.status === "completed" || t.tour_date < today) || [];
 
   return (
     <PageFrame>
@@ -122,12 +125,18 @@ export default async function GuideMyToursPage() {
         </div>
 
         {/* Back Button */}
-        <div className="mb-6">
+        <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
           <Link
             href="/tours/guide/dashboard"
             className="inline-flex items-center gap-2 text-sm font-bold text-daet-ink/60 transition hover:text-daet-ink"
           >
             ← Back to Dashboard
+          </Link>
+          <Link
+            href="/tours/guide/check-in"
+            className="inline-flex min-h-11 items-center justify-center rounded-full bg-daet-forest px-6 text-sm font-bold text-white transition hover:bg-daet-ink"
+          >
+            Scan tickets
           </Link>
         </div>
 
@@ -231,6 +240,13 @@ export default async function GuideMyToursPage() {
                             </span>
                           </div>
                         )}
+
+                        <Link
+                          href={`/tours/guide/tours/${booking.id}/roster`}
+                          className="mt-4 inline-flex min-h-11 items-center justify-center rounded-full border border-daet-forest/30 bg-white px-5 text-sm font-bold text-daet-forest transition hover:bg-daet-forest/5"
+                        >
+                          {booking.tour_date === today ? "Guest list & check-in" : "Guest list"}
+                        </Link>
                       </div>
                     </div>
                   </div>

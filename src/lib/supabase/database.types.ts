@@ -356,6 +356,58 @@ export type Database = {
           },
         ]
       }
+      tours_checkins: {
+        Row: {
+          booking_id: string
+          checked_in_by: string
+          guide_id: string | null
+          id: string
+          method: string
+          participant_id: string | null
+          scanned_at: string
+        }
+        Insert: {
+          booking_id: string
+          checked_in_by: string
+          guide_id?: string | null
+          id?: string
+          method: string
+          participant_id?: string | null
+          scanned_at?: string
+        }
+        Update: {
+          booking_id?: string
+          checked_in_by?: string
+          guide_id?: string | null
+          id?: string
+          method?: string
+          participant_id?: string | null
+          scanned_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tours_checkins_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: false
+            referencedRelation: "tours_bookings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tours_checkins_guide_id_fkey"
+            columns: ["guide_id"]
+            isOneToOne: false
+            referencedRelation: "tours_guides"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tours_checkins_participant_id_fkey"
+            columns: ["participant_id"]
+            isOneToOne: false
+            referencedRelation: "tours_booking_participants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       tours_conversations: {
         Row: {
           booking_id: string | null
@@ -1520,6 +1572,23 @@ export type Database = {
       submit_package_for_review: {
         Args: { p_package_id: string }
         Returns: undefined
+      }
+      tours_badge_lookup: {
+        Args: { p_guide_id: string }
+        Returns: {
+          approved_at: string
+          full_name: string
+          photo_url: string
+          status: string
+        }[]
+      }
+      tours_check_in: {
+        Args: {
+          p_booking_id: string
+          p_method: string
+          p_participant_id: string
+        }
+        Returns: string
       }
       tours_count_booked_seats: {
         Args: { p_date: string; p_package_id: string }

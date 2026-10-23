@@ -208,6 +208,17 @@ _SOP 1 items 5–6 (x̄ 3.51, 3.57); Ch. 4.3 §2._
 
 **Acceptance:** a tourist's phone ticket is scanned by the assigned guide on tour day, the roster updates, and the badge verification page works from any phone camera.
 
+**Status (2026-10-23): built, migration `20261027_f3_qr_checkins.sql` applied. Needs `QR_SIGNING_SECRET` in Vercel.**
+- Signed HMAC tokens (`qr-token.ts`) are encoded as links to `/tours/verify/<token>`, so any phone camera works. The verify page shows the guide's name and photo only while they are approved, and logs signed-in scans.
+- Tourist ticket page; guide check-in page (BarcodeDetector camera, phone-camera or paste fallback, today's groups); guest list with whole-group and per-guest manual check-in. `tours_check_in` enforces the assigned approved guide (or the operator/admin), a confirmed booking and today's date, and records each guest once.
+- Verified with rolled-back scenarios against the live DB (double scan returns "already", wrong day, wrong guide, direct insert blocked, RLS visibility, anon lookup not logged, signed-in lookup logged), 20 new unit tests (tamper property test included), the build and mobile screenshots.
+- Deviations from the plan:
+  - No `in_progress` booking status. Check-in is recorded in `tours_checkins` and the booking stays `confirmed` until completed.
+  - Badge tokens are derived from the approval date, not stored in `qr_code_value`.
+  - No operator badges.
+  - No `@zxing/browser` fallback: iOS uses the phone camera app, which opens the same check-in page.
+- Follow-ups: let a guide undo an accidental check-in; operator view of check-ins on the bookings page; badge revocation list if the secret ever leaks (rotate `QR_SIGNING_SECRET`).
+
 ---
 
 ## F4 — Real-time messaging (Week 6)

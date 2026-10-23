@@ -4,7 +4,7 @@ import { PageFrame } from "@/components/ui/page-frame";
 import { GuideQrBadge } from "@/app/(subsystems)/tours/guide/guide-qr-badge";
 import { canAccessGuideQr } from "@/lib/tours/guide-access";
 import { GUIDE_OWN_STATUS_SELECT, GUIDE_TABLE, GUIDE_USER_ID_COLUMN } from "@/lib/tours/guide-contract";
-import { createGuideQrPngDataUrl } from "@/lib/tours/guide-qr";
+import { issueGuideBadge } from "@/lib/tours/qr-issue";
 import { getAuthenticatedSession } from "@/lib/tours/server-auth";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
@@ -27,7 +27,7 @@ export default async function MyGuideQrPage() {
   const supabase = await createSupabaseServerClient();
   const { data: guide, error } = await supabase
     .from(GUIDE_TABLE)
-    .select(GUIDE_OWN_STATUS_SELECT)
+    .select(`${GUIDE_OWN_STATUS_SELECT},reviewed_at,updated_at`)
     .eq(GUIDE_USER_ID_COLUMN, session.user.id)
     .maybeSingle();
   if (error) return <PageFrame><Notice variant="error" title="Guide status could not be checked">The QR code stays unavailable until accreditation status can be verified.</Notice></PageFrame>;
@@ -49,15 +49,23 @@ export default async function MyGuideQrPage() {
     return <PageFrame><Notice variant="error" title="Your guide profile name is unavailable">Contact the Tourism Office so your public profile can be checked.</Notice></PageFrame>;
   }
 
-  const qrDataUrl = await createGuideQrPngDataUrl(guide.id);
+  const badge = await issueGuideBadge(guide.id, guide.reviewed_at ?? guide.updated_at ?? guide.created_at);
+  if (!badge) {
+    return <PageFrame><Notice variant="warning" title="Badge QR is not set up yet">The QR signing key (QR_SIGNING_SECRET) is not configured. Ask the site administrator to add it.</Notice></PageFrame>;
+  }
   return (
     <PageFrame>
       <div className="mb-7 text-center print:hidden">
         <p className="text-xs font-black uppercase tracking-[0.18em] text-daet-leaf">Approved guide</p>
         <h1 className="mt-2 text-3xl font-black text-daet-ink">My QR Code</h1>
-        <p className="mt-2 text-sm leading-6 text-daet-ink/65">Download the PNG or print a badge insert. The QR contains only your guide reference—never your ID number or document.</p>
+        <p className="mt-2 text-sm leading-6 text-daet-ink/65">Download the PNG or print a badge insert. Anyone can scan it with a phone camera to check your accreditation. It never contains your ID number or documents.</p>
       </div>
-      <GuideQrBadge guideId={guide.id} fullName={profile.full_name} qrDataUrl={qrDataUrl} />
+      <GuideQrBadge
+        guideId={guide.id}
+        fullName={profile.full_name}
+        qrDataUrl={badge.pngDataUrl}
+        validUntil={new Date(badge.exp * 1000).toLocaleDateString("en-PH", { dateStyle: "long", timeZone: "Asia/Manila" })}
+      />
     </PageFrame>
   );
 }

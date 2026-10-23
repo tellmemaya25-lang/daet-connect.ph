@@ -4,10 +4,12 @@ export function GuideQrBadge({
   guideId,
   fullName,
   qrDataUrl,
+  validUntil,
 }: {
   guideId: string;
   fullName: string;
   qrDataUrl: string;
+  validUntil?: string;
 }) {
   return (
     <section className="mx-auto max-w-xl print:max-w-none">
@@ -18,8 +20,9 @@ export function GuideQrBadge({
           <img src={qrDataUrl} alt={`Approved guide QR code for ${fullName}`} width={420} height={420} className="h-56 w-56 sm:h-64 sm:w-64 print:h-[2.55in] print:w-[2.55in]" />
         </div>
         <p className="mt-4 text-sm font-bold text-emerald-800 print:text-black">Accredited guide</p>
+        {validUntil ? <p className="mt-1 text-xs font-semibold text-daet-ink/65 print:text-black">Badge valid until {validUntil}</p> : null}
         <p className="mt-1 break-all text-[10px] text-daet-ink/45 print:text-black">Guide reference · {guideId}</p>
-        <p className="mt-3 text-xs leading-5 text-daet-ink/55 print:text-black">This QR contains only a guide reference, not ID information.</p>
+        <p className="mt-3 text-xs leading-5 text-daet-ink/55 print:text-black">Scan to verify. This QR contains only a signed guide reference, not ID information.</p>
       </div>
       <div className="mt-5 flex flex-col gap-3 sm:flex-row print:hidden">
         <a

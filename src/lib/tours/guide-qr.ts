@@ -9,7 +9,12 @@ export function createGuideQrPayload(guideId: string): string {
 }
 
 export async function createGuideQrPngDataUrl(guideId: string): Promise<string> {
-  return QRCode.toDataURL(createGuideQrPayload(guideId), {
+  return createQrPngDataUrl(createGuideQrPayload(guideId));
+}
+
+/** PNG data URL for any QR content (badge verify links, booking tickets). */
+export async function createQrPngDataUrl(content: string): Promise<string> {
+  return QRCode.toDataURL(content, {
     type: "image/png",
     errorCorrectionLevel: "H",
     margin: 3,

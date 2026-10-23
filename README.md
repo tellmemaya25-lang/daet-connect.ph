@@ -45,6 +45,15 @@ No guide schema is created or migrated. The existing database should enforce at 
 
 Verify those names against the existing locked schema before production use, and ensure the existing `profiles.role` type/policies already accept the `guide` role value. The Server Action rejects unchecked consent before upload or database writes, generates `consent_given_at` on the server, writes consent and the timestamp to the public guide row, and writes the full legal name and ID details only to the sensitive row via the server-side service-role client. No Client Component or Server Component queries the sensitive table. Existing RLS policies must allow an authenticated applicant to read their own status and insert/update their own guide row, allow the admin queue’s authenticated query to select pending public rows and their corresponding profile names, and prevent public readers from seeing unapproved profiles; the private sensitive table and private Storage bucket must remain inaccessible to browser clients. No policy or schema changes are bundled here.
 
+## QR badges, tickets & check-in
+
+Set `QR_SIGNING_SECRET` (server only, 32+ characters, e.g. `openssl rand -base64 48`). Without it, badges, tickets and scanning stay off. Changing it invalidates every QR already issued.
+
+- QR codes are links to `/tours/verify/<token>`, where the token is `CD1.<guide|booking>.<id>.<exp>.<HMAC-SHA256 signature>` (`src/lib/tours/qr-token.ts`). Any phone camera can open them. The page shows green for an approved guide or a valid ticket, and red for forged, altered or expired codes. It always re-reads the current accreditation, so revoking a guide takes effect immediately.
+- Guide badges (`/tours/guide/my-qr`) are valid for a year from approval. Signed-in scans are logged in `tours_qr_scan_logs`.
+- Booking tickets (`/tours/bookings/[id]/ticket`) appear once the booking is confirmed and expire at the end of the tour day (Manila).
+- Check-in happens at `/tours/guide/check-in` (camera scanner where the browser supports `BarcodeDetector`, otherwise the phone camera app or a pasted code) or from the guest list at `/tours/guide/tours/[bookingId]/roster`. The `tours_check_in` function only accepts the assigned approved guide (or the operator/admin), a confirmed booking, and today's date. Each guest is recorded once, so a repeat scan is harmless.
+
 ## Events calendar & merchandise showcase
 
 - Public pages: `/tours/events` (monthly calendar, category filter, day view, "Add to my calendar" `.ics` download) and `/tours/merch` (t-shirts, mugs, souvenirs, pasalubong with seller contact). The home page shows upcoming events and featured products.
