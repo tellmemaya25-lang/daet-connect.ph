@@ -54,6 +54,32 @@ Set `QR_SIGNING_SECRET` (server only, 32+ characters, e.g. `openssl rand -base64
 - Booking tickets (`/tours/bookings/[id]/ticket`) appear once the booking is confirmed and expire at the end of the tour day (Manila).
 - Check-in happens at `/tours/guide/check-in` (camera scanner where the browser supports `BarcodeDetector`, otherwise the phone camera app or a pasted code) or from the guest list at `/tours/guide/tours/[bookingId]/roster`. The `tours_check_in` function only accepts the assigned approved guide (or the operator/admin), a confirmed booking, and today's date. Each guest is recorded once, so a repeat scan is harmless.
 
+## Notifications (in-app + Web Push)
+
+Database triggers write a `tours_notifications` row for each event:
+- bookings: created, confirmed, declined, cancelled, completed;
+- guide assigned;
+- payments received and refunds;
+- receipts submitted or rejected;
+- cancellation requests and their outcome;
+- check-in;
+- new messages (one per thread every 10 minutes);
+- accreditation and package review results;
+- new reviews.
+
+Nobody is notified about their own action. The header bell shows them live (Realtime), and `/tours/notifications` lists them with the push on/off switch.
+
+To turn on push to phones and desktops:
+
+1. `npx web-push generate-vapid-keys`, then set `NEXT_PUBLIC_VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `VAPID_SUBJECT` and a random `NOTIFICATIONS_PUSH_SECRET` (32+ characters) in Vercel. `SUPABASE_SERVICE_ROLE_KEY` must also be set.
+2. Tell the database where to send pushes (Supabase SQL editor; use your production URL and the same secret):
+   ```sql
+   select vault.create_secret('https://<your-domain>/api/notifications/push', 'tours_push_endpoint');
+   select vault.create_secret('<NOTIFICATIONS_PUSH_SECRET>', 'tours_push_secret');
+   ```
+   For each new notification whose recipient has a device, the trigger `tours_notifications_dispatch_push` calls that URL through `pg_net` after the transaction commits. The route re-reads the notification with the service role, sends it with `web-push`, drops subscriptions that return 404/410, and marks it pushed so retries don't send twice.
+3. Users opt in from the prompt on their booking page or from `/tours/notifications`. On iPhone, Web Push needs the site added to the Home Screen (iOS 16.4+).
+
 ## Events calendar & merchandise showcase
 
 - Public pages: `/tours/events` (monthly calendar, category filter, day view, "Add to my calendar" `.ics` download) and `/tours/merch` (t-shirts, mugs, souvenirs, pasalubong with seller contact). The home page shows upcoming events and featured products.
