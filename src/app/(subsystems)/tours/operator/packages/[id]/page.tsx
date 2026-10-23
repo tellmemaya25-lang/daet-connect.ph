@@ -241,12 +241,18 @@ export default async function OperatorPackageDetailPage({ params }: PageProps) {
         )}
 
         {/* Action buttons */}
-        <div className="mb-6 flex gap-3">
+        <div className="mb-6 flex flex-wrap gap-3">
           <Link
             href={`/tours/operator/packages/${pkg.id}/edit`}
-            className="inline-flex min-h-10 items-center justify-center rounded-full bg-daet-forest px-6 text-sm font-black text-white transition hover:bg-daet-ink"
+            className="inline-flex min-h-11 items-center justify-center rounded-full bg-daet-forest px-6 text-sm font-black text-white transition hover:bg-daet-ink"
           >
             Edit package
+          </Link>
+          <Link
+            href={`/tours/operator/packages/${pkg.id}/availability`}
+            className="inline-flex min-h-11 items-center justify-center rounded-full border border-daet-forest/30 bg-white px-6 text-sm font-bold text-daet-forest transition hover:bg-daet-forest/5"
+          >
+            Dates &amp; seats
           </Link>
           {pkg.status === "published" && (
             <Link

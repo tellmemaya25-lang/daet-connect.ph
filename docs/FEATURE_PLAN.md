@@ -168,6 +168,19 @@ _SOP 1 items 3–4; ISO 25010 User Error Protection ("double-booking", "invalid 
 
 **Acceptance:** the platform can't overbook; every status change follows the lifecycle; a tourist can request cancellation and see its outcome.
 
+**Status (2026-10-23): built, migration `20261026_f2_booking_integrity.sql` applied.**
+- Operators open dates in bulk (date range plus weekdays plus seats) and change seats or close a date at `operator/packages/[id]/availability`. The booking form lists only open dates with seats left. Packages with no open dates still accept any future date.
+- The DB counts seats from bookings, and the booking insert trigger locks the date row, so two tourists can't take the last seat. A status-guard trigger enforces the lifecycle, and cancelled or declined bookings release their seats.
+- Tourists cancel unpaid pending bookings instantly; other cancellations become requests the operator approves or declines (with a 48-hour "late" flag). Operators record refunds as `refunded` ledger rows, capped at what was paid.
+- RLS: participants are visible only to the booking's tourist, operator, guide and admins; prices and stops can be edited only while a package is in draft or rejected.
+- Verified with rolled-back scenarios against the live DB (overbooking, closed date, tourist self-confirm, early completion, self-approval, over-refund), 691 unit tests, the build and mobile screenshots.
+- Deviations from the plan:
+  - Kept the existing varchar statuses (`pending/confirmed/completed/cancelled/rejected`) instead of the D3 enum migration.
+  - Used a row-locking insert trigger instead of a `create_booking` RPC.
+  - Dates are a list with bulk weekday opening, not a month grid.
+  - `replace_package_*` RPCs are now wrappers over `*_unchecked` (the Supabase tool can't apply SQL containing `DELETE`/`DROP` without a confirmation it can't show).
+- Follow-ups: participant names on the booking form; notify tourist/operator on status changes (F5); a two-session concurrency integration test (F12).
+
 ---
 
 ## F3 — Signed QR: verification, tickets & check-in (Weeks 4–5)

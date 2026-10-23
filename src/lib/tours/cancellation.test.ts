@@ -1,4 +1,4 @@
-import { cancellationOption, parseCancellationReason, parseRefundForm } from "@/lib/tours/cancellation";
+import { cancellationOption, parseCancellationReason, parseRefundForm, parseStaffReason } from "@/lib/tours/cancellation";
 
 function form(values: Record<string, string>): FormData {
   const data = new FormData();
@@ -44,6 +44,15 @@ describe("parseCancellationReason", () => {
     expect(parseCancellationReason(form({ reason: "  no " })).ok).toBe(false);
     expect(parseCancellationReason(form({ reason: "x".repeat(501) })).ok).toBe(false);
     expect(parseCancellationReason(form({ reason: "Flight was moved" }))).toEqual({ ok: true, reason: "Flight was moved" });
+  });
+});
+
+describe("parseStaffReason", () => {
+  it("requires 5 to 500 characters", () => {
+    expect(parseStaffReason(undefined).ok).toBe(false);
+    expect(parseStaffReason("  full ").ok).toBe(false);
+    expect(parseStaffReason("y".repeat(501)).ok).toBe(false);
+    expect(parseStaffReason("  Boat engine repair ")).toEqual({ ok: true, reason: "Boat engine repair" });
   });
 });
 

@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import type { DateOption } from "@/lib/tours/availability";
 import { createBooking } from "./actions";
 
 interface PriceVariant {
@@ -17,19 +18,24 @@ interface PriceVariant {
 interface BookingFormProps {
   packageId: string;
   priceVariants: PriceVariant[];
+  /** Open dates when the operator manages availability; null = any future date. */
+  dateOptions: DateOption[] | null;
   userProfile: {
     fullName: string;
     email: string;
   };
 }
 
-export function BookingForm({ packageId, priceVariants, userProfile }: BookingFormProps) {
+const formatOpenDate = (dateKey: string) =>
+  new Date(`${dateKey}T00:00:00Z`).toLocaleDateString("en-PH", { weekday: "short", month: "short", day: "numeric", year: "numeric", timeZone: "UTC" });
+
+export function BookingForm({ packageId, priceVariants, dateOptions, userProfile }: BookingFormProps) {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   // Form state
-  const [tourDate, setTourDate] = useState("");
+  const [tourDate, setTourDate] = useState(dateOptions?.find((option) => !option.full)?.date ?? "");
   const [numberOfPax, setNumberOfPax] = useState(1);
   const [selectedVariantId, setSelectedVariantId] = useState(
     priceVariants.find((v) => v.is_default)?.id || priceVariants[0]?.id || ""
@@ -66,12 +72,15 @@ export function BookingForm({ packageId, priceVariants, userProfile }: BookingFo
     return tomorrow.toISOString().split("T")[0];
   };
 
+  const selectedDate = dateOptions?.find((option) => option.date === tourDate);
+  const seatLimit = selectedDate ? selectedDate.seatsLeft : Infinity;
+
   // Handle pax change with validation
   const handlePaxChange = (value: number) => {
     if (!selectedVariant) return;
 
     const min = selectedVariant.min_pax || 1;
-    const max = selectedVariant.max_pax || 50;
+    const max = Math.min(selectedVariant.max_pax || 50, Math.max(seatLimit, min));
 
     if (value < min) {
       setNumberOfPax(min);
@@ -120,7 +129,9 @@ export function BookingForm({ packageId, priceVariants, userProfile }: BookingFo
   }
 
   const minPax = selectedVariant?.min_pax || 1;
-  const maxPax = selectedVariant?.max_pax || 50;
+  const maxPax = Math.min(selectedVariant?.max_pax || 50, Math.max(seatLimit, minPax));
+  const notEnoughSeats = selectedDate !== undefined && selectedDate.seatsLeft < Math.max(numberOfPax, minPax);
+  const noOpenDates = dateOptions !== null && dateOptions.every((option) => option.full);
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
@@ -139,16 +150,41 @@ export function BookingForm({ packageId, priceVariants, userProfile }: BookingFo
           <label htmlFor="tourDate" className="block text-sm font-bold text-daet-ink">
             Tour Date *
           </label>
-          <input
-            type="date"
-            id="tourDate"
-            value={tourDate}
-            onChange={(e) => setTourDate(e.target.value)}
-            min={getMinDate()}
-            required
-            className="mt-1 w-full rounded-xl border border-daet-ink/20 px-4 py-2.5 text-sm focus:border-daet-forest focus:outline-none focus:ring-2 focus:ring-daet-forest/20"
-          />
-          <p className="mt-1 text-xs text-daet-ink/50">Earliest available: Tomorrow</p>
+          {dateOptions === null ? (
+            <>
+              <input
+                type="date"
+                id="tourDate"
+                value={tourDate}
+                onChange={(e) => setTourDate(e.target.value)}
+                min={getMinDate()}
+                required
+                className="mt-1 min-h-11 w-full rounded-xl border border-daet-ink/20 px-4 py-2.5 text-base focus:border-daet-forest focus:outline-none focus:ring-2 focus:ring-daet-forest/20"
+              />
+              <p className="mt-1 text-xs text-daet-ink/50">Earliest available: Tomorrow</p>
+            </>
+          ) : noOpenDates ? (
+            <p className="mt-2 rounded-2xl bg-amber-50 p-4 text-sm text-amber-900">
+              There are no open dates with seats right now. Please check again later or contact the operator.
+            </p>
+          ) : (
+            <>
+              <select
+                id="tourDate"
+                value={tourDate}
+                onChange={(e) => setTourDate(e.target.value)}
+                required
+                className="mt-1 min-h-11 w-full rounded-xl border border-daet-ink/20 bg-white px-4 py-2.5 text-base focus:border-daet-forest focus:outline-none focus:ring-2 focus:ring-daet-forest/20"
+              >
+                {dateOptions.map((option) => (
+                  <option key={option.date} value={option.date} disabled={option.full}>
+                    {formatOpenDate(option.date)} — {option.full ? "fully booked" : `${option.seatsLeft} seat${option.seatsLeft === 1 ? "" : "s"} left`}
+                  </option>
+                ))}
+              </select>
+              <p className="mt-1 text-xs text-daet-ink/50">Only dates the operator has opened are shown.</p>
+            </>
+          )}
         </div>
       </section>
 
@@ -220,6 +256,11 @@ export function BookingForm({ packageId, priceVariants, userProfile }: BookingFo
                 ({minPax} - {maxPax} pax)
               </span>
             </div>
+            {notEnoughSeats ? (
+              <p className="mt-2 text-sm font-semibold text-rose-700">
+                Only {selectedDate?.seatsLeft} seat(s) left on this date. Choose another date or a smaller group.
+              </p>
+            ) : null}
           </div>
 
           {/* Price Summary */}
@@ -313,7 +354,7 @@ export function BookingForm({ packageId, priceVariants, userProfile }: BookingFo
       </section>
 
       {/* Submit */}
-      <div className="flex items-center justify-between rounded-3xl border border-daet-ink/10 bg-white p-6 shadow-sm">
+      <div className="flex flex-col gap-4 rounded-3xl border border-daet-ink/10 bg-white p-6 shadow-sm sm:flex-row sm:items-center sm:justify-between">
         <div>
           <p className="text-sm font-bold text-daet-ink">Ready to book?</p>
           <p className="text-xs text-daet-ink/60">
@@ -322,8 +363,8 @@ export function BookingForm({ packageId, priceVariants, userProfile }: BookingFo
         </div>
         <button
           type="submit"
-          disabled={isSubmitting}
-          className="rounded-full bg-daet-forest px-8 py-3 text-sm font-black text-white transition hover:bg-daet-ink disabled:opacity-50"
+          disabled={isSubmitting || noOpenDates || notEnoughSeats || !tourDate}
+          className="min-h-11 shrink-0 whitespace-nowrap rounded-full bg-daet-forest px-8 py-3 text-sm font-black text-white transition hover:bg-daet-ink disabled:opacity-50"
         >
           {isSubmitting ? "Submitting..." : `Book for ₱${totalAmount.toLocaleString()}`}
         </button>

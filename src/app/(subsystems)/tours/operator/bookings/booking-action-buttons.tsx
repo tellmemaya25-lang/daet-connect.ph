@@ -1,97 +1,100 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
+import { Button } from "@/components/ui/button";
+import { Field, Textarea } from "@/components/ui/field";
+import { Modal } from "@/components/ui/modal";
+import { Notice } from "@/components/ui/notice";
+import { isBookingStatus, operatorActions, type OperatorAction } from "@/lib/tours/booking-lifecycle";
 import { updateBookingStatus } from "./actions";
 
 type BookingActionButtonsProps = {
   bookingId: string;
   currentStatus: string;
+  tourDate: string;
+  totalPaid: number;
+  /** Today in Manila (YYYY-MM-DD), from the server so client clocks don't matter. */
+  today: string;
 };
 
-export function BookingActionButtons({
-  bookingId,
-  currentStatus,
-}: BookingActionButtonsProps) {
+export function BookingActionButtons({ bookingId, currentStatus, tourDate, totalPaid, today }: BookingActionButtonsProps) {
   const router = useRouter();
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
+  const [active, setActive] = useState<OperatorAction | null>(null);
+  const [reason, setReason] = useState("");
 
-  const handleStatusUpdate = async (newStatus: string) => {
-    if (
-      !confirm(
-        `Are you sure you want to ${newStatus === "confirmed" ? "confirm" : newStatus === "rejected" ? "reject" : "update"} this booking?`
-      )
-    ) {
-      return;
-    }
+  if (!isBookingStatus(currentStatus)) return null;
+  const actions = operatorActions(currentStatus, { tourDate, today, totalPaid });
+  const waitingForTourDate = currentStatus === "confirmed" && tourDate > today;
 
-    setIsSubmitting(true);
+  if (actions.length === 0) return null;
+
+  function submit(action: OperatorAction) {
     setError(null);
-
-    const result = await updateBookingStatus(bookingId, newStatus);
-
-    if (!result.success) {
-      setError(result.error || "Failed to update booking");
-      setIsSubmitting(false);
-    } else {
-      // Force immediate refresh without full page reload
+    startTransition(async () => {
+      const result = await updateBookingStatus(bookingId, action.to, action.needsReason ? reason : undefined);
+      if (!result.success) {
+        setError(result.error || "Failed to update booking");
+        return;
+      }
+      setActive(null);
+      setReason("");
       router.refresh();
-    }
-  };
-
-  // Only show actions for pending or confirmed bookings
-  if (currentStatus === "cancelled" || currentStatus === "rejected" || currentStatus === "completed") {
-    return null;
+    });
   }
 
   return (
     <div>
-      {error && (
-        <div className="mb-3 rounded-xl border border-rose-200 bg-rose-50 p-3 text-sm text-rose-800">
-          {error}
-        </div>
-      )}
+      {error && !active ? <Notice variant="error" className="mb-3">{error}</Notice> : null}
 
-      <div className="flex gap-3">
-        {currentStatus === "pending" && (
-          <>
-            <button
-              onClick={() => handleStatusUpdate("confirmed")}
-              disabled={isSubmitting}
-              className="rounded-full bg-emerald-600 px-6 py-2 text-sm font-bold text-white transition hover:bg-emerald-700 disabled:opacity-50"
-            >
-              {isSubmitting ? "Processing..." : "✓ Confirm Booking"}
-            </button>
-            <button
-              onClick={() => handleStatusUpdate("rejected")}
-              disabled={isSubmitting}
-              className="rounded-full border border-rose-300 bg-white px-6 py-2 text-sm font-bold text-rose-700 transition hover:bg-rose-50 disabled:opacity-50"
-            >
-              {isSubmitting ? "Processing..." : "✕ Reject"}
-            </button>
-          </>
-        )}
-
-        {currentStatus === "confirmed" && (
-          <>
-            <button
-              onClick={() => handleStatusUpdate("completed")}
-              disabled={isSubmitting}
-              className="rounded-full bg-blue-600 px-6 py-2 text-sm font-bold text-white transition hover:bg-blue-700 disabled:opacity-50"
-            >
-              {isSubmitting ? "Processing..." : "✓ Mark as Completed"}
-            </button>
-            <button
-              onClick={() => handleStatusUpdate("cancelled")}
-              disabled={isSubmitting}
-              className="rounded-full border border-gray-300 bg-white px-6 py-2 text-sm font-bold text-gray-700 transition hover:bg-gray-50 disabled:opacity-50"
-            >
-              {isSubmitting ? "Processing..." : "Cancel Booking"}
-            </button>
-          </>
-        )}
+      <div className="flex flex-wrap gap-3">
+        {actions.map((action) => (
+          <Button key={action.to} variant={action.variant} onClick={() => { setError(null); setActive(action); }} disabled={pending}>
+            {action.label}
+          </Button>
+        ))}
       </div>
+      {waitingForTourDate ? (
+        <p className="mt-2 text-xs text-daet-ink/55">You can mark this tour completed on or after the tour date.</p>
+      ) : null}
+
+      <Modal
+        open={active !== null}
+        onClose={() => { if (!pending) setActive(null); }}
+        title={active?.label ?? ""}
+        description={active?.confirm}
+        footer={
+          <>
+            <Button variant="ghost" onClick={() => setActive(null)} disabled={pending}>
+              Keep as is
+            </Button>
+            <Button
+              variant={active?.variant === "danger" ? "danger" : "primary"}
+              loading={pending}
+              loadingText="Saving…"
+              onClick={() => active && submit(active)}
+            >
+              {active?.label}
+            </Button>
+          </>
+        }
+      >
+        {error ? <Notice variant="error" className="mb-3">{error}</Notice> : null}
+        {active?.needsReason ? (
+          <Field id={`reason-${bookingId}`} label="Reason for the tourist" required hint="Shown on the tourist's booking page.">
+            <Textarea
+              id={`reason-${bookingId}`}
+              rows={3}
+              maxLength={500}
+              value={reason}
+              onChange={(event) => setReason(event.target.value)}
+              placeholder="e.g. The boat is under repair on this date."
+            />
+          </Field>
+        ) : null}
+      </Modal>
     </div>
   );
 }

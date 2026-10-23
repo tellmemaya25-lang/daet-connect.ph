@@ -43,6 +43,14 @@ export function parseCancellationReason(formData: FormData): { ok: true; reason:
   return { ok: true, reason };
 }
 
+/** Reason an operator gives when declining/cancelling a booking or declining a request; the tourist sees it. */
+export function parseStaffReason(value: unknown): { ok: true; reason: string } | { ok: false; error: string } {
+  const reason = String(value ?? "").trim();
+  if (reason.length < 5) return { ok: false, error: "Tell the tourist why (at least 5 characters)." };
+  if (reason.length > 500) return { ok: false, error: "Reason must be 500 characters or fewer." };
+  return { ok: true, reason };
+}
+
 export type RefundInput = { amount: number; method: "gcash" | "bank_transfer" | "cash" | "other"; reference: string | null };
 
 export function parseRefundForm(formData: FormData, refundable: number): { ok: true; data: RefundInput } | { ok: false; error: string } {

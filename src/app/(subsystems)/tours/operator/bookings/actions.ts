@@ -2,13 +2,16 @@
 
 import { revalidatePath } from "next/cache";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { checkTransition, isBookingStatus, type BookingStatus } from "@/lib/tours/booking-lifecycle";
+import { parseStaffReason } from "@/lib/tours/cancellation";
+import { userFacingDbError } from "@/lib/tours/db-errors";
+import { toManilaDateKey } from "@/lib/tours/events-calendar";
+import { isUuid } from "@/lib/tours/operator-access";
 
 type ActionResult = {
   success: boolean;
   error?: string;
 };
-
-const VALID_STATUSES = ["pending", "confirmed", "rejected", "cancelled", "completed"];
 
 export async function assignGuideToBooking(
   bookingId: string,
@@ -103,19 +106,23 @@ export async function assignGuideToBooking(
   }
 }
 
+/**
+ * Moves a booking along the lifecycle (booking-lifecycle.ts). The database
+ * trigger tours_bookings_status_guard enforces the same rules; checking here
+ * first gives a clear message. Declining or cancelling needs a reason, which
+ * the tourist sees.
+ */
 export async function updateBookingStatus(
   bookingId: string,
-  newStatus: string
+  newStatus: string,
+  reason?: string
 ): Promise<ActionResult> {
   try {
-    // Validate status
-    if (!VALID_STATUSES.includes(newStatus)) {
+    if (!isUuid(bookingId) || !isBookingStatus(newStatus)) {
       return { success: false, error: "Invalid status" };
     }
 
     const supabase = await createSupabaseServerClient();
-
-    // Get current user
     const {
       data: { user },
       error: authError,
@@ -125,29 +132,22 @@ export async function updateBookingStatus(
       return { success: false, error: "Authentication required" };
     }
 
-    // Get operator profile
     const { data: operator, error: operatorError } = await supabase
       .from("tours_operators")
-      .select("id")
+      .select("id, accreditation_status")
       .eq("profile_id", user.id)
       .maybeSingle();
 
     if (operatorError || !operator) {
       return { success: false, error: "Operator profile not found" };
     }
+    if (operator.accreditation_status !== "approved") {
+      return { success: false, error: "Your operator account must be approved to manage bookings." };
+    }
 
-    // Verify the booking belongs to this operator's package
     const { data: booking, error: bookingFetchError } = await supabase
       .from("tours_bookings")
-      .select(
-        `
-        id,
-        status,
-        tours_packages!inner (
-          operator_id
-        )
-      `
-      )
+      .select("id, status, tour_date, total_paid, tours_packages!inner ( operator_id )")
       .eq("id", bookingId)
       .maybeSingle();
 
@@ -155,28 +155,40 @@ export async function updateBookingStatus(
       return { success: false, error: "Booking not found" };
     }
 
-    // Check ownership
     const pkg = Array.isArray(booking.tours_packages)
       ? booking.tours_packages[0]
       : booking.tours_packages;
 
-    if (pkg?.operator_id !== operator.id) {
+    if (pkg?.operator_id !== operator.id || !isBookingStatus(booking.status)) {
       return { success: false, error: "Unauthorized" };
     }
 
-    // Update booking status
+    const check = checkTransition(booking.status, newStatus, "operator", {
+      tourDate: booking.tour_date,
+      today: toManilaDateKey(new Date()),
+      totalPaid: Number(booking.total_paid ?? 0),
+    });
+    if (!check.ok) return { success: false, error: check.reason };
+
+    const update: { status: BookingStatus; cancellation_reason?: string } = { status: newStatus };
+    if (newStatus === "rejected" || newStatus === "cancelled") {
+      const parsed = parseStaffReason(reason);
+      if (!parsed.ok) return { success: false, error: parsed.error };
+      update.cancellation_reason = parsed.reason;
+    }
+
     const { error: updateError } = await supabase
       .from("tours_bookings")
-      .update({ status: newStatus })
+      .update(update)
       .eq("id", bookingId);
 
     if (updateError) {
       console.error("Booking update error:", updateError);
-      return { success: false, error: "Failed to update booking" };
+      return { success: false, error: userFacingDbError(updateError, "Failed to update booking") };
     }
 
-    // Revalidate the bookings page
     revalidatePath("/tours/operator/bookings");
+    revalidatePath(`/tours/bookings/${bookingId}`);
 
     return { success: true };
   } catch (err) {
