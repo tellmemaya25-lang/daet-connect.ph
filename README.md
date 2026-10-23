@@ -52,3 +52,20 @@ Verify those names against the existing locked schema before production use, and
 - Setup: apply `supabase/migrations/20261023_create_tours_events_and_merchandise.sql`. It creates `tours_events` and `tours_merchandise` with RLS (the public reads published/active rows; only `get_my_role() = 'admin'` can write) and the public `tours-promo-images` Storage bucket (admin upload, public read, 5 MB, JPG/PNG/WebP).
 - All event times are entered and shown in Philippine time (UTC+8); date logic lives in `src/lib/tours/events-calendar.ts`.
 - Merchandise listings are advertisements only. Checkout belongs to the Shop subsystem (Team 7).
+
+## Payments (PayMongo sandbox + manual receipts)
+
+Tourists pay after the operator confirms a booking, from the booking page (`/tours/bookings/<id>`):
+
+- **Online:** "Pay online" opens a PayMongo Checkout for the remaining balance (GCash, Maya, card). The amount is always read from the database.
+- **Manual:** the tourist pays the operator's GCash/bank account (from Payment Settings) and uploads the receipt. The operator approves or rejects it on `/tours/operator/bookings`.
+- Every payment lands in the `tours_payments` ledger. A trigger keeps `total_paid` / `payment_status` on the booking in sync. Operators see monthly totals and can download CSV at `/tours/operator/payments`.
+
+### Sandbox setup
+
+1. In the PayMongo dashboard (test mode), copy the **secret key** (`sk_test_...`) into `PAYMONGO_SECRET_KEY`.
+2. Create a webhook pointing to `https://<your-deployment>/api/webhooks/paymongo` for the event `checkout_session.payment.paid`. Copy its secret into `PAYMONGO_WEBHOOK_SECRET`. PayMongo must be able to reach the URL, so use a Vercel preview/production URL or a tunnel when testing locally.
+3. Set `NEXT_PUBLIC_APP_URL` to the same public base URL (used for the success/cancel redirects). Optionally set `PAYMONGO_PAYMENT_METHODS` to the methods enabled on your account.
+4. Pay a confirmed booking with PayMongo's test GCash/card flow. Within seconds the booking shows **Paid** and the payment appears in the operator's ledger with its PayMongo reference.
+
+Without `PAYMONGO_SECRET_KEY` the online button is hidden, and receipt upload still works. The webhook verifies `Paymongo-Signature` (HMAC-SHA256, 5-minute replay window), records each event once (`tours_payment_events`), and re-fetches the checkout session from PayMongo before writing to the ledger.

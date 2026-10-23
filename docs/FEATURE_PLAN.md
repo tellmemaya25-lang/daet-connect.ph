@@ -132,6 +132,13 @@ _SOP 1 item 7 (x̄ = 3.70, highest pain), item 8; ISO 25010 Functional Appropria
 
 **Acceptance:** in sandbox, a tourist pays a ₱8,500 booking with GCash test credentials. The booking shows **Paid** within seconds without anyone touching it. The operator ledger shows the PayMongo reference.
 
+**Status (2026-10-23): built, migration applied; needs PayMongo sandbox keys for the end-to-end acceptance run.**
+- Checkout action, signed webhook (`/api/webhooks/paymongo`), receipt upload + operator verification, ledger page + CSV. 64 new unit tests.
+- Live DB: ledger columns, `tours_payment_events`, receipt columns + private bucket, DB-computed booking price, money columns writable only by the ledger trigger, and RLS scoped per role. This closed holes where any signed-in user could read/update every booking and read every payment. Verified per role against the live DB.
+- Deviations from the plan: `tours_booking_payments` was locked (all access revoked) instead of dropped. `payment_method` keeps its old values, and the exact PayMongo method goes in `provider_method`. The Supabase tool can't run `DROP` without an interactive confirmation.
+- **To finish:** add `PAYMONGO_SECRET_KEY`, `PAYMONGO_WEBHOOK_SECRET` and `NEXT_PUBLIC_APP_URL` in Vercel, register the webhook (README → Payments), then run the acceptance test.
+- Follow-ups: refunds (F2 cancellations); notify operator/tourist on payment (F5); fix the operator dashboard header overflowing by 21px at 375px.
+
 ---
 
 ## F2 — Availability, capacity & booking lifecycle (Weeks 3–4)

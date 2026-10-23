@@ -1207,41 +1207,115 @@ export type Database = {
           },
         ]
       }
+      tours_payment_events: {
+        Row: {
+          booking_id: string | null
+          event_id: string
+          event_type: string
+          livemode: boolean
+          outcome: string | null
+          payload: Json
+          processed_at: string | null
+          received_at: string
+        }
+        Insert: {
+          booking_id?: string | null
+          event_id: string
+          event_type: string
+          livemode?: boolean
+          outcome?: string | null
+          payload: Json
+          processed_at?: string | null
+          received_at?: string
+        }
+        Update: {
+          booking_id?: string | null
+          event_id?: string
+          event_type?: string
+          livemode?: boolean
+          outcome?: string | null
+          payload?: Json
+          processed_at?: string | null
+          received_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tours_payment_events_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: false
+            referencedRelation: "tours_bookings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       tours_payment_proofs: {
         Row: {
+          amount: number
           booking_id: string
           id: string
+          payment_id: string | null
+          payment_method: string
           proof_image_url: string
           reference_number: string
           rejection_reason: string | null
           submitted_at: string
+          submitted_by: string | null
           verification_status: Database["public"]["Enums"]["payment_verification_status"]
           verified_at: string | null
           verified_by: string | null
         }
         Insert: {
+          amount: number
           booking_id: string
           id?: string
+          payment_id?: string | null
+          payment_method?: string
           proof_image_url: string
           reference_number: string
           rejection_reason?: string | null
           submitted_at?: string
+          submitted_by?: string | null
           verification_status?: Database["public"]["Enums"]["payment_verification_status"]
           verified_at?: string | null
           verified_by?: string | null
         }
         Update: {
+          amount?: number
           booking_id?: string
           id?: string
+          payment_id?: string | null
+          payment_method?: string
           proof_image_url?: string
           reference_number?: string
           rejection_reason?: string | null
           submitted_at?: string
+          submitted_by?: string | null
           verification_status?: Database["public"]["Enums"]["payment_verification_status"]
           verified_at?: string | null
           verified_by?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "tours_payment_proofs_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: false
+            referencedRelation: "tours_bookings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tours_payment_proofs_payment_id_fkey"
+            columns: ["payment_id"]
+            isOneToOne: false
+            referencedRelation: "tours_payments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tours_payment_proofs_submitted_by_fkey"
+            columns: ["submitted_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "tours_payment_proofs_verified_by_fkey"
             columns: ["verified_by"]
@@ -1261,6 +1335,10 @@ export type Database = {
           payment_date: string | null
           payment_method: string
           payment_status: string
+          provider: string
+          provider_method: string | null
+          provider_ref: string | null
+          raw_event: Json | null
           receipt_image_url: string | null
           recorded_by: string | null
           reference_number: string | null
@@ -1275,6 +1353,10 @@ export type Database = {
           payment_date?: string | null
           payment_method: string
           payment_status?: string
+          provider?: string
+          provider_method?: string | null
+          provider_ref?: string | null
+          raw_event?: Json | null
           receipt_image_url?: string | null
           recorded_by?: string | null
           reference_number?: string | null
@@ -1289,6 +1371,10 @@ export type Database = {
           payment_date?: string | null
           payment_method?: string
           payment_status?: string
+          provider?: string
+          provider_method?: string | null
+          provider_ref?: string | null
+          raw_event?: Json | null
           receipt_image_url?: string | null
           recorded_by?: string | null
           reference_number?: string | null
@@ -1432,6 +1518,18 @@ export type Database = {
       submit_package_for_review: {
         Args: { p_package_id: string }
         Returns: undefined
+      }
+      tours_is_booking_guide: {
+        Args: { p_booking_id: string }
+        Returns: boolean
+      }
+      tours_is_booking_operator: {
+        Args: { p_booking_id: string }
+        Returns: boolean
+      }
+      tours_is_booking_tourist: {
+        Args: { p_booking_id: string }
+        Returns: boolean
       }
     }
     Enums: {

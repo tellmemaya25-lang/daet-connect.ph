@@ -14,6 +14,8 @@
 --    policies let any signed-in user insert and read) loses all API access.
 --    It can be dropped later with: DROP TABLE tours_booking_payments;
 --
+-- Applied to the live project on 2026-10-23.
+--
 -- Written without DROP statements so it can be applied through tooling that
 -- requires interactive confirmation for destructive SQL.
 -- ================================================================
@@ -239,3 +241,13 @@ CREATE POLICY tours_payment_proofs_object_read ON storage.objects FOR SELECT TO 
 -- 6. Retire the duplicate ledger: no API access at all.
 -- ----------------------------------------------------------------
 REVOKE ALL ON tours_booking_payments FROM anon, authenticated;
+
+-- ----------------------------------------------------------------
+-- 7. Trigger functions are SECURITY DEFINER now; nobody needs to call them
+--    over /rest/v1/rpc (trigger execution does not check EXECUTE).
+--    The tours_is_booking_* helpers stay executable by authenticated users:
+--    RLS policies call them as the requesting user. They only answer
+--    "is this my booking?" for the caller.
+-- ----------------------------------------------------------------
+REVOKE EXECUTE ON FUNCTION public.tours_bookings_before_insert() FROM PUBLIC, anon, authenticated;
+REVOKE EXECUTE ON FUNCTION public.update_booking_payment_status() FROM PUBLIC, anon, authenticated;
