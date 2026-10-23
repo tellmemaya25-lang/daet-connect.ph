@@ -133,6 +133,8 @@ To turn on push to phones and desktops:
 
 ## Events calendar & merchandise showcase
 
+- Events can link to an attraction. Each event page lists tours with open dates during the event, nearby ones first.
+- Accredited operators submit merchandise at `/tours/operator/merch`. The Tourism Office approves it at `/tours/admin/merch?show=pending` before it goes public.
 - Public pages: `/tours/events` (monthly calendar, category filter, day view, "Add to my calendar" `.ics` download) and `/tours/merch` (t-shirts, mugs, souvenirs, pasalubong with seller contact). The home page shows upcoming events and featured products.
 - Admin pages: `/tours/admin/events` and `/tours/admin/merch` (create, edit, publish/hide, feature, delete). Linked from the admin dashboard's Quick Actions.
 - Setup: apply `supabase/migrations/20261023_create_tours_events_and_merchandise.sql`. It creates `tours_events` and `tours_merchandise` with RLS (the public reads published/active rows; only `get_my_role() = 'admin'` can write) and the public `tours-promo-images` Storage bucket (admin upload, public read, 5 MB, JPG/PNG/WebP).

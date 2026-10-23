@@ -8,7 +8,9 @@ import { isoToManilaLocal } from "@/lib/tours/events-calendar";
 import { EVENT_CATEGORIES, type TourEvent } from "@/lib/tours/promo-validation";
 import { saveEvent } from "./actions";
 
-export function EventForm({ event }: { event?: TourEvent }) {
+export type AttractionOption = { id: string; name: string };
+
+export function EventForm({ event, attractions = [] }: { event?: TourEvent; attractions?: AttractionOption[] }) {
   const { state, pending, onSubmit } = usePromoForm(saveEvent);
   const errors = state.errors;
   const invalid = (field: string) => (errors[field] ? true : undefined);
@@ -42,6 +44,17 @@ export function EventForm({ event }: { event?: TourEvent }) {
         <input id="venue" name="venue" defaultValue={event?.venue} maxLength={160} required aria-invalid={invalid("venue")} className={promoInputClass} placeholder="e.g. Bagasbas Beach" />
       </PromoField>
 
+      <PromoField id="attractionId" label="Attraction" hint="Optional. Links the event to an attraction page and suggests tours nearby." error={errors.attractionId}>
+        <select id="attractionId" name="attractionId" defaultValue={event?.attraction_id ?? ""} aria-invalid={invalid("attractionId")} className={promoInputClass}>
+          <option value="">None</option>
+          {attractions.map((a) => (
+            <option key={a.id} value={a.id}>
+              {a.name}
+            </option>
+          ))}
+        </select>
+      </PromoField>
+
       <div className="grid gap-5 sm:grid-cols-2">
         <PromoField id="startsAt" label="Starts" hint="Philippine time" required error={errors.startsAt}>
           <input id="startsAt" name="startsAt" type="datetime-local" defaultValue={event ? isoToManilaLocal(event.starts_at) : ""} required aria-invalid={invalid("startsAt")} className={promoInputClass} />
@@ -53,6 +66,10 @@ export function EventForm({ event }: { event?: TourEvent }) {
 
       <PromoField id="description" label="Description" error={errors.description}>
         <textarea id="description" name="description" defaultValue={event?.description ?? ""} rows={5} maxLength={2000} aria-invalid={invalid("description")} className={promoInputClass} />
+      </PromoField>
+
+      <PromoField id="source" label="Source of the date" hint="Admin only. E.g. Tourism Office memo, TPB calendar link." error={errors.source}>
+        <input id="source" name="source" defaultValue={event?.source ?? ""} maxLength={300} aria-invalid={invalid("source")} className={promoInputClass} />
       </PromoField>
 
       <PromoImageField currentUrl={event?.image_url ?? null} error={errors.image} />

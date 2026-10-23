@@ -599,6 +599,7 @@ export type Database = {
       }
       tours_events: {
         Row: {
+          attraction_id: string | null
           category: string
           created_at: string
           created_by: string | null
@@ -608,12 +609,14 @@ export type Database = {
           image_url: string | null
           is_published: boolean
           organizer: string | null
+          source: string | null
           starts_at: string
           title: string
           updated_at: string
           venue: string
         }
         Insert: {
+          attraction_id?: string | null
           category?: string
           created_at?: string
           created_by?: string | null
@@ -623,12 +626,14 @@ export type Database = {
           image_url?: string | null
           is_published?: boolean
           organizer?: string | null
+          source?: string | null
           starts_at: string
           title: string
           updated_at?: string
           venue: string
         }
         Update: {
+          attraction_id?: string | null
           category?: string
           created_at?: string
           created_by?: string | null
@@ -638,12 +643,20 @@ export type Database = {
           image_url?: string | null
           is_published?: boolean
           organizer?: string | null
+          source?: string | null
           starts_at?: string
           title?: string
           updated_at?: string
           venue?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "tours_events_attraction_id_fkey"
+            columns: ["attraction_id"]
+            isOneToOne: false
+            referencedRelation: "tours_attractions"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "tours_events_created_by_fkey"
             columns: ["created_by"]
@@ -946,7 +959,11 @@ export type Database = {
           is_featured: boolean
           name: string
           price: number | null
+          review_notes: string | null
+          review_status: string
+          reviewed_at: string | null
           seller_name: string
+          submitted_by_operator_id: string | null
           updated_at: string
           where_to_buy: string | null
         }
@@ -962,7 +979,11 @@ export type Database = {
           is_featured?: boolean
           name: string
           price?: number | null
+          review_notes?: string | null
+          review_status?: string
+          reviewed_at?: string | null
           seller_name: string
+          submitted_by_operator_id?: string | null
           updated_at?: string
           where_to_buy?: string | null
         }
@@ -978,7 +999,11 @@ export type Database = {
           is_featured?: boolean
           name?: string
           price?: number | null
+          review_notes?: string | null
+          review_status?: string
+          reviewed_at?: string | null
           seller_name?: string
+          submitted_by_operator_id?: string | null
           updated_at?: string
           where_to_buy?: string | null
         }
@@ -988,6 +1013,13 @@ export type Database = {
             columns: ["created_by"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tours_merchandise_submitted_by_operator_id_fkey"
+            columns: ["submitted_by_operator_id"]
+            isOneToOne: false
+            referencedRelation: "tours_operators"
             referencedColumns: ["id"]
           },
         ]
@@ -1992,6 +2024,7 @@ export type Database = {
         Args: { p_conversation_id: string }
         Returns: undefined
       }
+      tours_my_approved_operator_id: { Args: never; Returns: string }
       tours_notify: {
         Args: {
           p_body: string

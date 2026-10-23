@@ -4,11 +4,21 @@ import Link from "next/link";
 import { Notice } from "@/components/ui/notice";
 import { usePromoForm } from "@/components/tours/use-promo-form";
 import { PromoCheckbox, PromoField, PromoImageField, promoInputClass } from "@/components/tours/promo-fields";
-import { MERCH_CATEGORIES, type MerchItem } from "@/lib/tours/promo-validation";
+import { MERCH_CATEGORIES, type MerchItem, type PromoFormState } from "@/lib/tours/promo-validation";
 import { saveMerch } from "./actions";
 
-export function MerchForm({ item }: { item?: MerchItem }) {
-  const { state, pending, onSubmit } = usePromoForm(saveMerch);
+/** Admin product form; operators reuse it (mode="operator") to submit products for approval. */
+export function MerchForm({
+  item,
+  mode = "admin",
+  action = saveMerch,
+}: {
+  item?: MerchItem;
+  mode?: "admin" | "operator";
+  action?: (prev: PromoFormState, formData: FormData) => Promise<PromoFormState>;
+}) {
+  const { state, pending, onSubmit } = usePromoForm(action);
+  const operator = mode === "operator";
   const errors = state.errors;
   const invalid = (field: string) => (errors[field] ? true : undefined);
 
@@ -57,16 +67,20 @@ export function MerchForm({ item }: { item?: MerchItem }) {
       <PromoImageField currentUrl={item?.image_url ?? null} error={errors.image} />
 
       <div className="grid gap-3 sm:grid-cols-2">
-        <PromoCheckbox name="isActive" label="Show in the merchandise section" defaultChecked={item?.is_active ?? true} />
-        <PromoCheckbox name="isFeatured" label="Feature on the home page" defaultChecked={item?.is_featured ?? false} />
+        <PromoCheckbox name="isActive" label={operator ? "Show once approved" : "Show in the merchandise section"} defaultChecked={item?.is_active ?? true} />
+        {operator ? null : <PromoCheckbox name="isFeatured" label="Feature on the home page" defaultChecked={item?.is_featured ?? false} />}
       </div>
 
+      {operator ? (
+        <Notice variant="info">The Tourism Office reviews every product before it appears on the merch showcase. Editing an approved product sends it for review again.</Notice>
+      ) : null}
+
       <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
-        <Link href="/tours/admin/merch" className="inline-flex min-h-11 items-center justify-center rounded-full border border-daet-ink/20 px-6 text-sm font-bold text-daet-ink hover:bg-daet-sand">
+        <Link href={operator ? "/tours/operator/merch" : "/tours/admin/merch"} className="inline-flex min-h-11 items-center justify-center rounded-full border border-daet-ink/20 px-6 text-sm font-bold text-daet-ink hover:bg-daet-sand">
           Cancel
         </Link>
         <button type="submit" disabled={pending} className="inline-flex min-h-11 items-center justify-center rounded-full bg-daet-forest px-6 text-sm font-bold text-white hover:bg-daet-ink disabled:opacity-60">
-          {pending ? "Saving…" : item ? "Save changes" : "Add product"}
+          {pending ? "Saving…" : operator ? (item ? "Save and resubmit" : "Submit for approval") : item ? "Save changes" : "Add product"}
         </button>
       </div>
     </form>

@@ -199,6 +199,7 @@ export async function OperatorHome({ operatorId, searchParams }: { operatorId: s
                 ["/tours/operator/payments", "₱ Payments"],
                 ["/tours/operator/reviews", "⭐ Reviews"],
                 ["/tours/messages", "💬 Messages"],
+                ["/tours/operator/merch", "🛍️ Merchandise"],
                 ["/tours/operator/settings", "⚙️ Payment settings"],
               ].map(([href, label]) => (
                 <Link key={href} href={href} className="flex min-h-11 items-center rounded-xl border border-daet-ink/10 px-3 font-bold text-daet-ink hover:bg-daet-sand/50">

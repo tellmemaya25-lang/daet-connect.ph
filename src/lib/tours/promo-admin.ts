@@ -29,7 +29,7 @@ const EXTENSIONS: Record<string, string> = {
 export async function uploadPromoImage(
   supabase: SupabaseClient,
   file: File,
-  folder: "events" | "merch" | "attractions",
+  folder: "events" | "merch" | "attractions" | `merch-submissions/${string}`,
 ): Promise<{ url: string } | { error: string }> {
   const path = `${folder}/${crypto.randomUUID()}.${EXTENSIONS[file.type] ?? "jpg"}`;
   const { error } = await supabase.storage.from(PROMO_IMAGES_BUCKET).upload(path, file, {
