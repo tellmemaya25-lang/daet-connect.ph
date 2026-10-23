@@ -186,6 +186,12 @@ export default async function AdminDashboardPage() {
         <h2 className="text-xl font-black text-daet-ink mb-4">Quick Actions</h2>
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           <Link
+            href="/tours/admin/analytics"
+            className="inline-flex min-h-11 items-center justify-center rounded-full bg-daet-ink px-6 text-sm font-bold text-white hover:bg-daet-forest transition"
+          >
+            📊 Tourism Analytics
+          </Link>
+          <Link
             href="/tours/admin/operators"
             className="inline-flex min-h-11 items-center justify-center rounded-full bg-daet-forest px-6 text-sm font-bold text-white hover:bg-daet-ink transition"
           >

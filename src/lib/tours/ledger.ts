@@ -24,6 +24,7 @@ export type LedgerSummary = {
   online: number;
   manual: number;
   byMethod: Array<{ method: string; amount: number }>;
+  byPackage: Array<{ title: string; amount: number; count: number }>;
 };
 
 const round2 = (value: number) => Math.round(value * 100) / 100;
@@ -55,6 +56,7 @@ export function summarizeLedger(rows: LedgerRow[]): LedgerSummary {
   let online = 0;
   let manual = 0;
   const byMethod = new Map<string, number>();
+  const byPackage = new Map<string, { amount: number; count: number }>();
 
   for (const row of rows) {
     const amount = Number(row.amount);
@@ -69,6 +71,11 @@ export function summarizeLedger(rows: LedgerRow[]): LedgerSummary {
     else manual += amount;
     const label = ledgerMethodLabel(row);
     byMethod.set(label, (byMethod.get(label) ?? 0) + amount);
+    const title = row.package_title || "Other";
+    const pkg = byPackage.get(title) ?? { amount: 0, count: 0 };
+    pkg.amount += amount;
+    pkg.count += 1;
+    byPackage.set(title, pkg);
   }
 
   return {
@@ -79,6 +86,9 @@ export function summarizeLedger(rows: LedgerRow[]): LedgerSummary {
     manual: round2(manual),
     byMethod: [...byMethod.entries()]
       .map(([method, amount]) => ({ method, amount: round2(amount) }))
+      .sort((a, b) => b.amount - a.amount),
+    byPackage: [...byPackage.entries()]
+      .map(([title, entry]) => ({ title, amount: round2(entry.amount), count: entry.count }))
       .sort((a, b) => b.amount - a.amount),
   };
 }

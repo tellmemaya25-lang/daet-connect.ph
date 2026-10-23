@@ -21,7 +21,7 @@ describe("summarizeLedger", () => {
     const summary = summarizeLedger([
       row({ id: "a", amount: "1000.00" }),
       row({ id: "b", amount: 500.5, provider: "paymongo", provider_method: "card", payment_method: "credit_card" }),
-      row({ id: "c", amount: "200", payment_method: "cash" }),
+      row({ id: "c", amount: "200", payment_method: "cash", package_title: "Calaguas Day Trip" }),
       row({ id: "d", amount: "300", payment_status: "refunded" }),
       row({ id: "e", amount: "999", payment_status: "pending" }),
     ]);
@@ -35,6 +35,10 @@ describe("summarizeLedger", () => {
         { method: "GCash", amount: 1000 },
         { method: "Card", amount: 500.5 },
         { method: "Cash", amount: 200 },
+      ],
+      byPackage: [
+        { title: "Bagasbas Surf", amount: 1500.5, count: 2 },
+        { title: "Calaguas Day Trip", amount: 200, count: 1 },
       ],
     });
   });

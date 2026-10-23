@@ -176,7 +176,18 @@ export default async function OperatorBookingsPage({
       return result;
     }) || [];
 
-  console.log("Total available guides:", availableGuides.length);
+  // Guides' own availability for the dates on this page (F9), shown in the picker.
+  const tourDates = [...new Set((bookings ?? []).map((b) => b.tour_date))];
+  const { data: availabilityRows } =
+    tourDates.length && availableGuides.length
+      ? await supabase
+          .from("tours_guide_availability")
+          .select("guide_id, available_date, is_available")
+          .in("available_date", tourDates)
+          .in("guide_id", availableGuides.map((g) => g.id))
+      : { data: [] as { guide_id: string; available_date: string; is_available: boolean }[] };
+  const availabilityFor = (date: string): Record<string, boolean> =>
+    Object.fromEntries((availabilityRows ?? []).filter((r) => r.available_date === date).map((r) => [r.guide_id, r.is_available]));
 
   const statusColors: Record<string, string> = {
     pending: "bg-amber-100 text-amber-900",
@@ -309,7 +320,8 @@ export default async function OperatorBookingsPage({
               return (
                 <div
                   key={booking.id}
-                  className="rounded-3xl border border-daet-ink/10 bg-white p-6 shadow-sm"
+                  id={`booking-${booking.id}`}
+                  className="scroll-mt-6 rounded-3xl border border-daet-ink/10 bg-white p-6 shadow-sm target:ring-2 target:ring-daet-forest/50"
                 >
                   <div className="flex gap-6">
                     {/* Package Image */}
@@ -388,6 +400,7 @@ export default async function OperatorBookingsPage({
                               bookingId={booking.id}
                               currentGuideId={booking.assigned_guide_id}
                               availableGuides={availableGuides || []}
+                              availability={availabilityFor(booking.tour_date)}
                             />
                           </div>
 

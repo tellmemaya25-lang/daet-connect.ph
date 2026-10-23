@@ -95,7 +95,7 @@ export function BookingPaymentPanel({
   const canPayManually = booking.status === "confirmed" && remaining > 0 && booking.payment_status !== "refunded";
 
   return (
-    <Card className="mb-6" aria-labelledby="payment-heading">
+    <Card id="payment" className="mb-6 scroll-mt-6" aria-labelledby="payment-heading">
       <CardHeader eyebrow="Payment" title={<span id="payment-heading">Pay for this tour</span>} action={<Badge tone={status.tone}>{status.label}</Badge>} />
 
       {paymentReturn === "success" && booking.payment_status !== "paid" ? (

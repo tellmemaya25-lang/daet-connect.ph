@@ -1852,6 +1852,10 @@ export type Database = {
         Args: { p_package_id: string }
         Returns: undefined
       }
+      tours_admin_analytics: {
+        Args: { p_from: string; p_to: string }
+        Returns: Json
+      }
       tours_badge_lookup: {
         Args: { p_guide_id: string }
         Returns: {

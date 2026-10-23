@@ -50,7 +50,7 @@ export default async function OperatorPaymentsPage({
             ← Dashboard
           </Link>
           <p className="text-xs font-black uppercase tracking-[0.18em] text-daet-leaf">{result.businessName}</p>
-          <h1 className="mt-1 text-3xl font-black tracking-tight text-daet-ink">Payments ledger</h1>
+          <h1 className="mt-1 text-3xl font-black tracking-tight text-daet-ink">Revenue &amp; payments</h1>
         </div>
         <ButtonLink href={`/tours/operator/payments/export?month=${key}`} variant="secondary" prefetch={false}>
           Download CSV
@@ -104,6 +104,22 @@ export default async function OperatorPaymentsPage({
                 <div className="mt-1 h-2 rounded-full bg-daet-sand" aria-hidden="true">
                   <div className="h-2 rounded-full bg-daet-forest" style={{ width: `${Math.max(2, (entry.amount / summary.received) * 100)}%` }} />
                 </div>
+              </li>
+            ))}
+          </ul>
+        </Card>
+      ) : null}
+
+      {summary.byPackage.length > 0 ? (
+        <Card className="mb-6">
+          <CardHeader title="By package" />
+          <ul className="divide-y divide-daet-ink/10">
+            {summary.byPackage.map((entry) => (
+              <li key={entry.title} className="flex items-center justify-between gap-3 py-2 text-sm">
+                <span className="min-w-0 truncate font-bold text-daet-ink">{entry.title}</span>
+                <span className="shrink-0 text-daet-ink/70">
+                  {entry.count} payment{entry.count === 1 ? "" : "s"} · <strong className="text-daet-ink">{peso(entry.amount)}</strong>
+                </span>
               </li>
             ))}
           </ul>
