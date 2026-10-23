@@ -10,40 +10,44 @@
   --shadow-card: 0 18px 60px rgba(23, 43, 36, 0.08);
 }
 
-:root {
-  color-scheme: light;
-  background: #f5f3eb;
-  color: #172b24;
-}
+/* Base styles live in the base layer so Tailwind utilities (e.g. font-bold on a
+   <button>) can override them. Unlayered rules beat every utility. */
+@layer base {
+  :root {
+    color-scheme: light;
+    background: #f5f3eb;
+    color: #172b24;
+  }
 
-* {
-  box-sizing: border-box;
-}
+  * {
+    box-sizing: border-box;
+  }
 
-html {
-  min-width: 320px;
-  scroll-behavior: smooth;
-}
+  html {
+    min-width: 320px;
+    scroll-behavior: smooth;
+  }
 
-body {
-  margin: 0;
-  min-height: 100vh;
-  background:
-    radial-gradient(circle at 85% 0%, rgba(237, 189, 88, 0.13), transparent 25rem),
-    #f5f3eb;
-  color: #172b24;
-  font-family: Arial, Helvetica, sans-serif;
-  -webkit-font-smoothing: antialiased;
-}
+  body {
+    margin: 0;
+    min-height: 100vh;
+    background:
+      radial-gradient(circle at 85% 0%, rgba(237, 189, 88, 0.13), transparent 25rem),
+      #f5f3eb;
+    color: #172b24;
+    font-family: Arial, Helvetica, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
 
-button,
-input,
-textarea {
-  font: inherit;
-}
+  button,
+  input,
+  textarea {
+    font: inherit;
+  }
 
-::selection {
-  background: rgba(79, 128, 99, 0.2);
+  ::selection {
+    background: rgba(79, 128, 99, 0.2);
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
