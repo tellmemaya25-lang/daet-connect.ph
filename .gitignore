@@ -30,3 +30,6 @@ test-results/
 # local test output dumps
 /test-*.txt
 /*-test-results.txt
+
+# Personal Claude Code settings
+.claude/settings.local.json
