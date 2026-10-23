@@ -104,6 +104,14 @@ To turn on push to phones and desktops:
   - Results are cached in memory per preference set.
 - **Saved plans:** `/tours/my-itineraries` (view, share link, delete) and `/tours/itineraries/shared/[token]` (read-only, no owner details). After saving, "Book matching tours" lists published packages with a stop within 1.5 km of a planned place.
 
+## Rewards (CONNECT-Daet points)
+
+- Points live in the shared `rewards_ledger` table. `UNIQUE (source, ref_id)` makes every award once-only.
+- Tours awards come from database triggers: paid +50 (reversed on refund), checked in +30, completed +20, review +10, trip plan +5 (3 a day).
+- Tourists see their balance on `/tours/me`.
+- Other subsystems award points from server code with `addPoints(createSupabaseAdminClient(), …)` from `src/lib/rewards.ts`.
+- Shared-table contract: `docs/SHARED_TABLES.md`.
+
 ## Dashboards
 
 - `/dashboard` sends each user to their own dashboard:

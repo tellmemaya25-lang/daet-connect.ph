@@ -12,6 +12,7 @@ import { isSupabaseConfigured } from "@/lib/supabase/env";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { toManilaDateKey } from "@/lib/tours/events-calendar";
 import { getAuthenticatedSession } from "@/lib/tours/server-auth";
+import { balanceOf, sourceLabel, TOURS_REWARD_RULES, type LedgerEntry } from "@/lib/rewards";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "My trips" };
@@ -52,7 +53,7 @@ export default async function TouristDashboardPage() {
 
   const supabase = await createSupabaseServerClient();
   const today = toManilaDateKey(new Date());
-  const [{ data: bookingRows }, { data: itineraries }, { data: inbox }, { data: profile }] = await Promise.all([
+  const [{ data: bookingRows }, { data: itineraries }, { data: inbox }, { data: profile }, { data: balanceRow }, { data: ledgerRows }] = await Promise.all([
     supabase
       .from("tours_bookings")
       .select("id, booking_reference, tour_date, status, number_of_pax, total_amount, total_paid, payment_status, tours_packages ( title, location_name )")
@@ -67,7 +68,16 @@ export default async function TouristDashboardPage() {
       .limit(3),
     supabase.rpc("tours_inbox"),
     supabase.from("profiles").select("full_name").eq("id", session.user.id).maybeSingle(),
+    supabase.from("rewards_balances").select("balance, earned").eq("profile_id", session.user.id).maybeSingle(),
+    supabase
+      .from("rewards_ledger")
+      .select("id, points, source, description, created_at")
+      .eq("profile_id", session.user.id)
+      .order("created_at", { ascending: false })
+      .limit(5),
   ]);
+  const recentPoints = (ledgerRows ?? []) as LedgerEntry[];
+  const points = balanceRow?.balance ?? balanceOf(recentPoints);
 
   const bookings = (bookingRows ?? []) as unknown as BookingRow[];
   const upcoming = bookings.filter((b) => (b.status === "pending" || b.status === "confirmed") && b.tour_date >= today);
@@ -166,6 +176,41 @@ export default async function TouristDashboardPage() {
         </div>
 
         <div className="space-y-6">
+          <Card id="rewards" className="scroll-mt-6">
+            <CardHeader eyebrow="CONNECT-Daet rewards" title="Your points" />
+            <p className="text-4xl font-black text-daet-forest">
+              {points.toLocaleString("en-PH")}
+              <span className="ml-1 text-sm font-bold text-daet-ink/55">pts</span>
+            </p>
+            {recentPoints.length > 0 ? (
+              <ul className="mt-3 space-y-1.5 text-sm">
+                {recentPoints.map((entry) => (
+                  <li key={entry.id} className="flex items-baseline justify-between gap-2">
+                    <span className="min-w-0 truncate text-daet-ink/75" title={entry.description ?? undefined}>
+                      {sourceLabel(entry.source)}
+                    </span>
+                    <span className={`shrink-0 font-bold ${entry.points > 0 ? "text-daet-forest" : "text-rose-700"}`}>
+                      {entry.points > 0 ? "+" : "−"}
+                      {Math.abs(entry.points)}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            ) : null}
+            <details className="mt-3 text-sm">
+              <summary className="cursor-pointer text-xs font-bold text-daet-forest">How to earn points</summary>
+              <ul className="mt-2 space-y-1 text-daet-ink/70">
+                {TOURS_REWARD_RULES.map((rule) => (
+                  <li key={rule.source} className="flex justify-between gap-2">
+                    <span>{rule.label}</span>
+                    <span className="shrink-0 font-bold text-daet-ink">+{rule.points}</span>
+                  </li>
+                ))}
+              </ul>
+              <p className="mt-2 text-xs text-daet-ink/55">Points for a payment are removed if it is refunded.</p>
+            </details>
+          </Card>
+
           <Card>
             <CardHeader title="Messages" />
             <p className="text-sm text-daet-ink/70">

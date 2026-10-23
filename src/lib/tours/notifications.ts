@@ -34,6 +34,8 @@ const ICONS: Record<string, string> = {
   package_approved: "🌴",
   package_rejected: "📝",
   review_received: "⭐",
+  review_reply: "💬",
+  points_earned: "🎁",
 };
 
 export function notificationIcon(type: string): string {
