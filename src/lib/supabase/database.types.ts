@@ -1,9 +1,3 @@
-/**
- * Generated from the live Supabase schema (project CONNECT-DAET.ph) on 2026-10-23.
- * Do not edit by hand. Regenerate after every migration:
- *   npx supabase gen types typescript --project-id <project-ref> > src/lib/supabase/database.types.ts
- */
-
 export type Json =
   | string
   | number
@@ -1511,13 +1505,25 @@ export type Database = {
         Args: { p_package_id: string; p_variants: Json }
         Returns: undefined
       }
+      replace_package_price_variants_unchecked: {
+        Args: { p_package_id: string; p_variants: Json }
+        Returns: undefined
+      }
       replace_package_stops: {
+        Args: { p_package_id: string; p_stops: Json }
+        Returns: undefined
+      }
+      replace_package_stops_unchecked: {
         Args: { p_package_id: string; p_stops: Json }
         Returns: undefined
       }
       submit_package_for_review: {
         Args: { p_package_id: string }
         Returns: undefined
+      }
+      tours_count_booked_seats: {
+        Args: { p_date: string; p_package_id: string }
+        Returns: number
       }
       tours_is_booking_guide: {
         Args: { p_booking_id: string }
@@ -1530,6 +1536,27 @@ export type Database = {
       tours_is_booking_tourist: {
         Args: { p_booking_id: string }
         Returns: boolean
+      }
+      tours_record_refund: {
+        Args: {
+          p_amount: number
+          p_booking_id: string
+          p_method: string
+          p_reference: string
+        }
+        Returns: number
+      }
+      tours_refundable_amount: {
+        Args: { p_booking_id: string }
+        Returns: number
+      }
+      tours_request_cancellation: {
+        Args: { p_booking_id: string; p_reason: string }
+        Returns: string
+      }
+      tours_resolve_cancellation: {
+        Args: { p_approve: boolean; p_cancellation_id: string; p_notes: string }
+        Returns: string
       }
     }
     Enums: {
