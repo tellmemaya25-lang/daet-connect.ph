@@ -133,8 +133,9 @@ export default async function AdminPackageReviewPage({
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
               <span className={`inline-flex px-3 py-1 rounded-full text-sm font-medium ${
-                packageWithOperator.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
+                packageWithOperator.status === 'pending_review' ? 'bg-yellow-100 text-yellow-800' :
                 packageWithOperator.status === 'published' ? 'bg-green-100 text-green-800' :
+                packageWithOperator.status === 'rejected' ? 'bg-red-100 text-red-800' :
                 'bg-gray-100 text-gray-800'
               }`}>
                 {packageWithOperator.status}
