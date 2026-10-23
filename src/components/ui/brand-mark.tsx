@@ -2,7 +2,7 @@ import Link from "next/link";
 
 export function BrandMark() {
   return (
-    <Link href="/" className="inline-flex min-h-11 items-center gap-3 rounded-full" aria-label="CONNECT-DAET home">
+    <Link href="/" className="inline-flex min-h-11 shrink-0 items-center gap-3 rounded-full" aria-label="CONNECT-DAET home">
       <span className="grid h-10 w-10 place-items-center rounded-2xl bg-daet-forest text-sm font-black tracking-tight text-white shadow-sm">
         CD
       </span>
