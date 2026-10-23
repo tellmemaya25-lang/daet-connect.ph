@@ -1,4 +1,6 @@
 import Link from "next/link";
+import { RatingBadge } from "@/components/tours/star-rating";
+import type { RatingSummary } from "@/lib/tours/reviews";
 
 interface PackageCardProps {
   package: {
@@ -14,15 +16,13 @@ interface PackageCardProps {
       is_default: boolean;
     }>;
   };
+  rating?: RatingSummary | null;
 }
 
-export function PackageCard({ package: pkg }: PackageCardProps) {
+export function PackageCard({ package: pkg, rating = null }: PackageCardProps) {
   const defaultVariant = pkg.tours_package_price_variants?.find((v) => v.is_default);
   const price = defaultVariant?.price_per_pax || defaultVariant?.flat_price || 0;
   const priceLabel = defaultVariant?.price_per_pax ? "per person" : "per group";
-
-  // Debug logging
-  console.log(`Package ${pkg.title}: cover_image_url =`, pkg.cover_image_url);
 
   return (
     <article className="group overflow-hidden rounded-3xl border border-daet-ink/10 bg-white shadow-sm transition hover:shadow-lg">
@@ -69,7 +69,8 @@ export function PackageCard({ package: pkg }: PackageCardProps) {
             </span>
           </div>
 
-          <div className="mt-4 flex items-center justify-between border-t border-daet-ink/10 pt-4">
+          <div className="mt-4 flex items-center justify-between gap-2 border-t border-daet-ink/10 pt-4">
+            {rating ? <RatingBadge summary={rating} compact /> : <span className="text-xs font-bold text-daet-ink/45">New · no reviews yet</span>}
             <span className="text-sm font-bold text-daet-forest group-hover:underline">
               View details →
             </span>

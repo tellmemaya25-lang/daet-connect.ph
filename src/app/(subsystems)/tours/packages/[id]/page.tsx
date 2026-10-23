@@ -7,6 +7,9 @@ import { PageFrame } from "@/components/ui/page-frame";
 import { Notice } from "@/components/ui/notice";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { RatingBadge, Stars } from "@/components/tours/star-rating";
+import { ReviewList } from "@/components/tours/review-list";
+import { distribution, toSummary, type Review } from "@/lib/tours/reviews";
 
 export const dynamic = "force-dynamic";
 
@@ -95,6 +98,24 @@ export default async function PackageDetailPage({ params }: PageProps) {
     notFound();
   }
 
+  const operatorRow = Array.isArray(pkg.tours_operators) ? pkg.tours_operators[0] : pkg.tours_operators;
+  const [{ data: packageRating }, { data: operatorRating }, { data: reviewRows }] = await Promise.all([
+    supabase.from("tours_package_ratings").select("review_count, average_rating").eq("package_id", pkg.id).maybeSingle(),
+    operatorRow
+      ? supabase.from("tours_operator_ratings").select("review_count, average_rating").eq("operator_id", operatorRow.id).maybeSingle()
+      : Promise.resolve({ data: null }),
+    supabase
+      .from("tours_reviews")
+      .select("id, rating, comment, created_at, operator_reply, replied_at, is_hidden")
+      .eq("package_id", pkg.id)
+      .eq("is_hidden", false)
+      .order("created_at", { ascending: false })
+      .limit(20),
+  ]);
+  const rating = toSummary(packageRating);
+  const operatorSummary = toSummary(operatorRating);
+  const reviews = (reviewRows ?? []) as Review[];
+
   // Get default price or first price variant
   const defaultVariant = pkg.tours_package_price_variants?.find((v: any) => v.is_default) ||
     pkg.tours_package_price_variants?.[0];
@@ -157,6 +178,9 @@ export default async function PackageDetailPage({ params }: PageProps) {
 
             {/* Title and description */}
             <h1 className="mt-6 text-4xl font-black text-daet-ink">{pkg.title}</h1>
+            <a href="#reviews" className="mt-2 inline-flex hover:underline">
+              <RatingBadge summary={rating} />
+            </a>
             <p className="mt-2 text-sm text-daet-ink/60">
               📍 {pkg.location_name} · ⏱️ {pkg.duration_value}{" "}
               {pkg.duration_type === "hours" ? "hours" : "days"}
@@ -288,8 +312,46 @@ export default async function PackageDetailPage({ params }: PageProps) {
                 <p className="mt-2 text-sm font-bold text-daet-forest">
                   {pkg.tours_operators[0].business_name}
                 </p>
+                {operatorSummary ? (
+                  <p className="mt-1 text-xs text-daet-ink/60">
+                    <RatingBadge summary={operatorSummary} compact /> across all their tours
+                  </p>
+                ) : null}
               </div>
             )}
+
+            {/* Reviews */}
+            <section id="reviews" className="mt-6 rounded-2xl border border-daet-ink/10 bg-white p-6">
+              <div className="flex flex-wrap items-end justify-between gap-3">
+                <h2 className="font-black text-daet-ink">Traveller reviews</h2>
+                <p className="text-xs text-daet-ink/55">Only travellers who completed this tour can review it.</p>
+              </div>
+              {rating ? (
+                <div className="mt-4 grid gap-4 sm:grid-cols-[auto_1fr] sm:items-center">
+                  <div className="text-center sm:pr-6">
+                    <p className="text-4xl font-black text-daet-ink">{rating.average.toFixed(1)}</p>
+                    <Stars value={rating.average} />
+                    <p className="mt-1 text-xs text-daet-ink/55">
+                      {rating.count} review{rating.count === 1 ? "" : "s"}
+                    </p>
+                  </div>
+                  <ul className="space-y-1 text-xs text-daet-ink/70" aria-label="Rating breakdown (latest reviews)">
+                    {distribution(reviews.map((r) => r.rating)).map((row) => (
+                      <li key={row.stars} className="flex items-center gap-2">
+                        <span className="w-8">{row.stars} ★</span>
+                        <span className="h-2 flex-1 overflow-hidden rounded-full bg-daet-sand">
+                          <span className="block h-full bg-amber-400" style={{ width: `${reviews.length ? (row.count / reviews.length) * 100 : 0}%` }} />
+                        </span>
+                        <span className="w-6 text-right">{row.count}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ) : null}
+              <div className="mt-5">
+                <ReviewList reviews={reviews} operatorName={operatorRow?.business_name ?? "the operator"} emptyText="No reviews yet. Be the first after your tour!" />
+              </div>
+            </section>
           </div>
 
           {/* Sidebar - Booking card */}

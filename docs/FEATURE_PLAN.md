@@ -23,7 +23,7 @@ I inspected the production Supabase project (`CONNECT-DAET.ph`, Postgres 17) rea
 | `tours_conversations`, `tours_messages` | 0 | ❌ | F4 Messaging |
 | `push_subscriptions` (endpoint, p256dh, auth) | 0 | ❌ | F5 Web Push |
 | `tours_itineraries`, `tours_itinerary_items` | 0 | ❌ | F7 Itinerary planner |
-| `tours_reviews` (rating 1–5, photos) | 0 | ❌ | F8 Reviews |
+| `tours_reviews` (rating 1–5, photos) | 0 | ✅ F8 | F8 Reviews |
 | `tours_package_guides` | 0 | ❌ | F2/F9 Guide pool per package |
 | `tours_guides.qr_code_value` | — | ❌ | F3 Signed QR |
 
@@ -375,6 +375,29 @@ _ISO 25010 Appropriateness Recognizability; SOP 1 trust._
 - Show the average rating and review count on package cards, package detail, operator and guide profiles. Use a SQL view `tours_package_ratings` for averages.
 - Operators can post one public reply (new column `operator_reply`, `replied_at`); admins can hide abusive reviews (`is_hidden`).
 - **Acceptance:** only completed bookings can be reviewed, once each, and ratings appear on browse cards.
+
+**Status: done** (migration `20261101_f8_reviews.sql`, applied live).
+- Database:
+  - Reviews are written only through `tours_submit_review`. It checks that the caller is the booking's tourist and the booking is `completed`; `UNIQUE (booking_id)` allows one review each. Direct inserts are revoked.
+  - New columns `operator_reply`, `replied_at`, `is_hidden`, `hidden_reason`, `updated_at`, plus a foreign key to the booking.
+  - `tours_reply_to_review` (the package's operator only; notifies the tourist) and `tours_set_review_hidden` (admins only, with a reason).
+  - Hidden reviews are visible only to their author, the operator and admins.
+  - The views `tours_package_ratings`, `tours_operator_ratings` and `tours_guide_ratings` leave hidden reviews out.
+- UI:
+  - The booking page has a "Rate your tour" form once the booking is completed. The F5 "How was your tour?" notification links there.
+  - Browse cards show the star rating.
+  - The package page shows the average, a breakdown and the latest reviews with operator replies, plus the operator's overall rating.
+  - Operators reply at `/tours/operator/reviews` (header link "Reviews").
+  - Admins moderate at `/tours/admin/reviews`, filtering by all, 1–2 stars or hidden.
+- Verified:
+  - Live dry-run (rolled back):
+    - blocked: a review on a pending booking, a review by another user, a second review, a direct insert, a reply by the tourist, hiding by the operator;
+    - works: the operator's reply (and its notification), hiding by an admin;
+    - after hiding, anon sees neither the review nor the rating.
+  - Unit tests, build, and phone/desktop screenshots of every page.
+- Deviations from the plan:
+  - There are no public operator or guide profile pages yet. The operator's rating appears on the package page. `tours_guide_ratings` is ready for the F9 dashboards and profiles.
+  - Review photos are not supported yet.
 
 ---
 

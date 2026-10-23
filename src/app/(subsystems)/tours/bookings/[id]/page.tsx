@@ -10,6 +10,9 @@ import { PushOptIn } from "@/components/tours/push-opt-in";
 import { OpenChatButton } from "@/app/(subsystems)/tours/messages/open-chat-button";
 import { CancelBookingPanel, type MyCancellation } from "./cancel-booking-panel";
 import { BookingPaymentPanel, type PanelPayment, type PanelProof } from "./booking-payment-panel";
+import { ReviewForm } from "./review-form";
+import { ReviewList } from "@/components/tours/review-list";
+import type { Review } from "@/lib/tours/reviews";
 
 export const dynamic = "force-dynamic";
 
@@ -86,7 +89,7 @@ export default async function BookingDetailPage({ params, searchParams }: PagePr
     ? pkg.tours_operators[0]
     : pkg?.tours_operators;
 
-  const [{ data: paymentRows }, { data: proofRows }, { data: cancellation }] = await Promise.all([
+  const [{ data: paymentRows }, { data: proofRows }, { data: cancellation }, { data: myReview }] = await Promise.all([
     supabase
       .from("tours_payments")
       .select("id, amount, payment_method, provider, provider_method, reference_number, payment_date, payment_status")
@@ -100,6 +103,11 @@ export default async function BookingDetailPage({ params, searchParams }: PagePr
     supabase
       .from("tours_cancellations")
       .select("status, reason, admin_notes")
+      .eq("booking_id", booking.id)
+      .maybeSingle(),
+    supabase
+      .from("tours_reviews")
+      .select("id, rating, comment, created_at, operator_reply, replied_at, is_hidden, hidden_reason")
       .eq("booking_id", booking.id)
       .maybeSingle(),
   ]);
@@ -207,6 +215,28 @@ export default async function BookingDetailPage({ params, searchParams }: PagePr
             </div>
           </section>
         )}
+
+        {booking.status === "completed" ? (
+          <section id="review" className="mb-6 rounded-3xl border border-daet-ink/10 bg-white p-6 shadow-sm">
+            <h3 className="text-sm font-bold uppercase tracking-wide text-daet-ink/60">
+              {myReview ? "Your review" : "Rate your tour"}
+            </h3>
+            <div className="mt-4">
+              {myReview ? (
+                <>
+                  <ReviewList reviews={[myReview as Review]} operatorName={operator?.business_name ?? "the operator"} />
+                  {myReview.is_hidden ? (
+                    <Notice variant="warning" className="mt-3" title="Hidden by the Tourism Office">
+                      {myReview.hidden_reason || "This review is not shown publicly."}
+                    </Notice>
+                  ) : null}
+                </>
+              ) : (
+                <ReviewForm bookingId={booking.id} />
+              )}
+            </div>
+          </section>
+        ) : null}
 
         {/* Booking Details */}
         <section className="mb-6 rounded-3xl border border-daet-ink/10 bg-white p-6 shadow-sm">
