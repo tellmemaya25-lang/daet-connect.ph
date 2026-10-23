@@ -763,7 +763,11 @@ export type Database = {
           created_at: string
           end_date: string | null
           id: string
+          plan_source: string
+          preferences: Json | null
+          share_token: string | null
           start_date: string | null
+          summary: string | null
           title: string
           tourist_id: string
           updated_at: string
@@ -773,7 +777,11 @@ export type Database = {
           created_at?: string
           end_date?: string | null
           id?: string
+          plan_source?: string
+          preferences?: Json | null
+          share_token?: string | null
           start_date?: string | null
+          summary?: string | null
           title: string
           tourist_id: string
           updated_at?: string
@@ -783,7 +791,11 @@ export type Database = {
           created_at?: string
           end_date?: string | null
           id?: string
+          plan_source?: string
+          preferences?: Json | null
+          share_token?: string | null
           start_date?: string | null
+          summary?: string | null
           title?: string
           tourist_id?: string
           updated_at?: string
@@ -800,11 +812,15 @@ export type Database = {
       }
       tours_itinerary_items: {
         Row: {
+          attraction_id: string | null
+          cost: number | null
           created_at: string
           day_number: number
           description: string | null
+          end_time: string | null
           estimated_duration_minutes: number | null
           id: string
+          item_kind: string
           item_order: number
           itinerary_id: string
           latitude: number | null
@@ -812,13 +828,19 @@ export type Database = {
           location_name: string
           longitude: number | null
           start_time: string | null
+          tip: string | null
+          travel_minutes: number | null
         }
         Insert: {
+          attraction_id?: string | null
+          cost?: number | null
           created_at?: string
           day_number: number
           description?: string | null
+          end_time?: string | null
           estimated_duration_minutes?: number | null
           id?: string
+          item_kind?: string
           item_order: number
           itinerary_id: string
           latitude?: number | null
@@ -826,13 +848,19 @@ export type Database = {
           location_name: string
           longitude?: number | null
           start_time?: string | null
+          tip?: string | null
+          travel_minutes?: number | null
         }
         Update: {
+          attraction_id?: string | null
+          cost?: number | null
           created_at?: string
           day_number?: number
           description?: string | null
+          end_time?: string | null
           estimated_duration_minutes?: number | null
           id?: string
+          item_kind?: string
           item_order?: number
           itinerary_id?: string
           latitude?: number | null
@@ -840,8 +868,17 @@ export type Database = {
           location_name?: string
           longitude?: number | null
           start_time?: string | null
+          tip?: string | null
+          travel_minutes?: number | null
         }
         Relationships: [
+          {
+            foreignKeyName: "tours_itinerary_items_attraction_id_fkey"
+            columns: ["attraction_id"]
+            isOneToOne: false
+            referencedRelation: "tours_attractions"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "tours_itinerary_items_itinerary_id_fkey"
             columns: ["itinerary_id"]
@@ -1849,6 +1886,7 @@ export type Database = {
         Args: { p_approve: boolean; p_cancellation_id: string; p_notes: string }
         Returns: string
       }
+      tours_shared_itinerary: { Args: { p_token: string }; Returns: Json }
     }
     Enums: {
       accreditation_status: "pending" | "approved" | "rejected" | "suspended"

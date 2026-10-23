@@ -87,6 +87,23 @@ To turn on push to phones and desktops:
 - **Routes:** package pages draw the route through stops that have coordinates and show the distance and travel time. With `GOOGLE_MAPS_SERVER_KEY` (Routes API only), each leg comes from `computeRoutes` and is cached in `tours_route_cache` for 30 days. Without it, or when a call fails, legs are estimated as straight-line distance × 1.4 at 30 km/h and labelled "about".
 - **Map display:** with `NEXT_PUBLIC_GOOGLE_MAPS_BROWSER_KEY` (Maps JavaScript API only, restricted to your domains by HTTP referrer), maps use Google Maps. Otherwise the page draws a sketch map. Set a monthly budget alert in Google Cloud.
 
+## Trip planner
+
+`/tours/plan` builds a 1–5 day plan from the attractions that have a map pin.
+- **Rule-based engine** (`src/lib/tours/itinerary/`, pure TypeScript, always on):
+  - filters by budget;
+  - scores by interests, cost, category variety and travel;
+  - fills each day greedily from the start time, only choosing places that are **open for the whole visit** (attractions without listed hours are assumed open 8 AM–5 PM and flagged);
+  - adds travel time (straight-line × 1.4 at 30 km/h) and a lunch break between 11:30 and 12:30, which full-day trips cover;
+  - keeps entrance fees within the per-person daily budget.
+- **Validator:** `validate.ts` re-checks every plan (opening hours, overlaps, travel, budget, known places, no repeats). Property tests assert that every generated plan passes it.
+- **Editing:** tourists can reorder, swap, remove and add stops. The day is re-timed and re-validated live, and saving re-validates on the server against the current dataset.
+- **Optional AI polish** (`llm.ts`): set `ITINERARY_LLM=on` and `ANTHROPIC_API_KEY`.
+  - Claude (`claude-opus-5-5`, low effort, 15 s timeout, structured JSON output) sees only our attraction list and the draft. It may reorder stops and write tips.
+  - Its order is re-timed by the engine and must pass the validator; any timeout, refusal or invalid plan keeps the rule-based draft.
+  - Results are cached in memory per preference set.
+- **Saved plans:** `/tours/my-itineraries` (view, share link, delete) and `/tours/itineraries/shared/[token]` (read-only, no owner details). After saving, "Book matching tours" lists published packages with a stop within 1.5 km of a planned place.
+
 ## Events calendar & merchandise showcase
 
 - Public pages: `/tours/events` (monthly calendar, category filter, day view, "Add to my calendar" `.ics` download) and `/tours/merch` (t-shirts, mugs, souvenirs, pasalubong with seller contact). The home page shows upcoming events and featured products.
