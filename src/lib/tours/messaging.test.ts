@@ -1,4 +1,4 @@
-import { attachmentPath, dayLabel, mergeMessages, messageTime, parseMessageForm, senderLabel, type ChatMessage } from "@/lib/tours/messaging";
+import { attachmentPath, chatOperators, chatRpc, dayLabel, describeThread, inboxFilters, isConversationKind, mergeMessages, messageTime, parseMessageForm, senderLabel, type ChatMessage, type ChatTarget, type ConversationHeader } from "@/lib/tours/messaging";
 
 function form(values: Record<string, string | File>): FormData {
   const data = new FormData();
@@ -74,5 +74,83 @@ describe("dayLabel", () => {
     expect(dayLabel("2026-10-22T16:30:00Z", now)).toBe("Today"); // 00:30 Manila on the 23rd
     expect(dayLabel("2026-10-22T15:59:00Z", now)).toBe("Yesterday");
     expect(dayLabel("2026-10-01T04:00:00Z", now)).toContain("Oct");
+  });
+});
+
+describe("chat channels", () => {
+  const bookingId = "11111111-1111-4111-8111-111111111111";
+  const otherId = "22222222-2222-4222-8222-222222222222";
+
+  it("maps each chat target to its RPC and rejects bad ids", () => {
+    expect(chatRpc({ kind: "booking", bookingId })).toEqual({ fn: "tours_open_booking_conversation", args: { p_booking_id: bookingId } });
+    expect(chatRpc({ kind: "guide_tourist", bookingId })).toEqual({ fn: "tours_open_guide_tourist_conversation", args: { p_booking_id: bookingId } });
+    expect(chatRpc({ kind: "operator_guide", guideId: otherId })).toEqual({ fn: "tours_open_operator_guide_conversation", args: { p_guide_id: otherId } });
+    expect(chatRpc({ kind: "operator_guide", operatorId: otherId })).toEqual({ fn: "tours_open_operator_guide_conversation", args: { p_operator_id: otherId } });
+    expect(chatRpc({ kind: "operator_admin" })).toEqual({ fn: "tours_open_operator_admin_conversation", args: {} });
+    expect(chatRpc({ kind: "operator_admin", operatorId: otherId })).toEqual({ fn: "tours_open_operator_admin_conversation", args: { p_operator_id: otherId } });
+
+    expect(chatRpc({ kind: "booking", bookingId: "nope" })).toBeNull();
+    expect(chatRpc({ kind: "operator_guide" })).toBeNull();
+    expect(chatRpc({ kind: "operator_guide", guideId: otherId, operatorId: otherId })).toBeNull();
+    expect(chatRpc({ kind: "operator_admin", operatorId: "'; drop" })).toBeNull();
+    expect(chatRpc({ kind: "other" } as unknown as ChatTarget)).toBeNull();
+  });
+
+  const base: ConversationHeader = {
+    id: "c", kind: "booking", is_member: true, booking_id: "b", booking_reference: "TB-1", booking_status: "confirmed",
+    tour_date: "2026-11-02", package_title: "Bagasbas Surf", tourist_id: "t", tourist_name: "Juan",
+    operator_id: "op", operator_profile_id: "o", operator_name: "Bagasbas Tours", guide_id: "gd", guide_profile_id: "g", guide_name: "Maria",
+  };
+
+  it("describes a guide-tourist chat from both sides", () => {
+    const header = { ...base, kind: "guide_tourist" as const, operator_profile_id: null };
+    const tourist = describeThread(header, "t", "tourist");
+    expect(tourist.title).toBe("Your guide: Maria");
+    expect(tourist.link).toEqual({ href: "/tours/bookings/b", label: "View booking" });
+    expect(tourist.canSend).toBe(true);
+    const guide = describeThread(header, "g", "guide");
+    expect(guide.title).toBe("Juan");
+    expect(guide.link?.href).toBe("/tours/guide/tours/b/roster");
+    expect(senderLabel("g", "t", tourist.members)).toBe("Maria");
+  });
+
+  it("closes booking chats when the booking is cancelled", () => {
+    const view = describeThread({ ...base, kind: "guide_tourist", booking_status: "cancelled" }, "t", "tourist");
+    expect(view.canSend).toBe(false);
+    expect(view.closedReason).toMatch(/cancelled/);
+  });
+
+  it("describes operator-guide and Tourism Office chats", () => {
+    const pair = { ...base, kind: "operator_guide" as const, booking_id: null, tourist_id: null, booking_status: null };
+    expect(describeThread(pair, "o", "operator").title).toBe("Maria");
+    expect(describeThread(pair, "g", "guide").title).toBe("Bagasbas Tours");
+    expect(describeThread(pair, "g", "guide").link).toBeNull();
+
+    const office = { ...pair, kind: "operator_admin" as const, guide_profile_id: null, guide_name: null };
+    const operatorView = describeThread(office, "o", "operator");
+    expect(operatorView.title).toBe("Daet Tourism Office");
+    expect(senderLabel("admin-1", "o", operatorView.members)).toBe("Daet Tourism Office");
+    const adminView = describeThread(office, "admin-1", "admin");
+    expect(adminView.title).toBe("Bagasbas Tours");
+    expect(adminView.canSend).toBe(true);
+  });
+
+  it("lets admins read but not reply in chats they are not in", () => {
+    const view = describeThread({ ...base, is_member: false }, "admin-1", "admin");
+    expect(view.canSend).toBe(false);
+    expect(view.closedReason).toMatch(/Admins can read/);
+  });
+
+  it("offers inbox filters only when there is more than one kind", () => {
+    expect(inboxFilters(["booking", "booking"])).toEqual([]);
+    expect(inboxFilters(["operator_admin", "booking", "nonsense"]).map((f) => f.label)).toEqual(["All", "Booking chats", "Tourism Office"]);
+    expect(isConversationKind("guide_tourist")).toBe(true);
+    expect(isConversationKind("x")).toBe(false);
+  });
+
+  it("lists each operator once, by name", () => {
+    const op = (id: string, business_name: string) => ({ tours_packages: { tours_operators: { id, business_name } } });
+    expect(chatOperators([op("2", "Zeta"), op("1", "Alpha"), op("2", "Zeta"), { tours_packages: null }, { tours_packages: [{ tours_operators: [{ id: "3", business_name: "Mid" }] }] }]))
+      .toEqual([{ id: "1", business_name: "Alpha" }, { id: "3", business_name: "Mid" }, { id: "2", business_name: "Zeta" }]);
   });
 });

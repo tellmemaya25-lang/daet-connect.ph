@@ -25,7 +25,8 @@ describe("roleTabs / activeTab", () => {
   it("picks the longest matching tab", () => {
     const tabs = roleTabs("admin");
     expect(activeTab(tabs, "/tours/admin")).toBe("/tours/admin");
-    expect(activeTab(tabs, "/tours/admin/reviews")).toBe("/tours/admin/reviews");
+    expect(activeTab(tabs, "/tours/admin/analytics/x")).toBe("/tours/admin/analytics");
+    expect(activeTab(tabs, "/tours/messages/abc")).toBe("/tours/messages");
     expect(activeTab(tabs, "/tours/admin/events")).toBe("/tours/admin");
     expect(activeTab(tabs, "/tours/administrator")).toBeNull();
     expect(activeTab(roleTabs("operator"), "/tours/operator/bookings/abc")).toBe("/tours/operator/bookings");

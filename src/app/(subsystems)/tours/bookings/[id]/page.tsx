@@ -167,7 +167,12 @@ export default async function BookingDetailPage({ params, searchParams }: PagePr
             {statusLabels[booking.status] || booking.status}
           </span>
           {booking.status !== "cancelled" && booking.status !== "rejected" ? (
-            <OpenChatButton bookingId={booking.id} label="Message the operator" />
+            <div className="flex flex-wrap justify-center gap-2">
+              <OpenChatButton bookingId={booking.id} label="Message the operator" />
+              {booking.assigned_guide_id ? (
+                <OpenChatButton target={{ kind: "guide_tourist", bookingId: booking.id }} label="Message your guide" variant="ghost" />
+              ) : null}
+            </div>
           ) : null}
           {booking.status === "confirmed" ? (
             <Link

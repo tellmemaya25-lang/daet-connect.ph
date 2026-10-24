@@ -5,26 +5,26 @@ import { Notice } from "@/components/ui/notice";
 import { PageFrame } from "@/components/ui/page-frame";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-import { dayLabel } from "@/lib/tours/messaging";
+import { getAuthenticatedSession } from "@/lib/tours/server-auth";
+import { OpenChatButton } from "./open-chat-button";
+import { dayLabel, inboxFilters, isConversationKind, KIND_LABELS } from "@/lib/tours/messaging";
 
 export const dynamic = "force-dynamic";
 
 type InboxRow = {
   conversation_id: string;
-  booking_reference: string;
-  package_title: string | null;
-  tour_date: string;
-  tourist_name: string;
+  kind: string;
+  title: string | null;
+  subtitle: string | null;
   last_message_at: string;
   last_message: string | null;
   last_sender_id: string | null;
   unread: number;
 };
 
-const tourDate = (dateKey: string) =>
-  new Date(`${dateKey}T00:00:00Z`).toLocaleDateString("en-PH", { month: "short", day: "numeric", timeZone: "UTC" });
+type PageProps = { searchParams: Promise<{ kind?: string }> };
 
-export default async function MessagesInboxPage() {
+export default async function MessagesInboxPage({ searchParams }: PageProps) {
   if (!isSupabaseConfigured()) {
     return (
       <PageFrame>
@@ -39,22 +39,70 @@ export default async function MessagesInboxPage() {
   } = await supabase.auth.getUser();
   if (!user) redirect(`/login?next=${encodeURIComponent("/tours/messages")}`);
 
-  const { data, error } = await supabase.rpc("tours_inbox");
+  const { kind: rawKind } = await searchParams;
+  const { data, error } = await supabase.rpc("tours_chat_inbox");
   if (error) console.error("Inbox error:", error);
-  const rows = (data ?? []) as InboxRow[];
+  const all = (data ?? []) as InboxRow[];
+  const filters = inboxFilters(all.map((row) => row.kind));
+  const kind = isConversationKind(rawKind) && filters.some((f) => f.kind === rawKind) ? rawKind : null;
+  const rows = kind ? all.filter((row) => row.kind === kind) : all;
+
+  // The Tourism Office can start a chat with any operator.
+  const isAdmin = (await getAuthenticatedSession()).role === "admin";
+  const { data: operatorList } = isAdmin
+    ? await supabase.from("tours_operators").select("id, business_name, accreditation_status").order("business_name").limit(200)
+    : { data: null };
 
   return (
     <PageFrame>
       <div className="mx-auto max-w-2xl">
         <h1 className="text-3xl font-black text-daet-ink">Messages</h1>
-        <p className="mt-1 text-sm text-daet-ink/65">Chats about your bookings. Only the tourist, the operator and the assigned guide can read them.</p>
+        <p className="mt-1 text-sm text-daet-ink/70">Booking chats, private chats with your guide or tourists, operator–guide chats and Tourism Office support. Only the people in a chat can read it.</p>
+
+        {filters.length > 0 ? (
+          <nav aria-label="Filter conversations" className="mt-4 flex gap-2 overflow-x-auto pb-1">
+            {filters.map((filter) => {
+              const active = filter.kind === kind;
+              return (
+                <Link
+                  key={filter.label}
+                  href={filter.kind ? `/tours/messages?kind=${filter.kind}` : "/tours/messages"}
+                  aria-current={active ? "page" : undefined}
+                  className={`inline-flex min-h-11 shrink-0 items-center rounded-full border px-4 text-sm font-bold ${active ? "border-daet-forest bg-daet-forest text-white" : "border-daet-ink/15 bg-white text-daet-ink hover:bg-daet-sand/40"}`}
+                >
+                  {filter.label}
+                </Link>
+              );
+            })}
+          </nav>
+        ) : null}
+
+        {isAdmin ? (
+          <details className="mt-4 rounded-2xl border border-daet-ink/10 bg-white p-4 shadow-sm">
+            <summary className="min-h-11 cursor-pointer content-center text-sm font-bold text-daet-forest">Message an operator</summary>
+            {(operatorList ?? []).length === 0 ? (
+              <p className="mt-2 text-sm text-daet-ink/70">No operators have registered yet.</p>
+            ) : (
+              <ul className="mt-2 divide-y divide-daet-ink/10">
+                {(operatorList ?? []).map((operator) => (
+                  <li key={operator.id} className="flex flex-wrap items-center justify-between gap-2 py-2">
+                    <span className="text-sm font-bold text-daet-ink">
+                      {operator.business_name} <span className="font-normal text-daet-ink/70">· {String(operator.accreditation_status)}</span>
+                    </span>
+                    <OpenChatButton target={{ kind: "operator_admin", operatorId: operator.id }} label="Message" variant="ghost" />
+                  </li>
+                ))}
+              </ul>
+            )}
+          </details>
+        ) : null}
 
         {error ? (
           <Notice variant="error" className="mt-6">Messages could not be loaded. Refresh to try again.</Notice>
         ) : rows.length === 0 ? (
           <div className="mt-6 rounded-3xl border border-daet-ink/10 bg-white p-8 text-center shadow-sm">
             <p className="text-lg font-black text-daet-ink">No conversations yet</p>
-            <p className="mt-1 text-sm text-daet-ink/65">Open a booking and tap “Message” to start a chat.</p>
+            <p className="mt-1 text-sm text-daet-ink/70">Open a booking, a guide or the Tourism Office and tap “Message” to start a chat.</p>
           </div>
         ) : (
           <ul className="mt-6 divide-y divide-daet-ink/10 overflow-hidden rounded-3xl border border-daet-ink/10 bg-white shadow-sm">
@@ -66,13 +114,14 @@ export default async function MessagesInboxPage() {
                   <Link href={`/tours/messages/${row.conversation_id}`} className="flex min-h-11 items-start gap-3 p-4 transition hover:bg-daet-sand/40">
                     <div className="min-w-0 flex-1">
                       <div className="flex items-baseline justify-between gap-2">
-                        <p className={`truncate text-daet-ink ${row.unread > 0 ? "font-black" : "font-bold"}`}>{row.package_title ?? "Tour booking"}</p>
+                        <p className={`truncate text-daet-ink ${row.unread > 0 ? "font-black" : "font-bold"}`}>{row.title ?? "Conversation"}</p>
                         <span className="shrink-0 text-xs text-daet-ink/70">{dayLabel(row.last_message_at)}</span>
                       </div>
                       <p className="text-xs text-daet-ink/70">
-                        {row.booking_reference} · {tourDate(row.tour_date)} · {row.tourist_name}
+                        <span className="font-bold">{isConversationKind(row.kind) ? KIND_LABELS[row.kind] : "Chat"}</span>
+                        {row.subtitle ? ` · ${row.subtitle}` : ""}
                       </p>
-                      <p className={`mt-1 truncate text-sm ${row.unread > 0 ? "font-semibold text-daet-ink" : "text-daet-ink/65"}`}>
+                      <p className={`mt-1 truncate text-sm ${row.unread > 0 ? "font-semibold text-daet-ink" : "text-daet-ink/70"}`}>
                         {mine ? "You: " : ""}
                         {preview}
                       </p>

@@ -3,10 +3,21 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Button, type ButtonVariant } from "@/components/ui/button";
-import { openBookingChat } from "./actions";
+import type { ChatTarget } from "@/lib/tours/messaging";
+import { openChat } from "./actions";
 
-/** "Message …" button on booking pages: opens or reuses the booking's chat. */
-export function OpenChatButton({ bookingId, label, variant = "secondary" }: { bookingId: string; label: string; variant?: ButtonVariant }) {
+/** "Message …" button: opens or reuses a chat (a booking's group chat by default). */
+export function OpenChatButton({
+  bookingId,
+  target,
+  label,
+  variant = "secondary",
+}: {
+  bookingId?: string;
+  target?: ChatTarget;
+  label: string;
+  variant?: ButtonVariant;
+}) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
@@ -19,7 +30,7 @@ export function OpenChatButton({ bookingId, label, variant = "secondary" }: { bo
         loadingText="Opening chat…"
         onClick={() =>
           startTransition(async () => {
-            const result = await openBookingChat(bookingId);
+            const result = await openChat(target ?? { kind: "booking", bookingId: bookingId ?? "" });
             if (result.conversationId) router.push(`/tours/messages/${result.conversationId}`);
             else setError(result.error ?? "The chat could not be opened.");
           })

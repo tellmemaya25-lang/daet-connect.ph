@@ -12,6 +12,8 @@ import { Card, CardHeader } from "@/components/ui/card";
 import { RatingBadge } from "@/components/tours/star-rating";
 import { formatDayHeading, monthKey, parseMonthParam, shiftMonth, toManilaDateKey } from "@/lib/tours/events-calendar";
 import { toSummary } from "@/lib/tours/reviews";
+import { OpenChatButton } from "@/app/(subsystems)/tours/messages/open-chat-button";
+import { chatOperators } from "@/lib/tours/messaging";
 import { AvailabilityCalendar } from "./availability-calendar";
 
 export const dynamic = "force-dynamic";
@@ -59,7 +61,7 @@ export default async function GuideDashboardPage({ searchParams }: { searchParam
   const month = parseMonthParam(searchParamsValue.month);
   const key = monthKey(month);
   const nextKey = monthKey(shiftMonth(month, 1));
-  const [{ data: monthTours }, { data: availability }, { data: upcoming }, { data: ratingRow }] = await Promise.all([
+  const [{ data: monthTours }, { data: availability }, { data: upcoming }, { data: ratingRow }, { data: packageLinks }, { data: assignedTours }] = await Promise.all([
     supabase
       .from("tours_bookings")
       .select("tour_date")
@@ -82,7 +84,10 @@ export default async function GuideDashboardPage({ searchParams }: { searchParam
       .order("tour_date")
       .limit(5),
     supabase.from("tours_guide_ratings").select("review_count, average_rating").eq("guide_id", guide.id).maybeSingle(),
+    supabase.from("tours_package_guides").select("tours_packages ( tours_operators ( id, business_name ) )").eq("guide_id", guide.id).eq("is_active", true).limit(50),
+    supabase.from("tours_bookings").select("tours_packages ( tours_operators ( id, business_name ) )").eq("assigned_guide_id", guide.id).order("tour_date", { ascending: false }).limit(50),
   ]);
+  const operators = chatOperators([...(packageLinks ?? []), ...(assignedTours ?? [])]);
   const tourCounts: Record<string, number> = {};
   for (const t of monthTours ?? []) tourCounts[t.tour_date] = (tourCounts[t.tour_date] ?? 0) + 1;
   const availabilityMap = Object.fromEntries((availability ?? []).map((a) => [a.available_date, a.is_available]));
@@ -136,6 +141,22 @@ export default async function GuideDashboardPage({ searchParams }: { searchParam
           </Card>
 
           <Card>
+            <CardHeader eyebrow="Messages" title="Your operators" />
+            {operators.length === 0 ? (
+              <p className="text-sm text-daet-ink/70">Operators who add you to a package or assign you a tour appear here so you can message them.</p>
+            ) : (
+              <ul className="divide-y divide-daet-ink/10">
+                {operators.map((operator) => (
+                  <li key={operator.id} className="flex flex-wrap items-center justify-between gap-2 py-2">
+                    <p className="font-bold text-daet-ink">{operator.business_name}</p>
+                    <OpenChatButton target={{ kind: "operator_guide", operatorId: operator.id }} label="Message operator" variant="ghost" />
+                  </li>
+                ))}
+              </ul>
+            )}
+          </Card>
+
+          <Card>
             <CardHeader title="Next tours" action={<Link href="/tours/guide/my-tours" className="text-sm font-bold text-daet-forest hover:underline">All</Link>} />
             {later.length === 0 ? (
               <p className="text-sm text-daet-ink/70">No upcoming assignments yet. Mark the days you can work so operators can assign you.</p>
@@ -156,7 +177,7 @@ export default async function GuideDashboardPage({ searchParams }: { searchParam
 
         <Card>
           <CardHeader eyebrow="Schedule" title="Your availability" />
-          <p className="mb-3 text-sm text-daet-ink/65">Tap a day to mark it available, tap again for not available, and once more to clear it. Operators see this when assigning guides.</p>
+          <p className="mb-3 text-sm text-daet-ink/70">Tap a day to mark it available, tap again for not available, and once more to clear it. Operators see this when assigning guides.</p>
           <AvailabilityCalendar
             key={key}
             month={month}
