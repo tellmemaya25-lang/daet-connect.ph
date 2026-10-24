@@ -98,7 +98,7 @@ To turn on push to phones and desktops:
   - keeps entrance fees within the per-person daily budget.
 - **Validator:** `validate.ts` re-checks every plan (opening hours, overlaps, travel, budget, known places, no repeats). Property tests assert that every generated plan passes it.
 - **Editing:** tourists can reorder, swap, remove and add stops. The day is re-timed and re-validated live, and saving re-validates on the server against the current dataset.
-- **Optional AI polish** (`llm.ts`): set `ITINERARY_LLM=on` and `ANTHROPIC_API_KEY`.
+- **AI trip assistant** (`assistant.ts`, `llm.ts`): "Describe your trip" fills the form from plain English or Taglish, and "Ask the assistant" edits a plan ("add Bagasbas Beach to day 2", "make it relaxed"). With `ANTHROPIC_API_KEY` set, Claude reads the request; without it, built-in rules do. Either way the result is re-validated before it is shown. `ITINERARY_LLM=off` turns the AI off. AI calls are limited to 20 per person per 10 minutes.
   - Claude (`claude-opus-5-5`, low effort, 15 s timeout, structured JSON output) sees only our attraction list and the draft. It may reorder stops and write tips.
   - Its order is re-timed by the engine and must pass the validator; any timeout, refusal or invalid plan keeps the rule-based draft.
   - Results are cached in memory per preference set.

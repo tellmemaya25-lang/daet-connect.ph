@@ -5,15 +5,16 @@ import Link from "next/link";
 import { RouteMap } from "@/components/maps/route-map";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Field, Input, Select } from "@/components/ui/field";
+import { Field, Input, Select, Textarea } from "@/components/ui/field";
 import { Notice } from "@/components/ui/notice";
 import { ATTRACTION_CATEGORIES, CATEGORY_ICONS, type AttractionCategory } from "@/lib/tours/attractions";
+import { ASSISTANT_MAX_LENGTH, CHANGE_EXAMPLES, TRIP_EXAMPLES } from "@/lib/tours/itinerary/assistant";
 import { visitIds, type PlannerInput } from "@/lib/tours/itinerary/form";
 import { scheduleOrder, withTotals } from "@/lib/tours/itinerary/schedule";
 import type { PackageMatch } from "@/lib/tours/itinerary/suggest";
 import { formatClock, MAX_DAYS, type Plan, type Preferences } from "@/lib/tours/itinerary/types";
 import { validatePlan } from "@/lib/tours/itinerary/validate";
-import { generateItinerary, saveItinerary, suggestPackages, type GenerateResult } from "./actions";
+import { generateItinerary, interpretTripRequest, requestPlanChange, saveItinerary, suggestPackages, type GenerateResult } from "./actions";
 
 type Generated = Extract<GenerateResult, { ok: true }>;
 
@@ -50,7 +51,7 @@ export function PlannerApp({ defaultDate, aiAvailable, signedIn }: { defaultDate
   const set = <K extends keyof PlannerInput>(key: K, value: PlannerInput[K]) => setInput((current) => ({ ...current, [key]: value }));
 
   if (result && plan) {
-    return <PlanEditor result={result} plan={plan} setPlan={setPlan} input={input} onBack={() => setResult(null)} signedIn={signedIn} />;
+    return <PlanEditor result={result} plan={plan} setPlan={setPlan} input={input} setInput={setInput} onBack={() => setResult(null)} signedIn={signedIn} />;
   }
 
   return (
@@ -62,6 +63,8 @@ export function PlannerApp({ defaultDate, aiAvailable, signedIn }: { defaultDate
         generate();
       }}
     >
+      <DescribeTrip aiAvailable={aiAvailable} input={input} onFill={(next) => { setInput(next); setErrors({}); }} />
+
       {message ? <Notice variant="error">{message}</Notice> : null}
       <div className="grid gap-5 sm:grid-cols-3">
         <Field id="startDate" label="First day" required error={errors.startDate}>
@@ -144,9 +147,109 @@ export function PlannerApp({ defaultDate, aiAvailable, signedIn }: { defaultDate
   );
 }
 
-function PlanEditor({ result, plan, setPlan, input, onBack, signedIn }: { result: Generated; plan: Plan; setPlan: (plan: Plan) => void; input: PlannerInput; onBack: () => void; signedIn: boolean }) {
+/** "Describe your trip": plain words in, form fields out (Claude when configured, rules otherwise). */
+function DescribeTrip({ aiAvailable, input, onFill }: { aiAvailable: boolean; input: PlannerInput; onFill: (input: PlannerInput) => void }) {
+  const [text, setText] = useState("");
+  const [state, setState] = useState<{ tone: "success" | "error"; understood?: string[]; text?: string; source?: "llm" | "rules" } | null>(null);
+  const [pending, startTransition] = useTransition();
+
+  function interpret(value: string) {
+    startTransition(async () => {
+      const response = await interpretTripRequest(value, input);
+      if (!response.ok) {
+        setState({ tone: "error", text: response.message });
+        return;
+      }
+      onFill(response.input);
+      setState({ tone: "success", understood: response.understood, source: response.source });
+    });
+  }
+
+  return (
+    <section aria-labelledby="describe-trip" className="rounded-2xl border border-daet-forest/20 bg-daet-forest/5 p-4">
+      <h2 id="describe-trip" className="text-base font-black text-daet-ink">
+        <span aria-hidden="true">✨</span> Describe your trip
+      </h2>
+      <p className="mt-1 text-xs text-daet-ink/70">
+        Write it the way you'd tell a friend, in English or Taglish. {aiAvailable ? "Our AI assistant" : "The assistant"} fills in the form below; check it, then tap Plan my trip.
+      </p>
+      <label htmlFor="trip-description" className="sr-only">
+        Describe your trip
+      </label>
+      <Textarea
+        id="trip-description"
+        rows={3}
+        maxLength={ASSISTANT_MAX_LENGTH}
+        value={text}
+        onChange={(e) => setText(e.target.value)}
+        placeholder={TRIP_EXAMPLES[0]}
+        className="mt-3"
+      />
+      <div className="mt-2 flex flex-wrap gap-2">
+        {TRIP_EXAMPLES.map((example) => (
+          <button
+            key={example}
+            type="button"
+            onClick={() => {
+              setText(example);
+              interpret(example);
+            }}
+            className="min-h-11 rounded-full border border-daet-ink/15 bg-white px-3 text-left text-xs font-semibold text-daet-ink hover:bg-daet-sand"
+          >
+            {example}
+          </button>
+        ))}
+      </div>
+      <div className="mt-3 flex flex-wrap items-center gap-3">
+        <Button type="button" variant="secondary" loading={pending} loadingText="Reading…" disabled={text.trim().length < 3} onClick={() => interpret(text)}>
+          Fill in the form
+        </Button>
+        <span className="text-xs text-daet-ink/70">{text.length}/{ASSISTANT_MAX_LENGTH}</span>
+      </div>
+      <div aria-live="polite">
+        {state?.tone === "error" ? (
+          <p className="mt-3 text-sm font-semibold text-rose-700">{state.text}</p>
+        ) : state?.understood ? (
+          <div className="mt-3">
+            <p className="text-xs font-bold text-daet-ink">
+              Got it{state.source === "llm" ? " (AI)" : ""}. I set:
+            </p>
+            <ul className="mt-1 flex flex-wrap gap-1.5">
+              {state.understood.map((item) => (
+                <li key={item}>
+                  <Badge tone="brand">{item}</Badge>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ) : null}
+      </div>
+    </section>
+  );
+}
+
+function PlanEditor({
+  result,
+  plan,
+  setPlan,
+  input,
+  setInput,
+  onBack,
+  signedIn,
+}: {
+  result: Generated;
+  plan: Plan;
+  setPlan: (plan: Plan) => void;
+  input: PlannerInput;
+  setInput: (input: PlannerInput) => void;
+  onBack: () => void;
+  signedIn: boolean;
+}) {
   const byId = useMemo(() => new Map(result.attractions.map((a) => [a.id, a])), [result.attractions]);
-  const prefs: Preferences = result.prefs;
+  // The assistant can change pace and times, so preferences and tips live here.
+  const [prefs, setPrefs] = useState<Preferences>(result.prefs);
+  const [tips, setTips] = useState<Record<string, string>>(result.tips);
+  const [usedAi, setUsedAi] = useState(result.source === "llm");
   const validation = useMemo(() => validatePlan(plan, byId, prefs), [plan, byId, prefs]);
   const used = new Set(plan.days.flatMap((d) => visitIds(d.blocks)));
   const unused = result.attractions.filter((a) => !used.has(a.id)).sort((a, b) => a.name.localeCompare(b.name));
@@ -163,7 +266,7 @@ function PlanEditor({ result, plan, setPlan, input, onBack, signedIn }: { result
 
   function save() {
     startTransition(async () => {
-      const response = await saveItinerary({ title, preferences: input, plan, tips: result.tips, summary: result.summary, source: result.source });
+      const response = await saveItinerary({ title, preferences: input, plan, tips, summary: result.summary, source: usedAi ? "llm" : "rules" });
       if (!response.ok) {
         setSaveState({ tone: "error", text: response.message });
         return;
@@ -184,11 +287,40 @@ function PlanEditor({ result, plan, setPlan, input, onBack, signedIn }: { result
           <Badge tone="brand">{plan.totals.visits} stops</Badge>
           <Badge tone="neutral">{plan.totals.travelMinutes} min travel</Badge>
           <Badge tone="neutral">{peso(plan.totals.cost)} entrance fees</Badge>
-          {result.source === "llm" ? <Badge tone="info">Polished with AI</Badge> : null}
+          {usedAi ? <Badge tone="info">AI-assisted</Badge> : null}
         </div>
       </div>
 
       {result.summary ? <p className="rounded-2xl bg-daet-forest/5 p-4 text-sm leading-6 text-daet-ink">{result.summary}</p> : null}
+
+      <AskAssistant
+        aiAvailable={result.llmAvailable}
+        onRequest={async (text) => {
+          const response = await requestPlanChange(text, plan, input, tips);
+          if (!response.ok) return { reply: response.message, changed: false };
+          if (response.changed) {
+            const previous = { plan, prefs, input, tips };
+            setPlan(response.plan);
+            setPrefs(response.prefs);
+            setInput(response.input);
+            setTips(response.tips);
+            if (response.source === "llm") setUsedAi(true);
+            setSaveState(null);
+            return {
+              reply: response.reply,
+              changed: true,
+              source: response.source,
+              undo: () => {
+                setPlan(previous.plan);
+                setPrefs(previous.prefs);
+                setInput(previous.input);
+                setTips(previous.tips);
+              },
+            };
+          }
+          return { reply: response.reply, changed: false, source: response.source };
+        }}
+      />
 
       {validation.ok ? null : (
         <Notice variant="warning" title="This plan needs a fix before you can save it">
@@ -234,7 +366,7 @@ function PlanEditor({ result, plan, setPlan, input, onBack, signedIn }: { result
                             {block.cost > 0 ? `${peso(block.cost)} for the group` : "No listed entrance fee"}
                             {!block.hoursConfirmed ? " · hours not listed, check before going" : ""}
                           </p>
-                          {result.tips[block.attractionId] ? <p className="mt-2 text-sm text-daet-ink/75">💡 {result.tips[block.attractionId]}</p> : null}
+                          {tips[block.attractionId] ? <p className="mt-2 text-sm text-daet-ink/75">💡 {tips[block.attractionId]}</p> : null}
                           <div className="mt-3 flex flex-wrap gap-2">
                             <Button variant="ghost" disabled={visitIndex === 0} onClick={() => editDay(dayIndex, move(ids, visitIndex, -1))} aria-label={`Move ${block.name} earlier`}>
                               ↑
@@ -324,7 +456,7 @@ function PlanEditor({ result, plan, setPlan, input, onBack, signedIn }: { result
         <section className="rounded-3xl border border-daet-ink/10 bg-white p-5 shadow-sm">
           <h2 className="text-lg font-black text-daet-ink">Book matching tours</h2>
           {matches.length === 0 ? (
-            <p className="mt-2 text-sm text-daet-ink/65">No published tours pass these places yet.</p>
+            <p className="mt-2 text-sm text-daet-ink/70">No published tours pass these places yet.</p>
           ) : (
             <ul className="mt-3 space-y-3">
               {matches.map((match) => (
@@ -344,6 +476,104 @@ function PlanEditor({ result, plan, setPlan, input, onBack, signedIn }: { result
         </section>
       ) : null}
     </div>
+  );
+}
+
+type AssistantTurn = { id: number; request: string; reply: string; changed: boolean; source?: "llm" | "rules"; undo?: () => void };
+
+/** "Ask the assistant": plain-language edits to the plan, with a short history and undo. */
+function AskAssistant({
+  aiAvailable,
+  onRequest,
+}: {
+  aiAvailable: boolean;
+  onRequest: (text: string) => Promise<Omit<AssistantTurn, "id" | "request">>;
+}) {
+  const [text, setText] = useState("");
+  const [turns, setTurns] = useState<AssistantTurn[]>([]);
+  const [pending, startTransition] = useTransition();
+
+  function send(value: string) {
+    const request = value.trim();
+    if (!request) return;
+    startTransition(async () => {
+      const turn = await onRequest(request);
+      setTurns((current) => [...current.slice(-4).map((t) => ({ ...t, undo: undefined })), { id: Date.now(), request, ...turn }]);
+      setText("");
+    });
+  }
+
+  const last = turns[turns.length - 1];
+  return (
+    <section aria-labelledby="ask-assistant" className="rounded-3xl border border-daet-forest/20 bg-daet-forest/5 p-5">
+      <h2 id="ask-assistant" className="text-lg font-black text-daet-ink">
+        <span aria-hidden="true">✨</span> Ask the assistant
+      </h2>
+      <p className="mt-1 text-xs text-daet-ink/70">
+        {aiAvailable ? "Tell our AI assistant what to change." : "Tell the assistant what to change."} Every change is checked against opening hours, travel time and your budget.
+      </p>
+      {turns.length ? (
+        <ol className="mt-3 space-y-2" aria-live="polite">
+          {turns.map((turn) => (
+            <li key={turn.id} className="space-y-1">
+              <p className="ml-auto w-fit max-w-[85%] rounded-2xl bg-daet-forest px-3 py-2 text-sm text-white">{turn.request}</p>
+              <div className="w-fit max-w-[85%] rounded-2xl bg-white px-3 py-2 text-sm text-daet-ink shadow-sm">
+                <p>{turn.reply}</p>
+                {turn.undo && turn === last ? (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      turn.undo?.();
+                      setTurns((current) => current.map((t) => (t.id === turn.id ? { ...t, undo: undefined, reply: `${t.reply} (Undone.)` } : t)));
+                    }}
+                    className="mt-1 min-h-11 text-xs font-bold text-daet-forest underline"
+                  >
+                    Undo this change
+                  </button>
+                ) : null}
+              </div>
+            </li>
+          ))}
+        </ol>
+      ) : null}
+      <form
+        className="mt-3"
+        onSubmit={(event) => {
+          event.preventDefault();
+          send(text);
+        }}
+      >
+        <label htmlFor="assistant-request" className="sr-only">
+          What should the assistant change?
+        </label>
+        <div className="flex flex-col gap-2 sm:flex-row">
+          <Input
+            id="assistant-request"
+            value={text}
+            maxLength={ASSISTANT_MAX_LENGTH}
+            onChange={(e) => setText(e.target.value)}
+            placeholder="e.g. add Bagasbas Beach to day 2"
+            className="mt-0 flex-1"
+          />
+          <Button type="submit" loading={pending} loadingText="Thinking…" disabled={!text.trim()}>
+            Ask
+          </Button>
+        </div>
+      </form>
+      <div className="mt-2 flex flex-wrap gap-2">
+        {CHANGE_EXAMPLES.map((example) => (
+          <button
+            key={example}
+            type="button"
+            disabled={pending}
+            onClick={() => send(example)}
+            className="min-h-11 rounded-full border border-daet-ink/15 bg-white px-3 text-xs font-semibold text-daet-ink hover:bg-daet-sand disabled:opacity-60"
+          >
+            {example}
+          </button>
+        ))}
+      </div>
+    </section>
   );
 }
 
