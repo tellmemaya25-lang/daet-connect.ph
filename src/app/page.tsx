@@ -64,17 +64,17 @@ export default async function HomePage() {
   return (
     <PageFrame>
       {/* Hero */}
-      <section className="overflow-hidden rounded-[28px] bg-daet-ink text-daet-foam">
+      <section className="overflow-hidden rounded-2xl bg-daet-ink text-daet-foam">
         <div className="grid items-center gap-8 px-6 py-12 sm:px-10 lg:grid-cols-[1.1fr_1fr] lg:gap-12 lg:px-14 lg:py-16">
           <div>
-            <p className="text-xs font-bold uppercase tracking-[0.14em] text-daet-sun">Daet, Camarines Norte</p>
+            <p className="text-xs font-bold uppercase tracking-[0.14em] text-sky-300">Daet, Camarines Norte</p>
             <h1 className="mt-4 font-display text-5xl font-semibold leading-[0.95] tracking-tight sm:text-7xl">Daet, slowly.</h1>
             <p className="mt-5 max-w-md text-lg leading-7 text-daet-foam/85">
               Surf at sunrise, eat at the market, sleep to the sound of the tide. Hosted by locals the Tourism Office has verified.
             </p>
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-              <ButtonLink href="/tours/browse" variant="accent" size="lg">Find a tour</ButtonLink>
-              <Link href="/tours/events" className="inline-flex min-h-12 items-center justify-center rounded-full border-2 border-daet-foam px-7 text-base font-bold text-daet-foam transition hover:bg-daet-foam/10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-daet-sun">What&apos;s on</Link>
+              <ButtonLink href="/tours/browse" variant="primary" size="lg">Find a tour</ButtonLink>
+              <Link href="/tours/events" className="inline-flex min-h-12 items-center justify-center rounded-full border-2 border-daet-foam px-7 text-base font-bold text-daet-foam transition hover:bg-daet-foam/10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-300">What&apos;s on</Link>
             </div>
             <p className="mt-5 text-sm text-daet-foam/75">
               {user ? (
@@ -84,11 +84,11 @@ export default async function HomePage() {
               )}
             </p>
           </div>
-          <div className="relative aspect-[3/2] overflow-hidden rounded-[28px] bg-daet-deep">
+          <div className="relative aspect-[3/2] overflow-hidden rounded-2xl bg-blue-700">
             {heroPhoto?.cover_image_url ? (
               <img src={heroPhoto.cover_image_url} alt="" className="h-full w-full object-cover" />
             ) : null}
-            <p className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-daet-ink/80 to-transparent p-6 font-display text-3xl font-semibold leading-8">
+            <p className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-daet-ink/85 to-transparent p-6 font-display text-3xl font-semibold leading-8">
               {heroPhoto ? heroPhoto.location_name : "Bagasbas Beach"}
             </p>
           </div>
@@ -150,7 +150,7 @@ export default async function HomePage() {
       ) : null}
 
       {/* For locals */}
-      <section aria-labelledby="home-locals" className="mt-12 rounded-[28px] bg-daet-sea px-6 py-10 sm:mt-20 sm:px-10">
+      <section aria-labelledby="home-locals" className="mt-12 rounded-2xl bg-daet-sea px-6 py-10 sm:mt-20 sm:px-10">
         <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
           <div>
             <p className="text-xs font-bold uppercase tracking-[0.14em] text-daet-forest">For locals</p>

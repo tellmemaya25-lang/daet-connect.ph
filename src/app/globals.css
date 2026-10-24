@@ -1,22 +1,23 @@
 @import "tailwindcss";
 
 @theme {
-  /* "Coastal editorial" palette (see the CONNECT-DAET design system).
-     The daet-* names are kept so existing pages pick up the new look. */
-  --color-daet-ink: #0b2b2e;
-  --color-daet-forest: #0f5a5c;
-  --color-daet-deep: #0b4446;
-  --color-daet-leaf: #2d6f6c;
-  --color-daet-sea: #dbeceb;
-  --color-daet-sand: #f7f1e5;
-  --color-daet-foam: #fffdf8;
-  --color-daet-sun: #f2b544;
-  --color-daet-coral: #c8472a;
-  --color-daet-line: #d8cdb6;
+  /* Palette follows the team UI standard: Tailwind blue-600 primary, green-500
+     success, yellow-500 warning, red-600 error. The daet-* names are kept so
+     existing pages pick up the new look (see the CONNECT-DAET design system). */
+  --color-daet-ink: #0f172a;
+  --color-daet-forest: #2563eb;
+  --color-daet-deep: #1d4ed8;
+  --color-daet-leaf: #1d4ed8;
+  --color-daet-sea: #eff6ff;
+  --color-daet-sand: #f1f5f9;
+  --color-daet-foam: #ffffff;
+  --color-daet-sun: #eab308;
+  --color-daet-coral: #dc2626;
+  --color-daet-line: #e2e8f0;
   --font-display: var(--font-fraunces), Georgia, "Times New Roman", serif;
   --font-sans: var(--font-public-sans), system-ui, -apple-system, "Segoe UI", sans-serif;
-  --shadow-card: 0 1px 2px rgba(11, 43, 46, 0.08), 0 8px 24px rgba(11, 43, 46, 0.06);
-  --shadow-lift: 0 2px 4px rgba(11, 43, 46, 0.1), 0 16px 40px rgba(11, 43, 46, 0.14);
+  --shadow-card: 0 1px 2px rgba(15, 23, 42, 0.08), 0 8px 24px rgba(15, 23, 42, 0.06);
+  --shadow-lift: 0 2px 4px rgba(15, 23, 42, 0.1), 0 16px 40px rgba(15, 23, 42, 0.14);
 }
 
 /* Base styles live in the base layer so Tailwind utilities (e.g. font-bold on a
@@ -24,8 +25,8 @@
 @layer base {
   :root {
     color-scheme: light;
-    background: #f7f1e5;
-    color: #0b2b2e;
+    background: #f8fafc;
+    color: #0f172a;
   }
 
   * {
@@ -40,8 +41,8 @@
   body {
     margin: 0;
     min-height: 100vh;
-    background: #f7f1e5;
-    color: #0b2b2e;
+    background: #f8fafc;
+    color: #0f172a;
     font-family: var(--font-sans);
     -webkit-font-smoothing: antialiased;
   }
@@ -53,7 +54,7 @@
   }
 
   ::selection {
-    background: rgba(15, 90, 92, 0.2);
+    background: rgba(37, 99, 235, 0.2);
   }
 }
 

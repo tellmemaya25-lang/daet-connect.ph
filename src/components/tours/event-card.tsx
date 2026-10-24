@@ -21,7 +21,7 @@ export function EventCard({ event, compact = false }: { event: TourEvent; compac
       href={`/tours/events/${event.id}`}
       className="group flex items-center gap-4 rounded-2xl bg-daet-foam p-4 shadow-card transition duration-150 hover:shadow-lift"
     >
-      <div className={`shrink-0 overflow-hidden rounded-lg bg-daet-sea text-center ${compact ? "w-16 py-2" : "w-20 py-3"}`}>
+      <div className={`shrink-0 overflow-hidden rounded-xl bg-daet-sea text-center ${compact ? "w-16 py-2" : "w-20 py-3"}`}>
         <p className="font-display text-3xl font-semibold leading-8 text-daet-ink">{day}</p>
         <p className="text-xs font-bold uppercase tracking-[0.14em] text-daet-forest">{month}</p>
       </div>
