@@ -43,12 +43,13 @@ export function validateGuideRegistration(input: unknown) {
 }
 
 export function guideFieldErrors(error: z.ZodError): Record<string, string> {
-  const flattened = error.flatten().fieldErrors;
-  return Object.fromEntries(
-    Object.entries(flattened)
-      .map(([field, messages]) => [field, messages?.[0]])
-      .filter((entry): entry is [string, string] => Boolean(entry[1])),
-  );
+  // First message per top-level field, in issue order (what flatten().fieldErrors gave).
+  const errors: Record<string, string> = {};
+  for (const issue of error.issues) {
+    const field = issue.path[0];
+    if (typeof field === "string" && issue.message && !(field in errors)) errors[field] = issue.message;
+  }
+  return errors;
 }
 
 /** Exact checkbox parser shared by the action and its consent test. */
