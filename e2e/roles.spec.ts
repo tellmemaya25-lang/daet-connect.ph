@@ -8,6 +8,8 @@ const pages: Record<Role, string[]> = {
     "/tours/bookings/e9466de5-4877-47c1-ac14-d86deeb38b9e",
     "/tours/bookings/e9466de5-4877-47c1-ac14-d86deeb38b9e/ticket",
     "/tours/messages",
+    "/tours/messages?kind=guide_tourist",
+    "/tours/messages/cc110000-0000-4000-8000-000000000001",
     "/tours/notifications",
     "/tours/my-itineraries",
   ],
@@ -19,6 +21,7 @@ const pages: Record<Role, string[]> = {
     "/tours/operator/merch",
     "/tours/operator/merch/new",
     "/tours/operator/packages",
+    "/tours/messages",
   ],
   guide: ["/tours/guide/dashboard", "/tours/guide/my-tours", "/tours/guide/check-in", "/tours/guide/my-qr", "/tours/guide/tours/e9466de5-4877-47c1-ac14-d86deeb38b9e/roster"],
   admin: [
@@ -29,6 +32,7 @@ const pages: Record<Role, string[]> = {
     "/tours/admin/events",
     "/tours/admin/attractions",
     "/tours/admin/operators",
+    "/tours/messages",
   ],
 };
 
@@ -64,4 +68,37 @@ test("/dashboard sends each role home", async ({ browser }) => {
     await expect(page).toHaveURL(homes[role]);
     await context.close();
   }
+});
+
+test.describe("messaging channels", () => {
+  test("tourist inbox filters by chat kind and opens a thread", async ({ context, page }) => {
+    await signInAs(context, "tourist");
+    await visit(page, "/tours/messages");
+    const filters = page.getByRole("navigation", { name: "Filter conversations" });
+    await filters.getByRole("link", { name: "Guide & tourist" }).click();
+    await expect(page).toHaveURL(/kind=guide_tourist/);
+    await expect(page.getByText("Maria Santos")).toBeVisible();
+    await expect(page.getByText("Bagasbas Sunrise Surf Lesson")).toHaveCount(0);
+  });
+
+  test("thread labels the guide by name", async ({ context, page }) => {
+    await signInAs(context, "tourist");
+    await visit(page, "/tours/messages/cc110000-0000-4000-8000-000000000001");
+    await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
+    await expect(page.getByText("Maria Santos", { exact: false }).first()).toBeVisible();
+  });
+
+  test("operator can contact the Tourism Office from the dashboard", async ({ context, page }) => {
+    await signInAs(context, "operator");
+    await visit(page, "/tours/operator/dashboard");
+    await page.getByRole("button", { name: "Contact Tourism Office" }).click();
+    await expect(page).toHaveURL(/\/tours\/messages\/cc110000-0000-4000-8000-000000000001$/);
+  });
+
+  test("admin can start a chat with an operator", async ({ context, page }) => {
+    await signInAs(context, "admin");
+    await visit(page, "/tours/messages");
+    await page.getByText("Message an operator").click();
+    await expect(page.getByRole("button", { name: "Message" }).first()).toBeVisible();
+  });
 });

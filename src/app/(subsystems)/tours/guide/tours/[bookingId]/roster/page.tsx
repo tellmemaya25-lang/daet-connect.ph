@@ -93,7 +93,10 @@ export default async function GuideRosterPage({ params }: PageProps) {
           <div className="mt-4 flex flex-wrap gap-3">
             {!party && rule.ok ? <RosterCheckInButton bookingId={booking.id} label="Check in whole group" /> : null}
             {booking.status === "confirmed" || booking.status === "completed" ? (
-              <OpenChatButton bookingId={booking.id} label="Message group" />
+              <>
+                <OpenChatButton bookingId={booking.id} label="Message group" />
+                <OpenChatButton target={{ kind: "guide_tourist", bookingId: booking.id }} label="Message tourist only" variant="ghost" />
+              </>
             ) : null}
           </div>
         </section>

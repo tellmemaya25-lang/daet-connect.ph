@@ -28,8 +28,8 @@ export function roleTabs(role: string | null): Tab[] {
         { href: "/tours/admin", label: "Home", icon: "🏠" },
         { href: "/tours/admin/analytics", label: "Analytics", icon: "📊" },
         { href: "/tours/admin/operators", label: "Approvals", icon: "✅" },
-        { href: "/tours/admin/reviews", label: "Reviews", icon: "⭐" },
         { href: "/tours/admin/attractions", label: "Content", icon: "🗺️" },
+        { href: "/tours/messages", label: "Messages", icon: "💬" },
       ];
     case "tourist":
       return [

@@ -1,5 +1,5 @@
 /**
- * Booking chat rules shared by the server actions and the thread UI. The
+ * Chat rules shared by the server actions and the thread UI. The
  * database trigger tours_messages_before_insert enforces the same limits.
  */
 
@@ -41,12 +41,37 @@ export function attachmentPath(conversationId: string, extension: string, id: st
 
 export type ChatRole = "tourist" | "operator" | "guide" | "admin";
 
+/**
+ * booking: the booking's group chat (tourist, operator, assigned guide).
+ * guide_tourist: the booking's tourist and assigned guide only.
+ * operator_guide: one operator and one guide.
+ * operator_admin: one operator and the Tourism Office (every admin).
+ */
+export const CONVERSATION_KINDS = ["booking", "guide_tourist", "operator_guide", "operator_admin"] as const;
+export type ConversationKind = (typeof CONVERSATION_KINDS)[number];
+
+export const KIND_LABELS: Record<ConversationKind, string> = {
+  booking: "Booking chats",
+  guide_tourist: "Guide & tourist",
+  operator_guide: "Operator & guide",
+  operator_admin: "Tourism Office",
+};
+
+export const TOURISM_OFFICE_NAME = "Daet Tourism Office";
+
+export function isConversationKind(value: unknown): value is ConversationKind {
+  return typeof value === "string" && (CONVERSATION_KINDS as readonly string[]).includes(value);
+}
+
 export type ChatMembers = {
-  touristId: string;
+  touristId: string | null;
   touristName: string;
   operatorProfileId: string | null;
   operatorName: string;
   guideProfileId: string | null;
+  guideName?: string | null;
+  /** Label for senders outside the members above (admins in a Tourism Office chat). */
+  otherName?: string;
 };
 
 /** Who sent a message, for the bubble label ("You" for the viewer). */
@@ -54,8 +79,146 @@ export function senderLabel(senderId: string, viewerId: string, members: ChatMem
   if (senderId === viewerId) return "You";
   if (senderId === members.touristId) return members.touristName;
   if (senderId === members.operatorProfileId) return members.operatorName;
-  if (senderId === members.guideProfileId) return "Your guide";
-  return "CONNECT-Daet";
+  if (senderId === members.guideProfileId) return members.guideName || "Your guide";
+  return members.otherName ?? "CONNECT-Daet";
+}
+
+/** What to open: maps a chat target to its RPC. Ids are checked again in the database. */
+export type ChatTarget =
+  | { kind: "booking"; bookingId: string }
+  | { kind: "guide_tourist"; bookingId: string }
+  | { kind: "operator_guide"; guideId?: string; operatorId?: string }
+  | { kind: "operator_admin"; operatorId?: string };
+
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+export function chatRpc(target: ChatTarget): { fn: string; args: Record<string, string> } | null {
+  const id = (value: string | undefined) => (value !== undefined && UUID.test(value) ? value : null);
+  switch (target?.kind) {
+    case "booking":
+    case "guide_tourist": {
+      const bookingId = id(target.bookingId);
+      if (!bookingId) return null;
+      const fn = target.kind === "booking" ? "tours_open_booking_conversation" : "tours_open_guide_tourist_conversation";
+      return { fn, args: { p_booking_id: bookingId } };
+    }
+    case "operator_guide": {
+      const guideId = id(target.guideId);
+      const operatorId = id(target.operatorId);
+      if (!guideId === !operatorId) return null; // exactly one side, the other is the caller
+      return { fn: "tours_open_operator_guide_conversation", args: guideId ? { p_guide_id: guideId } : { p_operator_id: operatorId! } };
+    }
+    case "operator_admin": {
+      if (target.operatorId === undefined) return { fn: "tours_open_operator_admin_conversation", args: {} };
+      const operatorId = id(target.operatorId);
+      return operatorId ? { fn: "tours_open_operator_admin_conversation", args: { p_operator_id: operatorId } } : null;
+    }
+    default:
+      return null;
+  }
+}
+
+/** Row of tours_conversation_header(). */
+export type ConversationHeader = {
+  id: string;
+  kind: ConversationKind;
+  is_member: boolean;
+  booking_id: string | null;
+  booking_reference: string | null;
+  booking_status: string | null;
+  tour_date: string | null;
+  package_title: string | null;
+  tourist_id: string | null;
+  tourist_name: string | null;
+  operator_id: string | null;
+  operator_profile_id: string | null;
+  operator_name: string | null;
+  guide_id: string | null;
+  guide_profile_id: string | null;
+  guide_name: string | null;
+};
+
+export type ThreadView = {
+  title: string;
+  subtitle: string;
+  members: ChatMembers;
+  link: { href: string; label: string } | null;
+  canSend: boolean;
+  closedReason: string | null;
+  emptyText: string;
+};
+
+/** Header text, sender labels and reply rules for one thread, as seen by the viewer. */
+export function describeThread(header: ConversationHeader, viewerId: string, viewerRole: string | null): ThreadView {
+  const operatorName = header.operator_name ?? "Operator";
+  const guideName = header.guide_name ?? null;
+  const members: ChatMembers = {
+    touristId: header.tourist_id,
+    touristName: header.tourist_name ?? "Tourist",
+    operatorProfileId: header.operator_profile_id,
+    operatorName,
+    guideProfileId: header.guide_profile_id,
+    guideName,
+    otherName: header.kind === "operator_admin" ? TOURISM_OFFICE_NAME : undefined,
+  };
+  const isTourist = viewerId === header.tourist_id;
+  const isGuide = viewerId === header.guide_profile_id;
+  const isOperator = viewerId === header.operator_profile_id;
+  const ref = [header.booking_reference, header.tour_date ? tourDay(header.tour_date) : null].filter(Boolean).join(" · ");
+  const bookingLink = (): ThreadView["link"] => {
+    if (!header.booking_id) return null;
+    if (isTourist) return { href: `/tours/bookings/${header.booking_id}`, label: "View booking" };
+    if (isGuide) return { href: `/tours/guide/tours/${header.booking_id}/roster`, label: "View roster" };
+    if (isOperator) return { href: "/tours/operator/bookings", label: "View bookings" };
+    return null;
+  };
+
+  let title: string;
+  let subtitle: string;
+  let link = bookingLink();
+  let emptyText = "No messages yet. Say hello and ask anything about the tour.";
+  switch (header.kind) {
+    case "guide_tourist":
+      title = isTourist ? `Your guide${guideName ? `: ${guideName}` : ""}` : header.tourist_name ?? "Tourist";
+      subtitle = [header.package_title ?? "Tour booking", ref, "Only you and the other person can read this"].filter(Boolean).join(" · ");
+      emptyText = isTourist ? "Ask your guide about the meeting point, what to bring or the weather." : "Say hello and share meeting-point details with the tourist.";
+      break;
+    case "operator_guide":
+      title = isOperator ? guideName ?? "Guide" : operatorName;
+      subtitle = isOperator ? "Tour guide · private chat" : "Tour operator · private chat";
+      emptyText = "No messages yet. Coordinate schedules, assignments and tour details here.";
+      break;
+    case "operator_admin":
+      title = isOperator ? TOURISM_OFFICE_NAME : operatorName;
+      subtitle = isOperator ? "Questions about accreditation, packages, events or payouts" : "Operator · Tourism Office support chat";
+      link = !isOperator && viewerRole === "admin" && header.operator_id ? { href: "/tours/admin/operators", label: "Operator applications" } : null;
+      emptyText = isOperator ? "Ask the Tourism Office about accreditation, packages, events or payouts." : "No messages yet.";
+      break;
+    default:
+      title = header.package_title ?? "Tour booking";
+      subtitle = [ref, operatorName, header.tourist_name, header.guide_profile_id ? "guide assigned" : null].filter(Boolean).join(" · ");
+  }
+
+  const closed = (header.kind === "booking" || header.kind === "guide_tourist") && (header.booking_status === "cancelled" || header.booking_status === "rejected");
+  return {
+    title,
+    subtitle,
+    members,
+    link,
+    canSend: header.is_member && !closed,
+    closedReason: closed ? "This booking was cancelled, so the chat is read-only." : !header.is_member ? "Admins can read this chat but not reply." : null,
+    emptyText,
+  };
+}
+
+const tourDay = (dateKey: string) =>
+  new Date(`${dateKey}T00:00:00Z`).toLocaleDateString("en-PH", { month: "short", day: "numeric", timeZone: "UTC" });
+
+/** Filter chips for the inbox: "All" plus each kind the viewer has, in a fixed order. */
+export function inboxFilters(kinds: string[]): Array<{ kind: ConversationKind | null; label: string }> {
+  const present = CONVERSATION_KINDS.filter((kind) => kinds.includes(kind));
+  if (present.length < 2) return [];
+  return [{ kind: null, label: "All" }, ...present.map((kind) => ({ kind, label: KIND_LABELS[kind] }))];
 }
 
 export type ChatMessage = {
@@ -90,4 +253,19 @@ export function dayLabel(iso: string, now: Date = new Date()): string {
   if (day === key(now)) return "Today";
   if (day === key(new Date(now.getTime() - 86400000))) return "Yesterday";
   return new Date(`${day}T00:00:00Z`).toLocaleDateString("en-PH", { weekday: "short", month: "short", day: "numeric", year: "numeric", timeZone: "UTC" });
+}
+
+type Embedded<T> = T | T[] | null | undefined;
+const first = <T,>(value: Embedded<T>): T | null => (Array.isArray(value) ? (value[0] ?? null) : (value ?? null));
+
+/** Distinct operators from rows embedding tours_packages ( tours_operators ( id, business_name ) ), by name. */
+export function chatOperators(
+  rows: Array<{ tours_packages: Embedded<{ tours_operators: Embedded<{ id: string; business_name: string }> }> }>,
+): Array<{ id: string; business_name: string }> {
+  const byId = new Map<string, { id: string; business_name: string }>();
+  for (const row of rows) {
+    const operator = first(first(row.tours_packages)?.tours_operators);
+    if (operator?.id && !byId.has(operator.id)) byId.set(operator.id, { id: operator.id, business_name: operator.business_name });
+  }
+  return [...byId.values()].sort((a, b) => a.business_name.localeCompare(b.business_name));
 }

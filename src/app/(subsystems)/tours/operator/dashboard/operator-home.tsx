@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
+import { OpenChatButton } from "@/app/(subsystems)/tours/messages/open-chat-button";
 import { ButtonLink } from "@/components/ui/button";
 import { Card, CardHeader } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
@@ -92,6 +93,7 @@ export async function OperatorHome({ operatorId, searchParams }: { operatorId: s
           <ButtonLink href="/tours/operator/packages" variant="secondary">
             Packages
           </ButtonLink>
+          <OpenChatButton target={{ kind: "operator_admin" }} label="Contact Tourism Office" variant="ghost" />
         </div>
       </div>
 

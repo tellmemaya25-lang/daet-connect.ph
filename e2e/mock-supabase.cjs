@@ -10,6 +10,8 @@ const http = require("http");
 const PORT = Number(process.env.MOCK_SUPABASE_PORT || 54329);
 const TODAY = new Date(Date.now() + 8 * 3600 * 1000).toISOString().slice(0, 10);
 
+const CONV_ID = "cc110000-0000-4000-8000-000000000001";
+
 function build(role) {
 const BID = "e9466de5-4877-47c1-ac14-d86deeb38b9e";
   const operator = { id: "op-1", profile_id: "9b7e5a5e-0000-4000-8000-000000000001", business_name: "Bagasbas Coast Tours", accreditation_status: "approved", accreditation_notes: null, contact_phone: "0917 555 0101", gcash_number: "0917 555 0101", gcash_name: "Maya Santos", bank_name: "BPI", bank_account_number: "1234-5678-90", bank_account_name: "Bagasbas Coast Tours", payment_instructions: "Please include your booking reference in the notes.", created_at: "2026-01-01T00:00:00Z" };
@@ -53,9 +55,11 @@ const BID = "e9466de5-4877-47c1-ac14-d86deeb38b9e";
     { id: "m4", conversation_id: CONV, sender_id: booking.user_id, message_text: "Perfect, thank you! See you tomorrow.", attachment_url: null, created_at: at(55) },
   ];
   const inbox = [
-    { conversation_id: CONV, booking_reference: booking.booking_reference, package_title: pkg.title, tour_date: booking.tour_date, tourist_name: "Juan Dela Cruz", last_message_at: at(55), last_message: "Perfect, thank you! See you tomorrow.", last_sender_id: booking.user_id, unread: 0 },
-    { conversation_id: "cc110000-0000-4000-8000-000000000002", booking_reference: "BK-20261019-HH21KD", package_title: "Calaguas Island Day Trip", tour_date: "2026-11-14", tourist_name: "Juan Dela Cruz", last_message_at: at(-600), last_message: "Your booking is confirmed! Boat leaves Vinzons port at 6 AM.", last_sender_id: OPP, unread: 2 },
+    { conversation_id: CONV, kind: "booking", title: pkg.title, subtitle: `${booking.booking_reference} · Nov 02 · Juan Dela Cruz`, booking_id: BID, last_message_at: at(55), last_message: "Perfect, thank you! See you tomorrow.", last_sender_id: booking.user_id, unread: 0 },
+    { conversation_id: "cc110000-0000-4000-8000-000000000002", kind: "guide_tourist", title: "Maria Santos", subtitle: "Your guide · Calaguas Island Day Trip · BK-20261019-HH21KD · Nov 14", booking_id: BID, last_message_at: at(-600), last_message: "Meet at Vinzons port at 6 AM.", last_sender_id: OPP, unread: 2 },
+    { conversation_id: "cc110000-0000-4000-8000-000000000003", kind: "operator_admin", title: "Daet Tourism Office", subtitle: "Tourism Office support", booking_id: null, last_message_at: at(-900), last_message: "Your permit renewal was received.", last_sender_id: OPP, unread: 0 },
   ];
+  const header = { id: CONV, kind: "booking", is_member: true, booking_id: BID, booking_reference: booking.booking_reference, booking_status: booking.status, tour_date: booking.tour_date, package_title: pkg.title, tourist_id: booking.user_id, tourist_name: "Juan Dela Cruz", operator_id: "op-1", operator_profile_id: OPP, operator_name: "Bagasbas Coast Tours", guide_id: "f66b1fe2-a997-4c0b-be13-22d62cf0dba6", guide_profile_id: "9b7e5a5e-0000-4000-8000-0000000000bb", guide_name: "Maria Santos" };
   const ago = (min) => new Date(Date.now() - min * 60000).toISOString();
   const notifications = [
     { id: "n1", profile_id: booking.user_id, type: "booking_confirmed", title: "Booking confirmed", body: "Bagasbas Sunrise Surf Lesson on Oct 24, 2026 is confirmed. Your ticket QR is ready.", link: `/tours/bookings/${BID}`, read_at: null, created_at: ago(3) },
@@ -164,7 +168,7 @@ const BID = "e9466de5-4877-47c1-ac14-d86deeb38b9e";
     tours_guides: guides, profiles: [{ id: "9b7e5a5e-0000-4000-8000-000000000001", role, full_name: "Juan Dela Cruz" }],
     tours_events: events, tours_merchandise: role === "operator" ? merch.filter((m) => m.submitted_by_operator_id) : merch,
   };
-  return { tables, analytics, inbox, user };
+  return { tables, analytics, inbox, header, user };
   }
   const user = { id: "9b7e5a5e-0000-4000-8000-000000000001", aud: "authenticated", role: "authenticated", email: "juan@example.ph", app_metadata: {}, user_metadata: {}, created_at: "2026-01-01T00:00:00Z" };
   
@@ -176,12 +180,14 @@ http.createServer((req, res) => {
   req.on("data", () => {}); req.on("end", () => {
     const token = (req.headers.authorization || "").replace(/^Bearer\s+/i, "");
     const role = /^e2e-(tourist|operator|guide|admin)$/.test(token) ? token.slice(4) : "anon";
-    const { tables, analytics, inbox, user } = build(role);
+    const { tables, analytics, inbox, header, user } = build(role);
     if (url.pathname === "/auth/v1/user") return role === "anon" ? send(401, { message: "not signed in" }) : send(200, user);
     if (url.pathname === "/rest/v1/rpc/get_my_role") return send(200, role === "anon" ? null : role);
     if (url.pathname === "/rest/v1/rpc/tours_refundable_amount") return send(200, 500);
     if (url.pathname === "/rest/v1/rpc/tours_admin_analytics") return send(200, analytics);
-    if (url.pathname === "/rest/v1/rpc/tours_inbox") return send(200, inbox);
+    if (url.pathname === "/rest/v1/rpc/tours_chat_inbox") return send(200, inbox);
+    if (url.pathname === "/rest/v1/rpc/tours_conversation_header") return send(200, header);
+    if (/^\/rest\/v1\/rpc\/tours_open_[a-z_]+_conversation$/.test(url.pathname)) return send(200, CONV_ID);
     if (url.pathname === "/rest/v1/rpc/tours_mark_conversation_read") return send(200, null);
     if (url.pathname === "/rest/v1/rpc/tours_badge_lookup") return send(200, [{ status: "approved", full_name: "Jeremiah Sabihon", photo_url: null, approved_at: "2026-10-16T13:18:25Z" }]);
     const table = url.pathname.replace("/rest/v1/", "");
