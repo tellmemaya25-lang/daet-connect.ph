@@ -3,7 +3,7 @@ import { BrandMark } from "@/components/ui/brand-mark";
 
 export function SiteHeader({ showAdminLink = false }: { showAdminLink?: boolean }) {
   return (
-    <header className="border-b border-daet-ink/10 bg-white/75 backdrop-blur-sm print:hidden">
+    <header className="bg-white print:hidden">
       <div className="mx-auto flex min-h-[76px] max-w-7xl flex-wrap items-center justify-between gap-x-4 px-4 py-2 sm:flex-nowrap sm:px-6 lg:px-8">
         <BrandMark />
         <nav className="-mx-1 flex w-full items-center gap-1 overflow-x-auto pb-1 sm:mx-0 sm:w-auto sm:gap-2 sm:overflow-visible sm:pb-0 lg:gap-4" aria-label="Main navigation">
