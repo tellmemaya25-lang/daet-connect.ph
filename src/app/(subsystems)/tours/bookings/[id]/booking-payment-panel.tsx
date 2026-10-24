@@ -95,7 +95,7 @@ export function BookingPaymentPanel({
   const canPayManually = booking.status === "confirmed" && remaining > 0 && booking.payment_status !== "refunded";
 
   return (
-    <Card className="mb-6" aria-labelledby="payment-heading">
+    <Card id="payment" className="mb-6 scroll-mt-6" aria-labelledby="payment-heading">
       <CardHeader eyebrow="Payment" title={<span id="payment-heading">Pay for this tour</span>} action={<Badge tone={status.tone}>{status.label}</Badge>} />
 
       {paymentReturn === "success" && booking.payment_status !== "paid" ? (
@@ -116,15 +116,15 @@ export function BookingPaymentPanel({
 
       <dl className="grid grid-cols-3 gap-2 rounded-2xl bg-daet-sand/50 p-4 text-center">
         <div>
-          <dt className="text-xs font-bold text-daet-ink/55">Total</dt>
+          <dt className="text-xs font-bold text-daet-ink/70">Total</dt>
           <dd className="mt-1 font-black text-daet-ink">{peso(Number(booking.total_amount))}</dd>
         </div>
         <div>
-          <dt className="text-xs font-bold text-daet-ink/55">Paid</dt>
+          <dt className="text-xs font-bold text-daet-ink/70">Paid</dt>
           <dd className="mt-1 font-black text-emerald-700">{peso(Number(booking.total_paid ?? 0))}</dd>
         </div>
         <div>
-          <dt className="text-xs font-bold text-daet-ink/55">Balance</dt>
+          <dt className="text-xs font-bold text-daet-ink/70">Balance</dt>
           <dd className="mt-1 font-black text-daet-forest">{peso(remaining)}</dd>
         </div>
       </dl>
@@ -167,7 +167,7 @@ export function BookingPaymentPanel({
 
       {proofs.length > 0 ? (
         <section className="mt-6" aria-labelledby="proofs-heading">
-          <h3 id="proofs-heading" className="text-sm font-black uppercase tracking-wide text-daet-ink/60">
+          <h3 id="proofs-heading" className="text-sm font-black uppercase tracking-wide text-daet-ink/70">
             Receipts you sent
           </h3>
           <ul className="mt-2 divide-y divide-daet-ink/10">
@@ -181,7 +181,7 @@ export function BookingPaymentPanel({
                     </span>
                     <Badge tone={proofStatus.tone}>{proofStatus.label}</Badge>
                   </div>
-                  <p className="text-daet-ink/60">
+                  <p className="text-daet-ink/70">
                     Ref {proof.reference_number} · sent {date(proof.submitted_at)}
                   </p>
                   {proof.verification_status === "rejected" && proof.rejection_reason ? (
@@ -196,7 +196,7 @@ export function BookingPaymentPanel({
 
       {payments.length > 0 ? (
         <section className="mt-6" aria-labelledby="payments-heading">
-          <h3 id="payments-heading" className="text-sm font-black uppercase tracking-wide text-daet-ink/60">
+          <h3 id="payments-heading" className="text-sm font-black uppercase tracking-wide text-daet-ink/70">
             Payment history
           </h3>
           <ul className="mt-2 divide-y divide-daet-ink/10">
@@ -204,12 +204,12 @@ export function BookingPaymentPanel({
               <li key={payment.id} className="flex items-center justify-between gap-3 py-3 text-sm">
                 <div className="min-w-0">
                   <p className="font-bold capitalize text-daet-ink">{methodLabel(payment)}</p>
-                  <p className="truncate text-daet-ink/60">
+                  <p className="truncate text-daet-ink/70">
                     {date(payment.payment_date)}
                     {payment.reference_number ? ` · Ref ${payment.reference_number}` : ""}
                   </p>
                 </div>
-                <span className={`shrink-0 font-black ${payment.payment_status === "refunded" ? "text-daet-ink/50 line-through" : "text-emerald-700"}`}>
+                <span className={`shrink-0 font-black ${payment.payment_status === "refunded" ? "text-daet-ink/70 line-through" : "text-emerald-700"}`}>
                   {peso(Number(payment.amount))}
                 </span>
               </li>

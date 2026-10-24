@@ -90,7 +90,7 @@ export function CancelBookingPanel({
 function Section({ children }: { children: React.ReactNode }) {
   return (
     <section className="mb-6 rounded-3xl border border-daet-ink/10 bg-white p-6 shadow-sm">
-      <h3 className="mb-3 text-sm font-bold uppercase tracking-wide text-daet-ink/60">Cancellation</h3>
+      <h3 className="mb-3 text-sm font-bold uppercase tracking-wide text-daet-ink/70">Cancellation</h3>
       {children}
     </section>
   );

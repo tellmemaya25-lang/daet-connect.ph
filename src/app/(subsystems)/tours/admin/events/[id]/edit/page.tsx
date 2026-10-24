@@ -16,13 +16,14 @@ export default async function EditEventPage({ params }: { params: Promise<{ id: 
   const { data } = await admin.supabase.from("tours_events").select(EVENT_COLUMNS).eq("id", id).maybeSingle();
   if (!data) notFound();
   const event = data as TourEvent;
+  const { data: attractions } = await admin.supabase.from("tours_attractions").select("id, name").eq("is_active", true).order("name");
 
   return (
     <PageFrame adminNav>
       <div className="mx-auto max-w-2xl">
         <AdminPageHeading eyebrow="Events calendar" title="Edit event" backHref="/tours/admin/events" backLabel="All events" />
         <div className="rounded-2xl border border-daet-ink/10 bg-white p-5 shadow-sm sm:p-8">
-          <EventForm event={event} />
+          <EventForm event={event} attractions={attractions ?? []} />
         </div>
       </div>
     </PageFrame>

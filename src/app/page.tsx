@@ -172,29 +172,6 @@ export default async function HomePage() {
         </section>
       ) : null}
 
-      {/* Test Accounts Section (only in development) */}
-      {process.env.NODE_ENV === 'development' && !user && (
-        <section className="mt-8 rounded-3xl border border-amber-200 bg-amber-50 p-6">
-          <h3 className="text-lg font-black text-amber-900">🔑 Test Accounts</h3>
-          <div className="mt-4 grid gap-4 sm:grid-cols-3 text-sm">
-            <div className="rounded-xl bg-white p-4 border border-amber-200">
-              <p className="font-bold text-amber-900">Admin</p>
-              <p className="mt-1 text-amber-800">admin.test@gmail.com</p>
-              <p className="text-amber-600">test123</p>
-            </div>
-            <div className="rounded-xl bg-white p-4 border border-amber-200">
-              <p className="font-bold text-amber-900">Operator</p>
-              <p className="mt-1 text-amber-800">testguide2@gmail.com</p>
-              <p className="text-amber-600">testguide2</p>
-            </div>
-            <div className="rounded-xl bg-white p-4 border border-amber-200">
-              <p className="font-bold text-amber-900">Guide</p>
-              <p className="mt-1 text-amber-800">testguide3@gmail.com</p>
-              <p className="text-amber-600">testguide3</p>
-            </div>
-          </div>
-        </section>
-      )}
     </PageFrame>
   );
 }

@@ -75,11 +75,11 @@ export default async function MerchPage({
         <div className="rounded-2xl border border-dashed border-daet-ink/20 bg-white p-8 text-center">
           <p className="text-4xl" aria-hidden="true">🛍️</p>
           <p className="mt-2 font-bold text-daet-ink">No products in this category yet</p>
-          <p className="text-sm text-daet-ink/60">Check back soon for new Daet souvenirs.</p>
+          <p className="text-sm text-daet-ink/70">Check back soon for new Daet souvenirs.</p>
         </div>
       ) : null}
 
-      <p className="mt-8 text-center text-xs text-daet-ink/50">
+      <p className="mt-8 text-center text-xs text-daet-ink/70">
         Listings are advertisements. Prices and availability are set by each seller.
       </p>
     </PageFrame>

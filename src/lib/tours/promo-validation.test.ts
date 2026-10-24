@@ -1,4 +1,4 @@
-import { formatPeso, parseEventForm, parseMerchForm, PROMO_IMAGE_MAX_BYTES, readPromoImage } from "@/lib/tours/promo-validation";
+import { formatPeso, parseEventForm, parseMerchForm, parseMerchReview, PROMO_IMAGE_MAX_BYTES, readPromoImage } from "@/lib/tours/promo-validation";
 
 function form(values: Record<string, string | File>): FormData {
   const data = new FormData();
@@ -18,6 +18,14 @@ const validEvent = {
 };
 
 describe("parseEventForm", () => {
+  it("accepts a linked attraction and a source, and rejects a bad attraction id", () => {
+    const ok = parseEventForm(form({ ...validEvent, attractionId: "1f0b2c3d-4e5f-4a6b-8c7d-9e0f1a2b3c4d", source: " tpb.gov.ph " }));
+    expect(ok.ok && ok.data.attraction_id).toBe("1f0b2c3d-4e5f-4a6b-8c7d-9e0f1a2b3c4d");
+    expect(ok.ok && ok.data.source).toBe("tpb.gov.ph");
+    const bad = parseEventForm(form({ ...validEvent, attractionId: "bagasbas" }));
+    expect(bad.ok ? null : bad.errors.attractionId).toBeDefined();
+  });
+
   it("accepts a valid event and converts Manila times to UTC", () => {
     const result = parseEventForm(form(validEvent));
     expect(result).toEqual({
@@ -31,6 +39,8 @@ describe("parseEventForm", () => {
         starts_at: "2026-06-15T00:00:00.000Z",
         ends_at: "2026-06-24T14:00:00.000Z",
         is_published: true,
+        attraction_id: null,
+        source: null,
       },
     });
   });
@@ -159,5 +169,15 @@ describe("formatPeso", () => {
     expect(formatPeso(null)).toBeNull();
     expect(formatPeso(350)).toBe("₱350");
     expect(formatPeso(1299.5)).toBe("₱1,299.5");
+  });
+});
+
+describe("parseMerchReview", () => {
+  it("approves with an optional note and needs a reason to reject", () => {
+    expect(parseMerchReview(form({ decision: "approved" }))).toEqual({ ok: true, status: "approved", notes: null });
+    expect(parseMerchReview(form({ decision: "rejected", notes: "  Add a clearer photo " }))).toEqual({ ok: true, status: "rejected", notes: "Add a clearer photo" });
+    expect(parseMerchReview(form({ decision: "rejected", notes: "no" })).ok).toBe(false);
+    expect(parseMerchReview(form({ decision: "maybe" })).ok).toBe(false);
+    expect(parseMerchReview(form({ decision: "approved", notes: "x".repeat(301) })).ok).toBe(false);
   });
 });

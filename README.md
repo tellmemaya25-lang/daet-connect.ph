@@ -45,8 +45,108 @@ No guide schema is created or migrated. The existing database should enforce at 
 
 Verify those names against the existing locked schema before production use, and ensure the existing `profiles.role` type/policies already accept the `guide` role value. The Server Action rejects unchecked consent before upload or database writes, generates `consent_given_at` on the server, writes consent and the timestamp to the public guide row, and writes the full legal name and ID details only to the sensitive row via the server-side service-role client. No Client Component or Server Component queries the sensitive table. Existing RLS policies must allow an authenticated applicant to read their own status and insert/update their own guide row, allow the admin queue’s authenticated query to select pending public rows and their corresponding profile names, and prevent public readers from seeing unapproved profiles; the private sensitive table and private Storage bucket must remain inaccessible to browser clients. No policy or schema changes are bundled here.
 
+## QR badges, tickets & check-in
+
+Set `QR_SIGNING_SECRET` (server only, 32+ characters, e.g. `openssl rand -base64 48`). Without it, badges, tickets and scanning stay off. Changing it invalidates every QR already issued.
+
+- QR codes are links to `/tours/verify/<token>`, where the token is `CD1.<guide|booking>.<id>.<exp>.<HMAC-SHA256 signature>` (`src/lib/tours/qr-token.ts`). Any phone camera can open them. The page shows green for an approved guide or a valid ticket, and red for forged, altered or expired codes. It always re-reads the current accreditation, so revoking a guide takes effect immediately.
+- Guide badges (`/tours/guide/my-qr`) are valid for a year from approval. Signed-in scans are logged in `tours_qr_scan_logs`.
+- Booking tickets (`/tours/bookings/[id]/ticket`) appear once the booking is confirmed and expire at the end of the tour day (Manila).
+- Check-in happens at `/tours/guide/check-in` (camera scanner where the browser supports `BarcodeDetector`, otherwise the phone camera app or a pasted code) or from the guest list at `/tours/guide/tours/[bookingId]/roster`. The `tours_check_in` function only accepts the assigned approved guide (or the operator/admin), a confirmed booking, and today's date. Each guest is recorded once, so a repeat scan is harmless.
+
+## Notifications (in-app + Web Push)
+
+Database triggers write a `tours_notifications` row for each event:
+- bookings: created, confirmed, declined, cancelled, completed;
+- guide assigned;
+- payments received and refunds;
+- receipts submitted or rejected;
+- cancellation requests and their outcome;
+- check-in;
+- new messages (one per thread every 10 minutes);
+- accreditation and package review results;
+- new reviews.
+
+Nobody is notified about their own action. The header bell shows them live (Realtime), and `/tours/notifications` lists them with the push on/off switch.
+
+To turn on push to phones and desktops:
+
+1. `npx web-push generate-vapid-keys`, then set `NEXT_PUBLIC_VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `VAPID_SUBJECT` and a random `NOTIFICATIONS_PUSH_SECRET` (32+ characters) in Vercel. `SUPABASE_SERVICE_ROLE_KEY` must also be set.
+2. Tell the database where to send pushes (Supabase SQL editor; use your production URL and the same secret):
+   ```sql
+   select vault.create_secret('https://<your-domain>/api/notifications/push', 'tours_push_endpoint');
+   select vault.create_secret('<NOTIFICATIONS_PUSH_SECRET>', 'tours_push_secret');
+   ```
+   For each new notification whose recipient has a device, the trigger `tours_notifications_dispatch_push` calls that URL through `pg_net` after the transaction commits. The route re-reads the notification with the service role, sends it with `web-push`, drops subscriptions that return 404/410, and marks it pushed so retries don't send twice.
+3. Users opt in from the prompt on their booking page or from `/tours/notifications`. On iPhone, Web Push needs the site added to the Home Screen (iOS 16.4+).
+
+## Attractions & maps
+
+- **Directory:** `/tours/attractions` (filter by category or "Open now") and `/tours/attractions/[slug]` (hours in Manila time, fee, typical visit, map, Google Maps link, source). Admins manage the dataset at `/tours/admin/attractions`: add/edit/delete, photos, and a **CSV import** (template on the page; validates every row first, skips slugs that already exist).
+- **Data:** the database (`tours_attractions`) is seeded only with places that have a citable public source (`supabase/seed/attractions.sql`). Every pin is marked unconfirmed until the Tourism Office checks it, and unknown hours or fees stay empty rather than guessed. **The team still needs to load the Municipal Tourism Office list (target: 30+ places) through the CSV import.**
+- **Routes:** package pages draw the route through stops that have coordinates and show the distance and travel time. With `GOOGLE_MAPS_SERVER_KEY` (Routes API only), each leg comes from `computeRoutes` and is cached in `tours_route_cache` for 30 days. Without it, or when a call fails, legs are estimated as straight-line distance × 1.4 at 30 km/h and labelled "about".
+- **Map display:** with `NEXT_PUBLIC_GOOGLE_MAPS_BROWSER_KEY` (Maps JavaScript API only, restricted to your domains by HTTP referrer), maps use Google Maps. Otherwise the page draws a sketch map. Set a monthly budget alert in Google Cloud.
+
+## Trip planner
+
+`/tours/plan` builds a 1–5 day plan from the attractions that have a map pin.
+- **Rule-based engine** (`src/lib/tours/itinerary/`, pure TypeScript, always on):
+  - filters by budget;
+  - scores by interests, cost, category variety and travel;
+  - fills each day greedily from the start time, only choosing places that are **open for the whole visit** (attractions without listed hours are assumed open 8 AM–5 PM and flagged);
+  - adds travel time (straight-line × 1.4 at 30 km/h) and a lunch break between 11:30 and 12:30, which full-day trips cover;
+  - keeps entrance fees within the per-person daily budget.
+- **Validator:** `validate.ts` re-checks every plan (opening hours, overlaps, travel, budget, known places, no repeats). Property tests assert that every generated plan passes it.
+- **Editing:** tourists can reorder, swap, remove and add stops. The day is re-timed and re-validated live, and saving re-validates on the server against the current dataset.
+- **Optional AI polish** (`llm.ts`): set `ITINERARY_LLM=on` and `ANTHROPIC_API_KEY`.
+  - Claude (`claude-opus-5-5`, low effort, 15 s timeout, structured JSON output) sees only our attraction list and the draft. It may reorder stops and write tips.
+  - Its order is re-timed by the engine and must pass the validator; any timeout, refusal or invalid plan keeps the rule-based draft.
+  - Results are cached in memory per preference set.
+- **Saved plans:** `/tours/my-itineraries` (view, share link, delete) and `/tours/itineraries/shared/[token]` (read-only, no owner details). After saving, "Book matching tours" lists published packages with a stop within 1.5 km of a planned place.
+
+## Testing & evaluation
+
+| What | Command |
+|---|---|
+| Unit and property tests | `npm test` |
+| E2E + accessibility at 375px (mock Supabase) | `npm run test:e2e:tours` (set `PW_CHROMIUM_PATH` to use a local Chromium) |
+| Database integration (rolls back) | `psql "$DATABASE_URL" -f supabase/tests/integration.sql` |
+| Demo accounts and data for a staging project | `DEMO_PASSWORD=… DEMO_GROUPS=3 npm run seed:demo` |
+
+- Evaluator walkthroughs and the credentials sheet: `docs/EVALUATION_KIT.md`.
+- Security findings and what to do about them: `docs/SECURITY_REVIEW.md`.
+
+## Rewards (CONNECT-Daet points)
+
+- Points live in the shared `rewards_ledger` table. `UNIQUE (source, ref_id)` makes every award once-only.
+- Tours awards come from database triggers: paid +50 (reversed on refund), checked in +30, completed +20, review +10, trip plan +5 (3 a day).
+- Tourists see their balance on `/tours/me`.
+- Other subsystems award points from server code with `addPoints(createSupabaseAdminClient(), …)` from `src/lib/rewards.ts`.
+- Shared-table contract: `docs/SHARED_TABLES.md`.
+
+## Dashboards
+
+- `/dashboard` sends each user to their own dashboard:
+  - tourists to `/tours/me`;
+  - operators to `/tours/operator/dashboard`;
+  - guides to `/tours/guide/dashboard`;
+  - Tourism Office admins to `/tours/admin`, with KPIs at `/tours/admin/analytics`.
+- On phones, signed-in users get a bottom tab bar for their role.
+- Admin KPIs come from the `tours_admin_analytics(from, to)` database function, which only admins can run.
+- Guides set their availability on their dashboard; operators see it when assigning a guide.
+
+## Reviews & ratings
+
+- A tourist can review a booking once, after the operator marks it **completed**. The form is on the booking page, and the "How was your tour?" notification links to it.
+- Ratings come from the `tours_package_ratings`, `tours_operator_ratings` and `tours_guide_ratings` views. They are shown on browse cards and package pages.
+- Operators post one public reply per review at `/tours/operator/reviews`.
+- Tourism Office admins hide abusive reviews, with a reason, at `/tours/admin/reviews`. Hidden reviews leave the public pages and the averages.
+- All writes go through the `tours_submit_review`, `tours_reply_to_review` and `tours_set_review_hidden` database functions.
+
 ## Events calendar & merchandise showcase
 
+- Events can link to an attraction. Each event page lists tours with open dates during the event, nearby ones first.
+- Accredited operators submit merchandise at `/tours/operator/merch`. The Tourism Office approves it at `/tours/admin/merch?show=pending` before it goes public.
 - Public pages: `/tours/events` (monthly calendar, category filter, day view, "Add to my calendar" `.ics` download) and `/tours/merch` (t-shirts, mugs, souvenirs, pasalubong with seller contact). The home page shows upcoming events and featured products.
 - Admin pages: `/tours/admin/events` and `/tours/admin/merch` (create, edit, publish/hide, feature, delete). Linked from the admin dashboard's Quick Actions.
 - Setup: apply `supabase/migrations/20261023_create_tours_events_and_merchandise.sql`. It creates `tours_events` and `tours_merchandise` with RLS (the public reads published/active rows; only `get_my_role() = 'admin'` can write) and the public `tours-promo-images` Storage bucket (admin upload, public read, 5 MB, JPG/PNG/WebP).
@@ -62,6 +162,15 @@ Tourists pay after the operator confirms a booking, from the booking page (`/tou
 - Every payment lands in the `tours_payments` ledger. A trigger keeps `total_paid` / `payment_status` on the booking in sync. Operators see monthly totals and can download CSV at `/tours/operator/payments`.
 
 ### Sandbox setup
+
+Quickest way: run the setup script from your machine (keys stay in your shell):
+
+```bash
+PAYMONGO_SECRET_KEY=sk_test_... APP_URL=https://<your-deployment> npm run paymongo:setup -- --test-checkout
+```
+
+It checks the key is a test key PayMongo accepts, registers (or reuses) the webhook for `/api/webhooks/paymongo`, prints the environment variables to set, and creates a ₱100 test checkout. Paying it should add a `tours_payment_events` row with outcome `unknown_booking`, which proves the webhook and its signature work. The manual steps below do the same by hand.
+
 
 1. In the PayMongo dashboard (test mode), copy the **secret key** (`sk_test_...`) into `PAYMONGO_SECRET_KEY`.
 2. Create a webhook pointing to `https://<your-deployment>/api/webhooks/paymongo` for the event `checkout_session.payment.paid`. Copy its secret into `PAYMONGO_WEBHOOK_SECRET`. PayMongo must be able to reach the URL, so use a Vercel preview/production URL or a tunnel when testing locally.

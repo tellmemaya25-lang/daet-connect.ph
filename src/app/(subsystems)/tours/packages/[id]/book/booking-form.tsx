@@ -121,7 +121,7 @@ export function BookingForm({ packageId, priceVariants, dateOptions, userProfile
   if (priceVariants.length === 0) {
     return (
       <div className="rounded-3xl border border-daet-ink/10 bg-white p-6 text-center shadow-sm">
-        <p className="text-daet-ink/60">
+        <p className="text-daet-ink/70">
           This package does not have pricing configured yet.
         </p>
       </div>
@@ -144,7 +144,7 @@ export function BookingForm({ packageId, priceVariants, dateOptions, userProfile
       {/* Tour Date */}
       <section className="rounded-3xl border border-daet-ink/10 bg-white p-6 shadow-sm">
         <h2 className="text-xl font-black text-daet-ink">Select Date</h2>
-        <p className="mt-1 text-sm text-daet-ink/60">Choose your preferred tour date</p>
+        <p className="mt-1 text-sm text-daet-ink/70">Choose your preferred tour date</p>
 
         <div className="mt-4">
           <label htmlFor="tourDate" className="block text-sm font-bold text-daet-ink">
@@ -161,7 +161,7 @@ export function BookingForm({ packageId, priceVariants, dateOptions, userProfile
                 required
                 className="mt-1 min-h-11 w-full rounded-xl border border-daet-ink/20 px-4 py-2.5 text-base focus:border-daet-forest focus:outline-none focus:ring-2 focus:ring-daet-forest/20"
               />
-              <p className="mt-1 text-xs text-daet-ink/50">Earliest available: Tomorrow</p>
+              <p className="mt-1 text-xs text-daet-ink/70">Earliest available: Tomorrow</p>
             </>
           ) : noOpenDates ? (
             <p className="mt-2 rounded-2xl bg-amber-50 p-4 text-sm text-amber-900">
@@ -182,7 +182,7 @@ export function BookingForm({ packageId, priceVariants, dateOptions, userProfile
                   </option>
                 ))}
               </select>
-              <p className="mt-1 text-xs text-daet-ink/50">Only dates the operator has opened are shown.</p>
+              <p className="mt-1 text-xs text-daet-ink/70">Only dates the operator has opened are shown.</p>
             </>
           )}
         </div>
@@ -191,7 +191,7 @@ export function BookingForm({ packageId, priceVariants, dateOptions, userProfile
       {/* Number of Pax & Price Variant */}
       <section className="rounded-3xl border border-daet-ink/10 bg-white p-6 shadow-sm">
         <h2 className="text-xl font-black text-daet-ink">Group Size & Pricing</h2>
-        <p className="mt-1 text-sm text-daet-ink/60">Select number of participants</p>
+        <p className="mt-1 text-sm text-daet-ink/70">Select number of participants</p>
 
         <div className="mt-4 space-y-4">
           {/* Price Variant Selection */}
@@ -252,7 +252,7 @@ export function BookingForm({ packageId, priceVariants, dateOptions, userProfile
               >
                 +
               </button>
-              <span className="text-sm text-daet-ink/60">
+              <span className="text-sm text-daet-ink/70">
                 ({minPax} - {maxPax} pax)
               </span>
             </div>
@@ -272,7 +272,7 @@ export function BookingForm({ packageId, priceVariants, dateOptions, userProfile
               </span>
             </div>
             {selectedVariant?.price_per_pax && (
-              <p className="mt-1 text-xs text-daet-ink/60">
+              <p className="mt-1 text-xs text-daet-ink/70">
                 ₱{selectedVariant.price_per_pax.toLocaleString()} × {numberOfPax} pax
               </p>
             )}
@@ -283,7 +283,7 @@ export function BookingForm({ packageId, priceVariants, dateOptions, userProfile
       {/* Contact Information */}
       <section className="rounded-3xl border border-daet-ink/10 bg-white p-6 shadow-sm">
         <h2 className="text-xl font-black text-daet-ink">Contact Information</h2>
-        <p className="mt-1 text-sm text-daet-ink/60">
+        <p className="mt-1 text-sm text-daet-ink/70">
           We'll use this to confirm your booking
         </p>
 
@@ -357,7 +357,7 @@ export function BookingForm({ packageId, priceVariants, dateOptions, userProfile
       <div className="flex flex-col gap-4 rounded-3xl border border-daet-ink/10 bg-white p-6 shadow-sm sm:flex-row sm:items-center sm:justify-between">
         <div>
           <p className="text-sm font-bold text-daet-ink">Ready to book?</p>
-          <p className="text-xs text-daet-ink/60">
+          <p className="text-xs text-daet-ink/70">
             Your booking will be pending until confirmed by the operator
           </p>
         </div>

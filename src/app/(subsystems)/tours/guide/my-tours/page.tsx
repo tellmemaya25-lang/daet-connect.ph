@@ -4,6 +4,7 @@ import { PageFrame } from "@/components/ui/page-frame";
 import { Notice } from "@/components/ui/notice";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { toManilaDateKey } from "@/lib/tours/events-calendar";
 
 export const dynamic = "force-dynamic";
 
@@ -105,10 +106,12 @@ export default async function GuideMyToursPage() {
   };
 
   // Separate upcoming and completed
+  // Compare Manila calendar days so today's tours stay under "Upcoming".
+  const today = toManilaDateKey(new Date());
   const upcomingTours =
-    assignedTours?.filter((t) => t.status === "confirmed" && new Date(t.tour_date) >= new Date()) || [];
+    assignedTours?.filter((t) => t.status === "confirmed" && t.tour_date >= today) || [];
   const completedTours =
-    assignedTours?.filter((t) => t.status === "completed" || new Date(t.tour_date) < new Date()) || [];
+    assignedTours?.filter((t) => t.status === "completed" || t.tour_date < today) || [];
 
   return (
     <PageFrame>
@@ -116,18 +119,24 @@ export default async function GuideMyToursPage() {
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-4xl font-black text-daet-ink">My Assigned Tours</h1>
-          <p className="mt-2 text-sm text-daet-ink/60">
+          <p className="mt-2 text-sm text-daet-ink/70">
             Tours assigned to {guideName}
           </p>
         </div>
 
         {/* Back Button */}
-        <div className="mb-6">
+        <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
           <Link
             href="/tours/guide/dashboard"
-            className="inline-flex items-center gap-2 text-sm font-bold text-daet-ink/60 transition hover:text-daet-ink"
+            className="inline-flex items-center gap-2 text-sm font-bold text-daet-ink/70 transition hover:text-daet-ink"
           >
             ← Back to Dashboard
+          </Link>
+          <Link
+            href="/tours/guide/check-in"
+            className="inline-flex min-h-11 items-center justify-center rounded-full bg-daet-forest px-6 text-sm font-bold text-white transition hover:bg-daet-ink"
+          >
+            Scan tickets
           </Link>
         </div>
 
@@ -137,15 +146,15 @@ export default async function GuideMyToursPage() {
             <p className="text-3xl font-black text-daet-ink">
               {assignedTours?.length || 0}
             </p>
-            <p className="text-xs text-daet-ink/60">Total Assigned</p>
+            <p className="text-xs text-daet-ink/70">Total Assigned</p>
           </div>
           <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-center">
             <p className="text-3xl font-black text-emerald-900">{upcomingTours.length}</p>
-            <p className="text-xs text-emerald-900/60">Upcoming</p>
+            <p className="text-xs text-emerald-900">Upcoming</p>
           </div>
           <div className="rounded-2xl border border-blue-200 bg-blue-50 p-4 text-center">
             <p className="text-3xl font-black text-blue-900">{completedTours.length}</p>
-            <p className="text-xs text-blue-900/60">Completed</p>
+            <p className="text-xs text-blue-900">Completed</p>
           </div>
         </div>
 
@@ -185,7 +194,7 @@ export default async function GuideMyToursPage() {
                             <h3 className="text-xl font-black text-daet-ink">
                               {pkg?.title || "Tour Package"}
                             </h3>
-                            <p className="mt-1 text-sm text-daet-ink/60">
+                            <p className="mt-1 text-sm text-daet-ink/70">
                               📍 {pkg?.location_name || "Location"}
                             </p>
                           </div>
@@ -196,7 +205,7 @@ export default async function GuideMyToursPage() {
 
                         <div className="grid grid-cols-2 gap-4 text-sm md:grid-cols-4">
                           <div>
-                            <p className="text-daet-ink/60">Tour Date</p>
+                            <p className="text-daet-ink/70">Tour Date</p>
                             <p className="font-bold text-daet-ink">
                               {new Date(booking.tour_date).toLocaleDateString("en-US", {
                                 weekday: "short",
@@ -206,17 +215,17 @@ export default async function GuideMyToursPage() {
                             </p>
                           </div>
                           <div>
-                            <p className="text-daet-ink/60">Participants</p>
+                            <p className="text-daet-ink/70">Participants</p>
                             <p className="font-bold text-daet-ink">{booking.number_of_pax} pax</p>
                           </div>
                           <div>
-                            <p className="text-daet-ink/60">Operator</p>
+                            <p className="text-daet-ink/70">Operator</p>
                             <p className="font-bold text-daet-ink">
                               {operator?.business_name || "N/A"}
                             </p>
                           </div>
                           <div>
-                            <p className="text-daet-ink/60">Reference</p>
+                            <p className="text-daet-ink/70">Reference</p>
                             <p className="font-bold text-daet-forest">
                               {booking.booking_reference}
                             </p>
@@ -225,12 +234,19 @@ export default async function GuideMyToursPage() {
 
                         {operator?.contact_phone && (
                           <div className="mt-3 text-sm">
-                            <span className="text-daet-ink/60">Operator Contact: </span>
+                            <span className="text-daet-ink/70">Operator Contact: </span>
                             <span className="font-bold text-daet-ink">
                               {operator.contact_phone}
                             </span>
                           </div>
                         )}
+
+                        <Link
+                          href={`/tours/guide/tours/${booking.id}/roster`}
+                          className="mt-4 inline-flex min-h-11 items-center justify-center rounded-full border border-daet-forest/30 bg-white px-5 text-sm font-bold text-daet-forest transition hover:bg-daet-forest/5"
+                        >
+                          {booking.tour_date === today ? "Guest list & check-in" : "Guest list"}
+                        </Link>
                       </div>
                     </div>
                   </div>
@@ -267,7 +283,7 @@ export default async function GuideMyToursPage() {
                         <h3 className="text-lg font-black text-daet-ink">
                           {pkg?.title || "Tour Package"}
                         </h3>
-                        <p className="mt-1 text-sm text-daet-ink/60">
+                        <p className="mt-1 text-sm text-daet-ink/70">
                           {new Date(booking.tour_date).toLocaleDateString("en-US", {
                             month: "long",
                             day: "numeric",
@@ -294,7 +310,7 @@ export default async function GuideMyToursPage() {
               🗓️
             </div>
             <h2 className="text-xl font-black text-daet-ink">No assigned tours yet</h2>
-            <p className="mt-2 text-sm text-daet-ink/60">
+            <p className="mt-2 text-sm text-daet-ink/70">
               Operators will assign you to tours once bookings are confirmed.
             </p>
           </div>

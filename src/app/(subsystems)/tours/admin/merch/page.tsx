@@ -4,8 +4,9 @@ import { Notice } from "@/components/ui/notice";
 import { AdminPageHeading, PromoAdminDenied } from "@/components/tours/promo-admin-denied";
 import { ConfirmSubmitButton } from "@/components/tours/confirm-submit-button";
 import { requirePromoAdmin } from "@/lib/tours/promo-admin";
-import { formatPeso, MERCH_CATEGORIES, MERCH_COLUMNS, type MerchItem } from "@/lib/tours/promo-validation";
+import { formatPeso, MERCH_CATEGORIES, MERCH_REVIEW_LABELS, MERCH_SUBMISSION_COLUMNS, type MerchSubmission } from "@/lib/tours/promo-validation";
 import { deleteMerch } from "./actions";
+import { MerchReviewForm } from "./review-form";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Manage merchandise" };
@@ -19,12 +20,19 @@ export default async function AdminMerchPage({
   if (!admin.ok) return <PromoAdminDenied message={admin.error} next="/tours/admin/merch" />;
 
   const params = await searchParams;
-  const { data, error } = await admin.supabase
+  const pendingOnly = params.show === "pending";
+  let query = admin.supabase
     .from("tours_merchandise")
-    .select(MERCH_COLUMNS)
+    .select(`${MERCH_SUBMISSION_COLUMNS}, tours_operators ( business_name )`)
     .order("created_at", { ascending: false })
     .limit(200);
-  const items = (data ?? []) as MerchItem[];
+  if (pendingOnly) query = query.eq("review_status", "pending");
+  const [{ data, error }, { count: pendingCount }] = await Promise.all([
+    query,
+    admin.supabase.from("tours_merchandise").select("id", { count: "exact", head: true }).eq("review_status", "pending"),
+  ]);
+  const items = (data ?? []) as unknown as Array<MerchSubmission & { tours_operators: { business_name: string } | { business_name: string }[] | null }>;
+  const operatorName = (item: (typeof items)[number]) => (Array.isArray(item.tours_operators) ? item.tours_operators[0]?.business_name : item.tours_operators?.business_name);
 
   return (
     <PageFrame adminNav>
@@ -41,16 +49,32 @@ export default async function AdminMerchPage({
       {params.error ? <Notice variant="error" className="mb-4">That action could not be completed.</Notice> : null}
       {error ? <Notice variant="error" className="mb-4">Products could not be loaded. Has the merchandise migration been applied?</Notice> : null}
 
+      <nav aria-label="Filter products" className="mb-4 flex flex-wrap gap-2">
+        {[
+          { href: "/tours/admin/merch", label: "All", active: !pendingOnly },
+          { href: "/tours/admin/merch?show=pending", label: `Waiting for approval (${pendingCount ?? 0})`, active: pendingOnly },
+        ].map((tab) => (
+          <Link
+            key={tab.href}
+            href={tab.href}
+            aria-current={tab.active ? "page" : undefined}
+            className={`inline-flex min-h-11 items-center rounded-full px-5 text-sm font-bold ${tab.active ? "bg-daet-forest text-white" : "border border-daet-ink/15 bg-white text-daet-ink hover:bg-daet-sand"}`}
+          >
+            {tab.label}
+          </Link>
+        ))}
+      </nav>
+
       {items.length === 0 && !error ? (
         <div className="rounded-2xl border border-dashed border-daet-ink/20 bg-white p-8 text-center">
           <p className="text-4xl" aria-hidden="true">🛍️</p>
           <p className="mt-2 font-bold text-daet-ink">No products yet</p>
-          <p className="text-sm text-daet-ink/60">Advertise local t-shirts, mugs, souvenirs and pasalubong.</p>
+          <p className="text-sm text-daet-ink/70">Advertise local t-shirts, mugs, souvenirs and pasalubong.</p>
         </div>
       ) : (
         <ul className="space-y-3">
           {items.map((item) => (
-            <li key={item.id} className="flex flex-col gap-3 rounded-2xl border border-daet-ink/10 bg-white p-4 shadow-sm sm:flex-row sm:items-center">
+            <li key={item.id} className="flex flex-col gap-3 rounded-2xl border border-daet-ink/10 bg-white p-4 shadow-sm lg:flex-row lg:items-center">
               <div className="flex min-w-0 flex-1 items-center gap-3">
                 <div className="grid h-16 w-16 shrink-0 place-items-center overflow-hidden rounded-xl bg-daet-sand text-2xl">
                   {item.image_url ? <img src={item.image_url} alt="" className="h-full w-full object-cover" /> : <span aria-hidden="true">🛍️</span>}
@@ -64,13 +88,23 @@ export default async function AdminMerchPage({
                       <span className="rounded-full bg-amber-50 px-2 py-0.5 text-xs font-bold text-amber-700">Hidden</span>
                     )}
                     {item.is_featured ? <span className="rounded-full bg-amber-100 px-2 py-0.5 text-xs font-bold text-amber-800">★ Featured</span> : null}
+                    {item.submitted_by_operator_id ? (
+                      <span className={`rounded-full px-2 py-0.5 text-xs font-bold ${item.review_status === "pending" ? "bg-amber-100 text-amber-900" : item.review_status === "rejected" ? "bg-rose-50 text-rose-700" : "bg-sky-50 text-sky-800"}`}>
+                        {MERCH_REVIEW_LABELS[item.review_status]} · {operatorName(item) ?? "Operator"}
+                      </span>
+                    ) : null}
                   </div>
                   <p className="mt-1 truncate font-black text-daet-ink">{item.name}</p>
-                  <p className="text-sm text-daet-ink/60">
+                  <p className="text-sm text-daet-ink/70">
                     {formatPeso(item.price) ?? "Ask seller"} · {item.seller_name}
                   </p>
                 </div>
               </div>
+              {item.submitted_by_operator_id && item.review_status === "pending" ? (
+                <div className="sm:max-w-md sm:flex-1">
+                  <MerchReviewForm id={item.id} />
+                </div>
+              ) : null}
               <div className="flex gap-2">
                 <Link href={`/tours/admin/merch/${item.id}/edit`} className="inline-flex min-h-11 flex-1 items-center justify-center rounded-full border border-daet-forest/30 px-5 text-sm font-bold text-daet-forest hover:bg-daet-forest/5 sm:flex-none">
                   Edit

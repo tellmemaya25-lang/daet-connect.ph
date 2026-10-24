@@ -1,9 +1,15 @@
 import { notFound } from "next/navigation";
+import { RouteMap } from "@/components/maps/route-map";
+import { directionsUrl, formatDistance, formatDuration } from "@/lib/maps/geo";
+import { planRoute, type RouteSummary } from "@/lib/maps/routes";
 import Link from "next/link";
 import { PageFrame } from "@/components/ui/page-frame";
 import { Notice } from "@/components/ui/notice";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { RatingBadge, Stars } from "@/components/tours/star-rating";
+import { ReviewList } from "@/components/tours/review-list";
+import { distribution, toSummary, type Review } from "@/lib/tours/reviews";
 
 export const dynamic = "force-dynamic";
 
@@ -92,6 +98,24 @@ export default async function PackageDetailPage({ params }: PageProps) {
     notFound();
   }
 
+  const operatorRow = Array.isArray(pkg.tours_operators) ? pkg.tours_operators[0] : pkg.tours_operators;
+  const [{ data: packageRating }, { data: operatorRating }, { data: reviewRows }] = await Promise.all([
+    supabase.from("tours_package_ratings").select("review_count, average_rating").eq("package_id", pkg.id).maybeSingle(),
+    operatorRow
+      ? supabase.from("tours_operator_ratings").select("review_count, average_rating").eq("operator_id", operatorRow.id).maybeSingle()
+      : Promise.resolve({ data: null }),
+    supabase
+      .from("tours_reviews")
+      .select("id, rating, comment, created_at, operator_reply, replied_at, is_hidden")
+      .eq("package_id", pkg.id)
+      .eq("is_hidden", false)
+      .order("created_at", { ascending: false })
+      .limit(20),
+  ]);
+  const rating = toSummary(packageRating);
+  const operatorSummary = toSummary(operatorRating);
+  const reviews = (reviewRows ?? []) as Review[];
+
   // Get default price or first price variant
   const defaultVariant = pkg.tours_package_price_variants?.find((v: any) => v.is_default) ||
     pkg.tours_package_price_variants?.[0];
@@ -106,6 +130,21 @@ export default async function PackageDetailPage({ params }: PageProps) {
   // Sort stops by stop_order (using correct column name)
   const stops = (pkg.tours_package_stops || []).sort((a: any, b: any) => a.stop_order - b.stop_order);
 
+  // Route between stops that have a map pin (Routes API, cached; estimate as fallback).
+  const pinnedStops = stops
+    .map((stop: any) => ({ ...stop, lat: stop.latitude === null ? null : Number(stop.latitude), lng: stop.longitude === null ? null : Number(stop.longitude) }))
+    .filter((stop: any) => Number.isFinite(stop.lat) && Number.isFinite(stop.lng) && stop.lat !== null && stop.lng !== null);
+  let route: RouteSummary | null = null;
+  if (pinnedStops.length >= 2) {
+    try {
+      route = await planRoute(pinnedStops.map((stop: any) => ({ lat: stop.lat, lng: stop.lng })));
+    } catch (routeError) {
+      console.error("Package route error:", routeError);
+    }
+  }
+  const mapPoints = pinnedStops.map((stop: any) => ({ lat: stop.lat, lng: stop.lng, label: stop.location_name }));
+  const routeLink = directionsUrl(mapPoints);
+
   // Sort gallery by display order
   const gallery = (pkg.tours_package_gallery || []).sort((a: any, b: any) => a.display_order - b.display_order);
 
@@ -113,7 +152,7 @@ export default async function PackageDetailPage({ params }: PageProps) {
     <PageFrame>
       <div className="mx-auto max-w-7xl">
         {/* Breadcrumb */}
-        <nav className="mb-6 text-sm text-daet-ink/60">
+        <nav className="mb-6 text-sm text-daet-ink/70">
           <Link href="/tours/browse" className="hover:text-daet-forest">
             Browse packages
           </Link>
@@ -139,7 +178,10 @@ export default async function PackageDetailPage({ params }: PageProps) {
 
             {/* Title and description */}
             <h1 className="mt-6 text-4xl font-black text-daet-ink">{pkg.title}</h1>
-            <p className="mt-2 text-sm text-daet-ink/60">
+            <a href="#reviews" className="mt-2 inline-flex hover:underline">
+              <RatingBadge summary={rating} />
+            </a>
+            <p className="mt-2 text-sm text-daet-ink/70">
               📍 {pkg.location_name} · ⏱️ {pkg.duration_value}{" "}
               {pkg.duration_type === "hours" ? "hours" : "days"}
             </p>
@@ -169,7 +211,7 @@ export default async function PackageDetailPage({ params }: PageProps) {
 
                 {excluded.length > 0 && (
                   <>
-                    <h3 className="mt-6 text-sm font-bold text-daet-ink/60">Not included</h3>
+                    <h3 className="mt-6 text-sm font-bold text-daet-ink/70">Not included</h3>
                     <ul className="mt-3 space-y-2">
                       {excluded.map((item: any) => (
                         <li key={item.id} className="flex items-start gap-2 text-sm text-daet-ink/80">
@@ -205,6 +247,43 @@ export default async function PackageDetailPage({ params }: PageProps) {
               </div>
             )}
 
+            {/* Route map */}
+            {mapPoints.length > 0 && (
+              <div className="mt-6 rounded-2xl border border-daet-ink/10 bg-white p-6">
+                <div className="flex flex-wrap items-baseline justify-between gap-2">
+                  <h2 className="font-black text-daet-ink">Route</h2>
+                  {route ? (
+                    <p className="text-sm font-bold text-daet-forest">
+                      {route.estimated ? "About " : ""}
+                      {formatDistance(route.distanceM)} · {formatDuration(route.durationS)} of travel
+                    </p>
+                  ) : null}
+                </div>
+                <div className="mt-4">
+                  <RouteMap points={mapPoints} polylines={route?.legs.map((leg) => leg.polyline) ?? []} connect title={`Route map for ${pkg.title}`} />
+                </div>
+                {route && route.legs.length > 0 ? (
+                  <ol className="mt-4 space-y-1 text-sm text-daet-ink/75">
+                    {route.legs.map((leg, i) => (
+                      <li key={i}>
+                        <span className="font-bold text-daet-ink">{mapPoints[i].label}</span> → <span className="font-bold text-daet-ink">{mapPoints[i + 1].label}</span>:{" "}
+                        {leg.estimated ? "about " : ""}
+                        {formatDistance(leg.distanceM)}, {formatDuration(leg.durationS)}
+                      </li>
+                    ))}
+                  </ol>
+                ) : null}
+                {route?.estimated ? (
+                  <p className="mt-2 text-xs text-daet-ink/70">Some distances are estimated from straight-line distance; actual roads and boat crossings may differ.</p>
+                ) : null}
+                {routeLink ? (
+                  <a href={routeLink} target="_blank" rel="noopener noreferrer" className="mt-4 inline-flex min-h-11 items-center justify-center rounded-full border border-daet-forest/30 px-5 text-sm font-bold text-daet-forest hover:bg-daet-forest/5">
+                    Open route in Google Maps
+                  </a>
+                ) : null}
+              </div>
+            )}
+
             {/* Gallery */}
             {gallery.length > 0 && (
               <div className="mt-6 rounded-2xl border border-daet-ink/10 bg-white p-6">
@@ -218,7 +297,7 @@ export default async function PackageDetailPage({ params }: PageProps) {
                         className="aspect-video w-full object-cover"
                       />
                       {img.caption && (
-                        <p className="p-3 text-xs text-daet-ink/60">{img.caption}</p>
+                        <p className="p-3 text-xs text-daet-ink/70">{img.caption}</p>
                       )}
                     </div>
                   ))}
@@ -233,8 +312,46 @@ export default async function PackageDetailPage({ params }: PageProps) {
                 <p className="mt-2 text-sm font-bold text-daet-forest">
                   {pkg.tours_operators[0].business_name}
                 </p>
+                {operatorSummary ? (
+                  <p className="mt-1 text-xs text-daet-ink/70">
+                    <RatingBadge summary={operatorSummary} compact /> across all their tours
+                  </p>
+                ) : null}
               </div>
             )}
+
+            {/* Reviews */}
+            <section id="reviews" className="mt-6 rounded-2xl border border-daet-ink/10 bg-white p-6">
+              <div className="flex flex-wrap items-end justify-between gap-3">
+                <h2 className="font-black text-daet-ink">Traveller reviews</h2>
+                <p className="text-xs text-daet-ink/70">Only travellers who completed this tour can review it.</p>
+              </div>
+              {rating ? (
+                <div className="mt-4 grid gap-4 sm:grid-cols-[auto_1fr] sm:items-center">
+                  <div className="text-center sm:pr-6">
+                    <p className="text-4xl font-black text-daet-ink">{rating.average.toFixed(1)}</p>
+                    <Stars value={rating.average} />
+                    <p className="mt-1 text-xs text-daet-ink/70">
+                      {rating.count} review{rating.count === 1 ? "" : "s"}
+                    </p>
+                  </div>
+                  <ul className="space-y-1 text-xs text-daet-ink/70" aria-label="Rating breakdown (latest reviews)">
+                    {distribution(reviews.map((r) => r.rating)).map((row) => (
+                      <li key={row.stars} className="flex items-center gap-2">
+                        <span className="w-8">{row.stars} ★</span>
+                        <span className="h-2 flex-1 overflow-hidden rounded-full bg-daet-sand">
+                          <span className="block h-full bg-amber-400" style={{ width: `${reviews.length ? (row.count / reviews.length) * 100 : 0}%` }} />
+                        </span>
+                        <span className="w-6 text-right">{row.count}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ) : null}
+              <div className="mt-5">
+                <ReviewList reviews={reviews} operatorName={operatorRow?.business_name ?? "the operator"} emptyText="No reviews yet. Be the first after your tour!" />
+              </div>
+            </section>
           </div>
 
           {/* Sidebar - Booking card */}
@@ -242,11 +359,11 @@ export default async function PackageDetailPage({ params }: PageProps) {
             <div className="sticky top-6 rounded-3xl border border-daet-ink/10 bg-white p-6 shadow-lg">
               <div className="text-3xl font-black text-daet-ink">
                 ₱{displayPrice.toLocaleString()}
-                <span className="ml-2 text-sm font-normal text-daet-ink/60">{priceLabel}</span>
+                <span className="ml-2 text-sm font-normal text-daet-ink/70">{priceLabel}</span>
               </div>
 
               {pkg.tours_package_price_variants && pkg.tours_package_price_variants.length > 1 && (
-                <p className="mt-2 text-xs text-daet-ink/60">
+                <p className="mt-2 text-xs text-daet-ink/70">
                   {pkg.tours_package_price_variants.length} pricing options available
                 </p>
               )}

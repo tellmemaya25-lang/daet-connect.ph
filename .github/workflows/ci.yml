@@ -29,5 +29,31 @@ jobs:
         run: npx tsc --noEmit
       - name: Unit tests
         run: npm test
+      - name: Script tests
+        run: npm run test:scripts
       - name: Build
         run: npx next build
+
+  e2e:
+    name: e2e (375px + axe)
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      NEXT_TELEMETRY_DISABLED: "1"
+      CI: "true"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - name: Tours E2E and accessibility (mock Supabase)
+        run: npm run test:e2e:tours
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: playwright-traces
+          path: test-results/
+          retention-days: 7

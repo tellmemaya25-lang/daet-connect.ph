@@ -4,6 +4,7 @@ import { Notice } from "@/components/ui/notice";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { PackageCard } from "./package-card";
+import { toSummary, type RatingSummary } from "@/lib/tours/reviews";
 import { PackageFilters } from "./package-filters";
 
 export const dynamic = "force-dynamic";
@@ -82,10 +83,20 @@ export default async function BrowsePackagesPage({
     );
   }
 
-  console.log("Packages loaded:", packages?.length || 0);
-  console.log("First package data:", packages?.[0] ? JSON.stringify(packages[0], null, 2) : "No packages");
-  
   const packagesWithPricing = packages || [];
+
+  // Ratings come from a view so hidden reviews never count.
+  const ratingsById = new Map<string, RatingSummary>();
+  if (packagesWithPricing.length > 0) {
+    const { data: ratingRows } = await supabase
+      .from("tours_package_ratings")
+      .select("package_id, review_count, average_rating")
+      .in("package_id", packagesWithPricing.map((pkg) => pkg.id));
+    for (const row of ratingRows ?? []) {
+      const summary = toSummary(row);
+      if (row.package_id && summary) ratingsById.set(row.package_id, summary);
+    }
+  }
 
   // Check if user is logged in
   const {
@@ -145,18 +156,18 @@ export default async function BrowsePackagesPage({
               🔍
             </span>
             <h2 className="mt-4 text-xl font-black text-daet-ink">No packages found</h2>
-            <p className="mt-2 text-sm text-daet-ink/60">
+            <p className="mt-2 text-sm text-daet-ink/70">
               Try adjusting your filters or check back later for new tours.
             </p>
           </section>
         ) : (
           <>
-            <p className="mt-6 text-sm text-daet-ink/60">
+            <p className="mt-6 text-sm text-daet-ink/70">
               {filteredPackages.length} package{filteredPackages.length !== 1 ? "s" : ""} available
             </p>
             <div className="mt-4 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
               {filteredPackages.map((pkg: any) => (
-                <PackageCard key={pkg.id} package={pkg} />
+                <PackageCard key={pkg.id} package={pkg} rating={ratingsById.get(pkg.id) ?? null} />
               ))}
             </div>
           </>

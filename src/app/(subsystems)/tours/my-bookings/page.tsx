@@ -83,26 +83,34 @@ export default async function MyBookingsPage() {
     <PageFrame>
       <div className="mx-auto max-w-5xl">
         {/* Header */}
-        <div className="mb-8 flex items-center justify-between">
+        <div className="mb-8 flex flex-wrap items-center justify-between gap-4">
           <div>
             <h1 className="text-4xl font-black text-daet-ink">My Bookings</h1>
-            <p className="mt-2 text-sm text-daet-ink/60">
+            <p className="mt-2 text-sm text-daet-ink/70">
               View and manage your tour bookings
             </p>
           </div>
+          <div className="flex flex-wrap gap-3">
+          <Link
+            href="/tours/messages"
+            className="inline-flex min-h-11 items-center rounded-full border border-daet-forest/30 bg-white px-6 text-sm font-bold text-daet-forest transition hover:bg-daet-forest/5"
+          >
+            Messages
+          </Link>
           <Link
             href="/tours/browse"
             className="rounded-full bg-daet-forest px-6 py-3 text-sm font-bold text-white transition hover:bg-daet-ink"
           >
             Browse Tours
           </Link>
+          </div>
         </div>
 
         {/* Back Button */}
         <div className="mb-6">
           <Link
             href="/tours/browse"
-            className="inline-flex items-center gap-2 text-sm font-bold text-daet-ink/60 transition hover:text-daet-ink"
+            className="inline-flex items-center gap-2 text-sm font-bold text-daet-ink/70 transition hover:text-daet-ink"
           >
             ← Back to Browse
           </Link>
@@ -115,7 +123,7 @@ export default async function MyBookingsPage() {
               📅
             </div>
             <h2 className="text-xl font-black text-daet-ink">No bookings yet</h2>
-            <p className="mt-2 text-sm text-daet-ink/60">
+            <p className="mt-2 text-sm text-daet-ink/70">
               Start exploring and book your first tour!
             </p>
             <Link
@@ -175,13 +183,13 @@ export default async function MyBookingsPage() {
                       {/* Details Grid */}
                       <div className="grid grid-cols-2 gap-4 text-sm">
                         <div>
-                          <p className="text-daet-ink/60">Booking Reference</p>
+                          <p className="text-daet-ink/70">Booking Reference</p>
                           <p className="font-bold text-daet-ink">
                             {booking.booking_reference}
                           </p>
                         </div>
                         <div>
-                          <p className="text-daet-ink/60">Tour Date</p>
+                          <p className="text-daet-ink/70">Tour Date</p>
                           <p className="font-bold text-daet-ink">
                             {new Date(booking.tour_date).toLocaleDateString("en-US", {
                               month: "short",
@@ -191,13 +199,13 @@ export default async function MyBookingsPage() {
                           </p>
                         </div>
                         <div>
-                          <p className="text-daet-ink/60">Participants</p>
+                          <p className="text-daet-ink/70">Participants</p>
                           <p className="font-bold text-daet-ink">
                             {booking.number_of_pax} pax
                           </p>
                         </div>
                         <div>
-                          <p className="text-daet-ink/60">Total Amount</p>
+                          <p className="text-daet-ink/70">Total Amount</p>
                           <p className="text-lg font-black text-daet-forest">
                             ₱{booking.total_amount.toLocaleString()}
                           </p>
@@ -244,25 +252,25 @@ export default async function MyBookingsPage() {
           <div className="mt-8 grid grid-cols-5 gap-4">
             <div className="rounded-2xl border border-daet-ink/10 bg-white p-4 text-center">
               <p className="text-2xl font-black text-daet-ink">{bookings.length}</p>
-              <p className="text-xs text-daet-ink/60">Total</p>
+              <p className="text-xs text-daet-ink/70">Total</p>
             </div>
             <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4 text-center">
               <p className="text-2xl font-black text-amber-900">
                 {bookings.filter((b) => b.status === "pending").length}
               </p>
-              <p className="text-xs text-amber-900/60">Pending</p>
+              <p className="text-xs text-amber-900">Pending</p>
             </div>
             <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-center">
               <p className="text-2xl font-black text-emerald-900">
                 {bookings.filter((b) => b.status === "confirmed").length}
               </p>
-              <p className="text-xs text-emerald-900/60">Confirmed</p>
+              <p className="text-xs text-emerald-900">Confirmed</p>
             </div>
             <div className="rounded-2xl border border-blue-200 bg-blue-50 p-4 text-center">
               <p className="text-2xl font-black text-blue-900">
                 {bookings.filter((b) => b.status === "completed").length}
               </p>
-              <p className="text-xs text-blue-900/60">Completed</p>
+              <p className="text-xs text-blue-900">Completed</p>
             </div>
             <div className="rounded-2xl border border-gray-200 bg-gray-50 p-4 text-center">
               <p className="text-2xl font-black text-gray-900">

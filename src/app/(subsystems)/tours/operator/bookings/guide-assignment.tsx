@@ -8,12 +8,15 @@ type GuideAssignmentProps = {
   bookingId: string;
   currentGuideId: string | null;
   availableGuides: Array<{ id: string; full_name: string; contact_phone: string }>;
+  /** Guide id → marked available (true) / unavailable (false) on the tour date; missing = not set. */
+  availability?: Record<string, boolean>;
 };
 
 export function GuideAssignment({
   bookingId,
   currentGuideId,
   availableGuides,
+  availability = {},
 }: GuideAssignmentProps) {
   const router = useRouter();
   const [selectedGuideId, setSelectedGuideId] = useState(currentGuideId || "");
@@ -81,17 +84,22 @@ export function GuideAssignment({
 
       <div className="flex items-center gap-3">
         <select
+          aria-label="Guide for this booking"
           value={selectedGuideId}
           onChange={(e) => setSelectedGuideId(e.target.value)}
           disabled={isSubmitting}
           className="flex-1 rounded-xl border border-daet-ink/20 px-4 py-2 text-sm focus:border-daet-forest focus:outline-none focus:ring-2 focus:ring-daet-forest/20"
         >
           <option value="">Select a guide...</option>
-          {availableGuides.map((guide) => (
-            <option key={guide.id} value={guide.id}>
-              {guide.full_name} - {guide.contact_phone}
-            </option>
-          ))}
+          {[...availableGuides]
+            .sort((a, b) => rank(availability[a.id]) - rank(availability[b.id]))
+            .map((guide) => (
+              <option key={guide.id} value={guide.id}>
+                {availability[guide.id] === true ? "✓ " : availability[guide.id] === false ? "✕ " : ""}
+                {guide.full_name} - {guide.contact_phone}
+                {availability[guide.id] === false ? " (not available)" : ""}
+              </option>
+            ))}
         </select>
 
         {currentGuideId ? (
@@ -113,9 +121,13 @@ export function GuideAssignment({
         )}
       </div>
 
+      {selectedGuideId && availability[selectedGuideId] === false && selectedGuideId !== currentGuideId ? (
+        <p className="text-sm font-bold text-amber-800">This guide marked the tour date as not available. Message them before assigning.</p>
+      ) : null}
+
       {currentGuideId && (
         <div className="flex items-center gap-2 text-sm">
-          <span className="text-daet-ink/60">Currently assigned:</span>
+          <span className="text-daet-ink/70">Currently assigned:</span>
           <span className="font-bold text-daet-forest">
             {availableGuides.find((g) => g.id === currentGuideId)?.full_name || "Unknown"}
           </span>
@@ -123,4 +135,9 @@ export function GuideAssignment({
       )}
     </div>
   );
+}
+
+/** Available first, then not set, then not available. */
+function rank(value: boolean | undefined): number {
+  return value === true ? 0 : value === undefined ? 1 : 2;
 }

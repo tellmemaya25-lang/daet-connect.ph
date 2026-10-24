@@ -75,7 +75,7 @@ export function PackageCreateForm({ operatorId }: Props) {
       {/* Basic Details */}
       <section className="rounded-3xl border border-daet-ink/10 bg-white p-6 shadow-sm">
         <h2 className="text-xl font-black text-daet-ink">Basic Details</h2>
-        <p className="mt-1 text-sm text-daet-ink/60">
+        <p className="mt-1 text-sm text-daet-ink/70">
           Provide the essential information about your tour package.
         </p>
 
@@ -110,7 +110,7 @@ export function PackageCreateForm({ operatorId }: Props) {
               className="mt-1 w-full rounded-xl border border-daet-ink/20 px-4 py-2.5 text-sm focus:border-daet-forest focus:outline-none focus:ring-2 focus:ring-daet-forest/20"
               placeholder="Describe your tour package in detail..."
             />
-            <p className="mt-1 text-xs text-daet-ink/50">Min 50 characters</p>
+            <p className="mt-1 text-xs text-daet-ink/70">Min 50 characters</p>
           </div>
 
           <div className="grid gap-4 sm:grid-cols-2">
@@ -161,7 +161,7 @@ export function PackageCreateForm({ operatorId }: Props) {
       {/* Inclusions */}
       <section className="rounded-3xl border border-daet-ink/10 bg-white p-6 shadow-sm">
         <h2 className="text-xl font-black text-daet-ink">What's Included</h2>
-        <p className="mt-1 text-sm text-daet-ink/60">
+        <p className="mt-1 text-sm text-daet-ink/70">
           List what's included and not included in your package (one item per line).
         </p>
 
@@ -178,7 +178,7 @@ export function PackageCreateForm({ operatorId }: Props) {
               className="mt-1 w-full rounded-xl border border-daet-ink/20 px-4 py-2.5 text-sm focus:border-daet-forest focus:outline-none focus:ring-2 focus:ring-daet-forest/20"
               placeholder={"Round-trip boat transfer\nSnorkeling equipment\nLunch and refreshments\nProfessional tour guide"}
             />
-            <p className="mt-1 text-xs text-daet-ink/50">One item per line</p>
+            <p className="mt-1 text-xs text-daet-ink/70">One item per line</p>
           </div>
 
           <div>
@@ -192,7 +192,7 @@ export function PackageCreateForm({ operatorId }: Props) {
               className="mt-1 w-full rounded-xl border border-daet-ink/20 px-4 py-2.5 text-sm focus:border-daet-forest focus:outline-none focus:ring-2 focus:ring-daet-forest/20"
               placeholder={"Personal expenses\nTravel insurance"}
             />
-            <p className="mt-1 text-xs text-daet-ink/50">One item per line</p>
+            <p className="mt-1 text-xs text-daet-ink/70">One item per line</p>
           </div>
         </div>
       </section>
@@ -200,7 +200,7 @@ export function PackageCreateForm({ operatorId }: Props) {
       {/* Pricing */}
       <section className="rounded-3xl border border-daet-ink/10 bg-white p-6 shadow-sm">
         <h2 className="text-xl font-black text-daet-ink">Pricing</h2>
-        <p className="mt-1 text-sm text-daet-ink/60">
+        <p className="mt-1 text-sm text-daet-ink/70">
           Set the price for your tour package.
         </p>
 
@@ -241,7 +241,7 @@ export function PackageCreateForm({ operatorId }: Props) {
       {/* Itinerary */}
       <section className="rounded-3xl border border-daet-ink/10 bg-white p-6 shadow-sm">
         <h2 className="text-xl font-black text-daet-ink">Itinerary</h2>
-        <p className="mt-1 text-sm text-daet-ink/60">
+        <p className="mt-1 text-sm text-daet-ink/70">
           List the stops/locations in your tour (one per line).
         </p>
 
@@ -257,7 +257,7 @@ export function PackageCreateForm({ operatorId }: Props) {
             className="mt-1 w-full rounded-xl border border-daet-ink/20 px-4 py-2.5 text-sm focus:border-daet-forest focus:outline-none focus:ring-2 focus:ring-daet-forest/20"
             placeholder={"Bagasbas Beach - Starting point\nApuao Grande Island - White sand beach and snorkeling\nCanimog Island - Lunch break and swimming\nBagasbas Beach - Return to starting point"}
           />
-          <p className="mt-1 text-xs text-daet-ink/50">
+          <p className="mt-1 text-xs text-daet-ink/70">
             One stop per line. Format: Location Name - Description
           </p>
         </div>
@@ -266,7 +266,7 @@ export function PackageCreateForm({ operatorId }: Props) {
       {/* Image Upload */}
       <section className="rounded-3xl border border-daet-ink/10 bg-white p-6 shadow-sm">
         <h2 className="text-xl font-black text-daet-ink">Package Images</h2>
-        <p className="mt-1 text-sm text-daet-ink/60">
+        <p className="mt-1 text-sm text-daet-ink/70">
           Upload photos to showcase your tour package. Images help tourists visualize the experience.
         </p>
 
@@ -290,7 +290,7 @@ export function PackageCreateForm({ operatorId }: Props) {
                 />
                 <div className="flex-1">
                   <p className="text-sm font-bold text-daet-ink">{coverImage.name}</p>
-                  <p className="text-xs text-daet-ink/60">
+                  <p className="text-xs text-daet-ink/70">
                     {(coverImage.size / 1024 / 1024).toFixed(2)} MB
                   </p>
                 </div>
@@ -344,7 +344,7 @@ export function PackageCreateForm({ operatorId }: Props) {
       <div className="flex items-center justify-between rounded-3xl border border-daet-ink/10 bg-white p-6 shadow-sm">
         <div>
           <p className="text-sm font-bold text-daet-ink">Ready to submit?</p>
-          <p className="text-xs text-daet-ink/60">
+          <p className="text-xs text-daet-ink/70">
             Your package will be reviewed by the Tourism Office before publishing.
           </p>
         </div>

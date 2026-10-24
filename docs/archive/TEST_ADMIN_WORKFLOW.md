@@ -3,7 +3,7 @@
 ## Prerequisites
 1. ✅ Database migration applied (`APPLY_THIS_FIRST_admin_workflow.sql`)
 2. ✅ Dev server running (`npm run dev`)
-3. ✅ Admin account: `admin.test@gmail.com` / `test123`
+3. ✅ Admin account: `admin.test@gmail.com` (password shared privately)
 
 ## Test Steps
 
@@ -18,7 +18,7 @@ Expected result: "Success. No rows returned"
 ### 2. Login as Admin
 1. Go to `http://localhost:3000/login`
 2. Email: `admin.test@gmail.com`
-3. Password: `test123`
+3. Password: (shared privately)
 4. Click "Sign in"
 
 Expected: Redirected to home page

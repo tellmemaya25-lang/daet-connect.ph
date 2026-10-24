@@ -1,0 +1,237 @@
+import Link from "next/link";
+import { Badge } from "@/components/ui/badge";
+import { ButtonLink } from "@/components/ui/button";
+import { Card, CardHeader } from "@/components/ui/card";
+import { EmptyState } from "@/components/ui/empty-state";
+import { PageFrame } from "@/components/ui/page-frame";
+import { MonthCalendar } from "@/components/tours/month-calendar";
+import { RatingBadge } from "@/components/tours/star-rating";
+import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { bookingsByDay, occupancy } from "@/lib/tours/dashboards";
+import { currentManilaMonth, formatDayHeading, isDateKey, monthKey, parseMonthParam, shiftMonth, toManilaDateKey } from "@/lib/tours/events-calendar";
+import { summarizeLedger } from "@/lib/tours/ledger";
+import { toSummary } from "@/lib/tours/reviews";
+import { loadOperatorLedger } from "../payments/load-ledger";
+
+const peso = (value: number) => `₱${value.toLocaleString("en-PH", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+
+type DayBooking = {
+  id: string;
+  booking_reference: string;
+  tour_date: string;
+  status: string;
+  number_of_pax: number;
+  contact_name: string;
+  assigned_guide_id: string | null;
+  tours_packages: { title: string; operator_id: string } | { title: string; operator_id: string }[] | null;
+};
+
+const STATUS_TONE: Record<string, "success" | "warning" | "info"> = { confirmed: "success", pending: "warning", completed: "info" };
+
+/** Operator dashboard body: today's tours, booking calendar, month revenue, occupancy, ratings. */
+export async function OperatorHome({ operatorId, searchParams }: { operatorId: string; searchParams: Record<string, string | string[] | undefined> }) {
+  const supabase = await createSupabaseServerClient();
+  const today = toManilaDateKey(new Date());
+  const month = parseMonthParam(searchParams.month);
+  const key = monthKey(month);
+  const nextKey = monthKey(shiftMonth(month, 1));
+  const dayParam = Array.isArray(searchParams.day) ? searchParams.day[0] : searchParams.day;
+  const selectedDay = isDateKey(dayParam) && dayParam.startsWith(key) ? dayParam : key === today.slice(0, 7) ? today : null;
+  const thisMonth = currentManilaMonth();
+
+  const [{ data: operator }, { data: monthBookings }, { data: todays }, { count: pendingCount }, { data: availability }, { data: ratingRow }, { count: unreplied }, ledger] = await Promise.all([
+    supabase.from("tours_operators").select("business_name").eq("id", operatorId).maybeSingle(),
+    supabase
+      .from("tours_bookings")
+      .select("id, booking_reference, tour_date, status, number_of_pax, contact_name, assigned_guide_id, tours_packages!inner ( title, operator_id )")
+      .eq("tours_packages.operator_id", operatorId)
+      .gte("tour_date", `${key}-01`)
+      .lt("tour_date", `${nextKey}-01`)
+      .order("tour_date"),
+    supabase
+      .from("tours_bookings")
+      .select("id, booking_reference, tour_date, status, number_of_pax, contact_name, assigned_guide_id, tours_packages!inner ( title, operator_id )")
+      .eq("tours_packages.operator_id", operatorId)
+      .eq("tour_date", today)
+      .in("status", ["pending", "confirmed", "completed"]),
+    supabase
+      .from("tours_bookings")
+      .select("id, tours_packages!inner ( operator_id )", { count: "exact", head: true })
+      .eq("tours_packages.operator_id", operatorId)
+      .eq("status", "pending"),
+    supabase
+      .from("tours_package_availability")
+      .select("capacity_total, capacity_booked, tours_packages!inner ( operator_id )")
+      .eq("tours_packages.operator_id", operatorId)
+      .gte("available_date", `${key}-01`)
+      .lt("available_date", `${nextKey}-01`),
+    supabase.from("tours_operator_ratings").select("review_count, average_rating").eq("operator_id", operatorId).maybeSingle(),
+    supabase.from("tours_reviews").select("id", { count: "exact", head: true }).eq("operator_id", operatorId).is("operator_reply", null).eq("is_hidden", false),
+    loadOperatorLedger(month),
+  ]);
+
+  const bookings = (monthBookings ?? []) as unknown as DayBooking[];
+  const load = bookingsByDay(bookings);
+  const occ = occupancy(availability ?? []);
+  const revenue = ledger.ok ? summarizeLedger(ledger.rows) : null;
+  const rating = toSummary(ratingRow);
+  const todayList = (todays ?? []) as unknown as DayBooking[];
+  const dayList = selectedDay ? bookings.filter((b) => b.tour_date === selectedDay && b.status !== "rejected") : [];
+  const title = (b: DayBooking) => (Array.isArray(b.tours_packages) ? b.tours_packages[0]?.title : b.tours_packages?.title) ?? "Tour";
+  const monthHref = (m: string) => `/tours/operator/dashboard?month=${m}`;
+
+  return (
+    <PageFrame>
+      <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <p className="text-xs font-black uppercase tracking-[0.18em] text-daet-leaf">Operator dashboard</p>
+          <h1 className="mt-1 text-3xl font-black tracking-tight text-daet-ink">{operator?.business_name ?? "Your business"}</h1>
+        </div>
+        <div className="flex flex-wrap gap-2">
+          <ButtonLink href="/tours/operator/bookings">Bookings{pendingCount ? ` (${pendingCount} to confirm)` : ""}</ButtonLink>
+          <ButtonLink href="/tours/operator/packages" variant="secondary">
+            Packages
+          </ButtonLink>
+        </div>
+      </div>
+
+      <div className="mb-6 grid grid-cols-2 gap-3 lg:grid-cols-4">
+        <Card>
+          <p className="text-xs font-bold text-daet-ink/70">Waiting for you</p>
+          <p className="mt-1 text-2xl font-black text-amber-800">{pendingCount ?? 0}</p>
+          <p className="text-xs text-daet-ink/70">booking request{pendingCount === 1 ? "" : "s"}</p>
+        </Card>
+        <Card>
+          <p className="text-xs font-bold text-daet-ink/70">Received in {key === monthKey(thisMonth) ? "this month" : key}</p>
+          <p className="mt-1 text-2xl font-black text-daet-forest">{revenue ? peso(revenue.received) : "—"}</p>
+          <Link href={`/tours/operator/payments?month=${key}`} className="text-xs font-bold text-daet-forest hover:underline">
+            Revenue report →
+          </Link>
+        </Card>
+        <Card>
+          <p className="text-xs font-bold text-daet-ink/70">Occupancy</p>
+          <p className="mt-1 text-2xl font-black text-daet-ink">{occ.percent === null ? "—" : `${occ.percent}%`}</p>
+          <p className="text-xs text-daet-ink/70">{occ.seats ? `${occ.booked} of ${occ.seats} seats · ${occ.openDays} open days` : "No open dates this month"}</p>
+        </Card>
+        <Card>
+          <p className="text-xs font-bold text-daet-ink/70">Rating</p>
+          <div className="mt-1">
+            <RatingBadge summary={rating} />
+          </div>
+          <Link href="/tours/operator/reviews" className="text-xs font-bold text-daet-forest hover:underline">
+            {unreplied ? `${unreplied} to reply →` : "Reviews →"}
+          </Link>
+        </Card>
+      </div>
+
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
+        <Card>
+          <CardHeader eyebrow="Booking calendar" title="Tours by date" />
+          <MonthCalendar
+            month={month}
+            today={today}
+            prevHref={monthHref(monthKey(shiftMonth(month, -1)))}
+            nextHref={monthHref(nextKey)}
+            renderDay={(cell, isToday) => {
+              const day = load.get(cell.dateKey);
+              const selected = cell.dateKey === selectedDay;
+              return (
+                <Link
+                  href={`/tours/operator/dashboard?month=${key}&day=${cell.dateKey}`}
+                  scroll={false}
+                  aria-current={selected ? "date" : undefined}
+                  className={`flex h-12 flex-col items-center justify-center rounded-xl text-sm transition ${selected ? "bg-daet-forest text-white" : day ? "bg-daet-sand font-bold text-daet-ink hover:bg-daet-sand/70" : "text-daet-ink/70 hover:bg-daet-sand/50"} ${isToday && !selected ? "ring-2 ring-daet-forest/40" : ""}`}
+                >
+                  <span>{cell.day}</span>
+                  {day ? <span className={`text-[10px] leading-none ${selected ? "text-white/85" : "text-daet-forest"}`}>{day.pax} pax</span> : null}
+                  <span className="sr-only">
+                    {` ${formatDayHeading(cell.dateKey)}${day ? `, ${day.bookings} booking${day.bookings === 1 ? "" : "s"}` : ""}`}
+                  </span>
+                </Link>
+              );
+            }}
+          />
+          {selectedDay ? (
+            <div className="mt-4 border-t border-daet-ink/10 pt-4">
+              <p className="mb-2 text-sm font-black text-daet-ink">{formatDayHeading(selectedDay)}</p>
+              {dayList.length === 0 ? (
+                <p className="text-sm text-daet-ink/70">No bookings on this day.</p>
+              ) : (
+                <BookingLines bookings={dayList} title={title} />
+              )}
+            </div>
+          ) : null}
+        </Card>
+
+        <div className="space-y-6">
+          <Card>
+            <CardHeader eyebrow={formatDayHeading(today)} title="Today's tours" />
+            {todayList.length === 0 ? (
+              <EmptyState icon="🌤️" title="No tours today" className="p-5" />
+            ) : (
+              <BookingLines bookings={todayList} title={title} />
+            )}
+          </Card>
+
+          {revenue && revenue.byPackage.length > 0 ? (
+            <Card>
+              <CardHeader title="Revenue by package" action={<Link href={`/tours/operator/payments/export?month=${key}`} prefetch={false} className="text-sm font-bold text-daet-forest hover:underline">CSV</Link>} />
+              <ul className="space-y-2">
+                {revenue.byPackage.slice(0, 5).map((entry) => (
+                  <li key={entry.title}>
+                    <div className="flex justify-between gap-2 text-sm">
+                      <span className="truncate font-bold text-daet-ink">{entry.title}</span>
+                      <span className="shrink-0 text-daet-ink/70">{peso(entry.amount)}</span>
+                    </div>
+                    <div className="mt-1 h-2 rounded-full bg-daet-sand" aria-hidden="true">
+                      <div className="h-2 rounded-full bg-daet-forest" style={{ width: `${Math.max(2, (entry.amount / revenue.received) * 100)}%` }} />
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            </Card>
+          ) : null}
+
+          <Card>
+            <CardHeader title="Manage" />
+            <div className="grid grid-cols-2 gap-2 text-sm">
+              {[
+                ["/tours/operator/packages", "🧭 Packages"],
+                ["/tours/operator/bookings", "📋 Bookings"],
+                ["/tours/operator/payments", "₱ Payments"],
+                ["/tours/operator/reviews", "⭐ Reviews"],
+                ["/tours/messages", "💬 Messages"],
+                ["/tours/operator/merch", "🛍️ Merchandise"],
+                ["/tours/operator/settings", "⚙️ Payment settings"],
+              ].map(([href, label]) => (
+                <Link key={href} href={href} className="flex min-h-11 items-center rounded-xl border border-daet-ink/10 px-3 font-bold text-daet-ink hover:bg-daet-sand/50">
+                  {label}
+                </Link>
+              ))}
+            </div>
+          </Card>
+        </div>
+      </div>
+    </PageFrame>
+  );
+}
+
+function BookingLines({ bookings, title }: { bookings: DayBooking[]; title: (b: DayBooking) => string }) {
+  return (
+    <ul className="divide-y divide-daet-ink/10">
+      {bookings.map((b) => (
+        <li key={b.id} className="flex items-start justify-between gap-2 py-2">
+          <div className="min-w-0">
+            <Link href={`/tours/operator/bookings?status=${b.status}#booking-${b.id}`} className="block truncate font-bold text-daet-ink hover:underline">
+              {title(b)}
+            </Link>
+            <p className="truncate text-xs text-daet-ink/70">
+              {b.booking_reference} · {b.contact_name} · {b.number_of_pax} pax{b.assigned_guide_id ? "" : " · no guide yet"}
+            </p>
+          </div>
+          <Badge tone={STATUS_TONE[b.status] ?? "neutral"}>{b.status}</Badge>
+        </li>
+      ))}
+    </ul>
+  );
+}

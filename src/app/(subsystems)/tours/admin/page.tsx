@@ -108,14 +108,14 @@ export default async function AdminDashboardPage() {
         >
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-bold text-daet-ink/60">Pending Operators</p>
+              <p className="text-sm font-bold text-daet-ink/70">Pending Operators</p>
               <p className="mt-2 text-4xl font-black text-daet-ink">{pendingOperators || 0}</p>
             </div>
             <div className="grid h-14 w-14 place-items-center rounded-2xl bg-amber-50 text-2xl">
               🏢
             </div>
           </div>
-          <p className="mt-4 text-sm text-daet-ink/60">Applications awaiting review</p>
+          <p className="mt-4 text-sm text-daet-ink/70">Applications awaiting review</p>
         </Link>
 
         {/* Pending Guides */}
@@ -125,14 +125,14 @@ export default async function AdminDashboardPage() {
         >
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-bold text-daet-ink/60">Pending Guides</p>
+              <p className="text-sm font-bold text-daet-ink/70">Pending Guides</p>
               <p className="mt-2 text-4xl font-black text-daet-ink">{pendingGuides || 0}</p>
             </div>
             <div className="grid h-14 w-14 place-items-center rounded-2xl bg-amber-50 text-2xl">
               👤
             </div>
           </div>
-          <p className="mt-4 text-sm text-daet-ink/60">Guide applications to verify</p>
+          <p className="mt-4 text-sm text-daet-ink/70">Guide applications to verify</p>
         </Link>
 
         {/* Pending Packages */}
@@ -142,42 +142,42 @@ export default async function AdminDashboardPage() {
         >
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-bold text-daet-ink/60">Pending Packages</p>
+              <p className="text-sm font-bold text-daet-ink/70">Pending Packages</p>
               <p className="mt-2 text-4xl font-black text-daet-ink">{pendingPackages || 0}</p>
             </div>
             <div className="grid h-14 w-14 place-items-center rounded-2xl bg-amber-50 text-2xl">
               📦
             </div>
           </div>
-          <p className="mt-4 text-sm text-daet-ink/60">Tour packages awaiting approval</p>
+          <p className="mt-4 text-sm text-daet-ink/70">Tour packages awaiting approval</p>
         </Link>
 
         {/* Published Packages */}
         <div className="rounded-3xl border border-daet-ink/10 bg-white p-6 shadow-sm">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-bold text-daet-ink/60">Published Packages</p>
+              <p className="text-sm font-bold text-daet-ink/70">Published Packages</p>
               <p className="mt-2 text-4xl font-black text-daet-ink">{publishedPackages || 0}</p>
             </div>
             <div className="grid h-14 w-14 place-items-center rounded-2xl bg-green-50 text-2xl">
               ✓
             </div>
           </div>
-          <p className="mt-4 text-sm text-daet-ink/60">Active tour offerings</p>
+          <p className="mt-4 text-sm text-daet-ink/70">Active tour offerings</p>
         </div>
 
         {/* Total Bookings */}
         <div className="rounded-3xl border border-daet-ink/10 bg-white p-6 shadow-sm">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-bold text-daet-ink/60">Total Bookings</p>
+              <p className="text-sm font-bold text-daet-ink/70">Total Bookings</p>
               <p className="mt-2 text-4xl font-black text-daet-ink">{totalBookings || 0}</p>
             </div>
             <div className="grid h-14 w-14 place-items-center rounded-2xl bg-blue-50 text-2xl">
               📅
             </div>
           </div>
-          <p className="mt-4 text-sm text-daet-ink/60">All-time reservations</p>
+          <p className="mt-4 text-sm text-daet-ink/70">All-time reservations</p>
         </div>
       </div>
 
@@ -185,6 +185,12 @@ export default async function AdminDashboardPage() {
       <div className="rounded-3xl border border-daet-ink/10 bg-white p-6 shadow-sm mb-8">
         <h2 className="text-xl font-black text-daet-ink mb-4">Quick Actions</h2>
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          <Link
+            href="/tours/admin/analytics"
+            className="inline-flex min-h-11 items-center justify-center rounded-full bg-daet-ink px-6 text-sm font-bold text-white hover:bg-daet-forest transition"
+          >
+            📊 Tourism Analytics
+          </Link>
           <Link
             href="/tours/admin/operators"
             className="inline-flex min-h-11 items-center justify-center rounded-full bg-daet-forest px-6 text-sm font-bold text-white hover:bg-daet-ink transition"
@@ -210,6 +216,18 @@ export default async function AdminDashboardPage() {
             Manage Events Calendar
           </Link>
           <Link
+            href="/tours/admin/attractions"
+            className="inline-flex min-h-11 items-center justify-center rounded-full border border-daet-forest/30 px-6 text-sm font-bold text-daet-forest hover:bg-daet-forest/5 transition"
+          >
+            Manage Attractions
+          </Link>
+          <Link
+            href="/tours/admin/reviews"
+            className="inline-flex min-h-11 items-center justify-center rounded-full border border-daet-forest/30 px-6 text-sm font-bold text-daet-forest hover:bg-daet-forest/5 transition"
+          >
+            Moderate Reviews
+          </Link>
+          <Link
             href="/tours/admin/merch"
             className="inline-flex min-h-11 items-center justify-center rounded-full border border-daet-forest/30 px-6 text-sm font-bold text-daet-forest hover:bg-daet-forest/5 transition"
           >
@@ -231,15 +249,15 @@ export default async function AdminDashboardPage() {
                 <div className="flex-1 min-w-0">
                   <p className="text-daet-ink font-medium">
                     {activity.profiles.full_name || 'Admin'}{' '}
-                    <span className="text-daet-ink/60 font-normal">
+                    <span className="text-daet-ink/70 font-normal">
                       {getActivityDescription(activity)}
                     </span>
                   </p>
-                  <p className="text-xs text-daet-ink/50 mt-1">
+                  <p className="text-xs text-daet-ink/70 mt-1">
                     {new Date(activity.created_at).toLocaleString()}
                   </p>
                   {activity.notes && (
-                    <p className="text-xs text-daet-ink/60 mt-1 italic">"{activity.notes}"</p>
+                    <p className="text-xs text-daet-ink/70 mt-1 italic">"{activity.notes}"</p>
                   )}
                 </div>
               </div>

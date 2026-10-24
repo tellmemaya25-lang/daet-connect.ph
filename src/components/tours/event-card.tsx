@@ -31,7 +31,7 @@ export function EventCard({ event, compact = false }: { event: TourEvent; compac
         </span>
         <p className="mt-1 line-clamp-2 font-black text-daet-ink group-hover:text-daet-forest">{event.title}</p>
         <p className="mt-0.5 text-sm text-daet-ink/65">{formatEventRange(event.starts_at, event.ends_at)}</p>
-        <p className="truncate text-sm text-daet-ink/55">📍 {event.venue}</p>
+        <p className="truncate text-sm text-daet-ink/70">📍 {event.venue}</p>
       </div>
     </Link>
   );

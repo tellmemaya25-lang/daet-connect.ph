@@ -183,7 +183,7 @@ export function GuideRegistrationForm({
             return (
               <li key={step.number} className="min-w-0">
                 <div className="flex items-center gap-2">
-                  <span className={`grid h-9 w-9 shrink-0 place-items-center rounded-full text-sm font-black ${complete || active ? "bg-daet-forest text-white" : "bg-daet-sand text-daet-ink/55"}`} aria-current={active ? "step" : undefined}>
+                  <span className={`grid h-9 w-9 shrink-0 place-items-center rounded-full text-sm font-black ${complete || active ? "bg-daet-forest text-white" : "bg-daet-sand text-daet-ink/70"}`} aria-current={active ? "step" : undefined}>
                     {complete ? "✓" : step.number}
                   </span>
                   <span className={`truncate text-xs font-bold sm:text-sm ${active ? "text-daet-forest" : "text-daet-ink/65"}`}>{step.title}</span>
@@ -219,7 +219,7 @@ export function GuideRegistrationForm({
             <label className="block sm:col-span-2">
               <span className="text-sm font-bold text-daet-ink">Guide introduction <span className="text-rose-600">*</span></span>
               <textarea data-guide-step="1" name="bio" value={values.bio} onChange={(event) => changeProfile("bio", event.target.value)} required={activeStep === 1} maxLength={1000} rows={4} placeholder="Tell visitors about your local knowledge, guiding experience, and the places you love to share." aria-invalid={Boolean(fieldErrors.bio)} aria-describedby={fieldErrors.bio ? fieldErrorId("bio") : undefined} className="mt-2 w-full rounded-2xl border border-daet-ink/15 px-4 py-3 text-base outline-none focus:border-daet-forest focus:ring-4 focus:ring-daet-forest/10 aria-[invalid=true]:border-rose-400" />
-              <span className="mt-1 block text-xs text-daet-ink/50">20–1,000 characters.</span>
+              <span className="mt-1 block text-xs text-daet-ink/70">20–1,000 characters.</span>
               <FieldError id={fieldErrorId("bio")} message={fieldErrors.bio} />
             </label>
           </div>
@@ -240,15 +240,15 @@ export function GuideRegistrationForm({
             <label className="block">
               <span className="text-sm font-bold text-daet-ink">ID number <span className="text-rose-600">*</span></span>
               <input data-guide-step="2" name="idNumber" type="text" value={values.idNumber} onChange={(event) => setValues((previous) => ({ ...previous, idNumber: event.target.value }))} required={activeStep === 2} maxLength={40} autoComplete="off" spellCheck={false} placeholder="As shown on your ID" aria-invalid={Boolean(fieldErrors.idNumber)} aria-describedby={fieldErrors.idNumber ? fieldErrorId("idNumber") : "idNumber-private"} className="mt-2 min-h-12 w-full rounded-2xl border border-daet-ink/15 px-4 text-base outline-none focus:border-daet-forest focus:ring-4 focus:ring-daet-forest/10 aria-[invalid=true]:border-rose-400" />
-              <span id="idNumber-private" className="mt-1 block text-xs leading-5 text-daet-ink/50">Sent only to the server for protected storage. It is never placed in your QR code.</span>
+              <span id="idNumber-private" className="mt-1 block text-xs leading-5 text-daet-ink/70">Sent only to the server for protected storage. It is never placed in your QR code.</span>
               <FieldError id={fieldErrorId("idNumber")} message={fieldErrors.idNumber} />
             </label>
             <label className="block sm:col-span-2">
               <span className="text-sm font-bold text-daet-ink">ID image or PDF <span className="text-rose-600">*</span></span>
-              <span className="mt-1 block text-sm leading-6 text-daet-ink/60">Show the full ID clearly. Upload only one side if it contains the required details.</span>
+              <span className="mt-1 block text-sm leading-6 text-daet-ink/70">Show the full ID clearly. Upload only one side if it contains the required details.</span>
               <input data-guide-step="2" name="idDocument" type="file" accept="image/jpeg,image/png,image/webp,application/pdf,.pdf" required={activeStep === 2 && !idDocument} onChange={(event) => { setIdDocument(event.target.files?.[0] ?? null); setClientError(""); }} aria-invalid={Boolean(fieldErrors.idDocument)} aria-describedby={fieldErrors.idDocument ? fieldErrorId("idDocument") : "idDocument-help"} className="mt-3 block min-h-11 w-full cursor-pointer rounded-xl border border-daet-ink/15 bg-white text-sm text-daet-ink file:mr-3 file:min-h-11 file:border-0 file:bg-daet-forest file:px-4 file:font-bold file:text-white hover:file:bg-daet-ink focus:outline-none focus:ring-4 focus:ring-daet-forest/10" />
               {idDocument ? <span className="mt-2 block break-all text-xs font-semibold text-daet-ink/70">{idDocument.name} · {formatBytes(idDocument.size)}</span> : null}
-              <span id="idDocument-help" className="mt-2 block text-xs text-daet-ink/50">JPG, PNG, WebP, or PDF · maximum 5 MB after image compression.</span>
+              <span id="idDocument-help" className="mt-2 block text-xs text-daet-ink/70">JPG, PNG, WebP, or PDF · maximum 5 MB after image compression.</span>
               <FieldError id={fieldErrorId("idDocument")} message={fieldErrors.idDocument} />
             </label>
 
@@ -269,14 +269,14 @@ export function GuideRegistrationForm({
           <legend className="text-xl font-black text-daet-ink">Guide badge QR preview</legend>
           <p className="mt-1 text-sm leading-6 text-daet-ink/65">The badge QR contains only your guide profile ID, never your government ID details. It becomes available from “My QR Code” only after approval.</p>
           {submissionDisabled ? (
-            <div className="mt-6 rounded-2xl border border-dashed border-daet-ink/20 bg-daet-sand/50 p-6 text-center text-sm leading-6 text-daet-ink/60">Connect Supabase to prepare a secure guide QR preview.</div>
+            <div className="mt-6 rounded-2xl border border-dashed border-daet-ink/20 bg-daet-sand/50 p-6 text-center text-sm leading-6 text-daet-ink/70">Connect Supabase to prepare a secure guide QR preview.</div>
           ) : qrLoading ? (
-            <div className="mt-6 grid min-h-64 place-items-center rounded-2xl bg-daet-sand text-sm font-semibold text-daet-ink/60">Preparing QR preview…</div>
+            <div className="mt-6 grid min-h-64 place-items-center rounded-2xl bg-daet-sand text-sm font-semibold text-daet-ink/70">Preparing QR preview…</div>
           ) : qrPreview?.status === "success" && qrPreview.qrDataUrl ? (
             <div className="mt-6 flex flex-col items-center rounded-3xl border border-daet-ink/10 bg-daet-sand/50 p-5 text-center sm:p-8">
               <div className="rounded-2xl bg-white p-4 shadow-sm"><img src={qrPreview.qrDataUrl} alt="Preview of your guide badge QR code" width={240} height={240} className="h-56 w-56 sm:h-64 sm:w-64" /></div>
               <p className="mt-4 text-sm font-black text-daet-ink">Preview only · activates after approval</p>
-              <p className="mt-1 max-w-md break-all text-xs leading-5 text-daet-ink/55">No personal or ID data is encoded. Your final badge image is protected until the Tourism Office approves your application.</p>
+              <p className="mt-1 max-w-md break-all text-xs leading-5 text-daet-ink/70">No personal or ID data is encoded. Your final badge image is protected until the Tourism Office approves your application.</p>
             </div>
           ) : (
             <div className="mt-6 rounded-2xl border border-rose-200 bg-rose-50 p-4 text-sm text-rose-900" role="alert">
@@ -297,7 +297,7 @@ export function GuideRegistrationForm({
           )}
         </div>
       </form>
-      <p className="mt-4 text-center text-xs leading-5 text-daet-ink/50">Your application stays pending until reviewed by the Daet Tourism Office. No dashboard or downloadable badge QR is available before approval.</p>
+      <p className="mt-4 text-center text-xs leading-5 text-daet-ink/70">Your application stays pending until reviewed by the Daet Tourism Office. No dashboard or downloadable badge QR is available before approval.</p>
     </section>
   );
 }

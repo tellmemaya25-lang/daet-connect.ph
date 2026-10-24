@@ -6,8 +6,13 @@ import { isSupabaseConfigured } from "@/lib/supabase/env";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { isPaymongoConfigured } from "@/lib/paymongo/client";
 import { cancellationOption } from "@/lib/tours/cancellation";
+import { PushOptIn } from "@/components/tours/push-opt-in";
+import { OpenChatButton } from "@/app/(subsystems)/tours/messages/open-chat-button";
 import { CancelBookingPanel, type MyCancellation } from "./cancel-booking-panel";
 import { BookingPaymentPanel, type PanelPayment, type PanelProof } from "./booking-payment-panel";
+import { ReviewForm } from "./review-form";
+import { ReviewList } from "@/components/tours/review-list";
+import type { Review } from "@/lib/tours/reviews";
 
 export const dynamic = "force-dynamic";
 
@@ -84,7 +89,7 @@ export default async function BookingDetailPage({ params, searchParams }: PagePr
     ? pkg.tours_operators[0]
     : pkg?.tours_operators;
 
-  const [{ data: paymentRows }, { data: proofRows }, { data: cancellation }] = await Promise.all([
+  const [{ data: paymentRows }, { data: proofRows }, { data: cancellation }, { data: myReview }] = await Promise.all([
     supabase
       .from("tours_payments")
       .select("id, amount, payment_method, provider, provider_method, reference_number, payment_date, payment_status")
@@ -98,6 +103,11 @@ export default async function BookingDetailPage({ params, searchParams }: PagePr
     supabase
       .from("tours_cancellations")
       .select("status, reason, admin_notes")
+      .eq("booking_id", booking.id)
+      .maybeSingle(),
+    supabase
+      .from("tours_reviews")
+      .select("id, rating, comment, created_at, operator_reply, replied_at, is_hidden, hidden_reason")
       .eq("booking_id", booking.id)
       .maybeSingle(),
   ]);
@@ -136,24 +146,37 @@ export default async function BookingDetailPage({ params, searchParams }: PagePr
           </div>
         )}
 
+        {booking.status === "pending" || booking.status === "confirmed" ? <PushOptIn variant="prompt" /> : null}
+
         {/* Booking Reference */}
         <div className="mb-6 rounded-3xl border border-daet-ink/10 bg-white p-6 text-center shadow-sm">
-          <p className="text-sm font-bold text-daet-ink/60">BOOKING REFERENCE</p>
-          <p className="mt-2 text-3xl font-black text-daet-forest">
+          <p className="text-sm font-bold text-daet-ink/70">BOOKING REFERENCE</p>
+          <h1 className="mt-2 text-3xl font-black text-daet-forest">
             {booking.booking_reference}
-          </p>
-          <p className="mt-2 text-xs text-daet-ink/50">
+          </h1>
+          <p className="mt-2 text-xs text-daet-ink/70">
             Save this reference number for your records
           </p>
         </div>
 
         {/* Status Badge */}
-        <div className="mb-6 flex justify-center">
+        <div className="mb-6 flex flex-col items-center gap-3">
           <span
             className={`rounded-full px-6 py-2 text-sm font-bold ${statusColors[booking.status] || "bg-gray-100 text-gray-800"}`}
           >
             {statusLabels[booking.status] || booking.status}
           </span>
+          {booking.status !== "cancelled" && booking.status !== "rejected" ? (
+            <OpenChatButton bookingId={booking.id} label="Message the operator" />
+          ) : null}
+          {booking.status === "confirmed" ? (
+            <Link
+              href={`/tours/bookings/${booking.id}/ticket`}
+              className="inline-flex min-h-11 items-center justify-center rounded-full bg-daet-forest px-6 text-sm font-bold text-white transition hover:bg-daet-ink"
+            >
+              Show my ticket QR
+            </Link>
+          ) : null}
         </div>
 
         {(booking.status === "cancelled" || booking.status === "rejected") && booking.cancellation_reason ? (
@@ -166,7 +189,7 @@ export default async function BookingDetailPage({ params, searchParams }: PagePr
         {/* Package Details */}
         {pkg && (
           <section className="mb-6 rounded-3xl border border-daet-ink/10 bg-white p-6 shadow-sm">
-            <h3 className="text-sm font-bold uppercase tracking-wide text-daet-ink/60">
+            <h3 className="text-sm font-bold uppercase tracking-wide text-daet-ink/70">
               Tour Package
             </h3>
             <div className="mt-4 flex gap-4">
@@ -179,7 +202,7 @@ export default async function BookingDetailPage({ params, searchParams }: PagePr
               )}
               <div className="flex-1">
                 <h2 className="text-xl font-black text-daet-ink">{pkg.title}</h2>
-                <p className="mt-1 text-sm text-daet-ink/60">
+                <p className="mt-1 text-sm text-daet-ink/70">
                   📍 {pkg.location_name} · ⏱️ {pkg.duration_value}{" "}
                   {pkg.duration_type === "hours" ? "hours" : "days"}
                 </p>
@@ -193,15 +216,37 @@ export default async function BookingDetailPage({ params, searchParams }: PagePr
           </section>
         )}
 
+        {booking.status === "completed" ? (
+          <section id="review" className="mb-6 rounded-3xl border border-daet-ink/10 bg-white p-6 shadow-sm">
+            <h3 className="text-sm font-bold uppercase tracking-wide text-daet-ink/70">
+              {myReview ? "Your review" : "Rate your tour"}
+            </h3>
+            <div className="mt-4">
+              {myReview ? (
+                <>
+                  <ReviewList reviews={[myReview as Review]} operatorName={operator?.business_name ?? "the operator"} />
+                  {myReview.is_hidden ? (
+                    <Notice variant="warning" className="mt-3" title="Hidden by the Tourism Office">
+                      {myReview.hidden_reason || "This review is not shown publicly."}
+                    </Notice>
+                  ) : null}
+                </>
+              ) : (
+                <ReviewForm bookingId={booking.id} />
+              )}
+            </div>
+          </section>
+        ) : null}
+
         {/* Booking Details */}
         <section className="mb-6 rounded-3xl border border-daet-ink/10 bg-white p-6 shadow-sm">
-          <h3 className="text-sm font-bold uppercase tracking-wide text-daet-ink/60">
+          <h3 className="text-sm font-bold uppercase tracking-wide text-daet-ink/70">
             Booking Details
           </h3>
 
           <div className="mt-4 space-y-3">
             <div className="flex justify-between border-b border-daet-ink/10 pb-3">
-              <span className="text-sm text-daet-ink/60">Tour Date</span>
+              <span className="text-sm text-daet-ink/70">Tour Date</span>
               <span className="font-bold text-daet-ink">
                 {new Date(booking.tour_date).toLocaleDateString("en-US", {
                   weekday: "long",
@@ -213,13 +258,13 @@ export default async function BookingDetailPage({ params, searchParams }: PagePr
             </div>
 
             <div className="flex justify-between border-b border-daet-ink/10 pb-3">
-              <span className="text-sm text-daet-ink/60">Number of Participants</span>
+              <span className="text-sm text-daet-ink/70">Number of Participants</span>
               <span className="font-bold text-daet-ink">{booking.number_of_pax} pax</span>
             </div>
 
             {booking.price_per_pax && (
               <div className="flex justify-between border-b border-daet-ink/10 pb-3">
-                <span className="text-sm text-daet-ink/60">Price per Person</span>
+                <span className="text-sm text-daet-ink/70">Price per Person</span>
                 <span className="font-bold text-daet-ink">
                   ₱{booking.price_per_pax.toLocaleString()}
                 </span>
@@ -254,27 +299,27 @@ export default async function BookingDetailPage({ params, searchParams }: PagePr
 
         {/* Contact Information */}
         <section className="mb-6 rounded-3xl border border-daet-ink/10 bg-white p-6 shadow-sm">
-          <h3 className="text-sm font-bold uppercase tracking-wide text-daet-ink/60">
+          <h3 className="text-sm font-bold uppercase tracking-wide text-daet-ink/70">
             Contact Information
           </h3>
 
           <div className="mt-4 space-y-2 text-sm">
             <div>
-              <span className="text-daet-ink/60">Name:</span>{" "}
+              <span className="text-daet-ink/70">Name:</span>{" "}
               <span className="font-bold text-daet-ink">{booking.contact_name}</span>
             </div>
             <div>
-              <span className="text-daet-ink/60">Email:</span>{" "}
+              <span className="text-daet-ink/70">Email:</span>{" "}
               <span className="font-bold text-daet-ink">{booking.contact_email}</span>
             </div>
             <div>
-              <span className="text-daet-ink/60">Phone:</span>{" "}
+              <span className="text-daet-ink/70">Phone:</span>{" "}
               <span className="font-bold text-daet-ink">{booking.contact_phone}</span>
             </div>
 
             {booking.special_requests && (
               <div className="mt-4 rounded-xl bg-daet-sand/30 p-3">
-                <p className="text-xs font-bold text-daet-ink/60">Special Requests:</p>
+                <p className="text-xs font-bold text-daet-ink/70">Special Requests:</p>
                 <p className="mt-1 text-sm text-daet-ink">{booking.special_requests}</p>
               </div>
             )}

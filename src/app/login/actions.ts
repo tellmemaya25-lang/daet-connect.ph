@@ -2,6 +2,7 @@
 
 import { redirect } from "next/navigation";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { safeNextPath } from "@/lib/safe-redirect";
 
 interface ActionState {
   status: "idle" | "error" | "success";
@@ -34,8 +35,7 @@ export async function signInWithPassword(
       return { status: "error", message: "Invalid email or password." };
     }
 
-    const nextUrl = typeof next === "string" && next ? next : "/";
-    redirect(nextUrl);
+    redirect(safeNextPath(next));
   } catch (error) {
     if (error && typeof error === "object" && "digest" in error) {
       throw error;

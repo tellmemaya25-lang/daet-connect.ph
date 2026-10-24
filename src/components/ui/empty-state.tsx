@@ -22,7 +22,7 @@ export function EmptyState({
         </p>
       ) : null}
       <p className="mt-2 font-bold text-daet-ink">{title}</p>
-      {description ? <p className="mt-1 text-sm text-daet-ink/60">{description}</p> : null}
+      {description ? <p className="mt-1 text-sm text-daet-ink/70">{description}</p> : null}
       {action ? <div className="mt-4 flex justify-center">{action}</div> : null}
     </div>
   );

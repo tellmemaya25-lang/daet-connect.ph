@@ -62,11 +62,11 @@ export default async function GuidePendingPage() {
         </div>
         <div className="p-6 sm:p-10">
           <ol className="space-y-5">
-            <li className="flex gap-4"><span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-emerald-100 text-sm font-black text-emerald-800">✓</span><div><p className="font-bold">Application submitted</p><p className="mt-1 text-sm text-daet-ink/60">{new Date(guide.created_at).toLocaleDateString("en-PH", { year: "numeric", month: "long", day: "numeric", timeZone: "Asia/Manila" })}</p></div></li>
-            <li className="flex gap-4"><span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-amber-100 text-sm font-black text-amber-900">2</span><div><p className="font-bold">Tourism Office review</p><p className="mt-1 text-sm leading-6 text-daet-ink/60">Your public profile and ID document are reviewed separately and securely.</p></div></li>
-            <li className="flex gap-4"><span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-daet-sand text-sm font-black text-daet-ink/50">3</span><div><p className="font-bold text-daet-ink/60">Guide dashboard and badge QR unlocked</p><p className="mt-1 text-sm leading-6 text-daet-ink/50">No active badge QR or dashboard access is available before approval.</p></div></li>
+            <li className="flex gap-4"><span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-emerald-100 text-sm font-black text-emerald-800">✓</span><div><p className="font-bold">Application submitted</p><p className="mt-1 text-sm text-daet-ink/70">{new Date(guide.created_at).toLocaleDateString("en-PH", { year: "numeric", month: "long", day: "numeric", timeZone: "Asia/Manila" })}</p></div></li>
+            <li className="flex gap-4"><span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-amber-100 text-sm font-black text-amber-900">2</span><div><p className="font-bold">Tourism Office review</p><p className="mt-1 text-sm leading-6 text-daet-ink/70">Your public profile and ID document are reviewed separately and securely.</p></div></li>
+            <li className="flex gap-4"><span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-daet-sand text-sm font-black text-daet-ink/70">3</span><div><p className="font-bold text-daet-ink/70">Guide dashboard and badge QR unlocked</p><p className="mt-1 text-sm leading-6 text-daet-ink/70">No active badge QR or dashboard access is available before approval.</p></div></li>
           </ol>
-          <div className="mt-8 border-t border-daet-ink/10 pt-5 text-sm text-daet-ink/60">You can close this page and check back later.</div>
+          <div className="mt-8 border-t border-daet-ink/10 pt-5 text-sm text-daet-ink/70">You can close this page and check back later.</div>
         </div>
       </section>
     </PageFrame>

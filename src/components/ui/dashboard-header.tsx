@@ -31,8 +31,8 @@ export function DashboardHeader({
     <>
       {/* Navigation Bar */}
       {role && (
-        <div className="mb-6 flex items-center justify-between rounded-2xl border border-daet-ink/10 bg-white px-6 py-4">
-          <div className="flex items-center gap-4">
+        <div className="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-daet-ink/10 bg-white px-4 py-3 sm:px-6 sm:py-4">
+          <div className="flex min-w-0 flex-wrap items-center gap-x-4 gap-y-2">
             {dashLink && (
               <Link
                 href={dashLink.home}
@@ -46,17 +46,31 @@ export function DashboardHeader({
                 <span className="text-daet-ink/20">|</span>
                 <Link
                   href="/tours/operator/packages"
-                  className="text-sm font-bold text-daet-ink/60 transition hover:text-daet-ink"
+                  className="text-sm font-bold text-daet-ink/70 transition hover:text-daet-ink"
                 >
                   Packages
                 </Link>
                 <Link
                   href="/tours/operator/bookings"
-                  className="text-sm font-bold text-daet-ink/60 transition hover:text-daet-ink"
+                  className="text-sm font-bold text-daet-ink/70 transition hover:text-daet-ink"
                 >
                   Bookings
                 </Link>
+                <Link
+                  href="/tours/operator/reviews"
+                  className="text-sm font-bold text-daet-ink/70 transition hover:text-daet-ink"
+                >
+                  Reviews
+                </Link>
               </>
+            )}
+            {(role === 'operator' || role === 'guide') && (
+              <Link
+                href="/tours/messages"
+                className="text-sm font-bold text-daet-ink/70 transition hover:text-daet-ink"
+              >
+                Messages
+              </Link>
             )}
           </div>
           <LogoutButton />
@@ -70,7 +84,7 @@ export function DashboardHeader({
             <div className="mb-4">
               <Link
                 href={backHref}
-                className="inline-flex items-center text-sm font-medium text-daet-ink/60 transition hover:text-daet-ink"
+                className="inline-flex items-center text-sm font-medium text-daet-ink/70 transition hover:text-daet-ink"
               >
                 <svg className="mr-1 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -84,7 +98,7 @@ export function DashboardHeader({
             <div className="flex-1">
               {title && <h1 className="text-3xl font-bold text-daet-ink">{title}</h1>}
               {description && (
-                <p className="mt-2 text-daet-ink/60">{description}</p>
+                <p className="mt-2 text-daet-ink/70">{description}</p>
               )}
             </div>
             {children && (

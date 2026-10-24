@@ -17,7 +17,7 @@ export function OnlinePayButton({ bookingId, amountLabel }: { bookingId: string;
       <Button type="submit" size="lg" fullWidth loading={pending} loadingText="Opening secure checkout…">
         Pay {amountLabel} online
       </Button>
-      <p className="text-center text-xs text-daet-ink/55">GCash, Maya or card via PayMongo. You&apos;ll return here after paying.</p>
+      <p className="text-center text-xs text-daet-ink/70">GCash, Maya or card via PayMongo. You&apos;ll return here after paying.</p>
     </form>
   );
 }

@@ -13,7 +13,7 @@ I inspected the production Supabase project (`CONNECT-DAET.ph`, Postgres 17) rea
 | Table (live) | Rows | Used by code? | Feature that should own it |
 |---|---|---|---|
 | `tours_package_availability` (date, capacity_total, capacity_booked) | 0 | ❌ | F2 Availability |
-| `tours_guide_availability` (guide_id, available_date, is_available) | 0 | ❌ | F9 Guide dashboard |
+| `tours_guide_availability` (guide_id, available_date, is_available) | 0 | ✅ F9 | F9 Guide dashboard |
 | `tours_booking_participants` (full_name, age, special_requirements) | 0 | ❌ | F2 Booking / F3 Roster |
 | `tours_cancellations` (enum `cancellation_status`) | 0 | ❌ | F2 Cancellations |
 | `tours_payments` (method, status, reference, receipt) | 2 | ✅ manual recording | F1 **canonical ledger** |
@@ -23,7 +23,7 @@ I inspected the production Supabase project (`CONNECT-DAET.ph`, Postgres 17) rea
 | `tours_conversations`, `tours_messages` | 0 | ❌ | F4 Messaging |
 | `push_subscriptions` (endpoint, p256dh, auth) | 0 | ❌ | F5 Web Push |
 | `tours_itineraries`, `tours_itinerary_items` | 0 | ❌ | F7 Itinerary planner |
-| `tours_reviews` (rating 1–5, photos) | 0 | ❌ | F8 Reviews |
+| `tours_reviews` (rating 1–5, photos) | 0 | ✅ F8 | F8 Reviews |
 | `tours_package_guides` | 0 | ❌ | F2/F9 Guide pool per package |
 | `tours_guides.qr_code_value` | — | ❌ | F3 Signed QR |
 
@@ -208,6 +208,17 @@ _SOP 1 items 5–6 (x̄ 3.51, 3.57); Ch. 4.3 §2._
 
 **Acceptance:** a tourist's phone ticket is scanned by the assigned guide on tour day, the roster updates, and the badge verification page works from any phone camera.
 
+**Status (2026-10-23): built, migration `20261027_f3_qr_checkins.sql` applied. Needs `QR_SIGNING_SECRET` in Vercel.**
+- Signed HMAC tokens (`qr-token.ts`) are encoded as links to `/tours/verify/<token>`, so any phone camera works. The verify page shows the guide's name and photo only while they are approved, and logs signed-in scans.
+- Tourist ticket page; guide check-in page (BarcodeDetector camera, phone-camera or paste fallback, today's groups); guest list with whole-group and per-guest manual check-in. `tours_check_in` enforces the assigned approved guide (or the operator/admin), a confirmed booking and today's date, and records each guest once.
+- Verified with rolled-back scenarios against the live DB (double scan returns "already", wrong day, wrong guide, direct insert blocked, RLS visibility, anon lookup not logged, signed-in lookup logged), 20 new unit tests (tamper property test included), the build and mobile screenshots.
+- Deviations from the plan:
+  - No `in_progress` booking status. Check-in is recorded in `tours_checkins` and the booking stays `confirmed` until completed.
+  - Badge tokens are derived from the approval date, not stored in `qr_code_value`.
+  - No operator badges.
+  - No `@zxing/browser` fallback: iOS uses the phone camera app, which opens the same check-in page.
+- Follow-ups: let a guide undo an accidental check-in; operator view of check-ins on the bookings page; badge revocation list if the secret ever leaks (rotate `QR_SIGNING_SECRET`).
+
 ---
 
 ## F4 — Real-time messaging (Week 6)
@@ -219,6 +230,21 @@ _SOP 1 items 3–4; Ch. 4.3 §3 "real-time communication"._
 - `tours/messages/page.tsx` (inbox) and `tours/messages/[id]/page.tsx` (thread) use Supabase Realtime `postgres_changes` on `tours_messages` filtered by `conversation_id`; set `is_read` on view.
 - Text only plus an optional image attachment (private bucket, signed URLs). Limit 1,000 characters; server-side rate limit of about 20 messages/min.
 - **Acceptance:** tourist and operator chat about a booking in real time on two phones, and no one else can read the thread (RLS test with a third account).
+
+**Status (2026-10-23): built, migration `20261028_f4_messaging.sql` applied.**
+- One conversation per booking, opened from the booking page ("Message the operator"), the operator's bookings ("Message tourist") or the guide's guest list ("Message group"). Inbox at `/tours/messages` with unread counts; thread at `/tours/messages/[id]` with Realtime `postgres_changes` and photo attachments (private bucket, 1-hour signed links). The thread is read-only once a booking is cancelled or declined.
+- Membership is derived from the booking each time (its tourist, the package's operator, the assigned guide), so reassigning a guide moves chat access with it. Admins can read but not post. All writes go through RLS plus triggers:
+  - `sender_id` must be the caller;
+  - 1–1000 characters or a photo;
+  - 20 messages a minute per sender;
+  - attachment paths must sit inside the conversation's folder.
+
+  Conversations are created only by `tours_open_booking_conversation`. `anon` lost all access (it previously had full grants), and the old policy that let any user create a conversation with any operator is disabled.
+- Verified with rolled-back scenarios against the live DB (same conversation reused, length/empty/bad path/spoofed sender/edit rejected, unread counts and mark-read, outsider can't read/post/open/create, rate limit, anon denied), 9 new unit tests, the build and mobile screenshots. Live Realtime delivery still needs checking on two phones against the real project.
+- Deviations from the plan:
+  - Read state is per person (`tours_conversation_reads`) instead of `is_read`, because a thread has up to three people.
+  - Conversations open on first use, not on confirmation, so tourists can ask before the operator confirms.
+- Follow-ups: push and email notifications for new messages (F5); "load older messages" beyond the latest 100.
 
 ---
 
@@ -233,6 +259,21 @@ _Ch. 4.3 §3; the context doc names FCM or WebSockets, and this uses Supabase Re
 - **Triggers:** booking created/confirmed/cancelled, payment received/proof rejected, guide assigned, check-in done, new message, accreditation approved/rejected, package approved/rejected, review received.
 - **Env:** `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `VAPID_SUBJECT`.
 - **Acceptance:** an operator receives a push on their phone within seconds of a tourist's payment confirming.
+
+**Status (2026-10-23): built, migration `20261029_f5_notifications.sql` applied. Push needs VAPID keys, `NOTIFICATIONS_PUSH_SECRET` and two Vault secrets (README → Notifications).**
+- Database triggers on bookings, payments, receipts, cancellations, check-ins, messages, accreditation, package review and reviews write `tours_notifications` rows. They cover every path, including the PayMongo webhook and SECURITY DEFINER functions. Nobody is notified about their own action, and message notifications are merged per thread for 10 minutes.
+- Header bell with live unread count (Realtime), dropdown and mark-all-read; `/tours/notifications` page with the per-device push switch; opt-in prompt on the booking page.
+- Push path: insert → `pg_net` POST (async, after commit) → `/api/notifications/push` (bearer secret, timing-safe) → `web-push` to each subscription. Expired subscriptions (404/410) are removed, and `pushed_at` prevents double sends. `public/sw.js` shows the notification and opens its in-app link.
+- RLS: users read and mark only their own notifications; nobody can insert or edit text; `tours_notify` isn't client-callable; `push_subscriptions` is no longer reachable by `anon`.
+- Verified with a rolled-back lifecycle against the live DB:
+  - every event produced the expected notification for the expected person;
+  - message dedupe worked;
+  - visibility, column and insert lockdown held.
+- Also: 9 new unit tests, a `web-push` encryption check with generated VAPID keys, the build and mobile/desktop screenshots. Not yet verified: a real push to a phone (needs keys and a public URL).
+- Deviations from the plan:
+  - Rows are written by DB triggers instead of a `notify()` call in app code, so no path can forget to notify.
+  - `NEXT_PUBLIC_VAPID_PUBLIC_KEY` replaces `VAPID_PUBLIC_KEY`, because the browser needs it.
+- Follow-ups: email fallback for important events; per-type notification preferences; pruning notifications older than 90 days.
 
 ---
 
@@ -259,6 +300,19 @@ New `tours_route_cache` (origin_id, dest_id, mode, distance_m, duration_s, polyl
 **Env:** `GOOGLE_MAPS_SERVER_KEY` (Routes API only), `NEXT_PUBLIC_GOOGLE_MAPS_BROWSER_KEY` (Maps JS only, referrer-restricted). Set a monthly budget alert.
 
 **Acceptance:** the attraction directory is live with real data, and package pages show the route with total distance and travel time.
+
+**Status (2026-10-23): built, migration `20261030_f6_attractions.sql` applied. Data collection still open.**
+- Public directory and detail pages: category and open-now filters, Manila-time hours, map, directions link, and the source shown on each place.
+- Admin CRUD with photos, plus a CSV import (all rows validated first, existing slugs skipped, swapped or far-away pins caught).
+- Package pages show the route map, per-leg and total distance and time, and an "Open in Google Maps" link.
+- Routes API client: `computeRoutes` per leg, 30-day cache in `tours_route_cache` (service role only), stale cache used if the API fails, then Haversine × 1.4 at 30 km/h. Maps JS when a browser key is set; otherwise an SVG sketch map.
+- **Data:** I couldn't reach the Tourism Office data or open map services from the build environment, so the seed has only **8 places with citable public sources** (Wikipedia, PhilAtlas, travel guides). All pins are unconfirmed (`location_verified = false`), two have no pin yet, and unknown hours and fees are left empty. **The team must import the MTO list (30+ places) via `/tours/admin/attractions` to meet the acceptance criterion.**
+- Verified: RLS against the live DB (anon reads only active rows, can't write or read the cache; tourists can't edit; admins can; half-entered coordinates rejected). 38 new unit tests: opening hours (overnight windows, Manila time, text round-trip property), Haversine (symmetry property), polyline decoding, leg caching and fallback, attraction and CSV validation. Build and screenshots also checked.
+- Deviations from the plan:
+  - Coordinates are optional, with `location_verified` and a required `source`.
+  - Added a `park` category.
+  - Route cache is keyed by coordinates (works for package stops and attractions) instead of attraction ids.
+- Follow-ups: replace the seed with MTO data; enable the Maps keys with a budget alert; link package stops to attractions (F7 planner).
 
 ---
 
@@ -290,6 +344,26 @@ Follow the context doc's feasibility guidance: **no custom ML training.**
 
 **Acceptance:** a tourist generates a valid 2-day plan in under 5 seconds, sees it on the map, saves it, and books a suggested package.
 
+**Status (2026-10-23): built, migration `20261031_f7_itineraries.sql` applied. AI polish is optional (`ITINERARY_LLM=on` + `ANTHROPIC_API_KEY`).**
+- 7a engine: filter, score, greedy schedule, and `validate.ts`. It respects opening hours for the whole visit, travel time, a lunch break between 11:30 and 12:30 (day trips cover it), pace, budget, and no repeats. A 2-day plan is generated in about 0.2 s in the browser test, and 300 attractions over 5 days take under 2 s in the unit test.
+- 7b: Claude (`claude-opus-5-5`) via the Anthropic SDK with structured output (zod), low effort, 15 s timeout, in-memory cache by preference hash. The model only returns an order of known ids plus tips; the engine re-times it and `validatePlan` must pass, otherwise the draft is kept.
+- UI: `/tours/plan` (details → editable timeline with ↑/↓, swap, remove, add, live validation, map per day → save → matching packages), `/tours/my-itineraries` (+ detail with share link and delete), `/tours/itineraries/shared/[token]`.
+- DB:
+  - items gain `attraction_id`, `item_kind`, `end_time`, `travel_minutes`, `cost` and `tip`;
+  - itineraries gain `preferences`, `summary`, `plan_source` and `share_token`;
+  - `anon` lost its full grants, and the shared view goes through `tours_shared_itinerary` (no owner data).
+- Verified:
+  - Property tests (fast-check): 300 random datasets and preference sets always produce plans that pass `validatePlan`; edits that break travel time are always caught; 500 random or garbage "LLM outputs" never yield an invalid plan.
+  - 34 new tests in total; RLS checked against the live DB (spoofed owner blocked, other users can't read or edit, anon blocked, shared view hides the owner).
+  - Build and mobile/desktop screenshots of generate and edit.
+- Not verified: a live Claude call (no API key in this environment); saving through the UI against the real project.
+- Deviations from the plan:
+  - Travel uses the Haversine estimate, not the Routes API matrix, to stay fast and free. Package pages still use Routes when configured.
+  - There is no accessibility filter yet (no data).
+  - Lunch is a generic break unless the dataset lists food places.
+  - The budget covers entrance fees only.
+- Follow-ups: use cached Routes legs in the planner; accessibility and popularity data; add food places to the dataset.
+
 ---
 
 ## F8 — Reviews & ratings (Week 7)
@@ -301,6 +375,29 @@ _ISO 25010 Appropriateness Recognizability; SOP 1 trust._
 - Show the average rating and review count on package cards, package detail, operator and guide profiles. Use a SQL view `tours_package_ratings` for averages.
 - Operators can post one public reply (new column `operator_reply`, `replied_at`); admins can hide abusive reviews (`is_hidden`).
 - **Acceptance:** only completed bookings can be reviewed, once each, and ratings appear on browse cards.
+
+**Status: done** (migration `20261101_f8_reviews.sql`, applied live).
+- Database:
+  - Reviews are written only through `tours_submit_review`. It checks that the caller is the booking's tourist and the booking is `completed`; `UNIQUE (booking_id)` allows one review each. Direct inserts are revoked.
+  - New columns `operator_reply`, `replied_at`, `is_hidden`, `hidden_reason`, `updated_at`, plus a foreign key to the booking.
+  - `tours_reply_to_review` (the package's operator only; notifies the tourist) and `tours_set_review_hidden` (admins only, with a reason).
+  - Hidden reviews are visible only to their author, the operator and admins.
+  - The views `tours_package_ratings`, `tours_operator_ratings` and `tours_guide_ratings` leave hidden reviews out.
+- UI:
+  - The booking page has a "Rate your tour" form once the booking is completed. The F5 "How was your tour?" notification links there.
+  - Browse cards show the star rating.
+  - The package page shows the average, a breakdown and the latest reviews with operator replies, plus the operator's overall rating.
+  - Operators reply at `/tours/operator/reviews` (header link "Reviews").
+  - Admins moderate at `/tours/admin/reviews`, filtering by all, 1–2 stars or hidden.
+- Verified:
+  - Live dry-run (rolled back):
+    - blocked: a review on a pending booking, a review by another user, a second review, a direct insert, a reply by the tourist, hiding by the operator;
+    - works: the operator's reply (and its notification), hiding by an admin;
+    - after hiding, anon sees neither the review nor the rating.
+  - Unit tests, build, and phone/desktop screenshots of every page.
+- Deviations from the plan:
+  - There are no public operator or guide profile pages yet. The operator's rating appears on the package page. `tours_guide_ratings` is ready for the F9 dashboards and profiles.
+  - Review photos are not supported yet.
 
 ---
 
@@ -318,6 +415,42 @@ _Ch. 4.3 §3 RBAC matrix; ISO 25010 Functional Completeness._
 
 **Acceptance:** each of the 4 evaluator personas can do their whole job from their dashboard without typing URLs.
 
+**Status: done** (migration `20261102_f9_dashboards.sql`, applied live).
+- **Shared:**
+  - `/dashboard` sends each role to its own home, including pending or rejected accreditation states.
+  - Signed-in users get a five-tab bar at the bottom on phones, plus a "My dashboard" link in the header.
+  - The header nav now scrolls instead of overflowing at tablet widths.
+- **Tourist `/tours/me`:**
+  - upcoming tours with booking and payment status, a ticket QR button and a "Pay ₱…" button that jumps to the payment panel;
+  - completed tours still waiting for a review;
+  - unread messages, saved trip plans and the push opt-in.
+- **Operator dashboard:**
+  - bookings waiting for confirmation;
+  - money received this month, linking to the revenue report;
+  - occupancy (seats sold out of seats offered on open dates this month);
+  - rating and reviews waiting for a reply;
+  - a booking calendar (pax per day; tap a day for its bookings), today's tours, revenue by package with CSV, and quick links.
+  - The payments ledger is now "Revenue & payments", with month, method and package breakdowns and CSV.
+- **Guide dashboard:**
+  - today's tours with roster and scanner shortcuts, next tours, rating and badge;
+  - an availability calendar: tap a day to cycle available → not available → clear.
+  - Operators see this availability in the guide picker: available guides are listed first, and there's a warning when picking a guide who marked the date unavailable.
+- **Admin `/tours/admin/analytics`:** filtered by 7/30/90-day or 12-month presets, or custom dates.
+  - KPI tiles: check-ins, bookings and pax, revenue, cancellation rate.
+  - An arrivals-per-day chart with hover and a table view.
+  - Revenue and bookings per operator; top packages; top attractions in saved trip plans; rating distribution.
+  - Accreditation queue ageing (under 3 days, 3–7 days, over 7 days, the last flagged as overdue).
+  - All figures come from one admin-only database function, `tours_admin_analytics`.
+- **Security:** guide availability was readable by anyone, including logged-out visitors. Now only operators and admins can read it; guides still manage their own rows.
+- **Verified:**
+  - Live dry-run, rolled back: the admin gets every section; a bad date range is rejected; operators and logged-out visitors can't run analytics; operators can read guide availability, guides only their own, logged-out visitors nothing.
+  - Unit tests for tabs, redirects, calendar load, occupancy (property test), ranges and analytics parsing.
+  - Build passes. Screenshots of all four dashboards at 375, 640, 768, 1024 and 1280px, with no horizontal overflow.
+- **Deviations from the plan:**
+  - Charts are hand-built SVG/CSS (one colour, thin bars, labelled values) instead of Recharts, to avoid a dependency.
+  - Rewards points wait for F10.
+  - Arrivals count check-ins, so they depend on guides scanning tickets.
+
 ---
 
 ## F10 — Rewards Engine & CONNECT-Daet integration (Week 9)
@@ -330,6 +463,29 @@ _Team guide §5; Ch. 4.2 §3 DB synchronization._
 - Document the shared-table contract (`profiles`, `rewards_ledger`, `impact_logs`) for Chapter 4.2 §3.
 - **Acceptance:** points appear in the tourist dashboard and are never awarded twice for the same booking.
 
+**Status: done** (migration `20261103_f10_rewards.sql`, applied live; contract in `docs/SHARED_TABLES.md`).
+- **The table:** `rewards_ledger` did not exist, so Team 8 created it to the contract above, with `UNIQUE (source, ref_id)`.
+  - Users read only their own points (admins read all); nobody writes from the browser.
+  - Writes go through the idempotent `rewards_add_points`, callable only by the service role and triggers.
+  - `src/lib/rewards.ts` exposes `addPoints(adminClient, …)` for other subsystems, plus `TOURS_REWARD_RULES` and label helpers.
+- **Awards:**
+  - Database triggers commit the award with the event, so the PayMongo webhook, manual payments, guide scans and operator actions are all covered: paid +50, checked in +30 (once per booking), completed +20, review +10, trip plan +5 (max 3 a day).
+  - A refund after full payment deducts the 50 again, once.
+  - Each award sends a "points earned" notification.
+  - Existing paid and completed bookings were backfilled without notifications.
+- **UI:** the tourist dashboard has a "Your points" card with the balance, the last five entries and how to earn more. The notification links to it.
+- **`impact_logs`:** the parent platform hasn't created it, so there's no push yet. The proposed table and the Team 8 metrics are in `docs/SHARED_TABLES.md`, and the numbers are already available from `tours_admin_analytics`.
+- **Security fix:** while documenting `profiles`, I found any signed-in user could set their own `role` to `admin`. The RLS update policy only checked the row owner. Browser updates are now limited to `full_name` and `avatar_url`; role changes stay with the service role.
+- **Verified (live dry-run, rolled back):**
+  - Paying, then partial, then paid again awards once.
+  - Two participant scans award once; completion and review once each.
+  - Two refunds reverse once.
+  - Four trip plans in a day award three times; the balance adds up.
+  - Direct inserts and the RPC are blocked for users.
+  - Other non-admins and anon see nothing.
+  - Self-promotion to admin is now blocked, while name edits and service-role role changes still work.
+- **Deviations:** points for review and trip-plan awards are not removed if an admin later hides the review or the tourist deletes the plan.
+
 ---
 
 ## F11 — Events & merchandise follow-ups (Week 6, small)
@@ -337,6 +493,31 @@ _Team guide §5; Ch. 4.2 §3 DB synchronization._
 - Apply the migration (D5) and seed the real 2026 Daet events calendar (Pinyasan Festival, Bagasbas surfing events, Undas, Christmas events) with the Tourism Office.
 - Optional: let approved operators submit merchandise for admin approval (`submitted_by_operator_id`, status `pending|approved`).
 - Link events to attractions (F6) and show "Tours happening during this event" on the event page.
+
+**Status: done** (migration `20261104_f11_events_merch.sql`, applied live).
+- **D5:** the events and merchandise tables were already live.
+- **Calendar seed:** only events with a sourced 2026 date were added, each with a `source` note that only admins see:
+  - Pinyasan Festival (15–24 June, Tourism Promotions Board calendar);
+  - Undas (1–2 November, national holidays);
+  - Simbang Gabi (16–24 December).
+- **For the Tourism Office to add:**
+  - **Bagasbas surf competition:** no 2026 date has been published. The 2025 regionals ran 2–4 May; the 2024 event was cancelled.
+  - **Daet's Christmas lighting and other Christmas events:** no source found.
+  - The admin event form now has a "Source of the date" field.
+- **Events ↔ attractions:**
+  - Events can link to an attraction (`attraction_id`), chosen in the admin form.
+  - The event page shows the attraction card and **"Tours happening during this event"**: published packages with seats left on an event day (from today on). Packages with a stop within 5 km of the attraction come first, with the distance shown.
+- **Operator merchandise:**
+  - Approved operators submit products at `/tours/operator/merch`, with photos uploaded to their own folder only.
+  - Every save, including edits to an approved product, goes back to `pending`.
+  - Operators can't feature or approve, and can't set review notes.
+  - The public sees only approved, active products.
+  - Admins see a "Waiting for approval" queue on `/tours/admin/merch` and approve, or reject with a note.
+  - Notifications go to the admins on each submission and to the operator on each decision.
+- **Verified:**
+  - Live dry-run, rolled back: self-approval and self-featuring blocked; notes stripped; operator approval blocked while edits work; anon can't see pending items; tourists can't submit; rejection notes are kept when the operator resubmits; notifications fire.
+  - Unit tests for the event form fields, the review parser and the event-tours ranking.
+  - Build passes. Screenshots of the event page, operator merch list and form, and the admin queue at 375 and 1280px.
 
 ---
 
@@ -351,6 +532,31 @@ _Team guide §5; Ch. 4.2 §3 DB synchronization._
 | Performance | Lighthouse mobile ≥ 85 on browse, package and plan pages; image sizes; route cache hit rate |
 | Security | Advisor clean; secret scan; no service-role key in the client bundle; signed QR and webhook verified; rate limits on auth, messages and bookings |
 | Evaluation kit | Printable walkthrough script (10–15 min per role) and test credentials sheet for SOP 4 sessions |
+
+**Status: done**, except what needs your accounts or keys (marked ⚠).
+- **E2E (Playwright, 375px):** `npm run test:e2e:tours`, 43 tests, also a CI job. A committed mock Supabase (`e2e/mock-supabase.cjs`) serves every role.
+  - Covered: public pages, every role's pages, the tab bar, `/dashboard` routing, the walkthrough screens (plan → book → pay link → review → roster → analytics) and guide availability.
+  - ⚠ PayMongo checkout and the webhook need sandbox keys, so they're a manual step in `docs/EVALUATION_KIT.md`.
+- **Integration:** `supabase/tests/integration.sql`, 31 checks across anon, tourist, operator, guide and admin (access rules, overbooking, booking rate limit, webhook replay). **31/31 pass** on the live project; the script rolls back.
+  - A true two-session booking race isn't automated; the availability-row lock serializes it.
+- **Seed / demo mode:** `npm run seed:demo` (`scripts/seed-demo.mjs`, tested with `npm run test:scripts`).
+  - Per group it creates four role accounts plus an approved operator and guide, a published package and weekend availability.
+  - The password comes from `DEMO_PASSWORD`, never the repo.
+  - The login page shows "Test environment: no real money" unless PayMongo uses a live key.
+  - ⚠ Run it on a staging project.
+- **Accessibility:** axe (WCAG 2.1 AA, serious/critical) runs on every E2E page visit; 38 pages pass.
+  - Fixes: muted text contrast raised to ≥ 4.5:1 across the app; labels on filters and pickers; logo and calendar names; no `aria-pressed` on links; missing h1s; heading order on browse; `lang="en"` is checked.
+- **Performance:** Lighthouse mobile on a production build against the mock.
+  - Performance: browse 99, package 99, plan 98, home 100 (target ≥ 85). LCP 1.8–2.3 s, TBT ≤ 60 ms, CLS 0.
+  - Accessibility: package, plan and home 100; browse 98 for heading order, fixed afterwards but not re-measured. SEO 100.
+  - Added a favicon (it was a 404).
+  - Real cover photos and network latency will lower these numbers; re-check on staging.
+- **Security:** see `docs/SECURITY_REVIEW.md`.
+  - Advisor fixes: 51 policies, 19 indexes, a function search_path.
+  - Booking rate limit, and an open-redirect fix on login.
+  - No secrets in the client bundle.
+  - ⚠ **Two critical findings need you:** the service-role key is in public git history (rotate it), and the test account passwords were published (change them, including the only admin).
+- **Evaluation kit:** `docs/EVALUATION_KIT.md` has a setup checklist, a blank credentials sheet and walkthroughs per role mapped to ISO 25010 items.
 
 ---
 

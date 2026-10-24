@@ -7,10 +7,17 @@ import { GUIDE_OWN_STATUS_SELECT, GUIDE_TABLE, GUIDE_USER_ID_COLUMN } from "@/li
 import { getAuthenticatedSession } from "@/lib/tours/server-auth";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { ButtonLink } from "@/components/ui/button";
+import { Card, CardHeader } from "@/components/ui/card";
+import { RatingBadge } from "@/components/tours/star-rating";
+import { formatDayHeading, monthKey, parseMonthParam, shiftMonth, toManilaDateKey } from "@/lib/tours/events-calendar";
+import { toSummary } from "@/lib/tours/reviews";
+import { AvailabilityCalendar } from "./availability-calendar";
 
 export const dynamic = "force-dynamic";
 
-export default async function GuideDashboardPage() {
+export default async function GuideDashboardPage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
+  const searchParamsValue = await searchParams;
   if (!isSupabaseConfigured()) return <PageFrame><Notice variant="warning" title="Supabase setup is needed">Configure Supabase before opening the guide dashboard.</Notice></PageFrame>;
 
   let session;
@@ -48,17 +55,119 @@ export default async function GuideDashboardPage() {
     return <PageFrame><Notice variant="error" title="Your guide profile name is unavailable">Contact the Tourism Office so your public profile can be checked.</Notice></PageFrame>;
   }
 
+  const today = toManilaDateKey(new Date());
+  const month = parseMonthParam(searchParamsValue.month);
+  const key = monthKey(month);
+  const nextKey = monthKey(shiftMonth(month, 1));
+  const [{ data: monthTours }, { data: availability }, { data: upcoming }, { data: ratingRow }] = await Promise.all([
+    supabase
+      .from("tours_bookings")
+      .select("tour_date")
+      .eq("assigned_guide_id", guide.id)
+      .in("status", ["confirmed", "completed"])
+      .gte("tour_date", `${key}-01`)
+      .lt("tour_date", `${nextKey}-01`),
+    supabase
+      .from("tours_guide_availability")
+      .select("available_date, is_available")
+      .eq("guide_id", guide.id)
+      .gte("available_date", `${key}-01`)
+      .lt("available_date", `${nextKey}-01`),
+    supabase
+      .from("tours_bookings")
+      .select("id, booking_reference, tour_date, number_of_pax, contact_name, tours_packages ( title, location_name )")
+      .eq("assigned_guide_id", guide.id)
+      .eq("status", "confirmed")
+      .gte("tour_date", today)
+      .order("tour_date")
+      .limit(5),
+    supabase.from("tours_guide_ratings").select("review_count, average_rating").eq("guide_id", guide.id).maybeSingle(),
+  ]);
+  const tourCounts: Record<string, number> = {};
+  for (const t of monthTours ?? []) tourCounts[t.tour_date] = (tourCounts[t.tour_date] ?? 0) + 1;
+  const availabilityMap = Object.fromEntries((availability ?? []).map((a) => [a.available_date, a.is_available]));
+  const upcomingTours = (upcoming ?? []) as unknown as Array<{ id: string; booking_reference: string; tour_date: string; number_of_pax: number; contact_name: string; tours_packages: { title: string; location_name: string } | { title: string; location_name: string }[] | null }>;
+  const todays = upcomingTours.filter((t) => t.tour_date === today);
+  const later = upcomingTours.filter((t) => t.tour_date !== today);
+  const pkgTitle = (t: (typeof upcomingTours)[number]) => (Array.isArray(t.tours_packages) ? t.tours_packages[0]?.title : t.tours_packages?.title) ?? "Tour";
+
   return (
     <PageFrame>
-      <section className="rounded-3xl border border-daet-ink/10 bg-white p-6 shadow-card sm:p-10">
-        <p className="text-xs font-black uppercase tracking-[0.18em] text-daet-leaf">Approved guide</p>
-        <h1 className="mt-2 text-3xl font-black text-daet-ink">Welcome, {profile.full_name}.</h1>
-        <p className="mt-3 max-w-2xl text-sm leading-6 text-daet-ink/65">Your accreditation is approved. Your public guide profile can now be verified using your badge QR.</p>
-        <div className="mt-7 flex flex-wrap gap-3">
-          <Link href="/tours/guide/my-qr" className="inline-flex min-h-12 items-center justify-center rounded-full bg-daet-forest px-6 text-sm font-bold text-white transition hover:bg-daet-ink">Open My QR Code</Link>
-          <Link href="/tours/guide/my-tours" className="inline-flex min-h-12 items-center justify-center rounded-full border border-daet-forest/20 px-6 text-sm font-bold text-daet-forest transition hover:bg-daet-forest/5">My Assigned Tours</Link>
+      <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <p className="text-xs font-black uppercase tracking-[0.18em] text-daet-leaf">Approved guide</p>
+          <h1 className="mt-1 text-3xl font-black tracking-tight text-daet-ink">Welcome, {profile.full_name}.</h1>
+          <div className="mt-2">
+            <RatingBadge summary={toSummary(ratingRow)} />
+          </div>
         </div>
-      </section>
+        <div className="flex flex-wrap gap-2">
+          <ButtonLink href="/tours/guide/check-in">📷 Scan tickets</ButtonLink>
+          <ButtonLink href="/tours/guide/my-qr" variant="secondary">
+            🪪 My QR badge
+          </ButtonLink>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,2fr)_minmax(0,3fr)]">
+        <div className="space-y-6">
+          <Card>
+            <CardHeader eyebrow={formatDayHeading(today)} title="Today" />
+            {todays.length === 0 ? (
+              <p className="text-sm text-daet-ink/70">No tours assigned to you today.</p>
+            ) : (
+              <ul className="space-y-3">
+                {todays.map((t) => (
+                  <li key={t.id} className="rounded-2xl bg-daet-sand/40 p-3">
+                    <p className="font-black text-daet-ink">{pkgTitle(t)}</p>
+                    <p className="text-xs text-daet-ink/70">
+                      {t.booking_reference} · {t.contact_name} · {t.number_of_pax} pax
+                    </p>
+                    <div className="mt-2 flex flex-wrap gap-2">
+                      <ButtonLink href={`/tours/guide/tours/${t.id}/roster`}>Open roster</ButtonLink>
+                      <ButtonLink href="/tours/guide/check-in" variant="secondary">
+                        Scan
+                      </ButtonLink>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </Card>
+
+          <Card>
+            <CardHeader title="Next tours" action={<Link href="/tours/guide/my-tours" className="text-sm font-bold text-daet-forest hover:underline">All</Link>} />
+            {later.length === 0 ? (
+              <p className="text-sm text-daet-ink/70">No upcoming assignments yet. Mark the days you can work so operators can assign you.</p>
+            ) : (
+              <ul className="divide-y divide-daet-ink/10">
+                {later.map((t) => (
+                  <li key={t.id} className="py-2">
+                    <p className="font-bold text-daet-ink">{pkgTitle(t)}</p>
+                    <p className="text-xs text-daet-ink/70">
+                      {formatDayHeading(t.tour_date)} · {t.number_of_pax} pax
+                    </p>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </Card>
+        </div>
+
+        <Card>
+          <CardHeader eyebrow="Schedule" title="Your availability" />
+          <p className="mb-3 text-sm text-daet-ink/65">Tap a day to mark it available, tap again for not available, and once more to clear it. Operators see this when assigning guides.</p>
+          <AvailabilityCalendar
+            key={key}
+            month={month}
+            today={today}
+            prevHref={`/tours/guide/dashboard?month=${monthKey(shiftMonth(month, -1))}`}
+            nextHref={`/tours/guide/dashboard?month=${nextKey}`}
+            initial={availabilityMap}
+            tours={tourCounts}
+          />
+        </Card>
+      </div>
     </PageFrame>
   );
 }

@@ -159,7 +159,7 @@ All admin actions are logged with:
 ### Test Admin Account
 ```
 Email: admin.test@gmail.com
-Password: test123
+Password: (shared privately; never commit passwords)
 ```
 
 ### Test Workflow

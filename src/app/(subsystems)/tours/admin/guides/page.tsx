@@ -95,7 +95,7 @@ export default async function AdminGuideQueuePage({ searchParams }: { searchPara
         <section className="rounded-3xl border border-daet-ink/10 bg-white px-6 py-14 text-center shadow-sm">
           <span className="mx-auto grid h-14 w-14 place-items-center rounded-2xl bg-emerald-50 text-2xl text-emerald-700" aria-hidden="true">✓</span>
           <h2 className="mt-4 text-xl font-black text-daet-ink">No pending guide applications</h2>
-          <p className="mt-2 text-sm text-daet-ink/60">You’re all caught up on this page.</p>
+          <p className="mt-2 text-sm text-daet-ink/70">You’re all caught up on this page.</p>
         </section>
       ) : (
         <div className="space-y-5">{guides.map((guide) => <GuideReviewCard key={guide.id} guide={guide} />)}</div>
