@@ -40,7 +40,7 @@ export function PackageCard({ package: pkg, featured = false }: { package: Packa
         </div>
         <div className={`flex flex-1 flex-col p-4 sm:p-5 ${featured ? "lg:justify-center lg:p-10" : ""}`}>
           <p className="text-sm font-bold text-blue-700">
-            {pkg.location_name} · {pkg.duration_value} {pkg.duration_type}
+            {pkg.location_name} · {pkg.duration_value} {pkg.duration_value === 1 ? pkg.duration_type.replace(/s$/, "") : pkg.duration_type}
           </p>
           <h3 className={`mt-2 line-clamp-2 font-display font-semibold text-daet-ink ${featured ? "text-3xl leading-9 sm:text-4xl sm:leading-10" : "text-2xl leading-8"}`}>
             {pkg.title}
@@ -53,6 +53,13 @@ export function PackageCard({ package: pkg, featured = false }: { package: Packa
             ) : (
               "Ask the operator for rates"
             )}
+          </p>
+          <p className="mt-3 flex items-center gap-1.5 text-sm font-bold text-green-800">
+            <svg viewBox="0 0 20 20" aria-hidden="true" className="h-4 w-4 shrink-0 fill-green-500">
+              <path d="M10 1.5l2.2 1.4 2.6-.1 1.1 2.4 2.2 1.4-.6 2.5.6 2.5-2.2 1.4-1.1 2.4-2.6-.1L10 18.5l-2.2-1.4-2.6.1-1.1-2.4L1.9 13.4l.6-2.5-.6-2.5 2.2-1.4 1.1-2.4 2.6.1L10 1.5z" />
+              <path d="M6.8 10.2l2.2 2.2 4.2-4.4" fill="none" stroke="#0f172a" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+            Verified by the Tourism Office
           </p>
         </div>
       </Link>
