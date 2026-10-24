@@ -52,7 +52,7 @@ export default async function AttractionPage({ params }: PageProps) {
           <Badge tone={status.state === "open" ? "success" : "neutral"}>{status.label}</Badge>
         </div>
         <h1 className="mt-2 text-4xl font-black text-daet-ink">{attraction.name}</h1>
-        <p className="mt-1 text-sm font-semibold text-daet-ink/60">
+        <p className="mt-1 text-sm font-semibold text-daet-ink/70">
           {attraction.address ?? attraction.municipality}
           {attraction.address && !attraction.address.includes(attraction.municipality) ? ` · ${attraction.municipality}` : ""}
         </p>
@@ -81,8 +81,8 @@ export default async function AttractionPage({ params }: PageProps) {
           ) : (
             <p className="mt-2 text-sm text-daet-ink/65">Hours are not listed yet.</p>
           )}
-          {attraction.hours_note ? <p className="mt-2 text-xs text-daet-ink/55">{attraction.hours_note}</p> : null}
-          <p className="mt-1 text-xs text-daet-ink/55">Times are Philippine time.</p>
+          {attraction.hours_note ? <p className="mt-2 text-xs text-daet-ink/70">{attraction.hours_note}</p> : null}
+          <p className="mt-1 text-xs text-daet-ink/70">Times are Philippine time.</p>
         </section>
 
         <section className="mt-6">
@@ -91,7 +91,7 @@ export default async function AttractionPage({ params }: PageProps) {
             <>
               <RouteMap points={[{ ...pin, label: attraction.name }]} title={`Map showing ${attraction.name}`} />
               {!attraction.location_verified ? (
-                <p className="mt-2 text-xs text-daet-ink/55">Approximate pin from public sources, not yet confirmed by the Tourism Office.</p>
+                <p className="mt-2 text-xs text-daet-ink/70">Approximate pin from public sources, not yet confirmed by the Tourism Office.</p>
               ) : null}
               {directions ? (
                 <a href={directions} target="_blank" rel="noopener noreferrer" className="mt-3 inline-flex min-h-11 items-center justify-center rounded-full bg-daet-forest px-6 text-sm font-bold text-white hover:bg-daet-ink">
@@ -104,7 +104,7 @@ export default async function AttractionPage({ params }: PageProps) {
           )}
         </section>
 
-        <p className="mt-8 border-t border-daet-ink/10 pt-4 text-xs leading-5 text-daet-ink/55">
+        <p className="mt-8 border-t border-daet-ink/10 pt-4 text-xs leading-5 text-daet-ink/70">
           <span className="font-bold">Source:</span> {attraction.source}
         </p>
       </div>
@@ -115,7 +115,7 @@ export default async function AttractionPage({ params }: PageProps) {
 function Fact({ label, value }: { label: string; value: string }) {
   return (
     <div className="rounded-2xl bg-daet-sand/50 p-4">
-      <dt className="text-xs font-bold uppercase tracking-wide text-daet-ink/55">{label}</dt>
+      <dt className="text-xs font-bold uppercase tracking-wide text-daet-ink/70">{label}</dt>
       <dd className="mt-1 font-black text-daet-ink">{value}</dd>
     </div>
   );

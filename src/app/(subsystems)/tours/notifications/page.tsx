@@ -49,7 +49,7 @@ export default async function NotificationsPage() {
         {error ? (
           <Notice variant="error" className="mt-6">Notifications could not be loaded. Refresh to try again.</Notice>
         ) : rows.length === 0 ? (
-          <p className="mt-6 rounded-3xl border border-daet-ink/10 bg-white p-8 text-center text-sm text-daet-ink/60">
+          <p className="mt-6 rounded-3xl border border-daet-ink/10 bg-white p-8 text-center text-sm text-daet-ink/70">
             Nothing yet. Updates about bookings, payments and messages appear here.
           </p>
         ) : (
@@ -64,7 +64,7 @@ export default async function NotificationsPage() {
                   <span className="min-w-0 flex-1">
                     <span className={`block text-daet-ink ${row.read_at ? "font-semibold" : "font-black"}`}>{row.title}</span>
                     {row.body ? <span className="block text-sm text-daet-ink/70">{row.body}</span> : null}
-                    <span className="mt-1 block text-xs text-daet-ink/45">{timeAgo(row.created_at)}</span>
+                    <span className="mt-1 block text-xs text-daet-ink/70">{timeAgo(row.created_at)}</span>
                   </span>
                   {!row.read_at ? <span className="mt-2 h-2 w-2 shrink-0 rounded-full bg-daet-coral" aria-label="Unread" /> : null}
                 </Link>

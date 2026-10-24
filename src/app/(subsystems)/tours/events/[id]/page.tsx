@@ -107,7 +107,7 @@ export default async function EventDetailPage({ params }: { params: Promise<{ id
                   {isAttractionCategory(attraction.category) ? CATEGORY_ICONS[attraction.category] : "📍"}
                 </span>
                 <span className="min-w-0">
-                  <span className="block text-xs font-bold uppercase tracking-wide text-daet-ink/55">
+                  <span className="block text-xs font-bold uppercase tracking-wide text-daet-ink/70">
                     {isAttractionCategory(attraction.category) ? ATTRACTION_CATEGORIES[attraction.category] : "Attraction"}
                   </span>
                   <span className="block font-black text-daet-ink">{attraction.name} →</span>
@@ -146,7 +146,7 @@ function EventTours({ tours, attractionName }: { tours: EventTour[]; attractionN
         Tours happening during this event
       </h2>
       {tours.length === 0 ? (
-        <p className="mt-2 text-sm text-daet-ink/60">
+        <p className="mt-2 text-sm text-daet-ink/70">
           No tours have open dates during this event yet.{" "}
           <Link href="/tours/browse" className="font-bold text-daet-forest underline">
             Browse all tours
@@ -162,7 +162,7 @@ function EventTours({ tours, attractionName }: { tours: EventTour[]; attractionN
                 </div>
                 <div className="min-w-0">
                   <p className="font-black text-daet-ink">{tour.title}</p>
-                  <p className="mt-0.5 text-xs text-daet-ink/60">
+                  <p className="mt-0.5 text-xs text-daet-ink/70">
                     Open {tour.dates.slice(0, 3).map(shortDate).join(", ")}
                     {tour.dates.length > 3 ? ` +${tour.dates.length - 3} more` : ""}
                   </p>

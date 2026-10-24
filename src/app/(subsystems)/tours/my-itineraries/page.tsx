@@ -49,7 +49,7 @@ export default async function MyItinerariesPage({ searchParams }: { searchParams
         {params.error || error ? <Notice variant="error" className="mt-4">Something went wrong. Please try again.</Notice> : null}
 
         {(data ?? []).length === 0 ? (
-          <p className="mt-6 rounded-3xl border border-daet-ink/10 bg-white p-8 text-center text-sm text-daet-ink/60">No saved plans yet.</p>
+          <p className="mt-6 rounded-3xl border border-daet-ink/10 bg-white p-8 text-center text-sm text-daet-ink/70">No saved plans yet.</p>
         ) : (
           <ul className="mt-6 divide-y divide-daet-ink/10 overflow-hidden rounded-3xl border border-daet-ink/10 bg-white shadow-sm">
             {(data ?? []).map((row) => (
@@ -57,7 +57,7 @@ export default async function MyItinerariesPage({ searchParams }: { searchParams
                 <Link href={`/tours/my-itineraries/${row.id}`} className="flex min-h-11 flex-wrap items-center justify-between gap-2 p-4 hover:bg-daet-sand/40">
                   <span>
                     <span className="block font-black text-daet-ink">{row.title}</span>
-                    <span className="block text-xs text-daet-ink/60">
+                    <span className="block text-xs text-daet-ink/70">
                       {shortDate(row.start_date)} – {shortDate(row.end_date)} · {(row.tours_itinerary_items ?? []).length} items
                     </span>
                   </span>

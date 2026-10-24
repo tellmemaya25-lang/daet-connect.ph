@@ -61,7 +61,7 @@ export default async function PackageAvailabilityPage({ params }: PageProps) {
   return (
     <PageFrame>
       <div className="mx-auto max-w-4xl">
-        <nav className="mb-6 text-sm text-daet-ink/60">
+        <nav className="mb-6 text-sm text-daet-ink/70">
           <Link href="/tours/operator/packages" className="hover:text-daet-forest">
             My packages
           </Link>

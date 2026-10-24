@@ -44,7 +44,7 @@ export function Field({
       </label>
       {children}
       {hint && !error ? (
-        <p id={`${id}-hint`} className="mt-1 text-xs text-daet-ink/55">
+        <p id={`${id}-hint`} className="mt-1 text-xs text-daet-ink/70">
           {hint}
         </p>
       ) : null}

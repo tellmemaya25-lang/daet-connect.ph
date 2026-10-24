@@ -110,17 +110,17 @@ export function ChatThread({
 
   return (
     <div className="mt-4 flex flex-col">
-      <p className="mb-2 text-right text-xs text-daet-ink/50" aria-live="polite">
+      <p className="mb-2 text-right text-xs text-daet-ink/70" aria-live="polite">
         {live === "live" ? "● Live" : live === "connecting" ? "Connecting…" : "Offline: refresh to see new messages"}
       </p>
 
       <div className="min-h-[40vh] space-y-4 rounded-3xl border border-daet-ink/10 bg-white p-4 shadow-sm" role="log" aria-label="Messages">
         {messages.length === 0 ? (
-          <p className="py-10 text-center text-sm text-daet-ink/55">No messages yet. Say hello and ask anything about the tour.</p>
+          <p className="py-10 text-center text-sm text-daet-ink/70">No messages yet. Say hello and ask anything about the tour.</p>
         ) : null}
         {groups.map((group) => (
           <section key={group.day} aria-label={group.day}>
-            <p className="mb-2 text-center text-xs font-bold uppercase tracking-wide text-daet-ink/45">{group.day}</p>
+            <p className="mb-2 text-center text-xs font-bold uppercase tracking-wide text-daet-ink/70">{group.day}</p>
             <ul className="space-y-2">
               {group.items.map((message) => {
                 const mine = message.sender_id === viewerId;
@@ -139,7 +139,7 @@ export function ChatThread({
                         )
                       ) : null}
                       {message.message_text ? <p className="whitespace-pre-wrap break-words text-sm">{message.message_text}</p> : null}
-                      <p className={`mt-1 text-right text-[10px] ${mine ? "text-white/70" : "text-daet-ink/50"}`}>{time(message.created_at)}</p>
+                      <p className={`mt-1 text-right text-[10px] ${mine ? "text-white/70" : "text-daet-ink/70"}`}>{time(message.created_at)}</p>
                     </div>
                   </li>
                 );
@@ -188,7 +188,7 @@ export function ChatThread({
               />
               📷 {file ? <span className="max-w-[9rem] truncate">{file.name}</span> : "Photo"}
             </label>
-            <span className="text-xs text-daet-ink/45">
+            <span className="text-xs text-daet-ink/70">
               {text.length}/{MESSAGE_MAX_LENGTH}
             </span>
             <Button type="submit" loading={pending} loadingText="Sending…" disabled={!text.trim() && !file}>

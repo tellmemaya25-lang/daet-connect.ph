@@ -65,7 +65,7 @@ export default async function AdminAnalyticsPage({ searchParams }: { searchParam
         </Notice>
       ) : null}
 
-      <p className="mb-3 text-sm text-daet-ink/60">
+      <p className="mb-3 text-sm text-daet-ink/70">
         {shortDay(range.from)} – {shortDay(range.to)}
       </p>
 
@@ -120,7 +120,7 @@ export default async function AdminAnalyticsPage({ searchParams }: { searchParam
           {buckets.map((b, i) => (
             <div key={b.label} className="rounded-2xl border border-daet-ink/10 p-3 text-center">
               <p className="text-2xl font-black text-daet-ink">{b.count}</p>
-              <p className="text-xs text-daet-ink/60">{b.label}</p>
+              <p className="text-xs text-daet-ink/70">{b.label}</p>
               {i === 2 && b.count > 0 ? (
                 <Badge tone="warning" className="mt-1">
                   ⚠ Overdue
@@ -137,9 +137,9 @@ export default async function AdminAnalyticsPage({ searchParams }: { searchParam
 function Stat({ label, value, note }: { label: string; value: string; note: string }) {
   return (
     <Card>
-      <p className="text-xs font-bold text-daet-ink/55">{label}</p>
+      <p className="text-xs font-bold text-daet-ink/70">{label}</p>
       <p className="mt-1 text-2xl font-black text-daet-ink">{value}</p>
-      <p className="text-xs text-daet-ink/55">{note}</p>
+      <p className="text-xs text-daet-ink/70">{note}</p>
     </Card>
   );
 }

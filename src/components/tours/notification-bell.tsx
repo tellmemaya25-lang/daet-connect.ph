@@ -110,7 +110,7 @@ export function NotificationBell() {
             ) : null}
           </div>
           {items.length === 0 ? (
-            <p className="p-6 text-center text-sm text-daet-ink/60">You&apos;re all caught up.</p>
+            <p className="p-6 text-center text-sm text-daet-ink/70">You&apos;re all caught up.</p>
           ) : (
             <ul className="max-h-[60vh] divide-y divide-daet-ink/10 overflow-y-auto">
               {items.map((item) => (
@@ -127,7 +127,7 @@ export function NotificationBell() {
                     <span className="min-w-0 flex-1">
                       <span className={`block text-sm text-daet-ink ${item.read_at ? "font-semibold" : "font-black"}`}>{item.title}</span>
                       {item.body ? <span className="block line-clamp-2 text-xs text-daet-ink/65">{item.body}</span> : null}
-                      <span className="mt-0.5 block text-[11px] text-daet-ink/45">{timeAgo(item.created_at)}</span>
+                      <span className="mt-0.5 block text-[11px] text-daet-ink/70">{timeAgo(item.created_at)}</span>
                     </span>
                     {!item.read_at ? <span className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-daet-coral" aria-label="Unread" /> : null}
                   </Link>

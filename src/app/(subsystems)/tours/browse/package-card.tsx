@@ -42,23 +42,23 @@ export function PackageCard({ package: pkg, rating = null }: PackageCardProps) {
           )}
           {/* Price Badge */}
           <div className="absolute bottom-3 right-3 rounded-full bg-white px-4 py-2 shadow-lg">
-            <p className="text-xs font-bold uppercase tracking-wide text-daet-ink/50">
+            <p className="text-xs font-bold uppercase tracking-wide text-daet-ink/70">
               From
             </p>
             <p className="text-lg font-black text-daet-forest">
               ₱{price.toLocaleString()}
             </p>
-            <p className="text-[10px] font-bold text-daet-ink/50">{priceLabel}</p>
+            <p className="text-[10px] font-bold text-daet-ink/70">{priceLabel}</p>
           </div>
         </div>
 
         {/* Content */}
         <div className="p-5">
-          <h3 className="line-clamp-2 min-h-[3rem] font-black text-daet-ink group-hover:text-daet-forest">
+          <h2 className="line-clamp-2 min-h-[3rem] font-black text-daet-ink group-hover:text-daet-forest">
             {pkg.title}
-          </h3>
+          </h2>
 
-          <div className="mt-3 flex items-center gap-4 text-sm text-daet-ink/60">
+          <div className="mt-3 flex items-center gap-4 text-sm text-daet-ink/70">
             <span className="flex items-center gap-1">
               <span aria-hidden="true">📍</span>
               {pkg.location_name}
@@ -70,7 +70,7 @@ export function PackageCard({ package: pkg, rating = null }: PackageCardProps) {
           </div>
 
           <div className="mt-4 flex items-center justify-between gap-2 border-t border-daet-ink/10 pt-4">
-            {rating ? <RatingBadge summary={rating} compact /> : <span className="text-xs font-bold text-daet-ink/45">New · no reviews yet</span>}
+            {rating ? <RatingBadge summary={rating} compact /> : <span className="text-xs font-bold text-daet-ink/70">New · no reviews yet</span>}
             <span className="text-sm font-bold text-daet-forest group-hover:underline">
               View details →
             </span>

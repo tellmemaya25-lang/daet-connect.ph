@@ -53,14 +53,14 @@ export function GuideReviewCard({ guide }: { guide: GuideAdminRecord }) {
         <div className="min-w-0">
           <span className="inline-flex rounded-full bg-amber-50 px-3 py-1 text-xs font-black uppercase tracking-wide text-amber-900">Pending guide review</span>
           <h2 className="mt-3 break-words text-xl font-black text-daet-ink">{guide.full_name}</h2>
-          <p className="mt-1 text-sm text-daet-ink/55">Submitted {new Date(guide.created_at).toLocaleDateString("en-PH", { year: "numeric", month: "short", day: "numeric", timeZone: "Asia/Manila" })}</p>
+          <p className="mt-1 text-sm text-daet-ink/70">Submitted {new Date(guide.created_at).toLocaleDateString("en-PH", { year: "numeric", month: "short", day: "numeric", timeZone: "Asia/Manila" })}</p>
         </div>
-        <span className="shrink-0 rounded-full bg-daet-sand px-3 py-1.5 text-xs font-bold text-daet-ink/60">ID · {guide.id.slice(0, 8)}</span>
+        <span className="shrink-0 rounded-full bg-daet-sand px-3 py-1.5 text-xs font-bold text-daet-ink/70">ID · {guide.id.slice(0, 8)}</span>
       </div>
 
       <dl className="mt-5 grid gap-4 border-t border-daet-ink/10 pt-5 sm:grid-cols-2">
-        <div><dt className="text-xs font-bold uppercase tracking-wide text-daet-ink/45">Contact number</dt><dd className="mt-1 text-sm font-semibold text-daet-ink">{guide.contact_phone}</dd></div>
-        <div className="sm:col-span-2"><dt className="text-xs font-bold uppercase tracking-wide text-daet-ink/45">Guide introduction</dt><dd className="mt-1 whitespace-pre-wrap text-sm leading-6 text-daet-ink">{guide.bio}</dd></div>
+        <div><dt className="text-xs font-bold uppercase tracking-wide text-daet-ink/70">Contact number</dt><dd className="mt-1 text-sm font-semibold text-daet-ink">{guide.contact_phone}</dd></div>
+        <div className="sm:col-span-2"><dt className="text-xs font-bold uppercase tracking-wide text-daet-ink/70">Guide introduction</dt><dd className="mt-1 whitespace-pre-wrap text-sm leading-6 text-daet-ink">{guide.bio}</dd></div>
       </dl>
 
       <div className="mt-5">
@@ -86,7 +86,7 @@ export function GuideReviewCard({ guide }: { guide: GuideAdminRecord }) {
               aria-describedby={`guide-reason-help-${guide.id}${state.fieldErrors?.rejectionReason ? ` guide-reason-error-${guide.id}` : ""}`}
               className="mt-2 w-full rounded-2xl border border-daet-ink/15 px-4 py-3 text-sm outline-none focus:border-daet-forest focus:ring-4 focus:ring-daet-forest/10 aria-[invalid=true]:border-rose-400"
             />
-            <span id={`guide-reason-help-${guide.id}`} className="mt-1 block text-xs text-daet-ink/50">Keep the note factual and limited to what the applicant needs to fix.</span>
+            <span id={`guide-reason-help-${guide.id}`} className="mt-1 block text-xs text-daet-ink/70">Keep the note factual and limited to what the applicant needs to fix.</span>
             {state.fieldErrors?.rejectionReason ? <span id={`guide-reason-error-${guide.id}`} className="mt-1 block text-sm font-semibold text-rose-700">{state.fieldErrors.rejectionReason}</span> : null}
           </label>
           <button type="submit" disabled={locked} className="mt-3 inline-flex min-h-12 w-full items-center justify-center rounded-full border border-rose-300 px-5 text-sm font-bold text-rose-700 transition hover:bg-rose-50 disabled:opacity-50 sm:w-auto">

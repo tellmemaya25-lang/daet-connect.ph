@@ -72,8 +72,9 @@ export default async function AttractionsPage({ searchParams }: PageProps) {
               {label}
             </Link>
           ))}
-          <Link href={filterHref(category, !openNow)} className={chip(openNow)} aria-pressed={openNow}>
+          <Link href={filterHref(category, !openNow)} className={chip(openNow)}>
             {openNow ? "✓ " : ""}Open now
+          {openNow ? <span className="sr-only"> (on)</span> : null}
           </Link>
         </nav>
 
@@ -86,7 +87,7 @@ export default async function AttractionsPage({ searchParams }: PageProps) {
         ) : null}
 
         {attractions.length === 0 && !error ? (
-          <p className="mt-8 rounded-3xl border border-daet-ink/10 bg-white p-8 text-center text-sm text-daet-ink/60">
+          <p className="mt-8 rounded-3xl border border-daet-ink/10 bg-white p-8 text-center text-sm text-daet-ink/70">
             {openNow ? "Nothing listed is open right now. Try again later or clear the filter." : "No attractions listed in this category yet."}
           </p>
         ) : (
@@ -107,7 +108,7 @@ export default async function AttractionsPage({ searchParams }: PageProps) {
                       <Badge tone={STATUS_TONE[attraction.status.state]}>{attraction.status.label}</Badge>
                     </div>
                     <h2 className="mt-3 text-lg font-black text-daet-ink">{attraction.name}</h2>
-                    <p className="text-xs font-semibold text-daet-ink/55">{attraction.municipality}</p>
+                    <p className="text-xs font-semibold text-daet-ink/70">{attraction.municipality}</p>
                     {attraction.description ? <p className="mt-2 line-clamp-3 text-sm text-daet-ink/70">{attraction.description}</p> : null}
                   </div>
                 </Link>

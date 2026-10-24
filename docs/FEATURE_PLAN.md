@@ -533,6 +533,31 @@ _Team guide §5; Ch. 4.2 §3 DB synchronization._
 | Security | Advisor clean; secret scan; no service-role key in the client bundle; signed QR and webhook verified; rate limits on auth, messages and bookings |
 | Evaluation kit | Printable walkthrough script (10–15 min per role) and test credentials sheet for SOP 4 sessions |
 
+**Status: done**, except what needs your accounts or keys (marked ⚠).
+- **E2E (Playwright, 375px):** `npm run test:e2e:tours`, 43 tests, also a CI job. A committed mock Supabase (`e2e/mock-supabase.cjs`) serves every role.
+  - Covered: public pages, every role's pages, the tab bar, `/dashboard` routing, the walkthrough screens (plan → book → pay link → review → roster → analytics) and guide availability.
+  - ⚠ PayMongo checkout and the webhook need sandbox keys, so they're a manual step in `docs/EVALUATION_KIT.md`.
+- **Integration:** `supabase/tests/integration.sql`, 31 checks across anon, tourist, operator, guide and admin (access rules, overbooking, booking rate limit, webhook replay). **31/31 pass** on the live project; the script rolls back.
+  - A true two-session booking race isn't automated; the availability-row lock serializes it.
+- **Seed / demo mode:** `npm run seed:demo` (`scripts/seed-demo.mjs`, tested with `npm run test:scripts`).
+  - Per group it creates four role accounts plus an approved operator and guide, a published package and weekend availability.
+  - The password comes from `DEMO_PASSWORD`, never the repo.
+  - The login page shows "Test environment: no real money" unless PayMongo uses a live key.
+  - ⚠ Run it on a staging project.
+- **Accessibility:** axe (WCAG 2.1 AA, serious/critical) runs on every E2E page visit; 38 pages pass.
+  - Fixes: muted text contrast raised to ≥ 4.5:1 across the app; labels on filters and pickers; logo and calendar names; no `aria-pressed` on links; missing h1s; heading order on browse; `lang="en"` is checked.
+- **Performance:** Lighthouse mobile on a production build against the mock.
+  - Performance: browse 99, package 99, plan 98, home 100 (target ≥ 85). LCP 1.8–2.3 s, TBT ≤ 60 ms, CLS 0.
+  - Accessibility: package, plan and home 100; browse 98 for heading order, fixed afterwards but not re-measured. SEO 100.
+  - Added a favicon (it was a 404).
+  - Real cover photos and network latency will lower these numbers; re-check on staging.
+- **Security:** see `docs/SECURITY_REVIEW.md`.
+  - Advisor fixes: 51 policies, 19 indexes, a function search_path.
+  - Booking rate limit, and an open-redirect fix on login.
+  - No secrets in the client bundle.
+  - ⚠ **Two critical findings need you:** the service-role key is in public git history (rotate it), and the test account passwords were published (change them, including the only admin).
+- **Evaluation kit:** `docs/EVALUATION_KIT.md` has a setup checklist, a blank credentials sheet and walkthroughs per role mapped to ISO 25010 items.
+
 ---
 
 ## 3. Schedule (11 weeks)

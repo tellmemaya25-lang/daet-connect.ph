@@ -132,7 +132,7 @@ export function PlannerApp({ defaultDate, aiAvailable, signedIn }: { defaultDate
           <input type="checkbox" checked={useAi} onChange={(e) => setUseAi(e.target.checked)} className="mt-1 h-5 w-5 accent-daet-forest" />
           <span>
             <span className="block text-sm font-bold text-daet-ink">Polish with AI</span>
-            <span className="block text-xs text-daet-ink/60">Reorders stops and adds tips using only our attraction list. Every suggestion is checked against opening hours and your budget.</span>
+            <span className="block text-xs text-daet-ink/70">Reorders stops and adds tips using only our attraction list. Every suggestion is checked against opening hours and your budget.</span>
           </span>
         </label>
       ) : null}
@@ -211,14 +211,14 @@ function PlanEditor({ result, plan, setPlan, input, onBack, signedIn }: { result
               Day {dayIndex + 1} · {longDate(day.date)}
             </h2>
             {day.blocks.length === 0 ? (
-              <p className="mt-2 text-sm text-daet-ink/60">Free day: nothing else fits your interests, hours and budget. Add a stop below.</p>
+              <p className="mt-2 text-sm text-daet-ink/70">Free day: nothing else fits your interests, hours and budget. Add a stop below.</p>
             ) : (
               <ol className="mt-4 space-y-3">
                 {day.blocks.map((block, i) => {
                   const visitIndex = block.kind === "visit" ? ids.indexOf(block.attractionId) : -1;
                   return (
                     <li key={`${block.kind}-${block.kind === "visit" ? block.attractionId : i}`} className={`rounded-2xl border p-4 ${block.kind === "lunch" ? "border-daet-sun/40 bg-amber-50/60" : "border-daet-ink/10"}`}>
-                      {block.travelMinutes > 0 ? <p className="mb-1 text-xs text-daet-ink/50">↓ about {block.travelMinutes} min travel</p> : null}
+                      {block.travelMinutes > 0 ? <p className="mb-1 text-xs text-daet-ink/70">↓ about {block.travelMinutes} min travel</p> : null}
                       <div className="flex flex-wrap items-baseline justify-between gap-2">
                         <p className="font-black text-daet-ink">
                           {block.kind === "lunch" ? "🍽️ " : `${CATEGORY_ICONS[byId.get(block.attractionId)?.category ?? "park"]} `}
@@ -230,7 +230,7 @@ function PlanEditor({ result, plan, setPlan, input, onBack, signedIn }: { result
                       </div>
                       {block.kind === "visit" ? (
                         <>
-                          <p className="mt-1 text-xs text-daet-ink/60">
+                          <p className="mt-1 text-xs text-daet-ink/70">
                             {block.cost > 0 ? `${peso(block.cost)} for the group` : "No listed entrance fee"}
                             {!block.hoursConfirmed ? " · hours not listed, check before going" : ""}
                           </p>
@@ -332,7 +332,7 @@ function PlanEditor({ result, plan, setPlan, input, onBack, signedIn }: { result
                   {match.coverImageUrl ? <img src={match.coverImageUrl} alt="" className="h-14 w-20 rounded-xl object-cover" /> : null}
                   <div className="min-w-0 flex-1">
                     <p className="font-bold text-daet-ink">{match.title}</p>
-                    <p className="text-xs text-daet-ink/60">Visits {match.matched.join(", ")}</p>
+                    <p className="text-xs text-daet-ink/70">Visits {match.matched.join(", ")}</p>
                   </div>
                   <Link href={`/tours/packages/${match.id}`} className="inline-flex min-h-11 shrink-0 items-center rounded-full bg-daet-forest px-4 text-sm font-bold text-white hover:bg-daet-ink">
                     View tour

@@ -76,7 +76,7 @@ export default async function OperatorSettingsPage() {
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-4xl font-black text-daet-ink">Operator Settings</h1>
-          <p className="mt-2 text-sm text-daet-ink/60">
+          <p className="mt-2 text-sm text-daet-ink/70">
             Manage your business profile and payment details
           </p>
         </div>
@@ -85,7 +85,7 @@ export default async function OperatorSettingsPage() {
         <div className="mb-6">
           <Link
             href="/tours/operator/dashboard"
-            className="inline-flex items-center gap-2 text-sm font-bold text-daet-ink/60 transition hover:text-daet-ink"
+            className="inline-flex items-center gap-2 text-sm font-bold text-daet-ink/70 transition hover:text-daet-ink"
           >
             ← Back to Dashboard
           </Link>
@@ -96,19 +96,19 @@ export default async function OperatorSettingsPage() {
           <h2 className="mb-4 text-xl font-black text-daet-ink">Business Information</h2>
           <div className="grid grid-cols-2 gap-4 text-sm">
             <div>
-              <p className="text-daet-ink/60">Business Name</p>
+              <p className="text-daet-ink/70">Business Name</p>
               <p className="font-bold text-daet-ink">{operator.business_name}</p>
             </div>
             <div>
-              <p className="text-daet-ink/60">Contact Phone</p>
+              <p className="text-daet-ink/70">Contact Phone</p>
               <p className="font-bold text-daet-ink">{operator.contact_phone}</p>
             </div>
             <div>
-              <p className="text-daet-ink/60">Business Address</p>
+              <p className="text-daet-ink/70">Business Address</p>
               <p className="font-bold text-daet-ink">{operator.business_address}</p>
             </div>
             <div>
-              <p className="text-daet-ink/60">Status</p>
+              <p className="text-daet-ink/70">Status</p>
               <p className="font-bold capitalize text-emerald-700">
                 {operator.accreditation_status}
               </p>
@@ -120,7 +120,7 @@ export default async function OperatorSettingsPage() {
         <div className="rounded-3xl border border-daet-ink/10 bg-white p-6 shadow-sm">
           <div className="mb-4">
             <h2 className="text-xl font-black text-daet-ink">Payment Details</h2>
-            <p className="mt-1 text-sm text-daet-ink/60">
+            <p className="mt-1 text-sm text-daet-ink/70">
               Set up where tourists should send payments for confirmed bookings
             </p>
           </div>

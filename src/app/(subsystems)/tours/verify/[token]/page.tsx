@@ -94,7 +94,7 @@ export default async function VerifyQrPage({ params }: PageProps) {
           ) : null}
           <p className="text-xl font-black text-daet-ink">{badge.full_name}</p>
           <p className="mt-1">Accredited by the Daet Tourism Office through CONNECT-Daet.</p>
-          <p className="mt-3 text-xs text-daet-ink/60">Badge valid until {longDate(claims.exp * 1000)}</p>
+          <p className="mt-3 text-xs text-daet-ink/70">Badge valid until {longDate(claims.exp * 1000)}</p>
         </ResultCard>
       </PageFrame>
     );
@@ -145,11 +145,11 @@ export default async function VerifyQrPage({ params }: PageProps) {
       <ResultCard tone={rule.ok || partyCheckIn ? "valid" : "neutral"} title={partyCheckIn ? "Guests checked in" : "Valid booking ticket"}>
         <p className="text-lg font-black text-daet-ink">{(pkg as { title?: string } | null)?.title ?? "Tour booking"}</p>
         <dl className="mx-auto mt-3 grid max-w-xs grid-cols-2 gap-2 text-left">
-          <dt className="text-daet-ink/60">Reference</dt>
+          <dt className="text-daet-ink/70">Reference</dt>
           <dd className="font-bold text-daet-ink">{booking.booking_reference}</dd>
-          <dt className="text-daet-ink/60">Tour date</dt>
+          <dt className="text-daet-ink/70">Tour date</dt>
           <dd className="font-bold text-daet-ink">{tourDate(booking.tour_date)}</dd>
-          <dt className="text-daet-ink/60">Guests</dt>
+          <dt className="text-daet-ink/70">Guests</dt>
           <dd className="font-bold text-daet-ink">
             {booking.number_of_pax} · {booking.contact_name}
           </dd>

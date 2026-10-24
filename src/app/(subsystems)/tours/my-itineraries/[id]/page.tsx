@@ -45,7 +45,7 @@ export default async function ItineraryPage({ params }: { params: Promise<{ id: 
         </Link>
         <h1 className="mt-1 text-3xl font-black text-daet-ink">{itinerary.title}</h1>
         {itinerary.summary ? <p className="mt-3 rounded-2xl bg-daet-forest/5 p-4 text-sm leading-6 text-daet-ink">{itinerary.summary}</p> : null}
-        <p className="mt-2 text-xs text-daet-ink/55">Opening hours can change; check each place before you go.</p>
+        <p className="mt-2 text-xs text-daet-ink/70">Opening hours can change; check each place before you go.</p>
 
         <div className="mt-6">
           <SavedItinerary days={rowsToDays(rows, itinerary.start_date)} />

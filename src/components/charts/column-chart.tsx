@@ -29,7 +29,7 @@ export function ColumnChart({ points, unit, title }: { points: ColumnPoint[]; un
     <figure>
       <div className="mb-2 flex items-baseline justify-between gap-2">
         <figcaption className="text-sm font-bold text-daet-ink">{title}</figcaption>
-        <p className="text-xs text-daet-ink/60" aria-live="polite">
+        <p className="text-xs text-daet-ink/70" aria-live="polite">
           {shown !== null ? (
             <>
               <span className="font-bold text-daet-ink">{points[shown].label}</span> · {points[shown].value} {unit}
@@ -41,7 +41,7 @@ export function ColumnChart({ points, unit, title }: { points: ColumnPoint[]; un
         </p>
       </div>
       <div className="flex h-44 gap-2">
-        <div className="flex flex-col justify-between pb-5 text-right text-[10px] text-daet-ink/50" aria-hidden="true">
+        <div className="flex flex-col justify-between pb-5 text-right text-[10px] text-daet-ink/70" aria-hidden="true">
           {[...ticks].reverse().map((t) => (
             <span key={t}>{compact(t)}</span>
           ))}
@@ -70,7 +70,7 @@ export function ColumnChart({ points, unit, title }: { points: ColumnPoint[]; un
               </button>
             ))}
           </div>
-          <div className="absolute inset-x-0 bottom-0 flex h-5 items-end gap-[2px] text-[10px] text-daet-ink/50" aria-hidden="true">
+          <div className="absolute inset-x-0 bottom-0 flex h-5 items-end gap-[2px] text-[10px] text-daet-ink/70" aria-hidden="true">
             {points.map((p, i) => (
               <span key={p.key} className="flex-1 overflow-visible whitespace-nowrap text-center">
                 {i % labelEvery === 0 ? p.label.replace(/^\w+, /, "") : ""}
@@ -83,7 +83,7 @@ export function ColumnChart({ points, unit, title }: { points: ColumnPoint[]; un
         <summary className="cursor-pointer text-xs font-bold text-daet-forest">Show as table</summary>
         <table className="mt-2 w-full text-left text-xs">
           <thead>
-            <tr className="text-daet-ink/55">
+            <tr className="text-daet-ink/70">
               <th className="py-1 font-bold">Day</th>
               <th className="py-1 text-right font-bold">{unit}</th>
             </tr>
@@ -97,7 +97,7 @@ export function ColumnChart({ points, unit, title }: { points: ColumnPoint[]; un
             ))}
             {total === 0 ? (
               <tr>
-                <td colSpan={2} className="py-1 text-daet-ink/55">
+                <td colSpan={2} className="py-1 text-daet-ink/70">
                   None in this range.
                 </td>
               </tr>

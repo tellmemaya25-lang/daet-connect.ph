@@ -90,7 +90,7 @@ export default async function BookPackagePage({ params }: PageProps) {
     <PageFrame>
       <div className="mx-auto max-w-4xl">
         {/* Breadcrumb */}
-        <nav className="mb-6 text-sm text-daet-ink/60">
+        <nav className="mb-6 text-sm text-daet-ink/70">
           <Link href="/tours/browse" className="hover:text-daet-forest">
             Browse packages
           </Link>
@@ -114,7 +114,7 @@ export default async function BookPackagePage({ params }: PageProps) {
             )}
             <div className="flex-1">
               <h1 className="text-2xl font-black text-daet-ink">{pkg.title}</h1>
-              <p className="mt-2 text-sm text-daet-ink/60">
+              <p className="mt-2 text-sm text-daet-ink/70">
                 📍 {pkg.location_name} · ⏱️ {pkg.duration_value}{" "}
                 {pkg.duration_type === "hours" ? "hours" : "days"}
               </p>

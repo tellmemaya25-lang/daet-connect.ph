@@ -68,7 +68,7 @@ export function SignupForm() {
           className="mt-2 w-full rounded-2xl border border-daet-ink/15 bg-white px-4 py-3 text-sm outline-none transition placeholder:text-daet-ink/35 focus:border-daet-forest focus:ring-4 focus:ring-daet-forest/10"
           placeholder="At least 8 characters"
         />
-        <p className="mt-1 text-xs text-daet-ink/50">Must be at least 8 characters long</p>
+        <p className="mt-1 text-xs text-daet-ink/70">Must be at least 8 characters long</p>
       </div>
 
       {state.message && (
@@ -91,7 +91,7 @@ export function SignupForm() {
         {pending ? "Creating account..." : "Create account"}
       </button>
 
-      <p className="text-center text-sm text-daet-ink/60">
+      <p className="text-center text-sm text-daet-ink/70">
         Already have an account?{" "}
         <a href="/login" className="font-bold text-daet-forest underline underline-offset-4">
           Sign in

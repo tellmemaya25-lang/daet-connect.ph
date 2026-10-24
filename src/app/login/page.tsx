@@ -3,6 +3,8 @@ import { PageFrame } from "@/components/ui/page-frame";
 import { Notice } from "@/components/ui/notice";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
+import { getPaymongoConfig } from "@/lib/paymongo/client";
+import { safeNextPath } from "@/lib/safe-redirect";
 import { LoginForm } from "./login-form";
 
 export const dynamic = "force-dynamic";
@@ -27,12 +29,12 @@ export default async function LoginPage({ searchParams }: { searchParams: Search
 
   if (data?.user) {
     const params = await searchParams;
-    const nextUrl = params.next ?? "/";
-    redirect(nextUrl);
+    redirect(safeNextPath(params.next));
   }
 
   const params = await searchParams;
-  const nextUrl = params.next ?? "/";
+  const nextUrl = safeNextPath(params.next);
+  const livePayments = getPaymongoConfig()?.mode === "live";
 
   return (
     <PageFrame>
@@ -45,6 +47,11 @@ export default async function LoginPage({ searchParams }: { searchParams: Search
           </p>
           <LoginForm nextUrl={nextUrl} />
         </section>
+        {livePayments ? null : (
+          <Notice variant="info" title="Test environment: no real money" className="mt-4">
+            Online payments here use the PayMongo test sandbox (use its test cards and e-wallets), and receipt uploads are for practice. Nothing is charged.
+          </Notice>
+        )}
       </div>
     </PageFrame>
   );

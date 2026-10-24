@@ -58,7 +58,7 @@ export default async function GuideRosterPage({ params }: PageProps) {
   return (
     <PageFrame>
       <div className="mx-auto max-w-2xl">
-        <Link href="/tours/guide/my-tours" className="text-sm font-bold text-daet-ink/60 hover:text-daet-ink">
+        <Link href="/tours/guide/my-tours" className="text-sm font-bold text-daet-ink/70 hover:text-daet-ink">
           ← My tours
         </Link>
         <h1 className="mt-4 text-3xl font-black text-daet-ink">Guest list</h1>
@@ -101,7 +101,7 @@ export default async function GuideRosterPage({ params }: PageProps) {
         {guests.length > 0 ? (
           <section className="mt-6">
             <h2 className="mb-3 text-lg font-black text-daet-ink">
-              Guests <span className="text-sm font-bold text-daet-ink/55">({checkedGuests} of {guests.length} present)</span>
+              Guests <span className="text-sm font-bold text-daet-ink/70">({checkedGuests} of {guests.length} present)</span>
             </h2>
             <ul className="divide-y divide-daet-ink/10 rounded-2xl border border-daet-ink/10 bg-white">
               {guests.map((guest) => {
@@ -110,7 +110,7 @@ export default async function GuideRosterPage({ params }: PageProps) {
                   <li key={guest.id} className="flex flex-wrap items-center justify-between gap-3 p-4">
                     <div>
                       <p className="font-bold text-daet-ink">{guest.full_name}</p>
-                      {guest.special_requirements ? <p className="text-xs text-daet-ink/60">{guest.special_requirements}</p> : null}
+                      {guest.special_requirements ? <p className="text-xs text-daet-ink/70">{guest.special_requirements}</p> : null}
                     </div>
                     {done ? (
                       <Badge tone="success">Present {time(done.scanned_at)}</Badge>
@@ -125,7 +125,7 @@ export default async function GuideRosterPage({ params }: PageProps) {
             </ul>
           </section>
         ) : (
-          <p className="mt-6 text-sm text-daet-ink/60">The tourist did not list guest names, so check in the group as a whole.</p>
+          <p className="mt-6 text-sm text-daet-ink/70">The tourist did not list guest names, so check in the group as a whole.</p>
         )}
       </div>
     </PageFrame>

@@ -70,11 +70,11 @@ export default async function OperatorMerchPage({ searchParams }: { searchParams
                 <div className="min-w-0">
                   <div className="flex flex-wrap items-center gap-2">
                     <Badge tone={TONE[item.review_status]}>{MERCH_REVIEW_LABELS[item.review_status]}</Badge>
-                    <span className="text-xs text-daet-ink/55">{MERCH_CATEGORIES[item.category]}</span>
-                    {item.review_status === "approved" && !item.is_active ? <span className="text-xs text-daet-ink/55">· hidden by you</span> : null}
+                    <span className="text-xs text-daet-ink/70">{MERCH_CATEGORIES[item.category]}</span>
+                    {item.review_status === "approved" && !item.is_active ? <span className="text-xs text-daet-ink/70">· hidden by you</span> : null}
                   </div>
                   <p className="mt-1 truncate font-black text-daet-ink">{item.name}</p>
-                  <p className="text-sm text-daet-ink/60">{formatPeso(item.price) ?? "Ask seller"} · {item.seller_name}</p>
+                  <p className="text-sm text-daet-ink/70">{formatPeso(item.price) ?? "Ask seller"} · {item.seller_name}</p>
                   {item.review_status === "rejected" && item.review_notes ? (
                     <p className="mt-1 text-sm font-bold text-rose-700">Tourism Office: {item.review_notes}</p>
                   ) : null}

@@ -69,7 +69,7 @@ export default async function AdminMerchPage({
         <div className="rounded-2xl border border-dashed border-daet-ink/20 bg-white p-8 text-center">
           <p className="text-4xl" aria-hidden="true">🛍️</p>
           <p className="mt-2 font-bold text-daet-ink">No products yet</p>
-          <p className="text-sm text-daet-ink/60">Advertise local t-shirts, mugs, souvenirs and pasalubong.</p>
+          <p className="text-sm text-daet-ink/70">Advertise local t-shirts, mugs, souvenirs and pasalubong.</p>
         </div>
       ) : (
         <ul className="space-y-3">
@@ -95,7 +95,7 @@ export default async function AdminMerchPage({
                     ) : null}
                   </div>
                   <p className="mt-1 truncate font-black text-daet-ink">{item.name}</p>
-                  <p className="text-sm text-daet-ink/60">
+                  <p className="text-sm text-daet-ink/70">
                     {formatPeso(item.price) ?? "Ask seller"} · {item.seller_name}
                   </p>
                 </div>

@@ -150,11 +150,11 @@ export default async function BookingDetailPage({ params, searchParams }: PagePr
 
         {/* Booking Reference */}
         <div className="mb-6 rounded-3xl border border-daet-ink/10 bg-white p-6 text-center shadow-sm">
-          <p className="text-sm font-bold text-daet-ink/60">BOOKING REFERENCE</p>
-          <p className="mt-2 text-3xl font-black text-daet-forest">
+          <p className="text-sm font-bold text-daet-ink/70">BOOKING REFERENCE</p>
+          <h1 className="mt-2 text-3xl font-black text-daet-forest">
             {booking.booking_reference}
-          </p>
-          <p className="mt-2 text-xs text-daet-ink/50">
+          </h1>
+          <p className="mt-2 text-xs text-daet-ink/70">
             Save this reference number for your records
           </p>
         </div>
@@ -189,7 +189,7 @@ export default async function BookingDetailPage({ params, searchParams }: PagePr
         {/* Package Details */}
         {pkg && (
           <section className="mb-6 rounded-3xl border border-daet-ink/10 bg-white p-6 shadow-sm">
-            <h3 className="text-sm font-bold uppercase tracking-wide text-daet-ink/60">
+            <h3 className="text-sm font-bold uppercase tracking-wide text-daet-ink/70">
               Tour Package
             </h3>
             <div className="mt-4 flex gap-4">
@@ -202,7 +202,7 @@ export default async function BookingDetailPage({ params, searchParams }: PagePr
               )}
               <div className="flex-1">
                 <h2 className="text-xl font-black text-daet-ink">{pkg.title}</h2>
-                <p className="mt-1 text-sm text-daet-ink/60">
+                <p className="mt-1 text-sm text-daet-ink/70">
                   📍 {pkg.location_name} · ⏱️ {pkg.duration_value}{" "}
                   {pkg.duration_type === "hours" ? "hours" : "days"}
                 </p>
@@ -218,7 +218,7 @@ export default async function BookingDetailPage({ params, searchParams }: PagePr
 
         {booking.status === "completed" ? (
           <section id="review" className="mb-6 rounded-3xl border border-daet-ink/10 bg-white p-6 shadow-sm">
-            <h3 className="text-sm font-bold uppercase tracking-wide text-daet-ink/60">
+            <h3 className="text-sm font-bold uppercase tracking-wide text-daet-ink/70">
               {myReview ? "Your review" : "Rate your tour"}
             </h3>
             <div className="mt-4">
@@ -240,13 +240,13 @@ export default async function BookingDetailPage({ params, searchParams }: PagePr
 
         {/* Booking Details */}
         <section className="mb-6 rounded-3xl border border-daet-ink/10 bg-white p-6 shadow-sm">
-          <h3 className="text-sm font-bold uppercase tracking-wide text-daet-ink/60">
+          <h3 className="text-sm font-bold uppercase tracking-wide text-daet-ink/70">
             Booking Details
           </h3>
 
           <div className="mt-4 space-y-3">
             <div className="flex justify-between border-b border-daet-ink/10 pb-3">
-              <span className="text-sm text-daet-ink/60">Tour Date</span>
+              <span className="text-sm text-daet-ink/70">Tour Date</span>
               <span className="font-bold text-daet-ink">
                 {new Date(booking.tour_date).toLocaleDateString("en-US", {
                   weekday: "long",
@@ -258,13 +258,13 @@ export default async function BookingDetailPage({ params, searchParams }: PagePr
             </div>
 
             <div className="flex justify-between border-b border-daet-ink/10 pb-3">
-              <span className="text-sm text-daet-ink/60">Number of Participants</span>
+              <span className="text-sm text-daet-ink/70">Number of Participants</span>
               <span className="font-bold text-daet-ink">{booking.number_of_pax} pax</span>
             </div>
 
             {booking.price_per_pax && (
               <div className="flex justify-between border-b border-daet-ink/10 pb-3">
-                <span className="text-sm text-daet-ink/60">Price per Person</span>
+                <span className="text-sm text-daet-ink/70">Price per Person</span>
                 <span className="font-bold text-daet-ink">
                   ₱{booking.price_per_pax.toLocaleString()}
                 </span>
@@ -299,27 +299,27 @@ export default async function BookingDetailPage({ params, searchParams }: PagePr
 
         {/* Contact Information */}
         <section className="mb-6 rounded-3xl border border-daet-ink/10 bg-white p-6 shadow-sm">
-          <h3 className="text-sm font-bold uppercase tracking-wide text-daet-ink/60">
+          <h3 className="text-sm font-bold uppercase tracking-wide text-daet-ink/70">
             Contact Information
           </h3>
 
           <div className="mt-4 space-y-2 text-sm">
             <div>
-              <span className="text-daet-ink/60">Name:</span>{" "}
+              <span className="text-daet-ink/70">Name:</span>{" "}
               <span className="font-bold text-daet-ink">{booking.contact_name}</span>
             </div>
             <div>
-              <span className="text-daet-ink/60">Email:</span>{" "}
+              <span className="text-daet-ink/70">Email:</span>{" "}
               <span className="font-bold text-daet-ink">{booking.contact_email}</span>
             </div>
             <div>
-              <span className="text-daet-ink/60">Phone:</span>{" "}
+              <span className="text-daet-ink/70">Phone:</span>{" "}
               <span className="font-bold text-daet-ink">{booking.contact_phone}</span>
             </div>
 
             {booking.special_requests && (
               <div className="mt-4 rounded-xl bg-daet-sand/30 p-3">
-                <p className="text-xs font-bold text-daet-ink/60">Special Requests:</p>
+                <p className="text-xs font-bold text-daet-ink/70">Special Requests:</p>
                 <p className="mt-1 text-sm text-daet-ink">{booking.special_requests}</p>
               </div>
             )}

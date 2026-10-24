@@ -41,7 +41,7 @@ export default async function GuideCheckInPage() {
   return (
     <PageFrame>
       <div className="mx-auto max-w-xl">
-        <Link href="/tours/guide/my-tours" className="text-sm font-bold text-daet-ink/60 hover:text-daet-ink">
+        <Link href="/tours/guide/my-tours" className="text-sm font-bold text-daet-ink/70 hover:text-daet-ink">
           ← My tours
         </Link>
         <h1 className="mt-4 text-3xl font-black text-daet-ink">Check-in</h1>
@@ -63,7 +63,7 @@ export default async function GuideCheckInPage() {
                     <Link href={`/tours/guide/tours/${tour.id}/roster`} className="flex min-h-11 items-center justify-between gap-3 p-4 hover:bg-daet-sand/40">
                       <span>
                         <span className="block font-bold text-daet-ink">{tour.contact_name}</span>
-                        <span className="block text-xs text-daet-ink/60">
+                        <span className="block text-xs text-daet-ink/70">
                           {pkg?.title ?? "Tour"} · {tour.number_of_pax} pax · {tour.booking_reference}
                         </span>
                       </span>

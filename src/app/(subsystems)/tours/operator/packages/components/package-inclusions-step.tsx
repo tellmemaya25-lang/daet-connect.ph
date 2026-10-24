@@ -60,7 +60,7 @@ export function PackageInclusionsStep({
       {/* Inclusions */}
       <div>
         <label className="block text-sm font-bold text-daet-ink">Inclusions</label>
-        <p className="mt-1 text-xs text-daet-ink/50">
+        <p className="mt-1 text-xs text-daet-ink/70">
           What's provided in this tour package?
         </p>
 
@@ -113,7 +113,7 @@ export function PackageInclusionsStep({
       {/* Exclusions */}
       <div>
         <label className="block text-sm font-bold text-daet-ink">Exclusions</label>
-        <p className="mt-1 text-xs text-daet-ink/50">
+        <p className="mt-1 text-xs text-daet-ink/70">
           What should tourists prepare or pay for separately?
         </p>
 
@@ -152,7 +152,7 @@ export function PackageInclusionsStep({
                 <button
                   type="button"
                   onClick={() => removeExclusion(index)}
-                  className="text-daet-ink/50 hover:text-daet-ink"
+                  className="text-daet-ink/70 hover:text-daet-ink"
                   aria-label="Remove exclusion"
                 >
                   ✕

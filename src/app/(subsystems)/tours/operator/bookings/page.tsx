@@ -223,7 +223,7 @@ export default async function OperatorBookingsPage({
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-4xl font-black text-daet-ink">Booking Management</h1>
-          <p className="mt-2 text-sm text-daet-ink/60">
+          <p className="mt-2 text-sm text-daet-ink/70">
             Manage bookings for {operator.business_name}
           </p>
         </div>
@@ -232,7 +232,7 @@ export default async function OperatorBookingsPage({
         <div className="mb-6">
           <Link
             href="/tours/operator/dashboard"
-            className="inline-flex items-center gap-2 text-sm font-bold text-daet-ink/60 transition hover:text-daet-ink"
+            className="inline-flex items-center gap-2 text-sm font-bold text-daet-ink/70 transition hover:text-daet-ink"
           >
             ← Back to Dashboard
           </Link>
@@ -249,7 +249,7 @@ export default async function OperatorBookingsPage({
             }`}
           >
             <p className="text-3xl font-black text-daet-ink">{stats.total}</p>
-            <p className="text-xs text-daet-ink/60">Total</p>
+            <p className="text-xs text-daet-ink/70">Total</p>
           </Link>
           <Link
             href="/tours/operator/bookings?status=pending"
@@ -260,7 +260,7 @@ export default async function OperatorBookingsPage({
             }`}
           >
             <p className="text-3xl font-black text-amber-900">{stats.pending}</p>
-            <p className="text-xs text-amber-900/60">Pending</p>
+            <p className="text-xs text-amber-900">Pending</p>
           </Link>
           <Link
             href="/tours/operator/bookings?status=confirmed"
@@ -271,7 +271,7 @@ export default async function OperatorBookingsPage({
             }`}
           >
             <p className="text-3xl font-black text-emerald-900">{stats.confirmed}</p>
-            <p className="text-xs text-emerald-900/60">Confirmed</p>
+            <p className="text-xs text-emerald-900">Confirmed</p>
           </Link>
           <Link
             href="/tours/operator/bookings?status=completed"
@@ -282,7 +282,7 @@ export default async function OperatorBookingsPage({
             }`}
           >
             <p className="text-3xl font-black text-blue-900">{stats.completed}</p>
-            <p className="text-xs text-blue-900/60">Completed</p>
+            <p className="text-xs text-blue-900">Completed</p>
           </Link>
           <Link
             href="/tours/operator/bookings?status=rejected"
@@ -304,7 +304,7 @@ export default async function OperatorBookingsPage({
               📅
             </div>
             <h2 className="text-xl font-black text-daet-ink">No bookings found</h2>
-            <p className="mt-2 text-sm text-daet-ink/60">
+            <p className="mt-2 text-sm text-daet-ink/70">
               {params.status && params.status !== "all"
                 ? `No ${params.status} bookings at the moment.`
                 : "You don't have any bookings yet."}
@@ -355,7 +355,7 @@ export default async function OperatorBookingsPage({
                       {/* Details Grid */}
                       <div className="mb-4 grid grid-cols-2 gap-x-8 gap-y-3 text-sm md:grid-cols-4">
                         <div>
-                          <p className="text-daet-ink/60">Tour Date</p>
+                          <p className="text-daet-ink/70">Tour Date</p>
                           <p className="font-bold text-daet-ink">
                             {new Date(booking.tour_date).toLocaleDateString("en-US", {
                               month: "short",
@@ -365,16 +365,16 @@ export default async function OperatorBookingsPage({
                           </p>
                         </div>
                         <div>
-                          <p className="text-daet-ink/60">Participants</p>
+                          <p className="text-daet-ink/70">Participants</p>
                           <p className="font-bold text-daet-ink">{booking.number_of_pax} pax</p>
                         </div>
                         <div>
-                          <p className="text-daet-ink/60">Contact</p>
+                          <p className="text-daet-ink/70">Contact</p>
                           <p className="font-bold text-daet-ink">{booking.contact_name}</p>
-                          <p className="text-xs text-daet-ink/60">{booking.contact_phone}</p>
+                          <p className="text-xs text-daet-ink/70">{booking.contact_phone}</p>
                         </div>
                         <div>
-                          <p className="text-daet-ink/60">Total Amount</p>
+                          <p className="text-daet-ink/70">Total Amount</p>
                           <p className="text-lg font-black text-daet-forest">
                             ₱{booking.total_amount.toLocaleString()}
                           </p>
@@ -384,7 +384,7 @@ export default async function OperatorBookingsPage({
                       {/* Special Requests */}
                       {booking.special_requests && (
                         <div className="mb-4 rounded-xl bg-daet-sand/30 p-3">
-                          <p className="text-xs font-bold text-daet-ink/60">Special Requests:</p>
+                          <p className="text-xs font-bold text-daet-ink/70">Special Requests:</p>
                           <p className="mt-1 text-sm text-daet-ink">{booking.special_requests}</p>
                         </div>
                       )}
@@ -393,7 +393,7 @@ export default async function OperatorBookingsPage({
                       {booking.status === "confirmed" && (
                         <>
                           <div className="mb-4 rounded-xl border border-daet-forest/20 bg-daet-forest/5 p-4">
-                            <p className="mb-3 text-xs font-bold uppercase tracking-wide text-daet-ink/60">
+                            <p className="mb-3 text-xs font-bold uppercase tracking-wide text-daet-ink/70">
                               Guide Assignment
                             </p>
                             <GuideAssignment
