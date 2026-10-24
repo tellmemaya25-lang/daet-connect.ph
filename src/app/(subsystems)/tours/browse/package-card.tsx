@@ -19,61 +19,43 @@ interface PackageCardProps {
 export function PackageCard({ package: pkg }: PackageCardProps) {
   const defaultVariant = pkg.tours_package_price_variants?.find((v) => v.is_default);
   const price = defaultVariant?.price_per_pax || defaultVariant?.flat_price || 0;
-  const priceLabel = defaultVariant?.price_per_pax ? "per person" : "per group";
-
-  // Debug logging
-  console.log(`Package ${pkg.title}: cover_image_url =`, pkg.cover_image_url);
+  const priceUnit = defaultVariant?.price_per_pax ? "per person" : "per group";
 
   return (
-    <article className="group overflow-hidden rounded-3xl border border-daet-ink/10 bg-white shadow-sm transition hover:shadow-lg">
-      <Link href={`/tours/packages/${pkg.id}`}>
-        {/* Cover Image */}
-        <div className="relative aspect-video overflow-hidden bg-gradient-to-br from-daet-forest to-daet-leaf">
+    <article className="group overflow-hidden rounded-2xl bg-daet-foam shadow-card transition duration-150 hover:shadow-lift">
+      <Link
+        href={`/tours/packages/${pkg.id}`}
+        className="block focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-daet-forest"
+      >
+        <div className="relative aspect-[4/3] overflow-hidden bg-daet-deep">
           {pkg.cover_image_url ? (
             <img
               src={pkg.cover_image_url}
-              alt={pkg.title}
+              alt=""
               className="h-full w-full object-cover transition duration-300 group-hover:scale-105"
             />
           ) : (
-            <div className="flex h-full items-center justify-center text-4xl text-white/20">
-              📷
-            </div>
+            <p className="flex h-full items-end p-4 font-display text-3xl font-semibold leading-8 text-daet-foam">
+              {pkg.location_name}
+            </p>
           )}
-          {/* Price Badge */}
-          <div className="absolute bottom-3 right-3 rounded-full bg-white px-4 py-2 shadow-lg">
-            <p className="text-xs font-bold uppercase tracking-wide text-daet-ink/50">
-              From
-            </p>
-            <p className="text-lg font-black text-daet-forest">
-              ₱{price.toLocaleString()}
-            </p>
-            <p className="text-[10px] font-bold text-daet-ink/50">{priceLabel}</p>
-          </div>
         </div>
-
-        {/* Content */}
-        <div className="p-5">
-          <h3 className="line-clamp-2 min-h-[3rem] font-black text-daet-ink group-hover:text-daet-forest">
+        <div className="p-4 sm:p-5">
+          <p className="text-xs font-bold uppercase tracking-[0.14em] text-daet-forest">
+            {pkg.location_name} · {pkg.duration_value} {pkg.duration_type}
+          </p>
+          <h3 className="mt-2 line-clamp-2 min-h-[4rem] font-display text-2xl font-semibold leading-8 text-daet-ink">
             {pkg.title}
           </h3>
-
-          <div className="mt-3 flex items-center gap-4 text-sm text-daet-ink/60">
-            <span className="flex items-center gap-1">
-              <span aria-hidden="true">📍</span>
-              {pkg.location_name}
-            </span>
-            <span className="flex items-center gap-1">
-              <span aria-hidden="true">⏱️</span>
-              {pkg.duration_value} {pkg.duration_type}
-            </span>
-          </div>
-
-          <div className="mt-4 flex items-center justify-between border-t border-daet-ink/10 pt-4">
-            <span className="text-sm font-bold text-daet-forest group-hover:underline">
-              View details →
-            </span>
-          </div>
+          <p className="mt-2 text-sm text-daet-ink/70">
+            {price > 0 ? (
+              <>
+                from <b className="text-lg text-daet-ink">₱{price.toLocaleString()}</b> {priceUnit}
+              </>
+            ) : (
+              "Ask the operator for rates"
+            )}
+          </p>
         </div>
       </Link>
     </article>

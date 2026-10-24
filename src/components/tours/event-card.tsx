@@ -13,25 +13,25 @@ export const EVENT_CATEGORY_STYLES: Record<TourEvent["category"], { dot: string;
 
 export function EventCard({ event, compact = false }: { event: TourEvent; compact?: boolean }) {
   const style = EVENT_CATEGORY_STYLES[event.category];
+  const start = new Date(event.starts_at);
+  const day = new Intl.DateTimeFormat("en-PH", { day: "numeric", timeZone: "Asia/Manila" }).format(start);
+  const month = new Intl.DateTimeFormat("en-PH", { month: "short", timeZone: "Asia/Manila" }).format(start);
   return (
     <Link
       href={`/tours/events/${event.id}`}
-      className="group flex gap-4 rounded-2xl border border-daet-ink/10 bg-white p-3 shadow-sm transition hover:shadow-md"
+      className="group flex items-center gap-4 rounded-2xl bg-daet-foam p-4 shadow-card transition duration-150 hover:shadow-lift"
     >
-      <div className={`grid shrink-0 place-items-center overflow-hidden rounded-xl bg-gradient-to-br from-daet-forest to-daet-leaf text-2xl ${compact ? "h-16 w-16" : "h-20 w-20 sm:h-24 sm:w-24"}`}>
-        {event.image_url ? (
-          <img src={event.image_url} alt="" className="h-full w-full object-cover" />
-        ) : (
-          <span aria-hidden="true">🎉</span>
-        )}
+      <div className={`shrink-0 overflow-hidden rounded-lg bg-daet-sea text-center ${compact ? "w-16 py-2" : "w-20 py-3"}`}>
+        <p className="font-display text-3xl font-semibold leading-8 text-daet-ink">{day}</p>
+        <p className="text-xs font-bold uppercase tracking-[0.14em] text-daet-forest">{month}</p>
       </div>
-      <div className="min-w-0 flex-1 py-1">
-        <span className={`inline-block rounded-full px-2 py-0.5 text-xs font-bold ${style.chip}`}>
+      <div className="min-w-0 flex-1">
+        <span className={`inline-block rounded-full px-2.5 py-0.5 text-xs font-bold ${style.chip}`}>
           {EVENT_CATEGORIES[event.category]}
         </span>
-        <p className="mt-1 line-clamp-2 font-black text-daet-ink group-hover:text-daet-forest">{event.title}</p>
-        <p className="mt-0.5 text-sm text-daet-ink/65">{formatEventRange(event.starts_at, event.ends_at)}</p>
-        <p className="truncate text-sm text-daet-ink/55">📍 {event.venue}</p>
+        <p className="mt-1 line-clamp-2 font-display text-lg font-semibold leading-6 text-daet-ink group-hover:text-daet-forest">{event.title}</p>
+        <p className="mt-0.5 text-sm text-daet-ink/70">{formatEventRange(event.starts_at, event.ends_at)}</p>
+        <p className="truncate text-sm text-daet-ink/70">{event.venue}</p>
       </div>
     </Link>
   );

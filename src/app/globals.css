@@ -1,13 +1,22 @@
 @import "tailwindcss";
 
 @theme {
-  --color-daet-ink: #172b24;
-  --color-daet-forest: #285a45;
-  --color-daet-leaf: #4f8063;
-  --color-daet-sand: #f5f3eb;
-  --color-daet-sun: #edbd58;
-  --color-daet-coral: #e88969;
-  --shadow-card: 0 18px 60px rgba(23, 43, 36, 0.08);
+  /* "Coastal editorial" palette (see the CONNECT-DAET design system).
+     The daet-* names are kept so existing pages pick up the new look. */
+  --color-daet-ink: #0b2b2e;
+  --color-daet-forest: #0f5a5c;
+  --color-daet-deep: #0b4446;
+  --color-daet-leaf: #2d6f6c;
+  --color-daet-sea: #dbeceb;
+  --color-daet-sand: #f7f1e5;
+  --color-daet-foam: #fffdf8;
+  --color-daet-sun: #f2b544;
+  --color-daet-coral: #c8472a;
+  --color-daet-line: #d8cdb6;
+  --font-display: var(--font-fraunces), Georgia, "Times New Roman", serif;
+  --font-sans: var(--font-public-sans), system-ui, -apple-system, "Segoe UI", sans-serif;
+  --shadow-card: 0 1px 2px rgba(11, 43, 46, 0.08), 0 8px 24px rgba(11, 43, 46, 0.06);
+  --shadow-lift: 0 2px 4px rgba(11, 43, 46, 0.1), 0 16px 40px rgba(11, 43, 46, 0.14);
 }
 
 /* Base styles live in the base layer so Tailwind utilities (e.g. font-bold on a
@@ -15,8 +24,8 @@
 @layer base {
   :root {
     color-scheme: light;
-    background: #f5f3eb;
-    color: #172b24;
+    background: #f7f1e5;
+    color: #0b2b2e;
   }
 
   * {
@@ -31,11 +40,9 @@
   body {
     margin: 0;
     min-height: 100vh;
-    background:
-      radial-gradient(circle at 85% 0%, rgba(237, 189, 88, 0.13), transparent 25rem),
-      #f5f3eb;
-    color: #172b24;
-    font-family: Arial, Helvetica, sans-serif;
+    background: #f7f1e5;
+    color: #0b2b2e;
+    font-family: var(--font-sans);
     -webkit-font-smoothing: antialiased;
   }
 
@@ -46,7 +53,7 @@
   }
 
   ::selection {
-    background: rgba(79, 128, 99, 0.2);
+    background: rgba(15, 90, 92, 0.2);
   }
 }
 
