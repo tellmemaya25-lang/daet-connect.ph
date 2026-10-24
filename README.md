@@ -163,6 +163,15 @@ Tourists pay after the operator confirms a booking, from the booking page (`/tou
 
 ### Sandbox setup
 
+Quickest way: run the setup script from your machine (keys stay in your shell):
+
+```bash
+PAYMONGO_SECRET_KEY=sk_test_... APP_URL=https://<your-deployment> npm run paymongo:setup -- --test-checkout
+```
+
+It checks the key is a test key PayMongo accepts, registers (or reuses) the webhook for `/api/webhooks/paymongo`, prints the environment variables to set, and creates a ₱100 test checkout. Paying it should add a `tours_payment_events` row with outcome `unknown_booking`, which proves the webhook and its signature work. The manual steps below do the same by hand.
+
+
 1. In the PayMongo dashboard (test mode), copy the **secret key** (`sk_test_...`) into `PAYMONGO_SECRET_KEY`.
 2. Create a webhook pointing to `https://<your-deployment>/api/webhooks/paymongo` for the event `checkout_session.payment.paid`. Copy its secret into `PAYMONGO_WEBHOOK_SECRET`. PayMongo must be able to reach the URL, so use a Vercel preview/production URL or a tunnel when testing locally.
 3. Set `NEXT_PUBLIC_APP_URL` to the same public base URL (used for the success/cancel redirects). Optionally set `PAYMONGO_PAYMENT_METHODS` to the methods enabled on your account.

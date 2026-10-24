@@ -11,7 +11,8 @@
     "typecheck": "next typegen && tsc --noEmit",
     "test:e2e:tours": "playwright test --config playwright.tours.config.ts",
     "test:scripts": "node --test scripts/*.test.mjs",
-    "seed:demo": "node scripts/seed-demo.mjs"
+    "seed:demo": "node scripts/seed-demo.mjs",
+    "paymongo:setup": "node scripts/paymongo-setup.mjs"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^1.2.0",
