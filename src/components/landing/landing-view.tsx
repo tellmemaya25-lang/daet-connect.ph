@@ -5,7 +5,7 @@ import { EVENT_CATEGORY_STYLES } from "@/components/tours/event-card";
 import { formatEventRange } from "@/lib/tours/events-calendar";
 import { EVENT_CATEGORIES, type MerchItem, type TourEvent } from "@/lib/tours/promo-validation";
 import type { PackageCardData } from "@/app/(subsystems)/tours/browse/package-card";
-import { CoastScene } from "./coast-scene";
+import { PHOTOS } from "@/lib/photo-credits";
 import { TourPicker } from "./tour-picker";
 
 const STEPS = [
@@ -13,6 +13,12 @@ const STEPS = [
   { lead: "Then, wait for a yes.", body: "The operator confirms your date and group size before anyone asks you for money." },
   { lead: "Finally, pay and go.", body: "Settle the balance by GCash, Maya or card, or upload your receipt. Your guide carries a QR badge that proves who they are." },
 ];
+
+const PLACES = [
+  { key: "calaguas", search: "Calaguas", line: "White sand, a two-hour boat ride from the port, and a night under the stars." },
+  { key: "parola", search: "Parola", line: "A long sandbar and clear water off the coast of Daet." },
+  { key: "apuao", search: "Apuao", line: "Quiet lagoons and pine-fringed sand in the Mercedes islands." },
+] as const;
 
 function Heading({ id, children, href, linkLabel }: { id: string; children: string; href?: string; linkLabel?: string }) {
   return (
@@ -69,9 +75,10 @@ export function LandingView({
             )}
           </p>
         </div>
-        <div className="relative min-h-[320px] overflow-hidden rounded-2xl bg-blue-600 sm:min-h-[420px]">
-          <CoastScene className="absolute inset-0 h-full w-full" />
-          <p className="absolute left-5 top-5 font-display text-2xl font-semibold text-white sm:left-8 sm:top-8 sm:text-3xl">Bagasbas, Daet</p>
+        <div className="relative min-h-[320px] overflow-hidden rounded-2xl bg-blue-700 sm:min-h-[420px]">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={PHOTOS.bagasbas.file} alt={PHOTOS.bagasbas.alt} width={1600} height={1200} fetchPriority="high" className="absolute inset-0 h-full w-full object-cover" />
+          <p className="absolute bottom-0 left-0 rounded-tr-2xl bg-daet-ink/80 px-5 py-3 font-display text-xl font-semibold text-white sm:text-2xl">Bagasbas, Daet</p>
         </div>
       </section>
 
@@ -82,6 +89,25 @@ export function LandingView({
           <TourPicker packages={packages} />
         </section>
       ) : null}
+
+      {/* Places: the three trips people come for */}
+      <section aria-labelledby="home-places" className="pt-16 sm:pt-24 lg:pt-32">
+        <Heading id="home-places" href="/tours/browse" linkLabel="All experiences">Three places, three kinds of day</Heading>
+        <ul className="grid gap-4 sm:gap-6 lg:grid-cols-3 lg:grid-rows-2">
+          {PLACES.map((place, i) => (
+            <li key={place.key} className={i === 0 ? "lg:col-span-2 lg:row-span-2" : undefined}>
+              <Link href={`/tours/browse?location=${encodeURIComponent(place.search)}`} className="group relative block h-full min-h-[260px] overflow-hidden rounded-2xl bg-blue-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 sm:min-h-[320px]">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={PHOTOS[place.key].file} alt={PHOTOS[place.key].alt} width={1600} height={1200} loading="lazy" className="absolute inset-0 h-full w-full object-cover transition duration-300 group-hover:scale-105" />
+                <div className="absolute inset-x-0 bottom-0 bg-daet-ink/80 p-4 text-white sm:p-5">
+                  <h3 className="font-display text-2xl font-semibold leading-8 sm:text-3xl sm:leading-9">{PHOTOS[place.key].place}</h3>
+                  <p className="mt-1 text-sm text-white sm:text-base">{place.line}</p>
+                </div>
+              </Link>
+            </li>
+          ))}
+        </ul>
+      </section>
 
       {/* What's on: dates as the figure */}
       <section aria-labelledby="home-events" className="pt-16 sm:pt-24 lg:pt-32">
@@ -156,6 +182,16 @@ export function LandingView({
           </div>
         </div>
       </section>
+
+      <p className="pt-10 text-sm leading-6 text-daet-ink/80">
+        Photos from Wikimedia Commons, cropped and resized:{" "}
+        {Object.values(PHOTOS).map((p, i, all) => (
+          <span key={p.file}>
+            <a href={p.source} className="underline underline-offset-2">{p.title}</a> by {p.author} (<a href={p.licenseUrl} className="underline underline-offset-2">{p.license}</a>)
+            {i < all.length - 1 ? "; " : "."}
+          </span>
+        ))}
+      </p>
     </>
   );
 }
