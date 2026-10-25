@@ -2,7 +2,6 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { PageFrame } from "@/components/ui/page-frame";
 import { Notice } from "@/components/ui/notice";
-import { LogoutButton } from "@/components/ui/logout-button";
 import { DashboardHeader } from "@/components/ui/dashboard-header";
 import { canAccessOperatorDashboard } from "@/lib/tours/operator-access";
 import {

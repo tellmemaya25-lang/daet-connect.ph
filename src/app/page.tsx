@@ -30,7 +30,7 @@ export default async function HomePage() {
   const featuredMerch = (merchResult.data ?? []) as MerchItem[];
 
   return (
-    <PageFrame adminNav>
+    <PageFrame>
       {/* Hero Section */}
       <section className="overflow-hidden rounded-[2rem] bg-daet-forest px-6 py-10 text-white shadow-card sm:px-10 sm:py-14 lg:px-14">
         <div className="max-w-3xl">

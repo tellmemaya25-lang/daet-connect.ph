@@ -2,6 +2,7 @@
 
 import { redirect } from "next/navigation";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { safeNextPath } from "@/lib/safe-redirect";
 
 interface ActionState {
   status: "idle" | "error" | "success";
@@ -15,6 +16,7 @@ export async function signUpWithPassword(
   const email = formData.get("email");
   const password = formData.get("password");
   const fullName = formData.get("fullName");
+  const next = safeNextPath(formData.get("next"));
 
   if (typeof email !== "string" || !email) {
     return { status: "error", message: "Email is required." };
@@ -58,11 +60,11 @@ export async function signUpWithPassword(
 
     if (signInError) {
       // If auto sign-in fails, just redirect to login
-      redirect("/login?message=Account created. Please sign in.");
+      redirect(`/login?message=${encodeURIComponent("Account created. Please sign in.")}&next=${encodeURIComponent(next)}`);
     }
 
-    // Successfully signed in, redirect to home
-    redirect("/?welcome=true");
+    // Successfully signed in: go back to where the visitor was headed
+    redirect(next);
   } catch (error) {
     if (error && typeof error === "object" && "digest" in error) {
       throw error;
