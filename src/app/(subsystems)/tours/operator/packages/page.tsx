@@ -84,10 +84,6 @@ export default async function OperatorPackagesPage({
   const packagesResult = await listOperatorPackages();
   const packages = packagesResult.success ? packagesResult.data : [];
 
-  console.log('Operator packages loaded:', packages?.length || 0);
-  if (packages && packages.length > 0) {
-    console.log('First package:', JSON.stringify(packages[0], null, 2));
-  }
 
   const params = await searchParams;
   const justSubmitted = params.submitted === "true";
@@ -99,7 +95,7 @@ export default async function OperatorPackagesPage({
       <div className="mx-auto max-w-6xl">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between mb-6">
           <div className="flex-1">
-            <p className="text-xs font-black uppercase tracking-[0.18em] text-daet-leaf">
+            <p className="text-sm font-bold text-daet-leaf">
               Package management
             </p>
             <h1 className="mt-2 text-3xl font-black text-daet-ink">Your packages</h1>
@@ -192,7 +188,7 @@ export default async function OperatorPackagesPage({
                   </p>
                   <Link
                     href={`/tours/operator/packages/${pkg.id}`}
-                    className="mt-4 inline-flex min-h-10 w-full items-center justify-center rounded-full bg-daet-forest/10 text-sm font-bold text-daet-forest transition hover:bg-daet-forest/20"
+                    className="mt-4 inline-flex min-h-10 w-full items-center justify-center rounded-full bg-daet-forest/10 text-sm font-bold text-daet-leaf transition hover:bg-daet-forest/20"
                   >
                     View details →
                   </Link>

@@ -65,11 +65,10 @@ export function BookingForm({ packageId, priceVariants, dateOptions, userProfile
 
   const totalAmount = calculateTotal();
 
-  // Get min date (tomorrow)
+  // Get min date (tomorrow in Manila, not in the visitor's or the server's zone)
   const getMinDate = () => {
-    const tomorrow = new Date();
-    tomorrow.setDate(tomorrow.getDate() + 1);
-    return tomorrow.toISOString().split("T")[0];
+    const manilaTomorrow = new Date(Date.now() + (8 + 24) * 60 * 60 * 1000);
+    return manilaTomorrow.toISOString().split("T")[0];
   };
 
   const selectedDate = dateOptions?.find((option) => option.date === tourDate);
@@ -97,25 +96,30 @@ export function BookingForm({ packageId, priceVariants, dateOptions, userProfile
     setIsSubmitting(true);
     setError(null);
 
-    const result = await createBooking({
-      packageId,
-      priceVariantId: selectedVariantId,
-      tourDate,
-      numberOfPax,
-      contactName: contactName.trim(),
-      contactEmail: contactEmail.trim(),
-      contactPhone: contactPhone.trim(),
-      specialRequests: specialRequests.trim() || undefined,
-    });
+    try {
+      const result = await createBooking({
+        packageId,
+        priceVariantId: selectedVariantId,
+        tourDate,
+        numberOfPax,
+        contactName: contactName.trim(),
+        contactEmail: contactEmail.trim(),
+        contactPhone: contactPhone.trim(),
+        specialRequests: specialRequests.trim() || undefined,
+      });
 
-    if (!result.success) {
-      setError(result.error || "Failed to create booking");
+      if (!result.success) {
+        setError(result.error || "We could not send your booking. Please try again.");
+        setIsSubmitting(false);
+        return;
+      }
+
+      // Success - redirect to booking confirmation
+      router.push(`/tours/bookings/${result.bookingId}`);
+    } catch {
+      setError("We could not reach the server. Check your connection and try again. Nothing was booked.");
       setIsSubmitting(false);
-      return;
     }
-
-    // Success - redirect to booking confirmation
-    router.push(`/tours/bookings/${result.bookingId}`);
   }
 
   if (priceVariants.length === 0) {
@@ -136,7 +140,7 @@ export function BookingForm({ packageId, priceVariants, dateOptions, userProfile
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       {error && (
-        <div className="rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-800">
+        <div role="alert" className="rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-800">
           {error}
         </div>
       )}
@@ -205,7 +209,7 @@ export function BookingForm({ packageId, priceVariants, dateOptions, userProfile
                 value={selectedVariantId}
                 onChange={(e) => setSelectedVariantId(e.target.value)}
                 required
-                className="mt-1 w-full rounded-xl border border-daet-ink/20 px-4 py-2.5 text-sm focus:border-daet-forest focus:outline-none focus:ring-2 focus:ring-daet-forest/20"
+                className="mt-1 w-full rounded-xl border border-daet-ink/20 min-h-11 px-4 py-2.5 text-base focus:border-daet-forest focus:outline-none focus:ring-2 focus:ring-daet-forest/20"
               >
                 {priceVariants.map((variant) => (
                   <option key={variant.id} value={variant.id}>
@@ -230,9 +234,10 @@ export function BookingForm({ packageId, priceVariants, dateOptions, userProfile
                 type="button"
                 onClick={() => handlePaxChange(numberOfPax - 1)}
                 disabled={numberOfPax <= minPax}
-                className="grid h-10 w-10 place-items-center rounded-full border border-daet-ink/20 text-lg font-bold text-daet-ink hover:bg-daet-sand disabled:opacity-30"
+                aria-label="One fewer participant"
+                className="grid h-11 w-11 place-items-center rounded-full border border-daet-ink/20 text-lg font-bold text-daet-ink hover:bg-daet-sand disabled:opacity-30"
               >
-                −
+                <span aria-hidden="true">−</span>
               </button>
               <input
                 type="number"
@@ -242,15 +247,16 @@ export function BookingForm({ packageId, priceVariants, dateOptions, userProfile
                 min={minPax}
                 max={maxPax}
                 required
-                className="w-20 rounded-xl border border-daet-ink/20 px-4 py-2.5 text-center text-sm font-bold focus:border-daet-forest focus:outline-none focus:ring-2 focus:ring-daet-forest/20"
+                className="w-20 rounded-xl border border-daet-ink/20 min-h-11 px-4 py-2.5 text-center text-base font-bold focus:border-daet-forest focus:outline-none focus:ring-2 focus:ring-daet-forest/20"
               />
               <button
                 type="button"
                 onClick={() => handlePaxChange(numberOfPax + 1)}
                 disabled={numberOfPax >= maxPax}
-                className="grid h-10 w-10 place-items-center rounded-full border border-daet-ink/20 text-lg font-bold text-daet-ink hover:bg-daet-sand disabled:opacity-30"
+                aria-label="One more participant"
+                className="grid h-11 w-11 place-items-center rounded-full border border-daet-ink/20 text-lg font-bold text-daet-ink hover:bg-daet-sand disabled:opacity-30"
               >
-                +
+                <span aria-hidden="true">+</span>
               </button>
               <span className="text-sm text-daet-ink/70">
                 ({minPax} - {maxPax} pax)
@@ -299,7 +305,7 @@ export function BookingForm({ packageId, priceVariants, dateOptions, userProfile
               onChange={(e) => setContactName(e.target.value)}
               required
               minLength={2}
-              className="mt-1 w-full rounded-xl border border-daet-ink/20 px-4 py-2.5 text-sm focus:border-daet-forest focus:outline-none focus:ring-2 focus:ring-daet-forest/20"
+              className="mt-1 w-full rounded-xl border border-daet-ink/20 min-h-11 px-4 py-2.5 text-base focus:border-daet-forest focus:outline-none focus:ring-2 focus:ring-daet-forest/20"
               placeholder="Juan Dela Cruz"
             />
           </div>
@@ -315,7 +321,7 @@ export function BookingForm({ packageId, priceVariants, dateOptions, userProfile
                 value={contactEmail}
                 onChange={(e) => setContactEmail(e.target.value)}
                 required
-                className="mt-1 w-full rounded-xl border border-daet-ink/20 px-4 py-2.5 text-sm focus:border-daet-forest focus:outline-none focus:ring-2 focus:ring-daet-forest/20"
+                className="mt-1 w-full rounded-xl border border-daet-ink/20 min-h-11 px-4 py-2.5 text-base focus:border-daet-forest focus:outline-none focus:ring-2 focus:ring-daet-forest/20"
                 placeholder="juan@example.com"
               />
             </div>
@@ -331,7 +337,7 @@ export function BookingForm({ packageId, priceVariants, dateOptions, userProfile
                 onChange={(e) => setContactPhone(e.target.value)}
                 required
                 minLength={10}
-                className="mt-1 w-full rounded-xl border border-daet-ink/20 px-4 py-2.5 text-sm focus:border-daet-forest focus:outline-none focus:ring-2 focus:ring-daet-forest/20"
+                className="mt-1 w-full rounded-xl border border-daet-ink/20 min-h-11 px-4 py-2.5 text-base focus:border-daet-forest focus:outline-none focus:ring-2 focus:ring-daet-forest/20"
                 placeholder="09123456789"
               />
             </div>
@@ -346,7 +352,7 @@ export function BookingForm({ packageId, priceVariants, dateOptions, userProfile
               value={specialRequests}
               onChange={(e) => setSpecialRequests(e.target.value)}
               rows={3}
-              className="mt-1 w-full rounded-xl border border-daet-ink/20 px-4 py-2.5 text-sm focus:border-daet-forest focus:outline-none focus:ring-2 focus:ring-daet-forest/20"
+              className="mt-1 w-full rounded-xl border border-daet-ink/20 min-h-11 px-4 py-2.5 text-base focus:border-daet-forest focus:outline-none focus:ring-2 focus:ring-daet-forest/20"
               placeholder="Any dietary restrictions, accessibility needs, or special occasions..."
             />
           </div>
@@ -358,7 +364,7 @@ export function BookingForm({ packageId, priceVariants, dateOptions, userProfile
         <div>
           <p className="text-sm font-bold text-daet-ink">Ready to book?</p>
           <p className="text-xs text-daet-ink/70">
-            Your booking will be pending until confirmed by the operator
+            Nothing is charged yet. You pay after the operator confirms.
           </p>
         </div>
         <button
@@ -366,7 +372,7 @@ export function BookingForm({ packageId, priceVariants, dateOptions, userProfile
           disabled={isSubmitting || noOpenDates || notEnoughSeats || !tourDate}
           className="min-h-11 shrink-0 whitespace-nowrap rounded-full bg-daet-forest px-8 py-3 text-sm font-black text-white transition hover:bg-daet-ink disabled:opacity-50"
         >
-          {isSubmitting ? "Submitting..." : `Book for ₱${totalAmount.toLocaleString()}`}
+          {isSubmitting ? "Sending request..." : `Request booking · ₱${totalAmount.toLocaleString()}`}
         </button>
       </div>
     </form>

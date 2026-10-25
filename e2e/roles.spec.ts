@@ -21,6 +21,8 @@ const pages: Record<Role, string[]> = {
     "/tours/operator/merch",
     "/tours/operator/merch/new",
     "/tours/operator/packages",
+    "/tours/operator/packages/create",
+    "/tours/operator/settings",
     "/tours/messages",
   ],
   guide: ["/tours/guide/dashboard", "/tours/guide/my-tours", "/tours/guide/check-in", "/tours/guide/my-qr", "/tours/guide/tours/e9466de5-4877-47c1-ac14-d86deeb38b9e/roster"],
@@ -32,6 +34,8 @@ const pages: Record<Role, string[]> = {
     "/tours/admin/events",
     "/tours/admin/attractions",
     "/tours/admin/operators",
+    "/tours/admin/guides",
+    "/tours/admin/packages",
     "/tours/messages",
   ],
 };

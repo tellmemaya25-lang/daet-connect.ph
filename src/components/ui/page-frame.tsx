@@ -27,8 +27,14 @@ export async function PageFrame({
   const tabs = role === undefined ? [] : roleTabs(role);
   return (
     <div className="min-h-screen">
-      <SiteHeader showAdminLink={adminNav} signedIn={role !== undefined} />
-      <main className={`mx-auto w-full max-w-7xl px-4 py-8 sm:px-6 sm:py-12 lg:px-8 ${tabs.length ? "pb-24 sm:pb-12" : ""}`}>
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:rounded-full focus:bg-daet-forest focus:px-5 focus:py-3 focus:text-sm focus:font-bold focus:text-white"
+      >
+        Skip to main content
+      </a>
+      <SiteHeader showAdminLink={adminNav} signedIn={role !== undefined} tabs={tabs} />
+      <main id="main-content" tabIndex={-1} className={`mx-auto w-full max-w-7xl px-4 py-8 sm:px-6 sm:py-12 lg:px-8 ${tabs.length ? "pb-24 sm:pb-12" : ""}`}>
         {children}
       </main>
       <footer className={`mx-auto max-w-7xl px-4 pt-2 text-xs text-daet-ink/70 sm:px-6 sm:pb-8 lg:px-8 print:hidden ${tabs.length ? "pb-24" : "pb-8"}`}>

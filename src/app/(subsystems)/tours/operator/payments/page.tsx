@@ -49,7 +49,7 @@ export default async function OperatorPaymentsPage({
           <Link href="/tours/operator/dashboard" className="inline-flex min-h-11 items-center text-sm font-bold text-daet-forest hover:underline">
             ← Dashboard
           </Link>
-          <p className="text-xs font-black uppercase tracking-[0.18em] text-daet-leaf">{result.businessName}</p>
+          <p className="text-sm font-bold text-daet-leaf">{result.businessName}</p>
           <h1 className="mt-1 text-3xl font-black tracking-tight text-daet-ink">Revenue &amp; payments</h1>
         </div>
         <ButtonLink href={`/tours/operator/payments/export?month=${key}`} variant="secondary" prefetch={false}>

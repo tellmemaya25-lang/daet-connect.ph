@@ -85,7 +85,7 @@ export async function OperatorHome({ operatorId, searchParams }: { operatorId: s
     <PageFrame>
       <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <p className="text-xs font-black uppercase tracking-[0.18em] text-daet-leaf">Operator dashboard</p>
+          <p className="text-sm font-bold text-daet-leaf">Operator dashboard</p>
           <h1 className="mt-1 text-3xl font-black tracking-tight text-daet-ink">{operator?.business_name ?? "Your business"}</h1>
         </div>
         <div className="flex flex-wrap gap-2">
@@ -145,7 +145,7 @@ export async function OperatorHome({ operatorId, searchParams }: { operatorId: s
                   className={`flex h-12 flex-col items-center justify-center rounded-xl text-sm transition ${selected ? "bg-daet-forest text-white" : day ? "bg-daet-sand font-bold text-daet-ink hover:bg-daet-sand/70" : "text-daet-ink/70 hover:bg-daet-sand/50"} ${isToday && !selected ? "ring-2 ring-daet-forest/40" : ""}`}
                 >
                   <span>{cell.day}</span>
-                  {day ? <span className={`text-[10px] leading-none ${selected ? "text-white/85" : "text-daet-forest"}`}>{day.pax} pax</span> : null}
+                  {day ? <span className={`text-[10px] leading-none ${selected ? "text-white" : "text-daet-forest"}`}>{day.pax} pax</span> : null}
                   <span className="sr-only">
                     {` ${formatDayHeading(cell.dateKey)}${day ? `, ${day.bookings} booking${day.bookings === 1 ? "" : "s"}` : ""}`}
                   </span>

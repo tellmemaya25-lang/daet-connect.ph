@@ -130,7 +130,7 @@ export default async function AdminOperatorQueuePage({
     <PageFrame adminNav>
       <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <p className="text-xs font-black uppercase tracking-[0.18em] text-daet-leaf">Tourism Office</p>
+          <p className="text-sm font-bold text-daet-leaf">Tourism Office</p>
           <h1 className="mt-2 text-3xl font-black tracking-tight text-daet-ink sm:text-4xl">Operator applications</h1>
           <p className="mt-2 max-w-2xl text-sm leading-6 text-daet-ink/65">Review the submitted business details and documents, then approve or return the application with a clear reason.</p>
         </div>

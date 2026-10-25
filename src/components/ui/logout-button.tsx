@@ -18,6 +18,8 @@ export function LogoutButton({ className, compact = false }: { className?: strin
     try {
       const response = await fetch("/auth/logout", { method: "POST" });
       if (!response.ok) throw new Error(String(response.status));
+      // Saved tickets belong to the signed-in user; do not leave them on a shared phone.
+      if ("caches" in window) await caches.delete("daet-tickets-v1").catch(() => false);
       window.location.assign("/");
     } catch {
       setFailed(true);

@@ -14,6 +14,8 @@ test.describe("public pages", () => {
     "/tours/merch",
     "/tours/plan",
     "/login",
+    "/signup",
+    "/forgot-password",
   ]) {
     test(`renders ${path}`, async ({ page }) => {
       await visit(page, path);

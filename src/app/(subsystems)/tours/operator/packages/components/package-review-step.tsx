@@ -142,7 +142,7 @@ export function PackageReviewStep({
           <div className="mt-2 space-y-1">
             {data.stops.map((stop, i) => (
               <div key={i} className="flex items-center gap-2 text-sm text-daet-ink/70">
-                <span className="flex h-5 w-5 items-center justify-center rounded-full bg-daet-forest/10 text-xs font-bold text-daet-forest">
+                <span className="flex h-5 w-5 items-center justify-center rounded-full bg-daet-forest/10 text-xs font-bold text-daet-leaf">
                   {i + 1}
                 </span>
                 {stop.locationName}

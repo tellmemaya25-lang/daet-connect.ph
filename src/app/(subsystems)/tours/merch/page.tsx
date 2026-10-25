@@ -37,9 +37,9 @@ export default async function MerchPage({
   return (
     <PageFrame>
       <header className="mb-6 overflow-hidden rounded-2xl bg-daet-forest px-5 py-8 text-white sm:px-8">
-        <p className="text-xs font-black uppercase tracking-[0.18em] text-emerald-100/80">Take a piece of Daet home</p>
+        <p className="text-sm font-bold text-white">Take a piece of Daet home</p>
         <h1 className="mt-2 text-3xl font-black tracking-tight sm:text-4xl">Daet merchandise</h1>
-        <p className="mt-2 max-w-2xl text-sm leading-6 text-white/80">
+        <p className="mt-2 max-w-2xl text-sm leading-6 text-white">
           T-shirts, mugs, souvenirs and pasalubong from local sellers. Contact the seller directly or visit their shop to buy.
         </p>
       </header>

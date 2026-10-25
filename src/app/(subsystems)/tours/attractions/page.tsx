@@ -57,7 +57,7 @@ export default async function AttractionsPage({ searchParams }: PageProps) {
   return (
     <PageFrame>
       <div className="mx-auto max-w-6xl">
-        <p className="text-xs font-black uppercase tracking-[0.18em] text-daet-leaf">Explore Camarines Norte</p>
+        <p className="text-sm font-bold text-daet-leaf">Explore Camarines Norte</p>
         <h1 className="mt-1 text-4xl font-black text-daet-ink">Attractions</h1>
         <p className="mt-2 max-w-2xl text-sm leading-6 text-daet-ink/70">
           Beaches, heritage sites and islands around Daet. Details come from the sources shown on each place; check hours before you go.

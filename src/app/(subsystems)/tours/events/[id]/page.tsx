@@ -121,7 +121,7 @@ export default async function EventDetailPage({ params }: { params: Promise<{ id
                   Add to my calendar
                 </a>
               ) : null}
-              <a href={mapsUrl} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-11 items-center justify-center rounded-full border border-daet-forest/30 px-6 text-sm font-bold text-daet-forest hover:bg-daet-forest/5">
+              <a href={mapsUrl} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-11 items-center justify-center rounded-full border border-daet-forest/30 px-6 text-sm font-bold text-daet-leaf hover:bg-daet-forest/5">
                 Open in Google Maps
               </a>
               <Link href="/tours/browse" className="inline-flex min-h-11 items-center justify-center rounded-full border border-daet-ink/15 px-6 text-sm font-bold text-daet-ink hover:bg-daet-sand">

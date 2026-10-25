@@ -100,7 +100,7 @@ export default async function GuideDashboardPage({ searchParams }: { searchParam
     <PageFrame>
       <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <p className="text-xs font-black uppercase tracking-[0.18em] text-daet-leaf">Approved guide</p>
+          <p className="text-sm font-bold text-daet-leaf">Approved guide</p>
           <h1 className="mt-1 text-3xl font-black tracking-tight text-daet-ink">Welcome, {profile.full_name}.</h1>
           <div className="mt-2">
             <RatingBadge summary={toSummary(ratingRow)} />
