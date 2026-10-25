@@ -18,6 +18,12 @@ test("describe a trip, plan it, then ask the assistant to change it", async ({ p
   // 2. Plan, then edit through the assistant.
   await page.getByRole("button", { name: /plan my trip/i }).click();
   await expect(page.getByText(/Day 1/).first()).toBeVisible({ timeout: 30_000 });
+  await checkA11y(page, "plan timeline");
+  // Editing controls stay hidden until a stop is opened.
+  await expect(page.getByRole("button", { name: /^Remove (?!the church)/ })).toHaveCount(0);
+  await page.getByRole("button", { name: /^Edit / }).first().click();
+  await expect(page.getByRole("button", { name: /^Remove (?!the church)/ })).toHaveCount(1);
+  await checkA11y(page, "plan with a stop open for editing");
   await page.getByLabel("What should the assistant change?").fill("make it more relaxed and start at 9am");
   await page.getByRole("button", { name: "Ask", exact: true }).click();
   await expect(page.getByText(/days now run 9:00 AM/i)).toBeVisible();

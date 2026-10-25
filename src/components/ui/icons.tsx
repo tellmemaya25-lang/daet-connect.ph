@@ -95,3 +95,32 @@ export function TabIcon({ label, className = "h-6 w-6" }: { label: string; class
     </Icon>
   );
 }
+
+const CATEGORY_SHAPES: Record<string, string> = {
+  beach: "M2 17c2.5 0 2.5-2 5-2s2.5 2 5 2 2.5-2 5-2 2.5 2 5 2M7 11a5 5 0 0 1 10 0",
+  heritage: "M4 21h16M6 21V11M10 21V11M14 21V11M18 21V11M3 9l9-5 9 5z",
+  nature: "M5 19c0-8 5-14 15-14 0 10-6 15-14 15M5 19l7-7",
+  park: "M12 21v-7M6 14a6 6 0 1 1 12 0z",
+  food: "M7 3v7a2 2 0 0 0 2 0V3M8 10v11M17 3c-2.5 1.5-3 5-1 8h1v10",
+  adventure: "M3 16c3 0 3-3 6-3s3 3 6 3 3-3 6-3M6 9l5-4 2 4",
+  shopping: "M6 8h12l-1 12H7zM9 8a3 3 0 0 1 6 0",
+  religious: "M12 3v4M10 5h4M7 21V12l5-4 5 4v9M10 21v-5h4v5",
+  lunch: "M7 3v7a2 2 0 0 0 2 0V3M8 10v11M17 3c-2.5 1.5-3 5-1 8h1v10",
+};
+
+/** Line icon for an attraction category (or "lunch"); replaces the emoji in CATEGORY_ICONS. */
+export function CategoryIcon({ category, className = "h-5 w-5" }: { category: string; className?: string }) {
+  return <Icon className={className}>{p(CATEGORY_SHAPES[category] ?? CATEGORY_SHAPES.park)}</Icon>;
+}
+
+export const ArrowDownIcon = (props: IconProps) => (
+  <Icon {...props}>
+    <path d="M12 4v16M6 14l6 6 6-6" />
+  </Icon>
+);
+
+export const ChevronLeftIcon = (props: IconProps) => (
+  <Icon {...props}>
+    <path d="M15 5l-7 7 7 7" />
+  </Icon>
+);
