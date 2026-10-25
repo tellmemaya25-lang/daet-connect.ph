@@ -278,7 +278,7 @@ export default async function PackageDetailPage({ params }: PageProps) {
                   <p className="mt-2 text-xs text-daet-ink/70">Some distances are estimated from straight-line distance; actual roads and boat crossings may differ.</p>
                 ) : null}
                 {routeLink ? (
-                  <a href={routeLink} target="_blank" rel="noopener noreferrer" className="mt-4 inline-flex min-h-11 items-center justify-center rounded-full border border-daet-forest/30 px-5 text-sm font-bold text-daet-forest hover:bg-daet-forest/5">
+                  <a href={routeLink} target="_blank" rel="noopener noreferrer" className="mt-4 inline-flex min-h-11 items-center justify-center rounded-full border border-daet-forest/30 px-5 text-sm font-bold text-daet-leaf hover:bg-daet-forest/5">
                     Open route in Google Maps
                   </a>
                 ) : null}

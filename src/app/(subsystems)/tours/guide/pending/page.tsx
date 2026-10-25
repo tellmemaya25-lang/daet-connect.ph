@@ -58,7 +58,7 @@ export default async function GuidePendingPage() {
         <div className="bg-daet-forest px-6 py-8 text-white sm:px-10 sm:py-10">
           <span className="inline-flex items-center gap-2 rounded-full bg-white/15 px-3 py-1 text-xs font-black uppercase tracking-[0.12em]"><span className="h-2 w-2 animate-pulse rounded-full bg-daet-sun" /> In review</span>
           <h1 className="mt-4 text-3xl font-black sm:text-4xl">Pending Approval</h1>
-          <p className="mt-3 max-w-lg text-sm leading-6 text-white/80">Your guide profile and private ID verification are with the Daet Tourism Office.</p>
+          <p className="mt-3 max-w-lg text-sm leading-6 text-white">Your guide profile and private ID verification are with the Daet Tourism Office.</p>
         </div>
         <div className="p-6 sm:p-10">
           <ol className="space-y-5">

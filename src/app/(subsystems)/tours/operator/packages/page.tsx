@@ -188,7 +188,7 @@ export default async function OperatorPackagesPage({
                   </p>
                   <Link
                     href={`/tours/operator/packages/${pkg.id}`}
-                    className="mt-4 inline-flex min-h-10 w-full items-center justify-center rounded-full bg-daet-forest/10 text-sm font-bold text-daet-forest transition hover:bg-daet-forest/20"
+                    className="mt-4 inline-flex min-h-10 w-full items-center justify-center rounded-full bg-daet-forest/10 text-sm font-bold text-daet-leaf transition hover:bg-daet-forest/20"
                   >
                     View details →
                   </Link>

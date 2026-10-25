@@ -143,7 +143,7 @@ export async function OperatorHome({ operatorId, searchParams }: { operatorId: s
                   className={`flex h-12 flex-col items-center justify-center rounded-xl text-sm transition ${selected ? "bg-daet-forest text-white" : day ? "bg-daet-sand font-bold text-daet-ink hover:bg-daet-sand/70" : "text-daet-ink/70 hover:bg-daet-sand/50"} ${isToday && !selected ? "ring-2 ring-daet-forest/40" : ""}`}
                 >
                   <span>{cell.day}</span>
-                  {day ? <span className={`text-[10px] leading-none ${selected ? "text-white/85" : "text-daet-forest"}`}>{day.pax} pax</span> : null}
+                  {day ? <span className={`text-[10px] leading-none ${selected ? "text-white" : "text-daet-forest"}`}>{day.pax} pax</span> : null}
                   <span className="sr-only">
                     {` ${formatDayHeading(cell.dateKey)}${day ? `, ${day.bookings} booking${day.bookings === 1 ? "" : "s"}` : ""}`}
                   </span>

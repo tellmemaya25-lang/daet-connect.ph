@@ -246,7 +246,7 @@ export function PackagePricingStep({
       <button
         type="button"
         onClick={addVariant}
-        className="inline-flex min-h-11 items-center gap-2 rounded-full border-2 border-dashed border-daet-forest/30 bg-daet-forest/5 px-5 text-sm font-bold text-daet-forest transition hover:border-daet-forest/50 hover:bg-daet-forest/10"
+        className="inline-flex min-h-11 items-center gap-2 rounded-full border-2 border-dashed border-daet-forest/30 bg-daet-forest/5 px-5 text-sm font-bold text-daet-leaf transition hover:border-daet-forest/50 hover:bg-daet-forest/10"
       >
         + Add another variant
       </button>

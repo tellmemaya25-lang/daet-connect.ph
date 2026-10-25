@@ -66,7 +66,7 @@ export default async function AdminAttractionsPage({ searchParams }: { searchPar
                 </div>
               </div>
               <div className="grid shrink-0 grid-cols-2 gap-2 sm:flex">
-                <Link href={`/tours/admin/attractions/${attraction.id}/edit`} className="inline-flex min-h-11 items-center justify-center rounded-full border border-daet-forest/30 px-5 text-sm font-bold text-daet-forest hover:bg-daet-forest/5">
+                <Link href={`/tours/admin/attractions/${attraction.id}/edit`} className="inline-flex min-h-11 items-center justify-center rounded-full border border-daet-forest/30 px-5 text-sm font-bold text-daet-leaf hover:bg-daet-forest/5">
                   Edit
                 </Link>
                 <form action={deleteAttraction}>

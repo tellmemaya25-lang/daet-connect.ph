@@ -21,7 +21,7 @@ function DocumentLink({ label, url }: { label: string; url: string | null }) {
       href={url}
       target="_blank"
       rel="noopener noreferrer"
-      className="inline-flex min-h-11 items-center rounded-full border border-daet-forest/20 px-4 text-sm font-bold text-daet-forest transition hover:bg-daet-forest/5"
+      className="inline-flex min-h-11 items-center rounded-full border border-daet-forest/20 px-4 text-sm font-bold text-daet-leaf transition hover:bg-daet-forest/5"
     >
       Download {label} <span className="ml-2" aria-hidden="true">↗</span>
     </a>

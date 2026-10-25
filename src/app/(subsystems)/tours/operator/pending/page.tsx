@@ -98,7 +98,7 @@ export default async function OperatorPendingPage() {
             <span className="h-2 w-2 animate-pulse rounded-full bg-daet-sun" /> In review
           </span>
           <h1 className="mt-4 text-3xl font-black sm:text-4xl">Pending Approval</h1>
-          <p className="mt-3 max-w-lg text-sm leading-6 text-white/80">Your application is with the Daet Tourism Office. We’ll update this page once the review is complete.</p>
+          <p className="mt-3 max-w-lg text-sm leading-6 text-white">Your application is with the Daet Tourism Office. We’ll update this page once the review is complete.</p>
         </div>
         <div className="p-6 sm:p-10">
           <ol className="space-y-5">
