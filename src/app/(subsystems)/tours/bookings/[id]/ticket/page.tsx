@@ -71,7 +71,7 @@ export default async function BookingTicketPage({ params }: PageProps) {
         <section className="mt-4 rounded-3xl border border-daet-ink/10 bg-white p-6 text-center shadow-card print:border-black print:shadow-none">
           <p className="text-xs font-black uppercase tracking-[0.2em] text-daet-leaf print:text-black">CONNECT-DAET · Tour ticket</p>
           <h1 className="mt-2 text-2xl font-black text-daet-ink">{pkg?.title ?? "Tour booking"}</h1>
-          <p className="mt-1 text-sm text-daet-ink/65">{tourDate(booking.tour_date)}</p>
+          <p className="mt-1 text-sm text-daet-ink/70">{tourDate(booking.tour_date)}</p>
           {ticket ? (
             <img
               src={ticket.pngDataUrl}
@@ -91,7 +91,9 @@ export default async function BookingTicketPage({ params }: PageProps) {
           </p>
           {pkg?.location_name ? <p className="mt-1 text-xs text-daet-ink/70">📍 {pkg.location_name}</p> : null}
           <p className="mt-4 text-xs leading-5 text-daet-ink/70">
-            Show this QR to your guide on the tour day. A screenshot works offline. Valid until the end of the tour day.
+            {ticket
+              ? "Show this QR to your guide on the tour day. A screenshot works offline. Valid until the end of the tour day."
+              : "Show this booking reference to your guide on the tour day. A screenshot works offline."}
           </p>
         </section>
         {ticket ? <PrintTicketButton /> : null}
