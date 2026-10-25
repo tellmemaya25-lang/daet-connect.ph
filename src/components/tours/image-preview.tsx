@@ -54,8 +54,8 @@ export function ImagePreview({
           onDragOver={(e) => handleDragOver(e, index)}
           onDragEnd={handleDragEnd}
           className={`
-            relative aspect-video rounded-lg overflow-hidden border-2 
-            ${draggedIndex === index ? 'opacity-50 border-blue-500' : 'border-gray-200'}
+            relative aspect-video rounded-xl overflow-hidden border-2 
+            ${draggedIndex === index ? 'opacity-50 border-daet-forest' : 'border-daet-ink/20'}
             ${editable ? 'cursor-move' : ''}
           `}
         >

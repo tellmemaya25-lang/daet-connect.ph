@@ -19,6 +19,8 @@ export function LogoutButton({ className = '' }: { className?: string }) {
       const response = await fetch('/auth/logout', { method: 'POST' });
 
       if (response.ok) {
+        // Saved tickets belong to the signed-in user; do not leave them on a shared phone.
+        if ('caches' in window) await caches.delete('daet-tickets-v1');
         router.push('/');
         router.refresh();
         return;

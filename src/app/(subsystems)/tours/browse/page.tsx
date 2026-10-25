@@ -135,22 +135,17 @@ export default async function BrowsePackagesPage({
         {/* Header */}
         <div className="mb-8 flex items-start justify-between gap-4">
           <div>
-            <p className="text-xs font-black uppercase tracking-[0.18em] text-daet-leaf">
-              Explore Daet
-            </p>
-            <h1 className="mt-2 text-3xl font-black text-daet-ink sm:text-4xl">
-              Tour Packages
-            </h1>
-            <p className="mt-2 text-sm leading-6 text-daet-ink/65">
+            <h1 className="text-4xl font-black text-daet-ink sm:text-5xl">Find a trip</h1>
+            <p className="mt-2 text-sm leading-6 text-daet-ink/80">
               Discover authentic experiences with local operators and certified guides.
             </p>
           </div>
           {user && (
             <Link
               href="/tours/my-bookings"
-              className="rounded-full bg-daet-forest px-6 py-3 text-sm font-bold text-white transition hover:bg-daet-ink"
+              className="inline-flex min-h-11 shrink-0 items-center whitespace-nowrap rounded-full bg-daet-forest px-6 text-sm font-bold text-white transition hover:bg-daet-leaf"
             >
-              My Bookings
+              My bookings
             </Link>
           )}
         </div>

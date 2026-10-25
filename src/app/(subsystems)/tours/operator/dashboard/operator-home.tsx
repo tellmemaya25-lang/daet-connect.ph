@@ -84,7 +84,7 @@ export async function OperatorHome({ operatorId, searchParams }: { operatorId: s
     <PageFrame>
       <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <p className="text-xs font-black uppercase tracking-[0.18em] text-daet-leaf">Operator dashboard</p>
+          <p className="text-sm font-bold text-daet-leaf">Operator dashboard</p>
           <h1 className="mt-1 text-3xl font-black tracking-tight text-daet-ink">{operator?.business_name ?? "Your business"}</h1>
         </div>
         <div className="flex flex-wrap gap-2">

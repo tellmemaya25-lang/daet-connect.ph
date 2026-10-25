@@ -94,7 +94,7 @@ export default async function OperatorPendingPage() {
     <PageFrame>
       <section className="mx-auto max-w-2xl overflow-hidden rounded-3xl border border-daet-ink/10 bg-white shadow-card">
         <div className="bg-daet-forest px-6 py-8 text-white sm:px-10 sm:py-10">
-          <span className="inline-flex items-center gap-2 rounded-full bg-white/15 px-3 py-1 text-xs font-black uppercase tracking-[0.12em]">
+          <span className="inline-flex items-center gap-2 rounded-full bg-white/15 px-3 py-1 text-sm font-bold">
             <span className="h-2 w-2 animate-pulse rounded-full bg-daet-sun" /> In review
           </span>
           <h1 className="mt-4 text-3xl font-black sm:text-4xl">Pending Approval</h1>

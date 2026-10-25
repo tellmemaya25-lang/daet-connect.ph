@@ -37,7 +37,7 @@ export function AdminPageHeading({
         <Link href={backHref} className="inline-flex min-h-11 items-center text-sm font-bold text-daet-forest hover:underline">
           ← {backLabel}
         </Link>
-        <p className="text-xs font-black uppercase tracking-[0.18em] text-daet-leaf">{eyebrow}</p>
+        <p className="text-sm font-bold text-daet-leaf">{eyebrow}</p>
         <h1 className="mt-1 text-3xl font-black tracking-tight text-daet-ink">{title}</h1>
       </div>
       {action ? (

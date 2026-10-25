@@ -77,7 +77,7 @@ export default async function AdminDashboardPage() {
       <div className="mb-8">
         <div className="flex items-center justify-between">
           <div>
-            <p className="text-xs font-black uppercase tracking-[0.18em] text-daet-leaf">Tourism Office</p>
+            <p className="text-sm font-bold text-daet-leaf">Tourism Office</p>
             <h1 className="mt-2 text-3xl font-black tracking-tight text-daet-ink sm:text-4xl">
               Admin Dashboard
             </h1>

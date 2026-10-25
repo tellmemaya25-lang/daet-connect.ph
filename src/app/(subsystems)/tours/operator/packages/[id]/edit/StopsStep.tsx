@@ -135,9 +135,9 @@ export function StopsStep({
   const stopsErrors = getStopsErrors();
 
   return (
-    <div className="border rounded-lg p-6 bg-white">
+    <div className="border rounded-xl p-6 bg-white">
       <div className="flex items-center justify-between mb-6">
-        <h2 className="text-xl font-semibold text-gray-900">Tour Stops</h2>
+        <h2 className="text-xl font-bold text-daet-ink">Tour Stops</h2>
         {canAddStops && (
           <button
             type="button"
@@ -152,7 +152,7 @@ export function StopsStep({
               });
             }}
             disabled={loading}
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
+            className="px-4 py-2 bg-daet-forest text-white rounded-xl text-sm font-medium hover:bg-daet-leaf transition disabled:opacity-50 disabled:cursor-not-allowed"
           >
             + Add Stop
           </button>
@@ -163,23 +163,23 @@ export function StopsStep({
       <div className="overflow-x-auto">
         <table className="w-full text-sm">
           <thead>
-            <tr className="border-b border-gray-200 bg-gray-50">
-              <th className="px-4 py-2 text-left font-semibold text-gray-700">#</th>
-              <th className="px-4 py-2 text-left font-semibold text-gray-700">Location</th>
-              <th className="px-4 py-2 text-left font-semibold text-gray-700">Description</th>
-              <th className="px-4 py-2 text-left font-semibold text-gray-700">Coordinates</th>
-              <th className="px-4 py-2 text-left font-semibold text-gray-700">Actions</th>
+            <tr className="border-b border-daet-ink/20 bg-slate-50">
+              <th className="px-4 py-2 text-left font-bold text-daet-ink/80">#</th>
+              <th className="px-4 py-2 text-left font-bold text-daet-ink/80">Location</th>
+              <th className="px-4 py-2 text-left font-bold text-daet-ink/80">Description</th>
+              <th className="px-4 py-2 text-left font-bold text-daet-ink/80">Coordinates</th>
+              <th className="px-4 py-2 text-left font-bold text-daet-ink/80">Actions</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-200">
+          <tbody className="divide-y divide-daet-ink/10">
             {sortedStops.map((stop, index) => (
-              <tr key={stop.id} className="hover:bg-gray-50">
-                <td className="px-4 py-3 text-gray-900 font-medium">{index + 1}</td>
-                <td className="px-4 py-3 text-gray-900">{stop.locationName}</td>
-                <td className="px-4 py-3 text-gray-600">
+              <tr key={stop.id} className="hover:bg-slate-50">
+                <td className="px-4 py-3 text-daet-ink font-medium">{index + 1}</td>
+                <td className="px-4 py-3 text-daet-ink">{stop.locationName}</td>
+                <td className="px-4 py-3 text-daet-ink/80">
                   {stop.description ? stop.description.substring(0, 50) + (stop.description.length > 50 ? "..." : "") : "-"}
                 </td>
-                <td className="px-4 py-3 text-gray-600 text-xs font-mono">
+                <td className="px-4 py-3 text-daet-ink/80 text-xs font-mono">
                   {stop.latitude.toFixed(4)}, {stop.longitude.toFixed(4)}
                 </td>
                 <td className="px-4 py-3 space-x-2">
@@ -189,7 +189,7 @@ export function StopsStep({
                         type="button"
                         onClick={() => handleReorder("up", index)}
                         disabled={index === 0 || loading}
-                        className="text-gray-600 hover:text-gray-900 disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="text-daet-ink/80 hover:text-daet-ink disabled:opacity-50 disabled:cursor-not-allowed"
                         title="Move up"
                       >
                         <svg className="w-4 h-4 inline" fill="currentColor" viewBox="0 0 20 20">
@@ -200,7 +200,7 @@ export function StopsStep({
                         type="button"
                         onClick={() => handleReorder("down", index)}
                         disabled={index === sortedStops.length - 1 || loading}
-                        className="text-gray-600 hover:text-gray-900 disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="text-daet-ink/80 hover:text-daet-ink disabled:opacity-50 disabled:cursor-not-allowed"
                         title="Move down"
                       >
                         <svg className="w-4 h-4 inline" fill="currentColor" viewBox="0 0 20 20">
@@ -214,7 +214,7 @@ export function StopsStep({
                       type="button"
                       onClick={() => handleEdit(stop)}
                       disabled={loading}
-                      className="text-blue-600 hover:text-blue-800 text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="text-daet-leaf hover:text-daet-leaf text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       Edit
                     </button>
@@ -228,7 +228,7 @@ export function StopsStep({
                         }
                       }}
                       disabled={loading}
-                      className="text-red-600 hover:text-red-800 text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="text-rose-700 hover:text-red-800 text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       Delete
                     </button>
@@ -240,7 +240,7 @@ export function StopsStep({
         </table>
 
         {data.length === 0 && (
-          <div className="text-center py-8 text-gray-500">
+          <div className="text-center py-8 text-daet-ink/70">
             <p>No stops yet. Add one to get started.</p>
           </div>
         )}
@@ -261,15 +261,15 @@ export function StopsStep({
       {/* Add/Edit Form Modal */}
       {showAddForm && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg shadow-lg max-w-md w-full p-6 max-h-[90vh] overflow-y-auto">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">
+          <div className="bg-white rounded-xl shadow-lg max-w-md w-full p-6 max-h-[90vh] overflow-y-auto">
+            <h3 className="text-lg font-bold text-daet-ink mb-4">
               {editingId ? "Edit Stop" : "Add Stop"}
             </h3>
 
             <div className="space-y-4">
               {/* Location Name */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-daet-ink/80 mb-1">
                   Location <span className="text-red-500">*</span>
                 </label>
                 <input
@@ -279,14 +279,14 @@ export function StopsStep({
                     setFormData({ ...formData, locationName: e.target.value })
                   }
                   maxLength={EDIT_LIMITS.stopLocation.max}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                  className="w-full px-3 py-2 border border-daet-ink/20 rounded-xl focus:ring-2 focus:ring-daet-forest/30 outline-none"
                   placeholder="e.g., Taal Volcano"
                 />
               </div>
 
               {/* Description */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-daet-ink/80 mb-1">
                   Description
                 </label>
                 <textarea
@@ -296,14 +296,14 @@ export function StopsStep({
                   }
                   maxLength={EDIT_LIMITS.stopDescription.max}
                   rows={3}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none resize-none"
+                  className="w-full px-3 py-2 border border-daet-ink/20 rounded-xl focus:ring-2 focus:ring-daet-forest/30 outline-none resize-none"
                   placeholder="Optional description of the stop"
                 />
               </div>
 
               {/* Latitude */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-daet-ink/80 mb-1">
                   Latitude <span className="text-red-500">*</span>
                 </label>
                 <input
@@ -315,14 +315,14 @@ export function StopsStep({
                   onChange={(e) =>
                     setFormData({ ...formData, latitude: parseFloat(e.target.value) || 0 })
                   }
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                  className="w-full px-3 py-2 border border-daet-ink/20 rounded-xl focus:ring-2 focus:ring-daet-forest/30 outline-none"
                   placeholder="e.g., 14.1122"
                 />
               </div>
 
               {/* Longitude */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-daet-ink/80 mb-1">
                   Longitude <span className="text-red-500">*</span>
                 </label>
                 <input
@@ -334,14 +334,14 @@ export function StopsStep({
                   onChange={(e) =>
                     setFormData({ ...formData, longitude: parseFloat(e.target.value) || 0 })
                   }
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                  className="w-full px-3 py-2 border border-daet-ink/20 rounded-xl focus:ring-2 focus:ring-daet-forest/30 outline-none"
                   placeholder="e.g., 122.9553"
                 />
               </div>
 
               {/* Duration */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-daet-ink/80 mb-1">
                   Estimated Duration (minutes)
                 </label>
                 <input
@@ -355,7 +355,7 @@ export function StopsStep({
                       estimatedDurationMinutes: e.target.value ? parseInt(e.target.value) : null,
                     })
                   }
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                  className="w-full px-3 py-2 border border-daet-ink/20 rounded-xl focus:ring-2 focus:ring-daet-forest/30 outline-none"
                   placeholder="e.g., 60"
                 />
               </div>
@@ -368,14 +368,14 @@ export function StopsStep({
                     setShowAddForm(false);
                     setEditingId(undefined);
                   }}
-                  className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition"
+                  className="flex-1 px-4 py-2 border border-daet-ink/20 text-daet-ink/80 rounded-xl hover:bg-slate-50 transition"
                 >
                   Cancel
                 </button>
                 <button
                   type="button"
                   onClick={handleAddStop}
-                  className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+                  className="flex-1 px-4 py-2 bg-daet-forest text-white rounded-xl hover:bg-daet-leaf transition"
                 >
                   {editingId ? "Update" : "Add"}
                 </button>

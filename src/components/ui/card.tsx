@@ -25,7 +25,7 @@ export function CardHeader({
   return (
     <div className={cn("mb-4 flex items-start justify-between gap-3", className)}>
       <div className="min-w-0">
-        {eyebrow ? <p className="text-xs font-black uppercase tracking-[0.16em] text-daet-leaf">{eyebrow}</p> : null}
+        {eyebrow ? <p className="text-sm font-bold text-daet-leaf">{eyebrow}</p> : null}
         <h2 className="mt-1 text-xl font-black text-daet-ink">{title}</h2>
       </div>
       {action ? <div className="shrink-0">{action}</div> : null}

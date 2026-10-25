@@ -36,11 +36,11 @@ export function SiteHeader({
           {signedIn ? (
             <>
               <NotificationBell />
-              <LogoutButton />
+              <LogoutButton className="px-3!" />
             </>
           ) : (
             <>
-              <ButtonLink href="/login" variant="secondary" className="px-4">
+              <ButtonLink href="/login" variant="secondary" className="px-3! sm:px-4!">
                 Log in
               </ButtonLink>
               <ButtonLink href="/signup" className="hidden px-4 sm:inline-flex">
@@ -62,7 +62,7 @@ export function SiteHeader({
             <>
               {roleLinks.map((tab) => (
                 <SiteNavLink key={tab.href} href={tab.href} className="hidden md:inline-flex">
-                  {tab.label}
+                  {tab.label === "Home" ? "My dashboard" : tab.label}
                 </SiteNavLink>
               ))}
               <Link

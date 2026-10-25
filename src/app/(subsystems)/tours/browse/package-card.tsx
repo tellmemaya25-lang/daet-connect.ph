@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { RatingBadge } from "@/components/tours/star-rating";
+import { ClockIcon, MapPinIcon } from "@/components/ui/icons";
 import type { RatingSummary } from "@/lib/tours/reviews";
 
 interface PackageCardProps {
@@ -25,26 +26,24 @@ export function PackageCard({ package: pkg, rating = null }: PackageCardProps) {
   const priceLabel = defaultVariant?.price_per_pax ? "per person" : "per group";
 
   return (
-    <article className="group overflow-hidden rounded-3xl border border-daet-ink/10 bg-white shadow-sm transition hover:shadow-lg">
+    <article className="group overflow-hidden rounded-2xl bg-white transition hover:shadow-card">
       <Link href={`/tours/packages/${pkg.id}`}>
         {/* Cover Image */}
-        <div className="relative aspect-video overflow-hidden bg-gradient-to-br from-daet-forest to-daet-leaf">
+        <div className="relative aspect-video overflow-hidden bg-daet-leaf">
           {pkg.cover_image_url ? (
             <img
               src={pkg.cover_image_url}
               alt={pkg.title}
+              loading="lazy"
+              decoding="async"
               className="h-full w-full object-cover transition duration-300 group-hover:scale-105"
             />
           ) : (
-            <div className="flex h-full items-center justify-center text-4xl text-white/20">
-              📷
-            </div>
+            <div className="flex h-full items-end p-4 font-display text-2xl text-white">{pkg.location_name}</div>
           )}
           {/* Price Badge */}
           <div className="absolute bottom-3 right-3 rounded-full bg-white px-4 py-2 shadow-lg">
-            <p className="text-xs font-bold uppercase tracking-wide text-daet-ink/70">
-              From
-            </p>
+            <p className="text-xs font-bold text-daet-ink/70">From</p>
             <p className="text-lg font-black text-daet-forest">
               ₱{price.toLocaleString()}
             </p>
@@ -60,11 +59,11 @@ export function PackageCard({ package: pkg, rating = null }: PackageCardProps) {
 
           <div className="mt-3 flex items-center gap-4 text-sm text-daet-ink/70">
             <span className="flex items-center gap-1">
-              <span aria-hidden="true">📍</span>
+              <MapPinIcon />
               {pkg.location_name}
             </span>
             <span className="flex items-center gap-1">
-              <span aria-hidden="true">⏱️</span>
+              <ClockIcon />
               {pkg.duration_value} {pkg.duration_type}
             </span>
           </div>

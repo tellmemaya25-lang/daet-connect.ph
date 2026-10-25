@@ -11,6 +11,7 @@ import { RatingBadge, Stars } from "@/components/tours/star-rating";
 import { ReviewList } from "@/components/tours/review-list";
 import { distribution, toSummary, type Review } from "@/lib/tours/reviews";
 import { FREE_CANCELLATION_HOURS } from "@/lib/tours/cancellation";
+import { CheckIcon, ClockIcon, MapPinIcon } from "@/components/ui/icons";
 
 export const dynamic = "force-dynamic";
 
@@ -170,6 +171,7 @@ export default async function PackageDetailPage({ params }: PageProps) {
                 <img
                   src={pkg.cover_image_url}
                   alt={pkg.title}
+                  fetchPriority="high"
                   className="h-full w-full object-cover"
                 />
               </div>
@@ -182,9 +184,13 @@ export default async function PackageDetailPage({ params }: PageProps) {
             <a href="#reviews" className="mt-2 inline-flex hover:underline">
               <RatingBadge summary={rating} />
             </a>
-            <p className="mt-2 text-sm text-daet-ink/70">
-              📍 {pkg.location_name} · ⏱️ {pkg.duration_value}{" "}
-              {pkg.duration_type === "hours" ? "hours" : "days"}
+            <p className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-daet-ink/80">
+              <span className="inline-flex items-center gap-1.5">
+                <MapPinIcon /> {pkg.location_name}
+              </span>
+              <span className="inline-flex items-center gap-1.5">
+                <ClockIcon /> {pkg.duration_value} {pkg.duration_type === "hours" ? "hours" : "days"}
+              </span>
             </p>
 
             <div className="mt-6 rounded-2xl border border-daet-ink/10 bg-white p-6">
@@ -378,21 +384,39 @@ export default async function PackageDetailPage({ params }: PageProps) {
 
               <div className="mt-6 space-y-3 border-t border-daet-ink/10 pt-6 text-sm text-daet-ink/70">
                 <div className="flex items-center gap-2">
-                  <span>✓</span>
+                  <CheckIcon className="h-5 w-5 text-daet-leaf" />
                   <span>Confirmed by the local operator</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span>✓</span>
+                  <CheckIcon className="h-5 w-5 text-daet-leaf" />
                   <span>Cancel up to {FREE_CANCELLATION_HOURS} hours before the tour</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span>✓</span>
+                  <CheckIcon className="h-5 w-5 text-daet-leaf" />
                   <span>Certified local guides</span>
                 </div>
               </div>
             </div>
           </div>
         </div>
+
+        {/* On phones the booking card is at the end of the page, so keep the price and action in reach. */}
+        <div className="fixed inset-x-0 bottom-0 z-50 border-t border-daet-ink/10 bg-white px-4 pb-[calc(0.75rem+env(safe-area-inset-bottom))] pt-3 lg:hidden print:hidden">
+          <div className="mx-auto flex max-w-7xl items-center justify-between gap-4">
+            <p className="leading-tight">
+              <span className="block text-xs text-daet-ink/70">From</span>
+              <span className="text-xl font-black text-daet-ink">₱{displayPrice.toLocaleString()}</span>{" "}
+              <span className="text-xs text-daet-ink/70">{priceLabel}</span>
+            </p>
+            <Link
+              href={`/tours/packages/${pkg.id}/book`}
+              className="inline-flex min-h-12 shrink-0 items-center justify-center rounded-full bg-daet-forest px-6 text-sm font-bold text-white transition hover:bg-daet-leaf focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-daet-forest"
+            >
+              Book this trip
+            </Link>
+          </div>
+        </div>
+        <div className="h-20 lg:hidden" aria-hidden="true" />
       </div>
     </PageFrame>
   );

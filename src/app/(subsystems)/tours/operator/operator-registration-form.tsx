@@ -186,7 +186,7 @@ export function OperatorRegistrationForm({
   return (
     <section className="mx-auto max-w-3xl">
       <div className="mb-7">
-        <p className="text-xs font-black uppercase tracking-[0.18em] text-daet-leaf">Operator accreditation</p>
+        <p className="text-sm font-bold text-daet-leaf">Operator accreditation</p>
         <h1 className="mt-2 text-3xl font-black leading-tight tracking-tight text-daet-ink sm:text-4xl">
           Let’s get your tours on the map.
         </h1>

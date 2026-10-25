@@ -63,7 +63,7 @@ export function PaymentRecorder({
     unpaid: "bg-red-100 text-red-800",
     partial: "bg-amber-100 text-amber-800",
     paid: "bg-emerald-100 text-emerald-800",
-    refunded: "bg-gray-100 text-gray-800",
+    refunded: "bg-slate-100 text-daet-ink",
   };
 
   const statusLabels: Record<string, string> = {
@@ -82,7 +82,7 @@ export function PaymentRecorder({
           </p>
           <span
             className={`mt-1 inline-block rounded-full px-3 py-1 text-xs font-bold ${
-              statusColors[paymentStatus] || "bg-gray-100 text-gray-800"
+              statusColors[paymentStatus] || "bg-slate-100 text-daet-ink"
             }`}
           >
             {statusLabels[paymentStatus] || paymentStatus}
@@ -127,7 +127,7 @@ export function PaymentRecorder({
               value={amount}
               onChange={(e) => setAmount(e.target.value)}
               required
-              className="w-full rounded-xl border border-daet-ink/20 px-3 py-2 text-sm focus:border-daet-forest focus:outline-none"
+              className="w-full rounded-xl border border-daet-ink/20 min-h-11 px-3 py-2 text-base focus:border-daet-forest focus:outline-none"
               placeholder={`Max: ₱${remaining}`}
             />
           </div>
@@ -140,7 +140,7 @@ export function PaymentRecorder({
               value={paymentMethod}
               onChange={(e) => setPaymentMethod(e.target.value)}
               required
-              className="w-full rounded-xl border border-daet-ink/20 px-3 py-2 text-sm focus:border-daet-forest focus:outline-none"
+              className="w-full rounded-xl border border-daet-ink/20 min-h-11 px-3 py-2 text-base focus:border-daet-forest focus:outline-none"
             >
               <option value="cash">Cash</option>
               <option value="gcash">GCash</option>
@@ -162,7 +162,7 @@ export function PaymentRecorder({
               onChange={(e) => setPaymentDate(e.target.value)}
               required
               max={new Date().toISOString().split("T")[0]}
-              className="w-full rounded-xl border border-daet-ink/20 px-3 py-2 text-sm focus:border-daet-forest focus:outline-none"
+              className="w-full rounded-xl border border-daet-ink/20 min-h-11 px-3 py-2 text-base focus:border-daet-forest focus:outline-none"
             />
           </div>
 
@@ -174,7 +174,7 @@ export function PaymentRecorder({
               type="text"
               value={referenceNumber}
               onChange={(e) => setReferenceNumber(e.target.value)}
-              className="w-full rounded-xl border border-daet-ink/20 px-3 py-2 text-sm focus:border-daet-forest focus:outline-none"
+              className="w-full rounded-xl border border-daet-ink/20 min-h-11 px-3 py-2 text-base focus:border-daet-forest focus:outline-none"
               placeholder="Transaction ID, receipt no, etc."
             />
           </div>
@@ -185,7 +185,7 @@ export function PaymentRecorder({
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               rows={2}
-              className="w-full rounded-xl border border-daet-ink/20 px-3 py-2 text-sm focus:border-daet-forest focus:outline-none"
+              className="w-full rounded-xl border border-daet-ink/20 min-h-11 px-3 py-2 text-base focus:border-daet-forest focus:outline-none"
               placeholder="Additional notes about this payment..."
             />
           </div>

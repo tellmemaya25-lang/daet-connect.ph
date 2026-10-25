@@ -38,7 +38,7 @@ export default async function MyItinerariesPage({ searchParams }: { searchParams
       <div className="mx-auto max-w-3xl">
         <div className="flex flex-wrap items-end justify-between gap-3">
           <div>
-            <p className="text-xs font-black uppercase tracking-[0.18em] text-daet-leaf">Trip planner</p>
+            <p className="text-sm font-bold text-daet-leaf">Trip planner</p>
             <h1 className="mt-1 text-3xl font-black text-daet-ink">My itineraries</h1>
           </div>
           <Link href="/tours/plan" className="inline-flex min-h-11 items-center rounded-full bg-daet-forest px-6 text-sm font-bold text-white hover:bg-daet-ink">

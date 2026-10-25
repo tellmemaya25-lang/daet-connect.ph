@@ -95,7 +95,7 @@ export default async function OperatorPackagesPage({
       <div className="mx-auto max-w-6xl">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between mb-6">
           <div className="flex-1">
-            <p className="text-xs font-black uppercase tracking-[0.18em] text-daet-leaf">
+            <p className="text-sm font-bold text-daet-leaf">
               Package management
             </p>
             <h1 className="mt-2 text-3xl font-black text-daet-ink">Your packages</h1>

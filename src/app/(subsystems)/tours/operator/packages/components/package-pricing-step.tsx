@@ -222,7 +222,7 @@ export function PackagePricingStep({
                     onChange={() => setDefaultVariant(index)}
                     className="h-4 w-4 rounded border-daet-ink/30 text-daet-forest focus:ring-2 focus:ring-daet-forest/20"
                   />
-                  <span className="font-semibold">Default variant</span>
+                  <span className="font-bold">Default variant</span>
                 </label>
               </div>
 

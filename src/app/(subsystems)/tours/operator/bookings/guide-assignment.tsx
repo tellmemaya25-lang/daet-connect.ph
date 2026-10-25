@@ -90,7 +90,7 @@ export function GuideAssignment({
           value={selectedGuideId}
           onChange={(e) => setSelectedGuideId(e.target.value)}
           disabled={isSubmitting}
-          className="flex-1 rounded-xl border border-daet-ink/20 px-4 py-2 text-sm focus:border-daet-forest focus:outline-none focus:ring-2 focus:ring-daet-forest/20"
+          className="flex-1 rounded-xl border border-daet-ink/20 min-h-11 px-4 py-2 text-base focus:border-daet-forest focus:outline-none focus:ring-2 focus:ring-daet-forest/20"
         >
           <option value="">Select a guide...</option>
           {[...availableGuides]
@@ -108,7 +108,7 @@ export function GuideAssignment({
           <button
             onClick={handleUnassign}
             disabled={isSubmitting}
-            className="rounded-full border border-gray-300 bg-white px-4 py-2 text-sm font-bold text-gray-700 transition hover:bg-gray-50 disabled:opacity-50"
+            className="rounded-full border border-daet-ink/20 bg-white px-4 py-2 text-sm font-bold text-daet-ink/80 transition hover:bg-slate-50 disabled:opacity-50"
           >
             {isSubmitting ? "Unassigning..." : "Unassign"}
           </button>
