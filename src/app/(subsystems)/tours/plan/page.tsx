@@ -11,7 +11,7 @@ import { PlannerApp } from "./planner-app";
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = { title: "Plan your trip", description: "Build a day-by-day Daet itinerary that fits opening hours and your budget." };
 
-export default async function PlanPage() {
+export default async function PlanPage({ searchParams }: { searchParams: Promise<{ describe?: string }> }) {
   if (!isSupabaseConfigured()) {
     return (
       <PageFrame>
@@ -19,6 +19,9 @@ export default async function PlanPage() {
       </PageFrame>
     );
   }
+  // The travel assistant links here with the tourist's own description of the trip.
+  const { describe } = await searchParams;
+  const initialDescription = typeof describe === "string" ? describe.slice(0, 500) : "";
   const supabase = await createSupabaseServerClient();
   const {
     data: { user },
@@ -33,7 +36,7 @@ export default async function PlanPage() {
           Describe your trip in your own words or fill in the details. The AI-assisted planner builds each day from our attraction list so every stop is open when you arrive, travel time is included, and entrance fees stay within your budget. Then ask the assistant to change anything.
         </p>
         <div className="mt-8 rounded-3xl border border-daet-ink/10 bg-white p-5 shadow-sm sm:p-8">
-          <PlannerApp defaultDate={addDays(toManilaDateKey(new Date()), 1)} aiAvailable={isLlmEnabled()} signedIn={Boolean(user)} />
+          <PlannerApp defaultDate={addDays(toManilaDateKey(new Date()), 1)} aiAvailable={isLlmEnabled()} signedIn={Boolean(user)} initialDescription={initialDescription} />
         </div>
       </div>
     </PageFrame>

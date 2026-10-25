@@ -1,4 +1,6 @@
+import Link from "next/link";
 import type { ReactNode } from "react";
+import { AssistantWidget } from "@/components/assistant/assistant-widget";
 import { RoleTabBar } from "@/components/ui/role-tab-bar";
 import { SiteHeader } from "@/components/ui/site-header";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
@@ -38,9 +40,13 @@ export async function PageFrame({
         {children}
       </main>
       <footer className={`mx-auto max-w-7xl px-4 pt-2 text-xs text-daet-ink/70 sm:px-6 sm:pb-8 lg:px-8 print:hidden ${tabs.length ? "pb-24" : "pb-8"}`}>
-        CONNECT-DAET.ph · Tourism in Daet, Camarines Norte
+        CONNECT-DAET.ph · Tourism in Daet, Camarines Norte ·{" "}
+        <Link href="/tours/help" className="font-bold text-daet-forest underline underline-offset-2">
+          Help (24/7 assistant)
+        </Link>
       </footer>
       <RoleTabBar tabs={tabs} />
+      <AssistantWidget signedIn={role !== undefined} raised={tabs.length > 0} />
     </div>
   );
 }

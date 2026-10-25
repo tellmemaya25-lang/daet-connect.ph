@@ -566,6 +566,14 @@ _Team guide §5; Ch. 4.2 §3 DB synchronization._
 
 ---
 
+## F13 — 24/7 travel assistant (AI customer service)
+
+**Status (2026-10-25): built.** Migration `20261107_tourist_office_chat.sql` adds the tourist ↔ Tourism Office chat used for handoffs.
+- Answers and guides; never books, pays or cancels. Read-only tools run with the caller's own Supabase session (RLS): `search_tours`, `tour_details` (open dates and seats), `attraction_info`, `upcoming_events`, `policy` (FAQ built from the app's own constants), `my_bookings` (signed in), `plan_trip_link` (pre-fills `/tours/plan?describe=`), `handoff`.
+- Claude through the SDK tool runner with streaming (`claude.ts`). It stops on a refusal or a cut-off tool call, and falls back to basic mode (`basic.ts`) when no key is set, the limit is hit, or the call fails before any text.
+- UI: floating dialog on every page (hidden on sign-in, ticket, scanner and chat threads) plus `/tours/help`; tour, booking, link and handoff cards. History stays in the browser tab (sessionStorage); nothing is stored server-side.
+- Tests: `src/lib/tours/assistant/assistant.test.ts`, covering the FAQ, tools on a fake client, basic mode with a property test that never leaks another tourist's booking, streaming/fallback with a fake model, and limits. `e2e/travel-assistant.spec.ts` covers the dialog, bookings, handoff and help page at 375px with axe. Manual eval with a key: `docs/ASSISTANT_EVAL.md`.
+
 ## 3. Schedule (11 weeks)
 
 The schedule assumes about 4 developers. **A** = Transactions lead, **B** = Engagement, **C** = Planning/Maps, **D** = UI/QA. With fewer people, run the tracks one after another (about 16–18 weeks).

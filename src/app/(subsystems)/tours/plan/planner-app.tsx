@@ -23,7 +23,17 @@ const longDate = (date: string) =>
   new Date(`${date}T00:00:00Z`).toLocaleDateString("en-PH", { weekday: "long", month: "long", day: "numeric", timeZone: "UTC" });
 const peso = (n: number) => `₱${n.toLocaleString("en-PH", { maximumFractionDigits: 2 })}`;
 
-export function PlannerApp({ defaultDate, aiAvailable, signedIn }: { defaultDate: string; aiAvailable: boolean; signedIn: boolean }) {
+export function PlannerApp({
+  defaultDate,
+  aiAvailable,
+  signedIn,
+  initialDescription = "",
+}: {
+  defaultDate: string;
+  aiAvailable: boolean;
+  signedIn: boolean;
+  initialDescription?: string;
+}) {
   const [input, setInput] = useState<PlannerInput>({ startDate: defaultDate, days: 2, budgetPerDay: 500, interests: ["beach", "heritage"], pace: "normal", groupSize: 2, dayStart: "08:00", dayEnd: "18:00" });
   const [useAi, setUseAi] = useState(aiAvailable);
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -63,7 +73,7 @@ export function PlannerApp({ defaultDate, aiAvailable, signedIn }: { defaultDate
         generate();
       }}
     >
-      <DescribeTrip aiAvailable={aiAvailable} input={input} onFill={(next) => { setInput(next); setErrors({}); }} />
+      <DescribeTrip aiAvailable={aiAvailable} initialText={initialDescription} input={input} onFill={(next) => { setInput(next); setErrors({}); }} />
 
       {message ? <Notice variant="error">{message}</Notice> : null}
       <div className="grid gap-5 sm:grid-cols-3">
@@ -148,8 +158,8 @@ export function PlannerApp({ defaultDate, aiAvailable, signedIn }: { defaultDate
 }
 
 /** "Describe your trip": plain words in, form fields out (Claude when configured, rules otherwise). */
-function DescribeTrip({ aiAvailable, input, onFill }: { aiAvailable: boolean; input: PlannerInput; onFill: (input: PlannerInput) => void }) {
-  const [text, setText] = useState("");
+function DescribeTrip({ aiAvailable, initialText = "", input, onFill }: { aiAvailable: boolean; initialText?: string; input: PlannerInput; onFill: (input: PlannerInput) => void }) {
+  const [text, setText] = useState(initialText);
   const [state, setState] = useState<{ tone: "success" | "error"; understood?: string[]; text?: string; source?: "llm" | "rules" } | null>(null);
   const [pending, startTransition] = useTransition();
 

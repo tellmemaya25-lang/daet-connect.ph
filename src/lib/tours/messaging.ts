@@ -46,8 +46,9 @@ export type ChatRole = "tourist" | "operator" | "guide" | "admin";
  * guide_tourist: the booking's tourist and assigned guide only.
  * operator_guide: one operator and one guide.
  * operator_admin: one operator and the Tourism Office (every admin).
+ * tourist_office: one signed-in person and the Tourism Office (every admin).
  */
-export const CONVERSATION_KINDS = ["booking", "guide_tourist", "operator_guide", "operator_admin"] as const;
+export const CONVERSATION_KINDS = ["booking", "guide_tourist", "operator_guide", "operator_admin", "tourist_office"] as const;
 export type ConversationKind = (typeof CONVERSATION_KINDS)[number];
 
 export const KIND_LABELS: Record<ConversationKind, string> = {
@@ -55,6 +56,7 @@ export const KIND_LABELS: Record<ConversationKind, string> = {
   guide_tourist: "Guide & tourist",
   operator_guide: "Operator & guide",
   operator_admin: "Tourism Office",
+  tourist_office: "Tourism Office help",
 };
 
 export const TOURISM_OFFICE_NAME = "Daet Tourism Office";
@@ -88,7 +90,8 @@ export type ChatTarget =
   | { kind: "booking"; bookingId: string }
   | { kind: "guide_tourist"; bookingId: string }
   | { kind: "operator_guide"; guideId?: string; operatorId?: string }
-  | { kind: "operator_admin"; operatorId?: string };
+  | { kind: "operator_admin"; operatorId?: string }
+  | { kind: "tourist_office"; touristId?: string };
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -112,6 +115,11 @@ export function chatRpc(target: ChatTarget): { fn: string; args: Record<string, 
       if (target.operatorId === undefined) return { fn: "tours_open_operator_admin_conversation", args: {} };
       const operatorId = id(target.operatorId);
       return operatorId ? { fn: "tours_open_operator_admin_conversation", args: { p_operator_id: operatorId } } : null;
+    }
+    case "tourist_office": {
+      if (target.touristId === undefined) return { fn: "tours_open_tourist_office_conversation", args: {} };
+      const touristId = id(target.touristId);
+      return touristId ? { fn: "tours_open_tourist_office_conversation", args: { p_tourist_id: touristId } } : null;
     }
     default:
       return null;
@@ -159,7 +167,7 @@ export function describeThread(header: ConversationHeader, viewerId: string, vie
     operatorName,
     guideProfileId: header.guide_profile_id,
     guideName,
-    otherName: header.kind === "operator_admin" ? TOURISM_OFFICE_NAME : undefined,
+    otherName: header.kind === "operator_admin" || header.kind === "tourist_office" ? TOURISM_OFFICE_NAME : undefined,
   };
   const isTourist = viewerId === header.tourist_id;
   const isGuide = viewerId === header.guide_profile_id;
@@ -193,6 +201,12 @@ export function describeThread(header: ConversationHeader, viewerId: string, vie
       subtitle = isOperator ? "Questions about accreditation, packages, events or payouts" : "Operator · Tourism Office support chat";
       link = !isOperator && viewerRole === "admin" && header.operator_id ? { href: "/tours/admin/operators", label: "Operator applications" } : null;
       emptyText = isOperator ? "Ask the Tourism Office about accreditation, packages, events or payouts." : "No messages yet.";
+      break;
+    case "tourist_office":
+      title = isTourist ? TOURISM_OFFICE_NAME : header.tourist_name ?? "Tourist";
+      subtitle = isTourist ? "Questions, requests and complaints · private chat" : "Tourist · help request";
+      link = null;
+      emptyText = isTourist ? "Ask the Daet Tourism Office anything about your visit." : "No messages yet.";
       break;
     default:
       title = header.package_title ?? "Tour booking";

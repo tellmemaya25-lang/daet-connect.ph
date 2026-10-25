@@ -253,6 +253,23 @@ BEGIN
   SELECT count(*) INTO n FROM tours_notifications WHERE link = '/tours/messages/' || v_oa AND profile_id = v_operator_profile;
   IF n = 1 THEN pass := pass + 1; ELSE fails := fails || 'operator not notified of Tourism Office reply; '; END IF;
 
+  -- ------------------------------------------------------------ tourist <-> Tourism Office (F13 handoff)
+  PERFORM set_config('request.jwt.claims', json_build_object('sub', v_tourist, 'role', 'authenticated')::text, true);
+  SET LOCAL ROLE authenticated;
+  v_id := tours_open_tourist_office_conversation(NULL);
+  INSERT INTO tours_messages (conversation_id, message_text) VALUES (v_id, 'My guide did not arrive.');
+  IF tours_open_tourist_office_conversation(NULL) = v_id THEN pass := pass + 1; ELSE fails := fails || 'tourist office chat not reused; '; END IF;
+  RESET ROLE;
+  SELECT count(*) INTO n FROM tours_notifications WHERE link = '/tours/messages/' || v_id AND profile_id = v_admin;
+  IF n = 1 THEN pass := pass + 1; ELSE fails := fails || 'admin not notified of tourist message; '; END IF;
+  IF v_other IS NOT NULL THEN
+    PERFORM set_config('request.jwt.claims', json_build_object('sub', v_other, 'role', 'authenticated')::text, true);
+    SET LOCAL ROLE authenticated;
+    SELECT count(*) INTO n FROM tours_messages WHERE conversation_id = v_id;
+    IF n = 0 THEN pass := pass + 1; ELSE fails := fails || 'other tourist reads tourist office chat; '; END IF;
+    RESET ROLE;
+  END IF;
+
   -- ------------------------------------------------------------ webhook replay
   -- The same PayMongo payment arriving twice is stored once.
   INSERT INTO tours_payment_events (event_id, event_type, livemode, booking_id, payload) VALUES ('evt_test_replay', 'checkout_session.payment.paid', false, v_booking, '{}');
