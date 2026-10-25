@@ -26,13 +26,12 @@ export default async function PlanPage() {
 
   return (
     <PageFrame>
-      <div className="mx-auto max-w-3xl">
-        <p className="text-sm font-bold text-daet-leaf">Trip planner</p>
-        <h1 className="mt-1 text-4xl font-black text-daet-ink">Plan your Daet trip</h1>
-        <p className="mt-2 text-sm leading-6 text-daet-ink/70">
-          Describe your trip in your own words or fill in the details. The AI-assisted planner builds each day from our attraction list so every stop is open when you arrive, travel time is included, and entrance fees stay within your budget. Then ask the assistant to change anything.
+      <div className="mx-auto max-w-6xl">
+        <h1 className="font-display text-4xl font-semibold text-daet-ink sm:text-5xl">Plan your Daet trip</h1>
+        <p className="mt-2 max-w-2xl text-daet-ink/70">
+          Tell us about your days. We build a schedule that fits opening hours, travel time and your budget.
         </p>
-        <div className="mt-8 rounded-3xl border border-daet-ink/10 bg-white p-5 shadow-sm sm:p-8">
+        <div className="mt-8">
           <PlannerApp defaultDate={addDays(toManilaDateKey(new Date()), 1)} aiAvailable={isLlmEnabled()} signedIn={Boolean(user)} />
         </div>
       </div>
