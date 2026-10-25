@@ -18,7 +18,17 @@ type Generated = Extract<GenerateResult, { ok: true }>;
 const PACE_LABELS = { relaxed: "Relaxed", normal: "Normal", packed: "Packed" } as const;
 const PACE_STOPS = { relaxed: "about 3 stops a day", normal: "about 4 stops a day", packed: "about 5 stops a day" } as const;
 
-export function PlannerApp({ defaultDate, aiAvailable, signedIn }: { defaultDate: string; aiAvailable: boolean; signedIn: boolean }) {
+export function PlannerApp({
+  defaultDate,
+  aiAvailable,
+  signedIn,
+  initialDescription = "",
+}: {
+  defaultDate: string;
+  aiAvailable: boolean;
+  signedIn: boolean;
+  initialDescription?: string;
+}) {
   const [input, setInput] = useState<PlannerInput>({ startDate: defaultDate, days: 2, budgetPerDay: 500, interests: ["beach", "heritage"], pace: "normal", groupSize: 2, dayStart: "08:00", dayEnd: "18:00" });
   const [useAi, setUseAi] = useState(aiAvailable);
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -66,7 +76,7 @@ export function PlannerApp({ defaultDate, aiAvailable, signedIn }: { defaultDate
     >
       <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_20rem] lg:items-start">
         <div className="space-y-6">
-          <DescribeTrip aiAvailable={aiAvailable} input={input} onFill={(next) => { setInput(next); setErrors({}); }} />
+          <DescribeTrip aiAvailable={aiAvailable} initialText={initialDescription} input={input} onFill={(next) => { setInput(next); setErrors({}); }} />
 
           {message ? <Notice variant="error">{message}</Notice> : null}
 

@@ -9,8 +9,18 @@ import type { PlannerInput } from "@/lib/tours/itinerary/form";
 import { interpretTripRequest } from "./actions";
 
 /** "Describe your trip": plain words in, form fields out (Claude when configured, rules otherwise). */
-export function DescribeTrip({ aiAvailable, input, onFill }: { aiAvailable: boolean; input: PlannerInput; onFill: (input: PlannerInput) => void }) {
-  const [text, setText] = useState("");
+export function DescribeTrip({
+  aiAvailable,
+  initialText = "",
+  input,
+  onFill,
+}: {
+  aiAvailable: boolean;
+  initialText?: string;
+  input: PlannerInput;
+  onFill: (input: PlannerInput) => void;
+}) {
+  const [text, setText] = useState(initialText);
   const [state, setState] = useState<{ tone: "success" | "error"; understood?: string[]; text?: string; source?: "llm" | "rules" } | null>(null);
   const [pending, startTransition] = useTransition();
 

@@ -11,7 +11,7 @@ import { PlannerApp } from "./planner-app";
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = { title: "Plan your trip", description: "Build a day-by-day Daet itinerary that fits opening hours and your budget." };
 
-export default async function PlanPage() {
+export default async function PlanPage({ searchParams }: { searchParams: Promise<{ describe?: string }> }) {
   if (!isSupabaseConfigured()) {
     return (
       <PageFrame>
@@ -19,6 +19,9 @@ export default async function PlanPage() {
       </PageFrame>
     );
   }
+  // The travel assistant links here with the tourist's own description of the trip.
+  const { describe } = await searchParams;
+  const initialDescription = typeof describe === "string" ? describe.slice(0, 500) : "";
   const supabase = await createSupabaseServerClient();
   const {
     data: { user },
@@ -32,7 +35,7 @@ export default async function PlanPage() {
           Tell us about your days. We build a schedule that fits opening hours, travel time and your budget.
         </p>
         <div className="mt-8">
-          <PlannerApp defaultDate={addDays(toManilaDateKey(new Date()), 1)} aiAvailable={isLlmEnabled()} signedIn={Boolean(user)} />
+          <PlannerApp defaultDate={addDays(toManilaDateKey(new Date()), 1)} aiAvailable={isLlmEnabled()} signedIn={Boolean(user)} initialDescription={initialDescription} />
         </div>
       </div>
     </PageFrame>

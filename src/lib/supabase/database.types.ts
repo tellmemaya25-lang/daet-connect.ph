@@ -2072,6 +2072,10 @@ export type Database = {
         Args: { p_guide_id?: string; p_operator_id?: string }
         Returns: string
       }
+      tours_open_tourist_office_conversation: {
+        Args: { p_tourist_id?: string }
+        Returns: string
+      }
       tours_peso: { Args: { p_amount: number }; Returns: string }
       tours_record_refund: {
         Args: {
