@@ -39,6 +39,8 @@
   html {
     min-width: 320px;
     scroll-behavior: smooth;
+    /* Pinned bottom bars (booking, planner save) must not cover a control that is scrolled or tabbed into view. */
+    scroll-padding-bottom: 7rem;
   }
 
   body {
