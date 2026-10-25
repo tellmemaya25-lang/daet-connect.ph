@@ -41,7 +41,7 @@ export function SiteHeader({
           ) : (
             <>
               <ButtonLink href="/login" variant="secondary" className="px-3! sm:px-4!">
-                Log in
+                Sign in
               </ButtonLink>
               <ButtonLink href="/signup" className="hidden px-4 sm:inline-flex">
                 Sign up
