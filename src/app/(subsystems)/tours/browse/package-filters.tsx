@@ -53,7 +53,7 @@ export function PackageFilters({ currentParams }: PackageFiltersProps) {
             value={location}
             onChange={(e) => setLocation(e.target.value)}
             placeholder="e.g., Bagasbas"
-            className="mt-1 w-full rounded-xl border border-daet-ink/15 px-3 py-2 text-sm outline-none transition focus:border-daet-forest focus:ring-2 focus:ring-daet-forest/20"
+            className="mt-1 w-full rounded-xl border border-daet-ink/15 min-h-11 px-3 py-2 text-base outline-none transition focus:border-daet-forest focus:ring-2 focus:ring-daet-forest/20"
           />
         </div>
 
@@ -67,7 +67,7 @@ export function PackageFilters({ currentParams }: PackageFiltersProps) {
             onChange={(e) => setMinPrice(e.target.value)}
             placeholder="0"
             min="0"
-            className="mt-1 w-full rounded-xl border border-daet-ink/15 px-3 py-2 text-sm outline-none transition focus:border-daet-forest focus:ring-2 focus:ring-daet-forest/20"
+            className="mt-1 w-full rounded-xl border border-daet-ink/15 min-h-11 px-3 py-2 text-base outline-none transition focus:border-daet-forest focus:ring-2 focus:ring-daet-forest/20"
           />
         </div>
 
@@ -80,7 +80,7 @@ export function PackageFilters({ currentParams }: PackageFiltersProps) {
             onChange={(e) => setMaxPrice(e.target.value)}
             placeholder="No limit"
             min="0"
-            className="mt-1 w-full rounded-xl border border-daet-ink/15 px-3 py-2 text-sm outline-none transition focus:border-daet-forest focus:ring-2 focus:ring-daet-forest/20"
+            className="mt-1 w-full rounded-xl border border-daet-ink/15 min-h-11 px-3 py-2 text-base outline-none transition focus:border-daet-forest focus:ring-2 focus:ring-daet-forest/20"
           />
         </div>
 
@@ -91,7 +91,7 @@ export function PackageFilters({ currentParams }: PackageFiltersProps) {
             id="filter-sort"
             value={sort}
             onChange={(e) => setSort(e.target.value)}
-            className="mt-1 w-full rounded-xl border border-daet-ink/15 px-3 py-2 text-sm outline-none transition focus:border-daet-forest focus:ring-2 focus:ring-daet-forest/20"
+            className="mt-1 w-full rounded-xl border border-daet-ink/15 min-h-11 px-3 py-2 text-base outline-none transition focus:border-daet-forest focus:ring-2 focus:ring-daet-forest/20"
           >
             <option value="created_at">Newest first</option>
             <option value="title">Name (A-Z)</option>
@@ -105,14 +105,14 @@ export function PackageFilters({ currentParams }: PackageFiltersProps) {
         <button
           type="button"
           onClick={applyFilters}
-          className="inline-flex min-h-10 items-center justify-center rounded-full bg-daet-forest px-6 text-sm font-bold text-white transition hover:bg-daet-ink"
+          className="inline-flex min-h-11 items-center justify-center rounded-full bg-daet-forest px-6 text-sm font-bold text-white transition hover:bg-daet-ink"
         >
           Apply filters
         </button>
         <button
           type="button"
           onClick={clearFilters}
-          className="inline-flex min-h-10 items-center justify-center rounded-full border border-daet-ink/20 px-6 text-sm font-bold text-daet-ink transition hover:bg-daet-sand"
+          className="inline-flex min-h-11 items-center justify-center rounded-full border border-daet-ink/20 px-6 text-sm font-bold text-daet-ink transition hover:bg-daet-sand"
         >
           Clear
         </button>

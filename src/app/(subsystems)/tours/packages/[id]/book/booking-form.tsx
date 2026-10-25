@@ -209,7 +209,7 @@ export function BookingForm({ packageId, priceVariants, dateOptions, userProfile
                 value={selectedVariantId}
                 onChange={(e) => setSelectedVariantId(e.target.value)}
                 required
-                className="mt-1 w-full rounded-xl border border-daet-ink/20 px-4 py-2.5 text-sm focus:border-daet-forest focus:outline-none focus:ring-2 focus:ring-daet-forest/20"
+                className="mt-1 w-full rounded-xl border border-daet-ink/20 min-h-11 px-4 py-2.5 text-base focus:border-daet-forest focus:outline-none focus:ring-2 focus:ring-daet-forest/20"
               >
                 {priceVariants.map((variant) => (
                   <option key={variant.id} value={variant.id}>
@@ -234,9 +234,10 @@ export function BookingForm({ packageId, priceVariants, dateOptions, userProfile
                 type="button"
                 onClick={() => handlePaxChange(numberOfPax - 1)}
                 disabled={numberOfPax <= minPax}
-                className="grid h-10 w-10 place-items-center rounded-full border border-daet-ink/20 text-lg font-bold text-daet-ink hover:bg-daet-sand disabled:opacity-30"
+                aria-label="One fewer participant"
+                className="grid h-11 w-11 place-items-center rounded-full border border-daet-ink/20 text-lg font-bold text-daet-ink hover:bg-daet-sand disabled:opacity-30"
               >
-                −
+                <span aria-hidden="true">−</span>
               </button>
               <input
                 type="number"
@@ -246,15 +247,16 @@ export function BookingForm({ packageId, priceVariants, dateOptions, userProfile
                 min={minPax}
                 max={maxPax}
                 required
-                className="w-20 rounded-xl border border-daet-ink/20 px-4 py-2.5 text-center text-sm font-bold focus:border-daet-forest focus:outline-none focus:ring-2 focus:ring-daet-forest/20"
+                className="w-20 rounded-xl border border-daet-ink/20 min-h-11 px-4 py-2.5 text-center text-base font-bold focus:border-daet-forest focus:outline-none focus:ring-2 focus:ring-daet-forest/20"
               />
               <button
                 type="button"
                 onClick={() => handlePaxChange(numberOfPax + 1)}
                 disabled={numberOfPax >= maxPax}
-                className="grid h-10 w-10 place-items-center rounded-full border border-daet-ink/20 text-lg font-bold text-daet-ink hover:bg-daet-sand disabled:opacity-30"
+                aria-label="One more participant"
+                className="grid h-11 w-11 place-items-center rounded-full border border-daet-ink/20 text-lg font-bold text-daet-ink hover:bg-daet-sand disabled:opacity-30"
               >
-                +
+                <span aria-hidden="true">+</span>
               </button>
               <span className="text-sm text-daet-ink/70">
                 ({minPax} - {maxPax} pax)
@@ -303,7 +305,7 @@ export function BookingForm({ packageId, priceVariants, dateOptions, userProfile
               onChange={(e) => setContactName(e.target.value)}
               required
               minLength={2}
-              className="mt-1 w-full rounded-xl border border-daet-ink/20 px-4 py-2.5 text-sm focus:border-daet-forest focus:outline-none focus:ring-2 focus:ring-daet-forest/20"
+              className="mt-1 w-full rounded-xl border border-daet-ink/20 min-h-11 px-4 py-2.5 text-base focus:border-daet-forest focus:outline-none focus:ring-2 focus:ring-daet-forest/20"
               placeholder="Juan Dela Cruz"
             />
           </div>
@@ -319,7 +321,7 @@ export function BookingForm({ packageId, priceVariants, dateOptions, userProfile
                 value={contactEmail}
                 onChange={(e) => setContactEmail(e.target.value)}
                 required
-                className="mt-1 w-full rounded-xl border border-daet-ink/20 px-4 py-2.5 text-sm focus:border-daet-forest focus:outline-none focus:ring-2 focus:ring-daet-forest/20"
+                className="mt-1 w-full rounded-xl border border-daet-ink/20 min-h-11 px-4 py-2.5 text-base focus:border-daet-forest focus:outline-none focus:ring-2 focus:ring-daet-forest/20"
                 placeholder="juan@example.com"
               />
             </div>
@@ -335,7 +337,7 @@ export function BookingForm({ packageId, priceVariants, dateOptions, userProfile
                 onChange={(e) => setContactPhone(e.target.value)}
                 required
                 minLength={10}
-                className="mt-1 w-full rounded-xl border border-daet-ink/20 px-4 py-2.5 text-sm focus:border-daet-forest focus:outline-none focus:ring-2 focus:ring-daet-forest/20"
+                className="mt-1 w-full rounded-xl border border-daet-ink/20 min-h-11 px-4 py-2.5 text-base focus:border-daet-forest focus:outline-none focus:ring-2 focus:ring-daet-forest/20"
                 placeholder="09123456789"
               />
             </div>
@@ -350,7 +352,7 @@ export function BookingForm({ packageId, priceVariants, dateOptions, userProfile
               value={specialRequests}
               onChange={(e) => setSpecialRequests(e.target.value)}
               rows={3}
-              className="mt-1 w-full rounded-xl border border-daet-ink/20 px-4 py-2.5 text-sm focus:border-daet-forest focus:outline-none focus:ring-2 focus:ring-daet-forest/20"
+              className="mt-1 w-full rounded-xl border border-daet-ink/20 min-h-11 px-4 py-2.5 text-base focus:border-daet-forest focus:outline-none focus:ring-2 focus:ring-daet-forest/20"
               placeholder="Any dietary restrictions, accessibility needs, or special occasions..."
             />
           </div>

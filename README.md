@@ -14,6 +14,10 @@ The app expects the existing `get_my_role()` RPC to return the signed-in user's 
 
 The existing schema should enforce at most one operator application per `user_id` (including rejected applications, which are updated on resubmission). The action checks current status and uses a conditional update, but database uniqueness is still required to prevent simultaneous first submissions from creating duplicates.
 
+## Password reset
+
+`/forgot-password` emails a reset link through Supabase Auth. In the Supabase dashboard (Authentication, URL Configuration) add `<your site URL>/auth/callback` to the allowed redirect URLs, or the link will be rejected. The link lands on `/auth/callback`, which signs the visitor in with the one-time code and sends them to `/reset-password`.
+
 ## Existing schema integration
 
 No database tables, enums, or migrations are created by this feature. Because the repository started without generated Supabase types or the schema DDL, the field mapping is centralized in `src/lib/tours/operator-contract.ts` and currently expects:

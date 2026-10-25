@@ -58,6 +58,21 @@ export function OperatorRegistrationForm({
   );
   const [isDispatchPending, startTransition] = useTransition();
   const [activeStep, setActiveStep] = useState(1);
+  const stepChanged = useRef(false);
+
+  // After "Next" or "Back", move focus to the new step's heading so keyboard
+  // and screen reader users land where the content changed.
+  useEffect(() => {
+    if (!stepChanged.current) {
+      stepChanged.current = true;
+      return;
+    }
+    const legend = formRef.current?.querySelector<HTMLElement>("fieldset:not([hidden]) > legend");
+    if (legend) {
+      legend.tabIndex = -1;
+      legend.focus();
+    }
+  }, [activeStep]);
   const [compressing, setCompressing] = useState(false);
   const [clientError, setClientError] = useState("");
   const [values, setValues] = useState<FormValues>({
