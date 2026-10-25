@@ -51,18 +51,20 @@ export default async function AdminDashboardPage() {
     guidesResult,
     pendingPackagesResult,
     publishedPackagesResult,
+    bookingsResult,
   ] = await Promise.all([
     supabase.from('tours_operators').select('*', { count: 'exact', head: true }).eq('accreditation_status', 'pending'),
     supabase.from('tours_guides').select('*', { count: 'exact', head: true }).eq('accreditation_status', 'pending'),
     supabase.from('tours_packages').select('*', { count: 'exact', head: true }).eq('status', 'pending_review'),
     supabase.from('tours_packages').select('*', { count: 'exact', head: true }).eq('status', 'published'),
+    supabase.from('tours_bookings').select('*', { count: 'exact', head: true }),
   ]);
 
   const pendingOperators = operatorsResult.count || 0;
   const pendingGuides = guidesResult.count || 0;
   const pendingPackages = pendingPackagesResult.count || 0;
   const publishedPackages = publishedPackagesResult.count || 0;
-  const totalBookings = 0; // Will be implemented with booking system
+  const totalBookings = bookingsResult.count || 0;
 
   // Get recent admin activities
   const { data: recentActivities } = await supabase

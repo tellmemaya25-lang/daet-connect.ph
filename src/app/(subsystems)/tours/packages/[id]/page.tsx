@@ -10,6 +10,7 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { RatingBadge, Stars } from "@/components/tours/star-rating";
 import { ReviewList } from "@/components/tours/review-list";
 import { distribution, toSummary, type Review } from "@/lib/tours/reviews";
+import { FREE_CANCELLATION_HOURS } from "@/lib/tours/cancellation";
 
 export const dynamic = "force-dynamic";
 
@@ -378,11 +379,11 @@ export default async function PackageDetailPage({ params }: PageProps) {
               <div className="mt-6 space-y-3 border-t border-daet-ink/10 pt-6 text-sm text-daet-ink/70">
                 <div className="flex items-center gap-2">
                   <span>✓</span>
-                  <span>Instant confirmation</span>
+                  <span>Confirmed by the local operator</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <span>✓</span>
-                  <span>Free cancellation up to 24hrs</span>
+                  <span>Cancel up to {FREE_CANCELLATION_HOURS} hours before the tour</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <span>✓</span>

@@ -128,7 +128,6 @@ export async function createBooking(input: CreateBookingInput): Promise<CreateBo
       return { success: false, error: userFacingDbError(bookingError, "Failed to create booking. Please try again.") };
     }
 
-    console.log("Booking created successfully:", booking.id, bookingReference);
 
     return {
       success: true,

@@ -65,11 +65,10 @@ export function BookingForm({ packageId, priceVariants, dateOptions, userProfile
 
   const totalAmount = calculateTotal();
 
-  // Get min date (tomorrow)
+  // Get min date (tomorrow in Manila, not in the visitor's or the server's zone)
   const getMinDate = () => {
-    const tomorrow = new Date();
-    tomorrow.setDate(tomorrow.getDate() + 1);
-    return tomorrow.toISOString().split("T")[0];
+    const manilaTomorrow = new Date(Date.now() + (8 + 24) * 60 * 60 * 1000);
+    return manilaTomorrow.toISOString().split("T")[0];
   };
 
   const selectedDate = dateOptions?.find((option) => option.date === tourDate);
@@ -97,25 +96,30 @@ export function BookingForm({ packageId, priceVariants, dateOptions, userProfile
     setIsSubmitting(true);
     setError(null);
 
-    const result = await createBooking({
-      packageId,
-      priceVariantId: selectedVariantId,
-      tourDate,
-      numberOfPax,
-      contactName: contactName.trim(),
-      contactEmail: contactEmail.trim(),
-      contactPhone: contactPhone.trim(),
-      specialRequests: specialRequests.trim() || undefined,
-    });
+    try {
+      const result = await createBooking({
+        packageId,
+        priceVariantId: selectedVariantId,
+        tourDate,
+        numberOfPax,
+        contactName: contactName.trim(),
+        contactEmail: contactEmail.trim(),
+        contactPhone: contactPhone.trim(),
+        specialRequests: specialRequests.trim() || undefined,
+      });
 
-    if (!result.success) {
-      setError(result.error || "Failed to create booking");
+      if (!result.success) {
+        setError(result.error || "We could not send your booking. Please try again.");
+        setIsSubmitting(false);
+        return;
+      }
+
+      // Success - redirect to booking confirmation
+      router.push(`/tours/bookings/${result.bookingId}`);
+    } catch {
+      setError("We could not reach the server. Check your connection and try again. Nothing was booked.");
       setIsSubmitting(false);
-      return;
     }
-
-    // Success - redirect to booking confirmation
-    router.push(`/tours/bookings/${result.bookingId}`);
   }
 
   if (priceVariants.length === 0) {
@@ -136,7 +140,7 @@ export function BookingForm({ packageId, priceVariants, dateOptions, userProfile
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       {error && (
-        <div className="rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-800">
+        <div role="alert" className="rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-800">
           {error}
         </div>
       )}
@@ -358,7 +362,7 @@ export function BookingForm({ packageId, priceVariants, dateOptions, userProfile
         <div>
           <p className="text-sm font-bold text-daet-ink">Ready to book?</p>
           <p className="text-xs text-daet-ink/70">
-            Your booking will be pending until confirmed by the operator
+            Nothing is charged yet. You pay after the operator confirms.
           </p>
         </div>
         <button
@@ -366,7 +370,7 @@ export function BookingForm({ packageId, priceVariants, dateOptions, userProfile
           disabled={isSubmitting || noOpenDates || notEnoughSeats || !tourDate}
           className="min-h-11 shrink-0 whitespace-nowrap rounded-full bg-daet-forest px-8 py-3 text-sm font-black text-white transition hover:bg-daet-ink disabled:opacity-50"
         >
-          {isSubmitting ? "Submitting..." : `Book for ₱${totalAmount.toLocaleString()}`}
+          {isSubmitting ? "Sending request..." : `Request booking · ₱${totalAmount.toLocaleString()}`}
         </button>
       </div>
     </form>

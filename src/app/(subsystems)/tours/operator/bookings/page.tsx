@@ -140,7 +140,6 @@ export default async function OperatorBookingsPage({
     .eq("accreditation_status", "approved")
     .order("id", { ascending: true });
 
-  console.log("Guides data fetched:", guidesData?.length || 0);
   if (guidesError) {
     console.error("Guides fetch error:", guidesError);
     console.error("Guides error details:", JSON.stringify(guidesError, null, 2));
@@ -148,7 +147,6 @@ export default async function OperatorBookingsPage({
 
   // Get profile IDs
   const profileIds = guidesData?.map((g) => g.profile_id).filter(Boolean) || [];
-  console.log("Profile IDs to fetch:", profileIds);
 
   // Fetch profile names for guides (only if we have IDs)
   let profilesData = null;
@@ -159,7 +157,6 @@ export default async function OperatorBookingsPage({
       .in("id", profileIds);
     
     profilesData = data;
-    console.log("Profiles data fetched:", profilesData?.length || 0);
     if (profilesError) console.error("Profiles fetch error:", profilesError);
   }
 
@@ -172,7 +169,6 @@ export default async function OperatorBookingsPage({
         full_name: profile?.full_name || "Unknown Guide",
         contact_phone: guide.contact_phone,
       };
-      console.log("Mapped guide:", result);
       return result;
     }) || [];
 

@@ -85,10 +85,6 @@ export default async function OperatorPackagesPage({
   const packagesResult = await listOperatorPackages();
   const packages = packagesResult.success ? packagesResult.data : [];
 
-  console.log('Operator packages loaded:', packages?.length || 0);
-  if (packages && packages.length > 0) {
-    console.log('First package:', JSON.stringify(packages[0], null, 2));
-  }
 
   const params = await searchParams;
   const justSubmitted = params.submitted === "true";

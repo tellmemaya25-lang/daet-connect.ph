@@ -141,7 +141,7 @@ export default async function BookingDetailPage({ params, searchParams }: PagePr
             <p className="mt-2 text-sm text-emerald-800">
               Your booking has been sent to the operator for confirmation.
               <br />
-              You'll receive an email once it's confirmed.
+              You will see the update here and in your notifications.
             </p>
           </div>
         )}

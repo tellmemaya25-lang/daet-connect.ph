@@ -35,7 +35,6 @@ export default async function AdminPackagesPage() {
     console.error('Error fetching packages:', error);
   }
 
-  console.log('Packages fetched:', packages?.length || 0);
 
   // Get operator details separately to avoid relationship ambiguity
   let packagesWithOperators = packages || [];

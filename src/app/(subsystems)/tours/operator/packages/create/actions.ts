@@ -26,7 +26,6 @@ export async function createPackage(formData: FormData): Promise<CreatePackageRe
     const exclusionsText = formData.get("exclusions") as string;
     const stopsText = formData.get("stops") as string;
 
-    console.log("Creating package with operator_id:", operatorId);
 
     // Create package
     const { data: pkg, error: pkgError } = await supabase
@@ -142,37 +141,29 @@ export async function createPackage(formData: FormData): Promise<CreatePackageRe
     const coverImageFile = formData.get("coverImage") as File | null;
     const galleryFiles = formData.getAll("galleryImages") as File[];
 
-    console.log("=== IMAGE UPLOAD DEBUG ===");
-    console.log("Cover image file:", coverImageFile?.name, coverImageFile?.size);
-    console.log("Gallery files:", galleryFiles.map(f => ({ name: f.name, size: f.size })));
 
     if (coverImageFile && coverImageFile.size > 0) {
-      console.log("Uploading cover image:", coverImageFile.name);
       const result = await uploadPackageImage(coverImageFile, packageId, "cover");
-      
-      console.log("Upload result:", result);
-      
+
       if (result.success && result.url) {
         // Update package with cover image URL
-        const { data: updateData, error: updateError } = await supabase
+        const { error: updateError } = await supabase
           .from("tours_packages")
           .update({ cover_image_url: result.url })
           .eq("id", packageId)
           .select("id, cover_image_url");
-        
-        console.log("Cover image URL update:", updateData, updateError);
-        console.log("Cover image uploaded successfully:", result.url);
+
+        if (updateError) {
+          console.error("Cover image URL update failed:", updateError.message);
+        }
       } else {
         console.error("Cover image upload failed:", result.error);
         // Don't fail the whole operation for image upload
       }
-    } else {
-      console.log("No cover image to upload");
     }
 
     // Upload gallery images
     if (galleryFiles.length > 0) {
-      console.log("Uploading", galleryFiles.length, "gallery images");
       
       for (let i = 0; i < galleryFiles.length; i++) {
         const file = galleryFiles[i];
@@ -190,7 +181,6 @@ export async function createPackage(formData: FormData): Promise<CreatePackageRe
               display_order: i,
             });
           
-          console.log(`Gallery image ${i + 1} uploaded:`, result.url);
         } else {
           console.error(`Gallery image ${i + 1} upload failed:`, result.error);
           // Continue with remaining images

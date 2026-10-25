@@ -35,9 +35,6 @@ export default async function OperatorSettingsPage() {
   const supabase = await createSupabaseServerClient();
 
   // Debug logging
-  console.log("🔍 Settings Page Debug:");
-  console.log("  User ID:", session.user.id);
-  console.log("  OPERATOR_USER_ID_COLUMN:", OPERATOR_USER_ID_COLUMN);
 
   // Get operator profile - select specific columns to avoid missing column errors
   const { data: operator, error } = await supabase
@@ -46,8 +43,6 @@ export default async function OperatorSettingsPage() {
     .eq(OPERATOR_USER_ID_COLUMN, session.user.id)
     .maybeSingle();
 
-  console.log("  Query result:", operator);
-  console.log("  Query error:", error);
 
   if (error || !operator) {
     console.error("❌ Settings query error:", error);

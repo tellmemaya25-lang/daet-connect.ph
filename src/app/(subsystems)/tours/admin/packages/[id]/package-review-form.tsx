@@ -34,7 +34,6 @@ export function PackageReviewForm({ packageId, currentStatus }: PackageReviewFor
     formData.append('status', status);
     formData.append('notes', notes);
 
-    console.log('Submitting status:', status); // Debug log
 
     const result = await updatePackageStatus(formData);
 

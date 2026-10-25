@@ -64,19 +64,22 @@ export default async function BrowsePackagesPage({
   }
 
   // Apply sorting
+  // Price lives on the price variants, so price sorting and price ranges are
+  // applied after the fetch. Fetch a wider window then, so the page is not
+  // limited to the 50 newest packages before the price rules run.
   const sortBy = params.sort || "created_at";
-  query = query.order(sortBy === "price" ? "created_at" : sortBy, { ascending: sortBy === "price" });
+  const needsPriceWork = sortBy === "price" || Boolean(params.minPrice || params.maxPrice);
+  query = query.order(sortBy === "price" ? "created_at" : sortBy, { ascending: false });
 
-  const { data: packages, error } = await query.limit(50);
+  const { data: packages, error } = await query.limit(needsPriceWork ? 200 : 50);
 
   if (error) {
-    console.error("Browse packages error:", error);
-    console.error("Error details:", JSON.stringify(error, null, 2));
+    console.error("Browse packages error:", error.message);
     return (
       <PageFrame>
         <div className="mx-auto max-w-7xl">
           <Notice variant="error" title="Could not load packages">
-            {error.message || error.details || "Please try again later."}
+            Please try again in a moment.
           </Notice>
         </div>
       </PageFrame>
@@ -116,6 +119,15 @@ export default async function BrowsePackagesPage({
       return price >= minPrice && price <= maxPrice;
     });
   }
+
+  if (sortBy === "price") {
+    const priceOf = (pkg: any) => {
+      const variant = pkg.tours_package_price_variants?.find((v: any) => v.is_default);
+      return variant ? variant.price_per_pax || variant.flat_price || 0 : Number.POSITIVE_INFINITY;
+    };
+    filteredPackages = [...filteredPackages].sort((a: any, b: any) => priceOf(a) - priceOf(b));
+  }
+  filteredPackages = filteredPackages.slice(0, 50);
 
   return (
     <PageFrame>

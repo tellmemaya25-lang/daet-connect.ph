@@ -30,8 +30,6 @@ export default async function MyBookingsPage() {
   }
 
   // Debug: Log user info
-  console.log("🔍 User ID:", user.id);
-  console.log("🔍 User email:", user.email);
 
   // Fetch all bookings for this user (without operator payment details for now)
   const { data: bookings, error } = await supabase
@@ -51,9 +49,6 @@ export default async function MyBookingsPage() {
     .order("created_at", { ascending: false });
 
   // Debug: Log query results
-  console.log("📊 Bookings data:", bookings);
-  console.log("❌ Bookings error:", error);
-  console.log("📊 Bookings count:", bookings?.length || 0);
 
   if (error) {
     console.error("Bookings fetch error:", error);
