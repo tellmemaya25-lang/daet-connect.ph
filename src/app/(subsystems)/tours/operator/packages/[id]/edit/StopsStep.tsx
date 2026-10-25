@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useCallback, useState } from "react";
+import { useFeedback } from "@/components/ui/feedback";
 import type { EditStop, EditPackageStatus, ValidationErrors, StepProps } from "./edit-types";
 import { EDIT_LIMITS, DEFAULT_COORDINATES } from "./edit-constants";
 import { getEditPermissions } from "./permissions";
@@ -26,6 +27,7 @@ export function StopsStep({
   loading,
 }: StopsStepProps) {
   const permissions = getEditPermissions(packageStatus);
+  const { toast, confirm } = useFeedback();
   const [showAddForm, setShowAddForm] = useState(false);
   const [editingId, setEditingId] = useState<string | undefined>();
   const [formData, setFormData] = useState<Partial<EditStop>>({
@@ -103,7 +105,7 @@ export function StopsStep({
     (id: string | undefined) => {
       if (!id) return;
       if (data.length <= 1) {
-        alert("At least one stop is required");
+        toast("At least one stop is required.", "error");
         return;
       }
       onUpdate(data.filter((s) => s.id !== id));
@@ -220,8 +222,8 @@ export function StopsStep({
                   {canRemoveStops && (
                     <button
                       type="button"
-                      onClick={() => {
-                        if (window.confirm("Delete this stop? This action cannot be undone.")) {
+                      onClick={async () => {
+                        if (await confirm({ title: "Delete this stop? This action cannot be undone.", confirmLabel: "Delete" })) {
                           handleDelete(stop.id);
                         }
                       }}

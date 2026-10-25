@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useFeedback } from "@/components/ui/feedback";
 import { useRouter } from "next/navigation";
 import { assignGuideToBooking } from "./actions";
 
@@ -19,6 +20,7 @@ export function GuideAssignment({
   availability = {},
 }: GuideAssignmentProps) {
   const router = useRouter();
+  const { toast, confirm } = useFeedback();
   const [selectedGuideId, setSelectedGuideId] = useState(currentGuideId || "");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -48,7 +50,7 @@ export function GuideAssignment({
   };
 
   const handleUnassign = async () => {
-    if (!confirm("Are you sure you want to unassign this guide?")) {
+    if (!(await confirm({ title: "Unassign this guide?", confirmLabel: "Unassign" }))) {
       return;
     }
 

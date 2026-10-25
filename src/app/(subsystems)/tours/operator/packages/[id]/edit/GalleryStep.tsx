@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useCallback, useState } from "react";
+import { useFeedback } from "@/components/ui/feedback";
 import Image from "next/image";
 import type { EditGalleryImage, EditPackageStatus, ValidationErrors, StepProps } from "./edit-types";
 import { uploadPackageImage, deletePackageImage } from "./actions";
@@ -29,6 +30,7 @@ export function GalleryStep({
   loading,
 }: GalleryStepProps) {
   const permissions = getEditPermissions(packageStatus);
+  const { toast, confirm } = useFeedback();
   const [uploadLoading, setUploadLoading] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [editingCaption, setEditingCaption] = useState<string | undefined>();
@@ -307,8 +309,8 @@ export function GalleryStep({
                       {canRemoveImages && (
                         <button
                           type="button"
-                          onClick={() => {
-                            if (window.confirm("Delete this image?")) {
+                          onClick={async () => {
+                        if (await confirm({ title: "Delete this image?", confirmLabel: "Delete" })) {
                               handleDeleteImage(image.id, image.imageUrl);
                             }
                           }}

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useFeedback } from "@/components/ui/feedback";
 import { updatePaymentSettings } from "./actions";
 
 interface PaymentSettingsFormProps {
@@ -22,6 +23,7 @@ export function PaymentSettingsForm({
   bankAccountName: initialBankAccountName,
   paymentInstructions: initialInstructions,
 }: PaymentSettingsFormProps) {
+  const { toast, confirm } = useFeedback();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [gcashNumber, setGcashNumber] = useState(initialGcash || "");
   const [gcashName, setGcashName] = useState(initialGcashName || "");
@@ -49,9 +51,9 @@ export function PaymentSettingsForm({
     setIsSubmitting(false);
 
     if (result.success) {
-      alert("Payment settings updated successfully!");
+      toast("Payment settings saved.", "success");
     } else {
-      alert(`Error: ${result.error}`);
+      toast(result.error || "We could not save your payment settings.", "error");
     }
   };
 

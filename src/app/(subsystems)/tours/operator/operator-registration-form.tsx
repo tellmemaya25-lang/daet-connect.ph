@@ -35,7 +35,7 @@ function formatFileSize(size: number): string {
 
 function FieldError({ id, message }: { id: string; message?: string }) {
   return message ? (
-    <p id={id} className="mt-2 text-sm font-medium text-rose-700">
+    <p id={id} role="alert" className="mt-2 text-sm font-medium text-rose-700">
       {message}
     </p>
   ) : null;
@@ -240,8 +240,9 @@ export function OperatorRegistrationForm({
           <p className="mt-1 text-sm leading-6 text-daet-ink/65">Use the contact details where the Tourism Office can reach you.</p>
 
           <div className="mt-6 grid gap-5 sm:grid-cols-2">
-            <label className="block sm:col-span-2">
-              <span className="text-sm font-bold text-daet-ink">Registered business name <span className="text-rose-600">*</span></span>
+            <div className="block sm:col-span-2">
+              <label className="block">
+              <span className="text-sm font-bold text-daet-ink">Registered business name <span className="text-rose-600" aria-hidden="true">*</span></span>
               <input
                 data-step-field="1"
                 name="businessName"
@@ -255,11 +256,13 @@ export function OperatorRegistrationForm({
                 aria-describedby={fieldErrors.businessName ? "businessName-error" : undefined}
                 className="mt-2 min-h-12 w-full rounded-2xl border border-daet-ink/15 bg-white px-4 text-base outline-none transition placeholder:text-daet-ink/35 focus:border-daet-forest focus:ring-4 focus:ring-daet-forest/10 aria-[invalid=true]:border-rose-400"
               />
+              </label>
               <FieldError id="businessName-error" message={fieldErrors.businessName} />
-            </label>
+              </div>
 
-            <label className="block">
-              <span className="text-sm font-bold text-daet-ink">Authorized contact person <span className="text-rose-600">*</span></span>
+            <div className="block">
+              <label className="block">
+              <span className="text-sm font-bold text-daet-ink">Authorized contact person <span className="text-rose-600" aria-hidden="true">*</span></span>
               <input
                 data-step-field="1"
                 name="contactPerson"
@@ -273,11 +276,13 @@ export function OperatorRegistrationForm({
                 aria-describedby={fieldErrors.contactPerson ? "contactPerson-error" : undefined}
                 className="mt-2 min-h-12 w-full rounded-2xl border border-daet-ink/15 bg-white px-4 text-base outline-none transition placeholder:text-daet-ink/35 focus:border-daet-forest focus:ring-4 focus:ring-daet-forest/10 aria-[invalid=true]:border-rose-400"
               />
+              </label>
               <FieldError id="contactPerson-error" message={fieldErrors.contactPerson} />
-            </label>
+              </div>
 
-            <label className="block">
-              <span className="text-sm font-bold text-daet-ink">Mobile or contact number <span className="text-rose-600">*</span></span>
+            <div className="block">
+              <label className="block">
+              <span className="text-sm font-bold text-daet-ink">Mobile or contact number <span className="text-rose-600" aria-hidden="true">*</span></span>
               <input
                 data-step-field="1"
                 name="contactPhone"
@@ -292,11 +297,13 @@ export function OperatorRegistrationForm({
                 aria-describedby={fieldErrors.contactPhone ? "contactPhone-error" : undefined}
                 className="mt-2 min-h-12 w-full rounded-2xl border border-daet-ink/15 bg-white px-4 text-base outline-none transition placeholder:text-daet-ink/35 focus:border-daet-forest focus:ring-4 focus:ring-daet-forest/10 aria-[invalid=true]:border-rose-400"
               />
+              </label>
               <FieldError id="contactPhone-error" message={fieldErrors.contactPhone} />
-            </label>
+              </div>
 
-            <label className="block sm:col-span-2">
-              <span className="text-sm font-bold text-daet-ink">Business email <span className="text-rose-600">*</span></span>
+            <div className="block sm:col-span-2">
+              <label className="block">
+              <span className="text-sm font-bold text-daet-ink">Business email <span className="text-rose-600" aria-hidden="true">*</span></span>
               <input
                 data-step-field="1"
                 name="contactEmail"
@@ -311,11 +318,13 @@ export function OperatorRegistrationForm({
                 aria-describedby={fieldErrors.contactEmail ? "contactEmail-error" : undefined}
                 className="mt-2 min-h-12 w-full rounded-2xl border border-daet-ink/15 bg-white px-4 text-base outline-none transition placeholder:text-daet-ink/35 focus:border-daet-forest focus:ring-4 focus:ring-daet-forest/10 aria-[invalid=true]:border-rose-400"
               />
+              </label>
               <FieldError id="contactEmail-error" message={fieldErrors.contactEmail} />
-            </label>
+              </div>
 
-            <label className="block sm:col-span-2">
-              <span className="text-sm font-bold text-daet-ink">Business address <span className="text-rose-600">*</span></span>
+            <div className="block sm:col-span-2">
+              <label className="block">
+              <span className="text-sm font-bold text-daet-ink">Business address <span className="text-rose-600" aria-hidden="true">*</span></span>
               <textarea
                 data-step-field="1"
                 name="businessAddress"
@@ -330,8 +339,9 @@ export function OperatorRegistrationForm({
                 aria-describedby={fieldErrors.businessAddress ? "businessAddress-error" : undefined}
                 className="mt-2 w-full rounded-2xl border border-daet-ink/15 bg-white px-4 py-3 text-base outline-none transition placeholder:text-daet-ink/35 focus:border-daet-forest focus:ring-4 focus:ring-daet-forest/10 aria-[invalid=true]:border-rose-400"
               />
+              </label>
               <FieldError id="businessAddress-error" message={fieldErrors.businessAddress} />
-            </label>
+              </div>
           </div>
         </fieldset>
 
@@ -358,7 +368,7 @@ export function OperatorRegistrationForm({
             ]).map((item) => (
               <label key={item.field} className="block rounded-2xl border border-daet-ink/10 bg-daet-sand/50 p-4 sm:p-5">
                 <span className="flex flex-wrap items-center gap-2 text-sm font-bold text-daet-ink">
-                  {item.title} <span className="text-rose-600">*</span>
+                  {item.title} <span className="text-rose-600" aria-hidden="true">*</span>
                 </span>
                 <span className="mt-1 block text-sm leading-6 text-daet-ink/70">{item.description}</span>
                 <input
@@ -392,8 +402,9 @@ export function OperatorRegistrationForm({
           <legend className="text-xl font-black text-daet-ink">GCash QR code</legend>
           <p className="mt-1 text-sm leading-6 text-daet-ink/65">Tourists will use this QR to pay you directly. The platform does not collect or route payments.</p>
 
-          <label className="mt-6 block rounded-2xl border border-dashed border-daet-forest/30 bg-daet-sand/50 p-5 sm:p-7">
-            <span className="block text-sm font-bold text-daet-ink">Your business GCash QR <span className="text-rose-600">*</span></span>
+          <div className="mt-6 block rounded-2xl border border-dashed border-daet-forest/30 bg-daet-sand/50 p-5 sm:p-7">
+            <label className="block">
+            <span className="block text-sm font-bold text-daet-ink">Your business GCash QR <span className="text-rose-600" aria-hidden="true">*</span></span>
             <span className="mt-1 block text-sm leading-6 text-daet-ink/70">Upload a clear JPG, PNG, or WebP image. Do not upload a screenshot containing your balance or transaction history.</span>
             <input
               data-step-field="3"
@@ -412,8 +423,9 @@ export function OperatorRegistrationForm({
                 <span className="shrink-0">{formatFileSize(files.gcashQr.size)}</span>
               </span>
             ) : null}
+            </label>
             <FieldError id="gcashQr-error" message={fieldErrors.gcashQr} />
-          </label>
+            </div>
 
           <Notice variant="info" title="Your application stays private" className="mt-5">
             Your documents and payment QR are kept in private storage. Only authorized Tourism Office reviewers can open the application documents.

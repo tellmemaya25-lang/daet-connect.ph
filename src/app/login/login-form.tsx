@@ -37,6 +37,11 @@ export function LoginForm({ nextUrl, notice }: LoginFormProps) {
       <Field id="password" label="Password" required>
         <Input type="password" name="password" required autoComplete="current-password" />
       </Field>
+      <p className="-mt-2 text-sm">
+        <Link href="/forgot-password" className="font-bold text-daet-forest underline underline-offset-4">
+          Forgot your password?
+        </Link>
+      </p>
 
       {state.message ? (
         <Notice variant={state.status === "error" ? "error" : "success"}>{state.message}</Notice>

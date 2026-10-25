@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useFeedback } from "@/components/ui/feedback";
 import { recordPayment } from "./payment-actions";
 
 interface PaymentRecorderProps {
@@ -18,6 +19,7 @@ export function PaymentRecorder({
   totalPaid,
   paymentStatus,
 }: PaymentRecorderProps) {
+  const { toast, confirm } = useFeedback();
   const [isOpen, setIsOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [amount, setAmount] = useState("");
@@ -51,9 +53,9 @@ export function PaymentRecorder({
       setReferenceNumber("");
       setNotes("");
       setIsOpen(false);
-      alert(`Payment recorded successfully! ${result.message || ""}`);
+      toast(`Payment recorded. ${result.message || ""}`.trim(), "success");
     } else {
-      alert(`Error: ${result.error || "Failed to record payment"}`);
+      toast(result.error || "We could not record that payment.", "error");
     }
   };
 

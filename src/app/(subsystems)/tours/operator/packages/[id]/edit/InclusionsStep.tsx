@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useCallback, useState } from "react";
+import { useFeedback } from "@/components/ui/feedback";
 import type { EditInclusion, EditPackageStatus, ValidationErrors, StepProps } from "./edit-types";
 import { EDIT_LIMITS } from "./edit-constants";
 import { getEditPermissions } from "./permissions";
@@ -27,6 +28,7 @@ export function InclusionsStep({
   loading,
 }: InclusionsStepProps) {
   const permissions = getEditPermissions(packageStatus);
+  const { toast, confirm } = useFeedback();
   const [showAddForm, setShowAddForm] = useState(false);
   const [editingId, setEditingId] = useState<string | undefined>();
   const [formData, setFormData] = useState<{ text: string; isIncluded: boolean }>({
@@ -86,7 +88,7 @@ export function InclusionsStep({
   const handleDelete = useCallback(
     (id: string | undefined) => {
       if (!id || data.filter((i) => i.isIncluded).length <= 1) {
-        alert("At least one inclusion is required");
+        toast("At least one inclusion is required.", "error");
         return;
       }
       onUpdate(data.filter((i) => i.id !== id));
@@ -218,8 +220,8 @@ export function InclusionsStep({
                   {canRemoveItems && (
                     <button
                       type="button"
-                      onClick={() => {
-                        if (window.confirm("Delete this item?")) {
+                      onClick={async () => {
+                        if (await confirm({ title: "Delete this item?", confirmLabel: "Delete" })) {
                           handleDelete(item.id);
                         }
                       }}
@@ -268,8 +270,8 @@ export function InclusionsStep({
                   {canRemoveItems && (
                     <button
                       type="button"
-                      onClick={() => {
-                        if (window.confirm("Delete this item?")) {
+                      onClick={async () => {
+                        if (await confirm({ title: "Delete this item?", confirmLabel: "Delete" })) {
                           handleDelete(item.id);
                         }
                       }}
