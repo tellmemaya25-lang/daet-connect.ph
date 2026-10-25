@@ -1,6 +1,7 @@
 import { createSupabaseServerClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
+import { PageFrame } from '@/components/ui/page-frame';
 
 export default async function AdminPackagesPage() {
   const supabase = await createSupabaseServerClient();
@@ -99,7 +100,8 @@ export default async function AdminPackagesPage() {
   const draftPackages = packagesWithOperators?.filter(p => p.status === 'draft') || [];
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
+    <PageFrame adminNav>
+    <div>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Back Button */}
         <div className="mb-4">
@@ -181,6 +183,7 @@ export default async function AdminPackagesPage() {
         )}
       </div>
     </div>
+    </PageFrame>
   );
 }
 

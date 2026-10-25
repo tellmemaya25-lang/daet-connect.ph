@@ -119,6 +119,20 @@ test.describe("sign out", () => {
     await expect(page).toHaveURL(/\/$/);
   });
 
+  const framed: Array<[Role, string]> = [
+    ["admin", "/tours/admin/packages"],
+    ["admin", "/tours/admin/packages/aa000000-0000-4000-8000-000000000001"],
+    ["operator", "/tours/operator/packages/aa000000-0000-4000-8000-000000000001/edit"],
+    ["guide", "/tours/no-such-page"],
+  ];
+  for (const [role, path] of framed) {
+    test(`${role} has Sign out on ${path}`, async ({ context, page }) => {
+      await signInAs(context, role);
+      await page.goto(path, { waitUntil: "networkidle" });
+      await expect(page.getByRole("banner").getByRole("button", { name: "Sign out" })).toBeVisible();
+    });
+  }
+
   test("signed-out visitors see Sign in instead", async ({ page }) => {
     await page.goto("/tours/attractions", { waitUntil: "networkidle" });
     await expect(page.getByRole("banner").getByRole("link", { name: "Sign in" })).toBeVisible();

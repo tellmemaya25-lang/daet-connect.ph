@@ -1,6 +1,7 @@
 import { createSupabaseServerClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
+import { PageFrame } from '@/components/ui/page-frame';
 import { PackageReviewForm } from './package-review-form';
 
 export default async function AdminPackageReviewPage({
@@ -35,14 +36,17 @@ export default async function AdminPackageReviewPage({
   if (error || !packageData) {
     console.error('Package fetch error:', error);
     return (
-      <div className="min-h-screen bg-gray-50 py-8">
-        <div className="max-w-4xl mx-auto px-4">
-          <div className="bg-red-50 border border-red-200 rounded-lg p-6 text-center">
-            <p className="text-red-800">Package not found</p>
-            {error && <p className="text-red-600 text-sm mt-2">{error.message}</p>}
+      <PageFrame adminNav>
+        <div className="max-w-4xl mx-auto">
+          <Link href="/tours/admin/packages" className="text-sm font-bold text-daet-ink/70 hover:text-daet-ink">
+            ← All packages
+          </Link>
+          <div className="mt-4 bg-red-50 border border-red-200 rounded-lg p-6 text-center">
+            <h1 className="text-lg font-black text-red-800">Package not found</h1>
+            <p className="text-red-700 text-sm mt-2">It may have been deleted. Go back to the package list and try again.</p>
           </div>
         </div>
-      </div>
+      </PageFrame>
     );
   }
 
@@ -104,7 +108,8 @@ export default async function AdminPackageReviewPage({
   const operator = packageWithOperator.tours_operators;
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
+    <PageFrame adminNav>
+    <div>
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Back Button */}
         <div className="mb-4">
@@ -256,5 +261,6 @@ export default async function AdminPackageReviewPage({
         <PackageReviewForm packageId={id} currentStatus={packageWithOperator.status} />
       </div>
     </div>
+    </PageFrame>
   );
 }
