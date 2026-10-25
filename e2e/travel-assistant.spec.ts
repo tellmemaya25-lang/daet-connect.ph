@@ -63,3 +63,8 @@ test("the help page hosts the same chat", async ({ page }) => {
   await expect(page.getByText(/PayMongo/)).toBeVisible();
   await checkA11y(page, "help page");
 });
+
+test("the planner opens with the assistant's trip description filled in", async ({ page }) => {
+  await page.goto(`/tours/plan?describe=${encodeURIComponent("2 days with my kids, beaches and food")}`, { waitUntil: "networkidle" });
+  await expect(page.getByRole("textbox", { name: "Describe your trip" })).toHaveValue("2 days with my kids, beaches and food");
+});
