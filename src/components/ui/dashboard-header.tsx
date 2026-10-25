@@ -1,5 +1,4 @@
 import Link from 'next/link';
-import { LogoutButton } from './logout-button';
 
 interface DashboardHeaderProps {
   title?: string;
@@ -73,7 +72,6 @@ export function DashboardHeader({
               </Link>
             )}
           </div>
-          <LogoutButton />
         </div>
       )}
 

@@ -3,7 +3,6 @@ import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import { PageFrame } from '@/components/ui/page-frame';
 import { Notice } from '@/components/ui/notice';
-import { LogoutButton } from '@/components/ui/logout-button';
 
 export const dynamic = 'force-dynamic';
 
@@ -94,7 +93,6 @@ export default async function AdminDashboardPage() {
               </svg>
               Home
             </Link>
-            <LogoutButton />
           </div>
         </div>
       </div>
