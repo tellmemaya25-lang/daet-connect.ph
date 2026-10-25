@@ -228,6 +228,12 @@ export default async function AdminDashboardPage() {
             Moderate Reviews
           </Link>
           <Link
+            href="/tours/messages"
+            className="inline-flex min-h-11 items-center justify-center rounded-full border border-daet-forest/30 px-6 text-sm font-bold text-daet-forest hover:bg-daet-forest/5 transition"
+          >
+            Operator Messages
+          </Link>
+          <Link
             href="/tours/admin/merch"
             className="inline-flex min-h-11 items-center justify-center rounded-full border border-daet-forest/30 px-6 text-sm font-bold text-daet-leaf hover:bg-daet-forest/5 transition"
           >

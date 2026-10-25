@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { OpenChatButton } from "@/app/(subsystems)/tours/messages/open-chat-button";
 import { Notice } from "@/components/ui/notice";
 import { PageFrame } from "@/components/ui/page-frame";
 import { OPERATOR_OWN_STATUS_SELECT, OPERATOR_TABLE, OPERATOR_USER_ID_COLUMN } from "@/lib/tours/operator-contract";
@@ -77,7 +78,10 @@ export default async function OperatorPendingPage() {
               <p className="font-bold">Reviewer’s note</p><p className="mt-1">{application.accreditation_notes}</p>
             </div>
           ) : null}
-          <Link href="/tours/operator/register" className="mt-7 inline-flex min-h-12 items-center justify-center rounded-full bg-daet-forest px-6 text-sm font-bold text-white transition hover:bg-daet-ink">Update application</Link>
+          <div className="mt-7 flex flex-wrap items-center gap-3">
+            <Link href="/tours/operator/register" className="inline-flex min-h-12 items-center justify-center rounded-full bg-daet-forest px-6 text-sm font-bold text-white transition hover:bg-daet-ink">Update application</Link>
+            <OpenChatButton target={{ kind: "operator_admin" }} label="Ask the Tourism Office" />
+          </div>
         </section>
       </PageFrame>
     );
@@ -115,7 +119,10 @@ export default async function OperatorPendingPage() {
               <div><p className="font-bold text-daet-ink/70">Operator dashboard unlocked</p><p className="mt-1 text-sm leading-6 text-daet-ink/70">Package and booking tools are unavailable until accreditation is approved.</p></div>
             </li>
           </ol>
-          <div className="mt-8 border-t border-daet-ink/10 pt-5 text-sm text-daet-ink/70">You can safely close this page. Check back here for your status.</div>
+          <div className="mt-8 flex flex-col gap-3 border-t border-daet-ink/10 pt-5 text-sm text-daet-ink/70 sm:flex-row sm:items-center sm:justify-between">
+            <p>You can safely close this page. Check back here for your status.</p>
+            <OpenChatButton target={{ kind: "operator_admin" }} label="Message the Tourism Office" />
+          </div>
         </div>
       </section>
     </PageFrame>

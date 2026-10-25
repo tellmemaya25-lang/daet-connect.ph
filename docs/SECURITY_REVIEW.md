@@ -40,6 +40,7 @@ The repository is public, so anyone could sign in as the Tourism Office admin. F
 | Service-role usage | Created only in `src/lib/supabase/admin.ts` (`server-only`). Used by server code only: PayMongo webhook, push dispatch route, operator/guide accreditation review, notification actions, the route cache |
 | Signed QR | HMAC-SHA256 tokens with expiry, verified server-side (`src/lib/tours/qr-token.ts`, tests) |
 | Webhook | PayMongo signature verified with a timing-safe compare and timestamp tolerance (`src/lib/paymongo/signature.ts`, tests); replay-safe (event id primary key, unique `(provider, provider_ref)`), covered by `supabase/tests/integration.sql` |
+| Private chats | Guide–tourist chats exclude the operator; operator–guide chats need both sides accredited; Tourism Office chats are the operator plus admins. Admins can read other chats but not post. Checked in `supabase/tests/integration.sql` | Messaging channels migration |
 | Open redirect after login | Fixed in F12: `?next=` accepted any URL (`/login?next=https://evil.example`). Now only same-site paths, via `safeNextPath` (tests) |
 | Privilege escalation | Fixed in F10: users could set their own `profiles.role`; browser updates are now limited to `full_name` and `avatar_url` |
 | RLS per role | `supabase/tests/integration.sql`: 31 checks across anon, tourist, operator, guide and admin. **31 pass** on the live project (rolled back) |
@@ -50,6 +51,7 @@ The repository is public, so anyone could sign in as the Tourism Office admin. F
 |---|---|---|
 | Bookings | 5 per account per 10 minutes; at most 10 pending at once (pending bookings hold seats) | `tours_bookings_rate_limit` trigger (F12) |
 | Messages | 20 per minute per sender; 1–1000 characters | F4 message trigger |
+| Chats | One per booking per kind, per operator–guide pair and per operator; opened only through the `tours_open_*_conversation` RPCs | Messaging channels migration |
 | Reviews | One per completed booking | F8 |
 | Points | Once per `(source, ref_id)`; trip plans max 3 a day | F10 |
 | Sign-up / sign-in / OTP | Supabase Auth's built-in rate limits | Dashboard → Authentication → Rate Limits (review the defaults before evaluation) |

@@ -32,11 +32,11 @@ export function SiteHeader({
       <div className="mx-auto flex min-h-[76px] max-w-7xl flex-wrap items-center justify-between gap-x-4 px-4 py-2 sm:flex-nowrap sm:px-6 lg:px-8">
         <BrandMark />
         {/* On phones the account actions sit beside the logo; on wider screens they follow the nav. */}
-        <div className="flex items-center gap-2 sm:order-last">
+        <div className="flex items-center gap-1 sm:order-last sm:gap-2">
           {signedIn ? (
             <>
               <NotificationBell />
-              <LogoutButton className="px-3!" />
+              <LogoutButton compact />
             </>
           ) : (
             <>

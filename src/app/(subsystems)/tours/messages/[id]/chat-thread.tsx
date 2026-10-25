@@ -25,6 +25,7 @@ export function ChatThread({
   initialAttachmentUrls,
   canSend,
   closedReason,
+  emptyText = "No messages yet. Say hello and ask anything about the tour.",
 }: {
   conversationId: string;
   viewerId: string;
@@ -33,6 +34,7 @@ export function ChatThread({
   initialAttachmentUrls: Record<string, string>;
   canSend: boolean;
   closedReason: string | null;
+  emptyText?: string;
 }) {
   const [messages, setMessages] = useState(() => mergeMessages([], initialMessages));
   const [urls, setUrls] = useState(initialAttachmentUrls);
@@ -116,7 +118,7 @@ export function ChatThread({
 
       <div className="min-h-[40vh] space-y-4 rounded-3xl border border-daet-ink/10 bg-white p-4 shadow-sm" role="log" aria-label="Messages">
         {messages.length === 0 ? (
-          <p className="py-10 text-center text-sm text-daet-ink/70">No messages yet. Say hello and ask anything about the tour.</p>
+          <p className="py-10 text-center text-sm text-daet-ink/70">{emptyText}</p>
         ) : null}
         {groups.map((group) => (
           <section key={group.day} aria-label={group.day}>

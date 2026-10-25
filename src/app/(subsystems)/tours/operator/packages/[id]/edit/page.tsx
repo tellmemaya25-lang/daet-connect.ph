@@ -4,6 +4,7 @@ import { loadPackageForEdit } from "./actions";
 import { EditPackageForm } from "./EditPackageForm";
 import { EDIT_MESSAGES } from "./edit-constants";
 import Link from "next/link";
+import { PageFrame } from "@/components/ui/page-frame";
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -163,8 +164,10 @@ export default async function EditPackagePage({ params }: PageProps) {
   const { id } = await params;
 
   return (
-    <Suspense fallback={<EditPackageSkeleton />}>
-      <EditPackageContent packageId={id} />
-    </Suspense>
+    <PageFrame>
+      <Suspense fallback={<EditPackageSkeleton />}>
+        <EditPackageContent packageId={id} />
+      </Suspense>
+    </PageFrame>
   );
 }

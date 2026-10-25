@@ -551,27 +551,30 @@ export type Database = {
           created_at: string
           guide_id: string | null
           id: string
+          kind: string
           last_message_at: string
           operator_id: string | null
-          tourist_id: string
+          tourist_id: string | null
         }
         Insert: {
           booking_id?: string | null
           created_at?: string
           guide_id?: string | null
           id?: string
+          kind?: string
           last_message_at?: string
           operator_id?: string | null
-          tourist_id: string
+          tourist_id?: string | null
         }
         Update: {
           booking_id?: string | null
           created_at?: string
           guide_id?: string | null
           id?: string
+          kind?: string
           last_message_at?: string
           operator_id?: string | null
-          tourist_id?: string
+          tourist_id?: string | null
         }
         Relationships: [
           {
@@ -1973,6 +1976,20 @@ export type Database = {
           tourist: string
         }[]
       }
+      tours_chat_inbox: {
+        Args: never
+        Returns: {
+          booking_id: string
+          conversation_id: string
+          kind: string
+          last_message: string
+          last_message_at: string
+          last_sender_id: string
+          subtitle: string
+          title: string
+          unread: number
+        }[]
+      }
       tours_check_in: {
         Args: {
           p_booking_id: string
@@ -1980,6 +1997,10 @@ export type Database = {
           p_participant_id: string
         }
         Returns: string
+      }
+      tours_conversation_header: {
+        Args: { p_conversation_id: string }
+        Returns: Json
       }
       tours_count_booked_seats: {
         Args: { p_date: string; p_package_id: string }
@@ -2037,6 +2058,18 @@ export type Database = {
       }
       tours_open_booking_conversation: {
         Args: { p_booking_id: string }
+        Returns: string
+      }
+      tours_open_guide_tourist_conversation: {
+        Args: { p_booking_id: string }
+        Returns: string
+      }
+      tours_open_operator_admin_conversation: {
+        Args: { p_operator_id?: string }
+        Returns: string
+      }
+      tours_open_operator_guide_conversation: {
+        Args: { p_guide_id?: string; p_operator_id?: string }
         Returns: string
       }
       tours_peso: { Args: { p_amount: number }; Returns: string }

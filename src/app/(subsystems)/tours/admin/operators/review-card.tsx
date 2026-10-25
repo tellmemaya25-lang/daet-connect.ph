@@ -8,6 +8,7 @@ import {
 import type { OperatorApplicationRecord } from "@/lib/tours/operator-contract";
 import { reviewOperatorApplication } from "@/app/(subsystems)/tours/operator/actions";
 import { Notice } from "@/components/ui/notice";
+import { OpenChatButton } from "@/app/(subsystems)/tours/messages/open-chat-button";
 
 export type OperatorDocumentLinks = {
   dti: string | null;
@@ -52,7 +53,10 @@ export function OperatorReviewCard({
           <h2 className="mt-3 break-words text-xl font-black text-daet-ink">{application.business_name}</h2>
           <p className="mt-1 text-sm text-daet-ink/70">Submitted {new Date(application.created_at).toLocaleDateString("en-PH", { year: "numeric", month: "short", day: "numeric" })}</p>
         </div>
-        <span className="shrink-0 rounded-full bg-daet-sand px-3 py-1.5 text-xs font-bold text-daet-ink/70">ID · {application.id.slice(0, 8)}</span>
+        <div className="flex shrink-0 flex-col items-start gap-2 sm:items-end">
+          <span className="rounded-full bg-daet-sand px-3 py-1.5 text-xs font-bold text-daet-ink/70">ID · {application.id.slice(0, 8)}</span>
+          <OpenChatButton target={{ kind: "operator_admin", operatorId: application.id }} label="Message applicant" variant="ghost" />
+        </div>
       </div>
 
       <dl className="mt-6 grid gap-x-6 gap-y-4 border-t border-daet-ink/10 pt-5 sm:grid-cols-2">

@@ -37,10 +37,13 @@ export default async function AdminPackageReviewPage({
     console.error('Package fetch error:', error);
     return (
       <PageFrame adminNav>
-        <div className="max-w-4xl mx-auto px-4">
-          <div className="bg-red-50 border border-red-200 rounded-xl p-6 text-center">
-            <p className="text-red-800">Package not found</p>
-            {error && <p className="text-rose-700 text-sm mt-2">{error.message}</p>}
+        <div className="max-w-4xl mx-auto">
+          <Link href="/tours/admin/packages" className="text-sm font-bold text-daet-ink/70 hover:text-daet-ink">
+            ← All packages
+          </Link>
+          <div className="mt-4 bg-red-50 border border-red-200 rounded-xl p-6 text-center">
+            <h1 className="text-lg font-black text-red-800">Package not found</h1>
+            <p className="text-red-700 text-sm mt-2">It may have been deleted. Go back to the package list and try again.</p>
           </div>
         </div>
       </PageFrame>
@@ -106,6 +109,7 @@ export default async function AdminPackageReviewPage({
 
   return (
     <PageFrame adminNav>
+    <div>
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Back Button */}
         <div className="mb-4">
@@ -256,6 +260,7 @@ export default async function AdminPackageReviewPage({
         {/* Review Form */}
         <PackageReviewForm packageId={id} currentStatus={packageWithOperator.status} />
       </div>
+    </div>
     </PageFrame>
   );
 }

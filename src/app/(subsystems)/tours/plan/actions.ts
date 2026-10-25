@@ -1,11 +1,13 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { headers } from "next/headers";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { ATTRACTION_COLUMNS, toAttraction } from "@/lib/tours/attractions";
 import { toManilaDateKey } from "@/lib/tours/events-calendar";
 import { parsePreferences, planToRows, type PlannerInput } from "@/lib/tours/itinerary/form";
-import { isLlmEnabled, refineWithLlm } from "@/lib/tours/itinerary/llm";
+import { applyChangeRequest, ASSISTANT_MAX_LENGTH, parseTripRequest, prefsToInput } from "@/lib/tours/itinerary/assistant";
+import { changePlanWithLlm, isLlmEnabled, parseTripWithLlm, refineWithLlm } from "@/lib/tours/itinerary/llm";
 import { generatePlan, withTotals } from "@/lib/tours/itinerary/schedule";
 import { matchPackages, type PackageMatch } from "@/lib/tours/itinerary/suggest";
 import { planTotals, type Plan, type PlannerAttraction, type Preferences } from "@/lib/tours/itinerary/types";
@@ -128,4 +130,78 @@ export async function suggestPackages(places: Array<{ name: string; lat: number;
       .filter((s: { lat: number; lng: number }) => Number.isFinite(s.lat) && Number.isFinite(s.lng) && s.lat !== 0),
   }));
   return matchPackages(clean, packages);
+}
+
+// ------------------------------------------------------------------ trip assistant
+
+const AI_LIMIT = { calls: 20, windowMs: 10 * 60 * 1000 };
+const aiCalls = new Map<string, number[]>();
+
+/** Up to 20 AI requests per person (or connection) per 10 minutes; past that the rules answer. */
+async function allowAi(): Promise<boolean> {
+  if (!isLlmEnabled()) return false;
+  const supabase = await createSupabaseServerClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  const key = user?.id ?? (await headers()).get("x-forwarded-for")?.split(",")[0]?.trim() ?? "anonymous";
+  const now = Date.now();
+  const recent = (aiCalls.get(key) ?? []).filter((at) => now - at < AI_LIMIT.windowMs);
+  if (recent.length >= AI_LIMIT.calls) return false;
+  aiCalls.set(key, [...recent, now]);
+  if (aiCalls.size > 5000) aiCalls.delete(aiCalls.keys().next().value!);
+  return true;
+}
+
+const cleanText = (value: unknown) => (typeof value === "string" ? value.replace(/\s+/g, " ").trim() : "");
+
+export type InterpretResult = { ok: true; input: PlannerInput; understood: string[]; source: "llm" | "rules" } | { ok: false; message: string };
+
+/** "Describe your trip": fills the form from plain words. */
+export async function interpretTripRequest(text: string, current: PlannerInput): Promise<InterpretResult> {
+  const request = cleanText(text);
+  if (request.length < 3) return { ok: false, message: "Tell us a bit about your trip first." };
+  if (request.length > ASSISTANT_MAX_LENGTH) return { ok: false, message: `Keep it under ${ASSISTANT_MAX_LENGTH} characters.` };
+  const today = toManilaDateKey(new Date());
+  const fromLlm = (await allowAi()) ? await parseTripWithLlm(request, today, current) : null;
+  const result = fromLlm ?? parseTripRequest(request, today, current);
+  if (result.understood.length === 0) {
+    return { ok: false, message: 'I couldn\'t pick out trip details. Try something like "2 days next weekend for 4 people, beaches and food".' };
+  }
+  return { ok: true, input: result.input, understood: result.understood, source: fromLlm ? "llm" : "rules" };
+}
+
+export type ChangeResult =
+  | { ok: true; plan: Plan; input: PlannerInput; prefs: Preferences; reply: string; changed: boolean; tips: Record<string, string>; source: "llm" | "rules" }
+  | { ok: false; message: string };
+
+/** "Ask the assistant": edits the plan. The result is re-validated against the live attraction list. */
+export async function requestPlanChange(text: string, planInput: Plan, preferences: PlannerInput, tips: Record<string, string>): Promise<ChangeResult> {
+  const request = cleanText(text);
+  if (request.length < 2) return { ok: false, message: "Tell the assistant what to change." };
+  if (request.length > ASSISTANT_MAX_LENGTH) return { ok: false, message: `Keep it under ${ASSISTANT_MAX_LENGTH} characters.` };
+  const parsed = parsePreferences(preferences, toManilaDateKey(new Date()));
+  if (!parsed.ok) return { ok: false, message: "The trip details are no longer valid. Please plan again." };
+
+  let attractions: PlannerAttraction[];
+  try {
+    attractions = await loadAttractions();
+  } catch {
+    return { ok: false, message: "Attractions could not be loaded. Please try again." };
+  }
+  const byId = new Map(attractions.map((a) => [a.id, a]));
+  const plan = withTotals(Array.isArray(planInput?.days) ? planInput.days : []);
+  if (plan.days.length !== parsed.prefs.days) return { ok: false, message: "This plan doesn't match the trip details. Please plan again." };
+
+  const keepTips = (planned: Plan, extra: Record<string, string> = {}) => {
+    const ids = new Set(planned.days.flatMap((d) => d.blocks.flatMap((b) => (b.kind === "visit" ? [b.attractionId] : []))));
+    return Object.fromEntries(Object.entries({ ...(tips ?? {}), ...extra }).filter(([id, tip]) => ids.has(id) && typeof tip === "string").map(([id, tip]) => [id, tip.slice(0, 240)]));
+  };
+
+  const fromLlm = (await allowAi()) ? await changePlanWithLlm(request, plan, attractions, parsed.prefs) : null;
+  if (fromLlm && validatePlan(fromLlm.refined.plan, byId, fromLlm.prefs).ok) {
+    return { ok: true, plan: fromLlm.refined.plan, prefs: fromLlm.prefs, input: prefsToInput(fromLlm.prefs), reply: fromLlm.reply, changed: true, tips: keepTips(fromLlm.refined.plan, fromLlm.refined.tips), source: "llm" };
+  }
+  const result = applyChangeRequest(request, plan, attractions, parsed.prefs);
+  return { ok: true, plan: result.plan, prefs: result.prefs, input: prefsToInput(result.prefs), reply: result.reply, changed: result.changed, tips: keepTips(result.plan), source: "rules" };
 }

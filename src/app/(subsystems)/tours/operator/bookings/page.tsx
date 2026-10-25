@@ -439,8 +439,11 @@ export default async function OperatorBookingsPage({
                       ) : null}
 
                       {booking.status !== "cancelled" && booking.status !== "rejected" ? (
-                        <div className="mb-3">
+                        <div className="mb-3 flex flex-wrap gap-2">
                           <OpenChatButton bookingId={booking.id} label="Message tourist" variant="ghost" />
+                          {booking.assigned_guide_id ? (
+                            <OpenChatButton target={{ kind: "operator_guide", guideId: booking.assigned_guide_id }} label="Message guide" variant="ghost" />
+                          ) : null}
                         </div>
                       ) : null}
 

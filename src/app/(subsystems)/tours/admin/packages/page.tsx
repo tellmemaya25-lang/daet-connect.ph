@@ -36,6 +36,7 @@ export default async function AdminPackagesPage() {
     console.error('Error fetching packages:', error);
   }
 
+  console.log('Packages fetched:', packages?.length || 0);
 
   // Get operator details separately to avoid relationship ambiguity
   let packagesWithOperators = packages || [];
@@ -100,6 +101,7 @@ export default async function AdminPackagesPage() {
 
   return (
     <PageFrame adminNav>
+    <div>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Back Button */}
         <div className="mb-4">
@@ -180,6 +182,7 @@ export default async function AdminPackagesPage() {
           </section>
         )}
       </div>
+    </div>
     </PageFrame>
   );
 }
