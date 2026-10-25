@@ -102,3 +102,26 @@ test.describe("messaging channels", () => {
     await expect(page.getByRole("button", { name: "Message" }).first()).toBeVisible();
   });
 });
+
+test.describe("sign out", () => {
+  for (const role of ["tourist", "operator", "guide", "admin"] as Role[]) {
+    test(`${role} can find Sign out in the header at phone width`, async ({ context, page }) => {
+      await signInAs(context, role);
+      await page.goto(pages[role][0], { waitUntil: "networkidle" });
+      await expect(page.getByRole("banner").getByRole("button", { name: "Sign out" })).toBeVisible();
+    });
+  }
+
+  test("signing out returns to the home page", async ({ context, page }) => {
+    await signInAs(context, "guide");
+    await page.goto("/tours/guide/dashboard", { waitUntil: "networkidle" });
+    await page.getByRole("banner").getByRole("button", { name: "Sign out" }).click();
+    await expect(page).toHaveURL(/\/$/);
+  });
+
+  test("signed-out visitors see Sign in instead", async ({ page }) => {
+    await page.goto("/tours/attractions", { waitUntil: "networkidle" });
+    await expect(page.getByRole("banner").getByRole("link", { name: "Sign in" })).toBeVisible();
+    await expect(page.getByRole("banner").getByRole("button", { name: "Sign out" })).toHaveCount(0);
+  });
+});
