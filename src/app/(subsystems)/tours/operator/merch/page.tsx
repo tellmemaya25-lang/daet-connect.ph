@@ -1,3 +1,4 @@
+import { LineIcon } from "@/components/ui/icons";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { Badge, type BadgeTone } from "@/components/ui/badge";
@@ -46,8 +47,7 @@ export default async function OperatorMerchPage({ searchParams }: { searchParams
           <Link href="/tours/operator/dashboard" className="inline-flex min-h-11 items-center text-sm font-bold text-daet-forest hover:underline">
             ← Dashboard
           </Link>
-          <p className="text-xs font-black uppercase tracking-[0.18em] text-daet-leaf">{operator.business_name}</p>
-          <h1 className="mt-1 text-3xl font-black tracking-tight text-daet-ink">My merchandise</h1>
+          <h1 className="display-2 text-daet-ink">My merchandise</h1>
           <p className="mt-1 max-w-xl text-sm text-daet-ink/65">Sell shirts, souvenirs or pasalubong on the CONNECT-Daet merch showcase. The Tourism Office approves each product first.</p>
         </div>
         <ButtonLink href="/tours/operator/merch/new">+ Submit a product</ButtonLink>
@@ -58,25 +58,25 @@ export default async function OperatorMerchPage({ searchParams }: { searchParams
       {params.error ? <Notice variant="error" className="mb-4">That action could not be completed.</Notice> : null}
 
       {items.length === 0 ? (
-        <EmptyState icon="🛍️" title="No products yet" description="Submit your first product and we'll let you know when it's approved." />
+        <EmptyState icon={<LineIcon name="bag" />} title="No products yet" description="Submit your first product and we'll let you know when it's approved." />
       ) : (
         <ul className="space-y-3">
           {items.map((item) => (
-            <li key={item.id} className="flex flex-col gap-3 rounded-2xl border border-daet-ink/10 bg-white p-4 shadow-sm sm:flex-row sm:items-center">
+            <li key={item.id} className="flex flex-col gap-3 rounded-2xl bg-white p-4 sm:flex-row sm:items-center">
               <div className="flex min-w-0 flex-1 items-center gap-3">
-                <div className="grid h-16 w-16 shrink-0 place-items-center overflow-hidden rounded-xl bg-daet-sand text-2xl">
-                  {item.image_url ? <img src={item.image_url} alt="" className="h-full w-full object-cover" /> : <span aria-hidden="true">🛍️</span>}
+                <div className="grid h-16 w-16 shrink-0 place-items-center overflow-hidden rounded-2xl bg-daet-sand text-2xl">
+                  {item.image_url ? <img src={item.image_url} alt="" className="h-full w-full object-cover" /> : <span aria-hidden="true"><LineIcon name="bag" className="inline-block h-[1.1em] w-[1.1em] align-[-0.15em]" /></span>}
                 </div>
                 <div className="min-w-0">
                   <div className="flex flex-wrap items-center gap-2">
                     <Badge tone={TONE[item.review_status]}>{MERCH_REVIEW_LABELS[item.review_status]}</Badge>
-                    <span className="text-xs text-daet-ink/70">{MERCH_CATEGORIES[item.category]}</span>
-                    {item.review_status === "approved" && !item.is_active ? <span className="text-xs text-daet-ink/70">· hidden by you</span> : null}
+                    <span className="text-sm text-slate-600">{MERCH_CATEGORIES[item.category]}</span>
+                    {item.review_status === "approved" && !item.is_active ? <span className="text-sm text-slate-600">· hidden by you</span> : null}
                   </div>
-                  <p className="mt-1 truncate font-black text-daet-ink">{item.name}</p>
+                  <p className="mt-1 truncate font-bold text-daet-ink">{item.name}</p>
                   <p className="text-sm text-daet-ink/70">{formatPeso(item.price) ?? "Ask seller"} · {item.seller_name}</p>
                   {item.review_status === "rejected" && item.review_notes ? (
-                    <p className="mt-1 text-sm font-bold text-rose-700">Tourism Office: {item.review_notes}</p>
+                    <p className="mt-1 text-sm font-bold text-red-700">Tourism Office: {item.review_notes}</p>
                   ) : null}
                 </div>
               </div>
@@ -88,7 +88,7 @@ export default async function OperatorMerchPage({ searchParams }: { searchParams
                   <input type="hidden" name="id" value={item.id} />
                   <ConfirmSubmitButton
                     message={`Remove "${item.name}"? This cannot be undone.`}
-                    className="inline-flex min-h-11 w-full items-center justify-center rounded-full border border-rose-200 px-5 text-sm font-bold text-rose-700 hover:bg-rose-50"
+                    className="inline-flex min-h-11 w-full items-center justify-center rounded-full px-5 text-sm font-bold text-red-700 hover:bg-red-50"
                   >
                     Remove
                   </ConfirmSubmitButton>

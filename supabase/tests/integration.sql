@@ -1,5 +1,5 @@
 -- F12 integration suite: RLS per role, booking capacity and rate limits,
--- webhook replay. Runs as one DO block and ALWAYS rolls back (it ends by
+-- messaging channels, webhook replay. Runs as one DO block and ALWAYS rolls back (it ends by
 -- raising the report), so it is safe on a live project:
 --
 --   psql "$DATABASE_URL" -f supabase/tests/integration.sql
@@ -29,6 +29,9 @@ DECLARE
   v_booking uuid;
   v_date date := (now() AT TIME ZONE 'Asia/Manila')::date + 30;
   v_id uuid;
+  v_gt uuid;
+  v_og uuid;
+  v_oa uuid;
 BEGIN
   -- ------------------------------------------------------------ fixtures
   SELECT p.id, v.id, v.min_pax, o.profile_id, o.id
@@ -186,6 +189,91 @@ BEGIN
   BEGIN PERFORM tours_admin_analytics(current_date - 30, current_date); ok := true; EXCEPTION WHEN others THEN ok := false; END;
   IF ok THEN pass := pass + 1; ELSE fails := fails || 'admin cannot run analytics; '; END IF;
   RESET ROLE;
+
+  -- ------------------------------------------------------------ messaging channels
+  -- R6: a guide can only be assigned on a day they marked available (and are free).
+  UPDATE tours_bookings SET assigned_guide_id = NULL WHERE assigned_guide_id = v_guide AND tour_date = (SELECT tour_date FROM tours_bookings WHERE id = v_booking) AND id <> v_booking;
+  INSERT INTO tours_guide_availability (guide_id, available_date, is_available)
+  SELECT v_guide, tour_date, true FROM tours_bookings WHERE id = v_booking
+  ON CONFLICT (guide_id, available_date) DO UPDATE SET is_available = true;
+  UPDATE tours_bookings SET assigned_guide_id = v_guide WHERE id = v_booking;
+  -- Tourist <-> guide: private to the two of them.
+  PERFORM set_config('request.jwt.claims', json_build_object('sub', v_tourist, 'role', 'authenticated')::text, true);
+  SET LOCAL ROLE authenticated;
+  v_gt := tours_open_guide_tourist_conversation(v_booking);
+  INSERT INTO tours_messages (conversation_id, message_text) VALUES (v_gt, 'Where do we meet?');
+  ok := tours_open_guide_tourist_conversation(v_booking) = v_gt;
+  IF ok THEN pass := pass + 1; ELSE fails := fails || 'guide-tourist chat not reused; '; END IF;
+  BEGIN PERFORM tours_open_operator_guide_conversation(v_guide, NULL); ok := false; EXCEPTION WHEN others THEN ok := true; END;
+  IF ok THEN pass := pass + 1; ELSE fails := fails || 'tourist opens operator-guide chat; '; END IF;
+  RESET ROLE;
+  SELECT count(*) INTO n FROM tours_notifications WHERE link = '/tours/messages/' || v_gt AND profile_id = v_guide_profile;
+  SELECT count(*) INTO n2 FROM tours_notifications WHERE link = '/tours/messages/' || v_gt AND profile_id = v_operator_profile;
+  IF n = 1 AND n2 = 0 THEN pass := pass + 1; ELSE fails := fails || format('guide-tourist notify guide=%s operator=%s; ', n, n2); END IF;
+
+  -- Operator <-> guide, and operator <-> Tourism Office.
+  PERFORM set_config('request.jwt.claims', json_build_object('sub', v_operator_profile, 'role', 'authenticated')::text, true);
+  SET LOCAL ROLE authenticated;
+  SELECT count(*) INTO n FROM tours_messages WHERE conversation_id = v_gt;
+  IF n = 0 THEN pass := pass + 1; ELSE fails := fails || 'operator reads guide-tourist chat; '; END IF;
+  v_og := tours_open_operator_guide_conversation(v_guide, NULL);
+  INSERT INTO tours_messages (conversation_id, message_text) VALUES (v_og, 'Can you take the Saturday tour?');
+  v_oa := tours_open_operator_admin_conversation(NULL);
+  INSERT INTO tours_messages (conversation_id, message_text) VALUES (v_oa, 'When is the permit renewal?');
+  pass := pass + 1;
+  RESET ROLE;
+  SELECT count(*) INTO n FROM tours_notifications WHERE link = '/tours/messages/' || v_oa AND profile_id = v_admin;
+  IF n = 1 THEN pass := pass + 1; ELSE fails := fails || 'admin not notified of operator message; '; END IF;
+
+  -- Guide sees both of their chats, not the Tourism Office one.
+  PERFORM set_config('request.jwt.claims', json_build_object('sub', v_guide_profile, 'role', 'authenticated')::text, true);
+  SET LOCAL ROLE authenticated;
+  SELECT count(*) INTO n FROM tours_chat_inbox() WHERE conversation_id IN (v_gt, v_og);
+  SELECT count(*) INTO n2 FROM tours_chat_inbox() WHERE conversation_id = v_oa;
+  IF n = 2 AND n2 = 0 THEN pass := pass + 1; ELSE fails := fails || format('guide inbox gt+og=%s oa=%s; ', n, n2); END IF;
+  INSERT INTO tours_messages (conversation_id, message_text) VALUES (v_gt, 'At the Bagasbas lifeguard tower.');
+  BEGIN PERFORM tours_open_operator_admin_conversation(NULL); ok := false; EXCEPTION WHEN others THEN ok := true; END;
+  IF ok THEN pass := pass + 1; ELSE fails := fails || 'guide opens Tourism Office chat; '; END IF;
+  RESET ROLE;
+
+  -- Another tourist sees none of it.
+  IF v_other IS NOT NULL THEN
+    PERFORM set_config('request.jwt.claims', json_build_object('sub', v_other, 'role', 'authenticated')::text, true);
+    SET LOCAL ROLE authenticated;
+    SELECT count(*) INTO n FROM tours_messages WHERE conversation_id IN (v_gt, v_og, v_oa);
+    BEGIN PERFORM tours_open_guide_tourist_conversation(v_booking); ok := false; EXCEPTION WHEN others THEN ok := true; END;
+    IF ok AND n = 0 THEN pass := pass + 1; ELSE fails := fails || 'other tourist reaches private chats; '; END IF;
+    RESET ROLE;
+  END IF;
+
+  -- Admin answers the operator in the same thread, but cannot post in a booking's private chat.
+  PERFORM set_config('request.jwt.claims', json_build_object('sub', v_admin, 'role', 'authenticated')::text, true);
+  SET LOCAL ROLE authenticated;
+  ok := tours_open_operator_admin_conversation(v_operator) = v_oa;
+  INSERT INTO tours_messages (conversation_id, message_text) VALUES (v_oa, 'It is due in January.');
+  IF ok THEN pass := pass + 1; ELSE fails := fails || 'admin opens a second Tourism Office chat; '; END IF;
+  BEGIN INSERT INTO tours_messages (conversation_id, message_text) VALUES (v_gt, 'admin'); ok := false; EXCEPTION WHEN others THEN ok := true; END;
+  IF ok THEN pass := pass + 1; ELSE fails := fails || 'admin posts in guide-tourist chat; '; END IF;
+  RESET ROLE;
+  SELECT count(*) INTO n FROM tours_notifications WHERE link = '/tours/messages/' || v_oa AND profile_id = v_operator_profile;
+  IF n = 1 THEN pass := pass + 1; ELSE fails := fails || 'operator not notified of Tourism Office reply; '; END IF;
+
+  -- ------------------------------------------------------------ tourist <-> Tourism Office (F13 handoff)
+  PERFORM set_config('request.jwt.claims', json_build_object('sub', v_tourist, 'role', 'authenticated')::text, true);
+  SET LOCAL ROLE authenticated;
+  v_id := tours_open_tourist_office_conversation(NULL);
+  INSERT INTO tours_messages (conversation_id, message_text) VALUES (v_id, 'My guide did not arrive.');
+  IF tours_open_tourist_office_conversation(NULL) = v_id THEN pass := pass + 1; ELSE fails := fails || 'tourist office chat not reused; '; END IF;
+  RESET ROLE;
+  SELECT count(*) INTO n FROM tours_notifications WHERE link = '/tours/messages/' || v_id AND profile_id = v_admin;
+  IF n = 1 THEN pass := pass + 1; ELSE fails := fails || 'admin not notified of tourist message; '; END IF;
+  IF v_other IS NOT NULL THEN
+    PERFORM set_config('request.jwt.claims', json_build_object('sub', v_other, 'role', 'authenticated')::text, true);
+    SET LOCAL ROLE authenticated;
+    SELECT count(*) INTO n FROM tours_messages WHERE conversation_id = v_id;
+    IF n = 0 THEN pass := pass + 1; ELSE fails := fails || 'other tourist reads tourist office chat; '; END IF;
+    RESET ROLE;
+  END IF;
 
   -- ------------------------------------------------------------ webhook replay
   -- The same PayMongo payment arriving twice is stored once.

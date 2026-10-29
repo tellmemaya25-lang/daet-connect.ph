@@ -1,6 +1,8 @@
 "use client";
 
+import { formatPeso } from "@/lib/money";
 import { useState } from "react";
+import { useFeedback } from "@/components/ui/feedback";
 import { recordPayment } from "./payment-actions";
 
 interface PaymentRecorderProps {
@@ -18,6 +20,7 @@ export function PaymentRecorder({
   totalPaid,
   paymentStatus,
 }: PaymentRecorderProps) {
+  const { toast, confirm } = useFeedback();
   const [isOpen, setIsOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [amount, setAmount] = useState("");
@@ -51,17 +54,17 @@ export function PaymentRecorder({
       setReferenceNumber("");
       setNotes("");
       setIsOpen(false);
-      alert(`Payment recorded successfully! ${result.message || ""}`);
+      toast(`Payment recorded. ${result.message || ""}`.trim(), "success");
     } else {
-      alert(`Error: ${result.error || "Failed to record payment"}`);
+      toast(result.error || "We could not record that payment.", "error");
     }
   };
 
   const statusColors: Record<string, string> = {
     unpaid: "bg-red-100 text-red-800",
-    partial: "bg-amber-100 text-amber-800",
-    paid: "bg-emerald-100 text-emerald-800",
-    refunded: "bg-gray-100 text-gray-800",
+    partial: "bg-yellow-100 text-yellow-800",
+    paid: "bg-green-100 text-green-800",
+    refunded: "bg-slate-100 text-daet-ink",
   };
 
   const statusLabels: Record<string, string> = {
@@ -72,15 +75,15 @@ export function PaymentRecorder({
   };
 
   return (
-    <div className="rounded-2xl border border-daet-ink/10 bg-daet-sand/30 p-4">
+    <div className="rounded-2xl bg-slate-50 p-4">
       <div className="mb-3 flex items-center justify-between">
         <div>
-          <p className="text-xs font-bold uppercase tracking-wider text-daet-ink/70">
+          <p className="text-sm text-slate-600">
             Payment Status
           </p>
           <span
             className={`mt-1 inline-block rounded-full px-3 py-1 text-xs font-bold ${
-              statusColors[paymentStatus] || "bg-gray-100 text-gray-800"
+              statusColors[paymentStatus] || "bg-slate-100 text-daet-ink"
             }`}
           >
             {statusLabels[paymentStatus] || paymentStatus}
@@ -89,7 +92,7 @@ export function PaymentRecorder({
         {paymentStatus !== "paid" && (
           <button
             onClick={() => setIsOpen(!isOpen)}
-            className="rounded-full bg-daet-forest px-4 py-2 text-sm font-bold text-white transition hover:bg-daet-ink"
+            className="inline-flex min-h-11 items-center rounded-full bg-daet-forest px-4 text-sm font-bold text-white transition hover:bg-blue-700"
           >
             {isOpen ? "Cancel" : "Record Payment"}
           </button>
@@ -99,15 +102,15 @@ export function PaymentRecorder({
       <div className="grid grid-cols-3 gap-3 text-sm">
         <div>
           <p className="text-daet-ink/70">Total Amount</p>
-          <p className="font-bold text-daet-ink">₱{totalAmount.toLocaleString()}</p>
+          <p className="font-bold text-daet-ink">{formatPeso(totalAmount)}</p>
         </div>
         <div>
           <p className="text-daet-ink/70">Total Paid</p>
-          <p className="font-bold text-emerald-700">₱{totalPaid.toLocaleString()}</p>
+          <p className="font-bold text-green-700">{formatPeso(totalPaid)}</p>
         </div>
         <div>
           <p className="text-daet-ink/70">Remaining</p>
-          <p className="font-bold text-amber-700">₱{remaining.toLocaleString()}</p>
+          <p className="font-bold text-yellow-800">{formatPeso(remaining)}</p>
         </div>
       </div>
 
@@ -125,8 +128,8 @@ export function PaymentRecorder({
               value={amount}
               onChange={(e) => setAmount(e.target.value)}
               required
-              className="w-full rounded-xl border border-daet-ink/20 px-3 py-2 text-sm focus:border-daet-forest focus:outline-none"
-              placeholder={`Max: ₱${remaining}`}
+              className="w-full rounded-2xl border border-daet-ink/20 min-h-11 px-3 py-2 text-base focus:border-daet-forest focus:outline-none"
+              placeholder={`Max: ${formatPeso(remaining)}`}
             />
           </div>
 
@@ -138,7 +141,7 @@ export function PaymentRecorder({
               value={paymentMethod}
               onChange={(e) => setPaymentMethod(e.target.value)}
               required
-              className="w-full rounded-xl border border-daet-ink/20 px-3 py-2 text-sm focus:border-daet-forest focus:outline-none"
+              className="w-full rounded-2xl border border-daet-ink/20 min-h-11 px-3 py-2 text-base focus:border-daet-forest focus:outline-none"
             >
               <option value="cash">Cash</option>
               <option value="gcash">GCash</option>
@@ -160,7 +163,7 @@ export function PaymentRecorder({
               onChange={(e) => setPaymentDate(e.target.value)}
               required
               max={new Date().toISOString().split("T")[0]}
-              className="w-full rounded-xl border border-daet-ink/20 px-3 py-2 text-sm focus:border-daet-forest focus:outline-none"
+              className="w-full rounded-2xl border border-daet-ink/20 min-h-11 px-3 py-2 text-base focus:border-daet-forest focus:outline-none"
             />
           </div>
 
@@ -172,7 +175,7 @@ export function PaymentRecorder({
               type="text"
               value={referenceNumber}
               onChange={(e) => setReferenceNumber(e.target.value)}
-              className="w-full rounded-xl border border-daet-ink/20 px-3 py-2 text-sm focus:border-daet-forest focus:outline-none"
+              className="w-full rounded-2xl border border-daet-ink/20 min-h-11 px-3 py-2 text-base focus:border-daet-forest focus:outline-none"
               placeholder="Transaction ID, receipt no, etc."
             />
           </div>
@@ -183,7 +186,7 @@ export function PaymentRecorder({
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               rows={2}
-              className="w-full rounded-xl border border-daet-ink/20 px-3 py-2 text-sm focus:border-daet-forest focus:outline-none"
+              className="w-full rounded-2xl border border-daet-ink/20 min-h-11 px-3 py-2 text-base focus:border-daet-forest focus:outline-none"
               placeholder="Additional notes about this payment..."
             />
           </div>
@@ -191,7 +194,7 @@ export function PaymentRecorder({
           <button
             type="submit"
             disabled={isSubmitting}
-            className="w-full rounded-full bg-daet-forest px-4 py-2 text-sm font-bold text-white transition hover:bg-daet-ink disabled:opacity-50"
+            className="inline-flex min-h-11 items-center justify-center w-full rounded-full bg-daet-forest px-4 py-2 text-sm font-bold text-white transition hover:bg-blue-700 disabled:opacity-50"
           >
             {isSubmitting ? "Recording..." : "Record Payment"}
           </button>

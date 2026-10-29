@@ -18,7 +18,21 @@ Print this for each session. Each role's walkthrough takes 10–15 minutes on a 
    DEMO_PASSWORD='<a long password>' DEMO_GROUPS=<number of groups> npm run seed:demo
    ```
    This creates, per group, `tourist<N>@demo.connect-daet.test`, `operator<N>@…`, `guide<N>@…` and `admin<N>@…`. Each group also gets an approved operator and guide, a published demo package and open weekend dates for the next month. Copy the printed list into the sheet below.
-4. Run `psql "$STAGING_DB_URL" -f supabase/tests/integration.sql`. It must report `fail=0` (it rolls itself back).
+
+   **Or the realistic set (R4)** for a fuller demo, with the same variables plus `DEMO_PROFILE=realistic`:
+   ```bash
+   DEMO_PROFILE=realistic NEXT_PUBLIC_SUPABASE_URL=… SUPABASE_SERVICE_ROLE_KEY=… DEMO_PASSWORD='…' npm run seed:demo
+   ```
+   - It creates 24 accounts:
+     - 5 operators (Calaguas, Mercedes island hopping, Bagasbas surf, Daet heritage walk, Vinzons) with 6 published packages and 60 days of open dates;
+     - 8 approved guides, each with a 60-day schedule;
+     - 10 tourists;
+     - 1 admin.
+   - It also creates about 14 upcoming bookings: pending, confirmed with an assigned guide (paid in full or in part), and one cancelled.
+   - Some guide days are deliberately unavailable or not set, so the schedule rules (R6) can be shown.
+   - Past completed tours and reviews are **not** seeded: the booking rules don't allow past dates. Use the walkthroughs to create them.
+   - Add `--dry-run` to print the plan without touching the project.
+4. Run `psql "$STAGING_DB_URL" -f supabase/tests/integration.sql` and `supabase/tests/guide_swaps.sql`. Both must report `fail=0` (they roll themselves back).
 5. Charge the phones, connect to Wi-Fi, and open the staging URL once on each phone.
 
 ---
@@ -48,6 +62,9 @@ PayMongo sandbox: use the test cards and e-wallet flows listed at <https://devel
 | 6 | *(After the operator confirms, walkthrough 2 step 3)* On **Home** (`/tours/me`), tap **Pay ₱…** and pay with a PayMongo test method. | You return to the booking page and see "Payment received" within a minute (webhook) | Functional Correctness |
 | 7 | Tap **Show ticket QR**. | A QR code with the booking reference | Functional Appropriateness |
 | 8 | *(After the guide checks you in and the operator completes the tour)* Rate the tour 5★ with a comment. | "Thanks for your review"; points appear on Home | Functional Completeness |
+| 10 | Tap **💬 Ask the assistant** and ask "Paano mag-cancel?", then "Where is my ticket?". | The cancellation policy (48 hours), then your booking with **Show ticket QR** | Functional Appropriateness, Learnability |
+| 11 | Ask the assistant "I want to talk to a person". Edit the message and tap **Send to Tourism Office**. | "Sent"; the admin is notified and sees it in Messages | Functional Completeness |
+| 9 | *(Once a guide is assigned)* On the booking page tap **Message your guide** and ask about the meeting point. | A private chat with the guide opens; the operator can't read it | Functional Appropriateness |
 
 ## Walkthrough 2: Operator (12 minutes)
 
@@ -61,6 +78,8 @@ PayMongo sandbox: use the test cards and e-wallet flows listed at <https://devel
 | 6 | After the tour, mark the booking **Completed**. | The tourist can now review | Functional Completeness |
 | 7 | **Reviews** → reply to the review. | The reply shows on the package page | Functional Appropriateness |
 | 8 | Optional: **Merchandise** → submit a product. | "Waiting for approval" | Functional Completeness |
+| 9 | **Bookings** → on the booking with a guide, tap **Message guide**. | A private operator–guide chat opens | Functional Appropriateness |
+| 10 | **Home** → **Contact Tourism Office** and send a question. | The admin gets a notification; the reply appears live | Functional Appropriateness |
 
 ## Walkthrough 3: Guide (10 minutes)
 
@@ -70,6 +89,8 @@ PayMongo sandbox: use the test cards and e-wallet flows listed at <https://devel
 | 2 | Tap three future days on **Your availability**. | Days turn green ("available"), tap again for "not available" | Operability |
 | 3 | **My QR badge** → show it to another tester, who scans it with their phone camera. | The public verify page shows the guide's name and "Accredited by the Daet Tourism Office through CONNECT-Daet." | Functional Correctness |
 | 4 | On the tour day: **Scan** → scan the tourist's ticket QR (or use the roster's manual check-in). | "Checked in"; the roster count goes up; scanning again says "Already checked in" | User Error Protection |
+| 5 | Roster → **Message tourist only** and reply to the tourist's question. | Delivered instantly in the private chat | Functional Appropriateness |
+| 6 | Home → **Your operators** → **Message operator**. | The operator–guide chat from walkthrough 2 step 9 opens | Functional Appropriateness |
 
 ## Walkthrough 4: Tourism Office admin (12 minutes)
 
@@ -81,6 +102,7 @@ PayMongo sandbox: use the test cards and e-wallet flows listed at <https://devel
 | 4 | **Reviews** → hide an abusive test review with a reason. | It disappears from the package page and the average | Functional Appropriateness |
 | 5 | **Merchandise** → approve the operator's product. | It appears on the public merch page | Functional Completeness |
 | 6 | **Events** → add an event linked to Bagasbas Beach. | Its page lists tours open during the event | Functional Correctness |
+| 7 | **Messages** → open the operator's question and reply. (**Message an operator** starts a new chat.) | The operator sees the reply from "Daet Tourism Office" | Functional Appropriateness |
 
 ---
 

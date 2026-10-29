@@ -1,5 +1,7 @@
 "use client";
 
+import { LineIcon } from "@/components/ui/icons";
+import { formatPeso } from "@/lib/money";
 import type { PackageDraft } from "../package-types";
 
 interface PackageReviewStepProps {
@@ -27,34 +29,34 @@ export function PackageReviewStep({
   const defaultVariant = data.priceVariants.find((v) => v.isDefault);
   const priceDisplay = defaultVariant
     ? defaultVariant.pricePerPax
-      ? `₱${defaultVariant.pricePerPax.toLocaleString()}/pax`
-      : `₱${defaultVariant.flatPrice?.toLocaleString()} flat`
+      ? `${formatPeso(defaultVariant.pricePerPax)}/pax`
+      : `${formatPeso(defaultVariant.flatPrice)} flat`
     : "Price not set";
 
   return (
     <form onSubmit={handleSubmitForReview} className="space-y-6">
       <div>
-        <h2 className="text-2xl font-black text-daet-ink">Review & submit</h2>
+        <h2 className="text-2xl font-bold text-daet-ink">Review & submit</h2>
         <p className="mt-2 text-sm text-daet-ink/65">
           Double-check everything before submitting to the Tourism Office for approval.
         </p>
       </div>
 
       {/* Package Summary */}
-      <div className="space-y-6 rounded-2xl border border-daet-ink/10 bg-white p-6">
+      <div className="space-y-6 rounded-2xl bg-white p-6">
         {/* Title & Location */}
         <div>
-          <h3 className="text-xl font-black text-daet-ink">{data.title}</h3>
-          <p className="mt-1 text-sm text-daet-ink/70">📍 {data.locationName}</p>
+          <h3 className="text-xl font-bold text-daet-ink">{data.title}</h3>
+          <p className="mt-1 text-sm text-daet-ink/70"><LineIcon name="pin" className="inline-block h-[1.1em] w-[1.1em] align-[-0.15em]" /> {data.locationName}</p>
           <p className="mt-1 text-sm text-daet-ink/70">
-            ⏱️ {data.durationValue} {data.durationType}
+            <LineIcon name="clock" className="inline-block h-[1.1em] w-[1.1em] align-[-0.15em]" /> {data.durationValue} {data.durationType}
           </p>
         </div>
 
         {/* Description */}
         {data.description && (
           <div>
-            <p className="text-xs font-bold uppercase tracking-wide text-daet-ink/70">
+            <p className="text-sm text-slate-600">
               Description
             </p>
             <p className="mt-1 text-sm leading-6 text-daet-ink/70">{data.description}</p>
@@ -64,12 +66,12 @@ export function PackageReviewStep({
         {/* Inclusions */}
         {data.inclusions.length > 0 && (
           <div>
-            <p className="text-xs font-bold uppercase tracking-wide text-daet-ink/70">
+            <p className="text-sm text-slate-600">
               Inclusions ({data.inclusions.length})
             </p>
             <ul className="mt-2 space-y-1">
               {data.inclusions.map((item, i) => (
-                <li key={i} className="flex items-center gap-2 text-sm text-emerald-800">
+                <li key={i} className="flex items-center gap-2 text-sm text-green-800">
                   <span className="text-xs">✓</span>
                   {item}
                 </li>
@@ -81,7 +83,7 @@ export function PackageReviewStep({
         {/* Exclusions */}
         {data.exclusions.length > 0 && (
           <div>
-            <p className="text-xs font-bold uppercase tracking-wide text-daet-ink/70">
+            <p className="text-sm text-slate-600">
               Exclusions ({data.exclusions.length})
             </p>
             <ul className="mt-2 space-y-1">
@@ -97,14 +99,14 @@ export function PackageReviewStep({
 
         {/* Price Variants */}
         <div>
-          <p className="text-xs font-bold uppercase tracking-wide text-daet-ink/70">
+          <p className="text-sm text-slate-600">
             Price variants ({data.priceVariants.length})
           </p>
           <div className="mt-2 space-y-2">
             {data.priceVariants.map((variant, i) => (
               <div
                 key={i}
-                className={`rounded-xl border p-3 ${
+                className={`rounded-2xl border p-3 ${
                   variant.isDefault
                     ? "border-daet-forest/30 bg-daet-forest/5"
                     : "border-daet-ink/10 bg-white"
@@ -118,15 +120,15 @@ export function PackageReviewStep({
                         <span className="ml-2 text-xs text-daet-forest">(Default)</span>
                       )}
                     </p>
-                    <p className="text-xs text-daet-ink/70">
+                    <p className="text-sm text-slate-600">
                       {variant.minPax}
                       {variant.maxPax ? `–${variant.maxPax}` : "+"} pax
                     </p>
                   </div>
-                  <p className="text-sm font-black text-daet-ink">
+                  <p className="text-sm font-bold text-daet-ink">
                     {variant.pricePerPax
-                      ? `₱${variant.pricePerPax.toLocaleString()}/pax`
-                      : `₱${variant.flatPrice?.toLocaleString()}`}
+                      ? `${formatPeso(variant.pricePerPax)}/pax`
+                      : `${formatPeso(variant.flatPrice)}`}
                   </p>
                 </div>
               </div>
@@ -136,13 +138,13 @@ export function PackageReviewStep({
 
         {/* Stops */}
         <div>
-          <p className="text-xs font-bold uppercase tracking-wide text-daet-ink/70">
+          <p className="text-sm text-slate-600">
             Itinerary stops ({data.stops.length})
           </p>
           <div className="mt-2 space-y-1">
             {data.stops.map((stop, i) => (
               <div key={i} className="flex items-center gap-2 text-sm text-daet-ink/70">
-                <span className="flex h-5 w-5 items-center justify-center rounded-full bg-daet-forest/10 text-xs font-bold text-daet-forest">
+                <span className="flex h-5 w-5 items-center justify-center rounded-full bg-daet-forest/10 text-xs font-bold text-daet-leaf">
                   {i + 1}
                 </span>
                 {stop.locationName}
@@ -153,9 +155,9 @@ export function PackageReviewStep({
       </div>
 
       {/* Warning Box */}
-      <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm">
-        <p className="font-bold text-amber-900">⚠️ Before submitting</p>
-        <ul className="mt-2 space-y-1 text-xs text-amber-800">
+      <div className="rounded-2xl bg-yellow-50 p-4 text-sm">
+        <p className="font-bold text-yellow-900"><LineIcon name="warning" className="inline-block h-[1.1em] w-[1.1em] align-[-0.15em]" /> Before submitting</p>
+        <ul className="mt-2 space-y-1 text-xs text-yellow-800">
           <li>• All information is accurate and up-to-date</li>
           <li>• Pricing matches your actual tour costs</li>
           <li>• You have at least one price variant marked as default</li>
@@ -189,7 +191,7 @@ export function PackageReviewStep({
         <button
           type="submit"
           disabled={loading}
-          className="inline-flex min-h-12 items-center justify-center rounded-full bg-daet-forest px-8 text-sm font-black text-white transition hover:bg-daet-ink disabled:cursor-not-allowed disabled:opacity-50"
+          className="inline-flex min-h-12 items-center justify-center rounded-full bg-daet-forest px-8 text-sm font-bold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
         >
           {loading ? "Submitting..." : "Submit for review →"}
         </button>

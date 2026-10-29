@@ -1,4 +1,4 @@
-import type { ComponentProps, ReactNode } from "react";
+import { cloneElement, isValidElement, type ComponentProps, type ReactElement, type ReactNode } from "react";
 import { cn } from "@/components/ui/cn";
 
 /**
@@ -7,7 +7,7 @@ import { cn } from "@/components/ui/cn";
  * `Field` wires the label, hint and error message to the control by id.
  */
 export const controlClasses =
-  "mt-1 block min-h-11 w-full rounded-xl border border-daet-ink/20 bg-white px-3 py-2 text-base text-daet-ink placeholder:text-daet-ink/40 focus:border-daet-forest focus:outline-none focus:ring-2 focus:ring-daet-forest/20 disabled:bg-daet-sand/60 aria-[invalid=true]:border-rose-500";
+  "mt-1 block min-h-12 w-full rounded-2xl border border-slate-300 bg-white px-4 py-2.5 text-base text-daet-ink placeholder:text-slate-500 focus:border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-600/20 disabled:bg-slate-100 aria-[invalid=true]:border-red-600";
 
 export function fieldDescribedBy(id: string, { hint, error }: { hint?: ReactNode; error?: ReactNode }) {
   if (error) return `${id}-error`;
@@ -32,24 +32,34 @@ export function Field({
   className?: string;
   children: ReactNode;
 }) {
+  // A single control child gets its id, description and invalid state from the
+  // Field, so callers cannot forget to connect the hint or the error message.
+  const control = isValidElement(children)
+    ? cloneElement(children as ReactElement<Record<string, unknown>>, {
+        id: (children.props as Record<string, unknown>).id ?? id,
+        "aria-describedby":
+          (children.props as Record<string, unknown>)["aria-describedby"] ?? fieldDescribedBy(id, { hint, error }),
+        "aria-invalid": (children.props as Record<string, unknown>)["aria-invalid"] ?? (error ? true : undefined),
+      })
+    : children;
   return (
     <div className={className}>
       <label htmlFor={id} className="block text-sm font-bold text-daet-ink">
         {label}
         {required ? (
-          <span className="text-rose-600" aria-hidden="true">
+          <span className="text-red-600" aria-hidden="true">
             {" "}*
           </span>
         ) : null}
       </label>
-      {children}
+      {control}
       {hint && !error ? (
-        <p id={`${id}-hint`} className="mt-1 text-xs text-daet-ink/70">
+        <p id={`${id}-hint`} className="mt-1 text-sm text-daet-ink/75">
           {hint}
         </p>
       ) : null}
       {error ? (
-        <p id={`${id}-error`} className="mt-1 text-sm font-semibold text-rose-700">
+        <p id={`${id}-error`} role="alert" className="mt-1 text-sm font-semibold text-red-700">
           {error}
         </p>
       ) : null}

@@ -345,6 +345,12 @@ Follow the context doc's feasibility guidance: **no custom ML training.**
 **Acceptance:** a tourist generates a valid 2-day plan in under 5 seconds, sees it on the map, saves it, and books a suggested package.
 
 **Status (2026-10-23): built, migration `20261031_f7_itineraries.sql` applied. AI polish is optional (`ITINERARY_LLM=on` + `ANTHROPIC_API_KEY`).**
+
+**F7c — AI trip assistant (2026-10-24).** No migration.
+- "Describe your trip" (`/tours/plan`): plain English/Taglish → form fields, with chips showing what was understood. Claude (structured output, `mergeTripFields` keeps only valid values) or the rule-based `parseTripRequest` (dates incl. "next weekend"/"Nov 15"/"bukas", days/nights, group incl. kids and partners, pace, budget per person or total, start/end times, interests from English and Filipino words).
+- "Ask the assistant" (plan editor): change requests → new plan with a reply and one-step undo. Claude returns a full order of known ids plus a reply (re-timed, `validatePlan` must pass), else the rule-based `applyChangeRequest` (add/remove/swap by name or category, per day; pace; start/end times; drops stops that stop fitting and says so).
+- AI is on whenever `ANTHROPIC_API_KEY` is set (`ITINERARY_LLM=off` disables it); 20 AI calls per person per 10 minutes, then the rules answer. Requests are capped at 500 characters and wrapped as data in the prompt.
+- Tests: 14 in `assistant.test.ts`, including property tests (random text never breaks the form; random change requests always return a valid plan with no repeats) and e2e for both boxes.
 - 7a engine: filter, score, greedy schedule, and `validate.ts`. It respects opening hours for the whole visit, travel time, a lunch break between 11:30 and 12:30 (day trips cover it), pace, budget, and no repeats. A 2-day plan is generated in about 0.2 s in the browser test, and 300 attractions over 5 days take under 2 s in the unit test.
 - 7b: Claude (`claude-opus-5-5`) via the Anthropic SDK with structured output (zod), low effort, 15 s timeout, in-memory cache by preference hash. The model only returns an order of known ids plus tips; the engine re-times it and `validatePlan` must pass, otherwise the draft is kept.
 - UI: `/tours/plan` (details → editable timeline with ↑/↓, swap, remove, add, live validation, map per day → save → matching packages), `/tours/my-itineraries` (+ detail with share link and delete), `/tours/itineraries/shared/[token]`.
@@ -559,6 +565,27 @@ _Team guide §5; Ch. 4.2 §3 DB synchronization._
 - **Evaluation kit:** `docs/EVALUATION_KIT.md` has a setup checklist, a blank credentials sheet and walkthroughs per role mapped to ISO 25010 items.
 
 ---
+
+## F13 — 24/7 travel assistant (AI customer service)
+
+**Status (2026-10-25): built.** Migration `20261107_tourist_office_chat.sql` adds the tourist ↔ Tourism Office chat used for handoffs.
+- Answers and guides; never books, pays or cancels. Read-only tools run with the caller's own Supabase session (RLS): `search_tours`, `tour_details` (open dates and seats), `attraction_info`, `upcoming_events`, `policy` (FAQ built from the app's own constants), `my_bookings` (signed in), `plan_trip_link` (pre-fills `/tours/plan?describe=`), `handoff`.
+- Claude through the SDK tool runner with streaming (`claude.ts`). It stops on a refusal or a cut-off tool call, and falls back to basic mode (`basic.ts`) when no key is set, the limit is hit, or the call fails before any text.
+- UI: floating dialog on every page (hidden on sign-in, ticket, scanner and chat threads) plus `/tours/help`; tour, booking, link and handoff cards. History stays in the browser tab (sessionStorage); nothing is stored server-side.
+- Tests: `src/lib/tours/assistant/assistant.test.ts`, covering the FAQ, tools on a fake client, basic mode with a property test that never leaks another tourist's booking, streaming/fallback with a fake model, and limits. `e2e/travel-assistant.spec.ts` covers the dialog, bookings, handoff and help page at 375px with axe. Manual eval with a key: `docs/ASSISTANT_EVAL.md`.
+
+## Adviser revisions (R1–R6)
+
+**Status (2026-10-29): built.** The specs and system design are in [`ADVISER_REVISIONS.md`](ADVISER_REVISIONS.md).
+- **R1:** the tourist exploration menu (Plan a trip, Attractions, Events, Souvenirs) shows only for visitors and tourists; staff dashboards show their own links.
+- **R2:** an **All** chip in "What do you enjoy?"; the trip assistant reads "everything/lahat" as all categories.
+- **R3:** every amount is shown with `formatPeso` (`src/lib/money.ts`) as ₱1,850.00. A guard test blocks hand-formatted pesos.
+- **R4:** `DEMO_PROFILE=realistic npm run seed:demo` creates 5 operators, 8 guides with schedules, 10 tourists with upcoming bookings, and 1 admin.
+- **R5:** the travel assistant answers getting-here, getting-around and boat questions (curated, provisional facts) and "how long from A to B" with the `travel_time` tool, which uses road legs from the Routes cache or an estimate, boat legs from a table, and adds a directions button.
+- **R6:** migration `20261108_guide_schedule_swaps.sql` (applied):
+  - a guide can be assigned only on a day they marked available, and never twice that day; a booked day can't be marked unavailable;
+  - guides can suggest a swap, and the operator approves or declines it;
+  - tests: `supabase/tests/guide_swaps.sql`.
 
 ## 3. Schedule (11 weeks)
 

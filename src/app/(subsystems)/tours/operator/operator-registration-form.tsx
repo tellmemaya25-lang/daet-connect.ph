@@ -35,7 +35,7 @@ function formatFileSize(size: number): string {
 
 function FieldError({ id, message }: { id: string; message?: string }) {
   return message ? (
-    <p id={id} className="mt-2 text-sm font-medium text-rose-700">
+    <p id={id} role="alert" className="mt-2 text-sm font-medium text-red-700">
       {message}
     </p>
   ) : null;
@@ -58,6 +58,21 @@ export function OperatorRegistrationForm({
   );
   const [isDispatchPending, startTransition] = useTransition();
   const [activeStep, setActiveStep] = useState(1);
+  const stepChanged = useRef(false);
+
+  // After "Next" or "Back", move focus to the new step's heading so keyboard
+  // and screen reader users land where the content changed.
+  useEffect(() => {
+    if (!stepChanged.current) {
+      stepChanged.current = true;
+      return;
+    }
+    const legend = formRef.current?.querySelector<HTMLElement>("fieldset:not([hidden]) > legend");
+    if (legend) {
+      legend.tabIndex = -1;
+      legend.focus();
+    }
+  }, [activeStep]);
   const [compressing, setCompressing] = useState(false);
   const [clientError, setClientError] = useState("");
   const [values, setValues] = useState<FormValues>({
@@ -171,8 +186,7 @@ export function OperatorRegistrationForm({
   return (
     <section className="mx-auto max-w-3xl">
       <div className="mb-7">
-        <p className="text-xs font-black uppercase tracking-[0.18em] text-daet-leaf">Operator accreditation</p>
-        <h1 className="mt-2 text-3xl font-black leading-tight tracking-tight text-daet-ink sm:text-4xl">
+        <h1 className="display-2 mt-2 text-daet-ink">
           Let’s get your tours on the map.
         </h1>
         <p className="mt-3 max-w-2xl text-base leading-7 text-daet-ink/70">
@@ -180,7 +194,7 @@ export function OperatorRegistrationForm({
         </p>
       </div>
 
-      <div className="mb-5 rounded-2xl border border-daet-forest/10 bg-white px-4 py-4 shadow-sm sm:px-6">
+      <div className="mb-5 rounded-2xl border-daet-forest/10 bg-white px-4 py-4 sm:px-6">
         <ol className="grid grid-cols-3 gap-2" aria-label="Application steps">
           {steps.map((step) => {
             const complete = activeStep > step.number;
@@ -189,7 +203,7 @@ export function OperatorRegistrationForm({
               <li key={step.number} className="min-w-0">
                 <div className="flex items-center gap-2">
                   <span
-                    className={`grid h-9 w-9 shrink-0 place-items-center rounded-full text-sm font-black ${
+                    className={`grid h-9 w-9 shrink-0 place-items-center rounded-full text-sm font-bold ${
                       complete || active
                         ? "bg-daet-forest text-white"
                         : "bg-daet-sand text-daet-ink/70"
@@ -202,7 +216,7 @@ export function OperatorRegistrationForm({
                     <span className={`block truncate text-xs font-bold sm:text-sm ${active ? "text-daet-forest" : "text-daet-ink/65"}`}>
                       {step.title}
                     </span>
-                    <span className="hidden text-xs text-daet-ink/70 sm:block">{step.short}</span>
+                    <span className="hidden text-sm text-slate-600 sm:block">{step.short}</span>
                   </span>
                 </div>
               </li>
@@ -217,7 +231,7 @@ export function OperatorRegistrationForm({
         </div>
       </div>
 
-      <form ref={formRef} action={formAction} onSubmit={handleSubmit} className="rounded-3xl border border-daet-ink/10 bg-white p-5 shadow-card sm:p-8">
+      <form ref={formRef} action={formAction} onSubmit={handleSubmit} className="rounded-2xl bg-white p-5 sm:p-8">
         {rejectionReason ? (
           <Notice variant="warning" title="A few updates are needed before approval" className="mb-6">
             {rejectionReason}
@@ -236,12 +250,13 @@ export function OperatorRegistrationForm({
         ) : null}
 
         <fieldset hidden={activeStep !== 1}>
-          <legend className="text-xl font-black text-daet-ink">Business information</legend>
+          <legend className="text-xl font-bold text-daet-ink">Business information</legend>
           <p className="mt-1 text-sm leading-6 text-daet-ink/65">Use the contact details where the Tourism Office can reach you.</p>
 
           <div className="mt-6 grid gap-5 sm:grid-cols-2">
-            <label className="block sm:col-span-2">
-              <span className="text-sm font-bold text-daet-ink">Registered business name <span className="text-rose-600">*</span></span>
+            <div className="block sm:col-span-2">
+              <label className="block">
+              <span className="text-sm font-bold text-daet-ink">Registered business name <span className="text-red-600" aria-hidden="true">*</span></span>
               <input
                 data-step-field="1"
                 name="businessName"
@@ -253,13 +268,15 @@ export function OperatorRegistrationForm({
                 placeholder="e.g. Bagasbas Coast Tours"
                 aria-invalid={Boolean(fieldErrors.businessName)}
                 aria-describedby={fieldErrors.businessName ? "businessName-error" : undefined}
-                className="mt-2 min-h-12 w-full rounded-2xl border border-daet-ink/15 bg-white px-4 text-base outline-none transition placeholder:text-daet-ink/35 focus:border-daet-forest focus:ring-4 focus:ring-daet-forest/10 aria-[invalid=true]:border-rose-400"
+                className="mt-2 min-h-12 w-full rounded-2xl border border-daet-ink/15 bg-white px-4 text-base outline-none transition placeholder:text-daet-ink/35 focus:border-daet-forest focus:ring-4 focus:ring-daet-forest/10 aria-[invalid=true]:border-red-400"
               />
+              </label>
               <FieldError id="businessName-error" message={fieldErrors.businessName} />
-            </label>
+              </div>
 
-            <label className="block">
-              <span className="text-sm font-bold text-daet-ink">Authorized contact person <span className="text-rose-600">*</span></span>
+            <div className="block">
+              <label className="block">
+              <span className="text-sm font-bold text-daet-ink">Authorized contact person <span className="text-red-600" aria-hidden="true">*</span></span>
               <input
                 data-step-field="1"
                 name="contactPerson"
@@ -271,13 +288,15 @@ export function OperatorRegistrationForm({
                 placeholder="Full name"
                 aria-invalid={Boolean(fieldErrors.contactPerson)}
                 aria-describedby={fieldErrors.contactPerson ? "contactPerson-error" : undefined}
-                className="mt-2 min-h-12 w-full rounded-2xl border border-daet-ink/15 bg-white px-4 text-base outline-none transition placeholder:text-daet-ink/35 focus:border-daet-forest focus:ring-4 focus:ring-daet-forest/10 aria-[invalid=true]:border-rose-400"
+                className="mt-2 min-h-12 w-full rounded-2xl border border-daet-ink/15 bg-white px-4 text-base outline-none transition placeholder:text-daet-ink/35 focus:border-daet-forest focus:ring-4 focus:ring-daet-forest/10 aria-[invalid=true]:border-red-400"
               />
+              </label>
               <FieldError id="contactPerson-error" message={fieldErrors.contactPerson} />
-            </label>
+              </div>
 
-            <label className="block">
-              <span className="text-sm font-bold text-daet-ink">Mobile or contact number <span className="text-rose-600">*</span></span>
+            <div className="block">
+              <label className="block">
+              <span className="text-sm font-bold text-daet-ink">Mobile or contact number <span className="text-red-600" aria-hidden="true">*</span></span>
               <input
                 data-step-field="1"
                 name="contactPhone"
@@ -290,13 +309,15 @@ export function OperatorRegistrationForm({
                 placeholder="09XX XXX XXXX"
                 aria-invalid={Boolean(fieldErrors.contactPhone)}
                 aria-describedby={fieldErrors.contactPhone ? "contactPhone-error" : undefined}
-                className="mt-2 min-h-12 w-full rounded-2xl border border-daet-ink/15 bg-white px-4 text-base outline-none transition placeholder:text-daet-ink/35 focus:border-daet-forest focus:ring-4 focus:ring-daet-forest/10 aria-[invalid=true]:border-rose-400"
+                className="mt-2 min-h-12 w-full rounded-2xl border border-daet-ink/15 bg-white px-4 text-base outline-none transition placeholder:text-daet-ink/35 focus:border-daet-forest focus:ring-4 focus:ring-daet-forest/10 aria-[invalid=true]:border-red-400"
               />
+              </label>
               <FieldError id="contactPhone-error" message={fieldErrors.contactPhone} />
-            </label>
+              </div>
 
-            <label className="block sm:col-span-2">
-              <span className="text-sm font-bold text-daet-ink">Business email <span className="text-rose-600">*</span></span>
+            <div className="block sm:col-span-2">
+              <label className="block">
+              <span className="text-sm font-bold text-daet-ink">Business email <span className="text-red-600" aria-hidden="true">*</span></span>
               <input
                 data-step-field="1"
                 name="contactEmail"
@@ -309,13 +330,15 @@ export function OperatorRegistrationForm({
                 placeholder="you@example.com"
                 aria-invalid={Boolean(fieldErrors.contactEmail)}
                 aria-describedby={fieldErrors.contactEmail ? "contactEmail-error" : undefined}
-                className="mt-2 min-h-12 w-full rounded-2xl border border-daet-ink/15 bg-white px-4 text-base outline-none transition placeholder:text-daet-ink/35 focus:border-daet-forest focus:ring-4 focus:ring-daet-forest/10 aria-[invalid=true]:border-rose-400"
+                className="mt-2 min-h-12 w-full rounded-2xl border border-daet-ink/15 bg-white px-4 text-base outline-none transition placeholder:text-daet-ink/35 focus:border-daet-forest focus:ring-4 focus:ring-daet-forest/10 aria-[invalid=true]:border-red-400"
               />
+              </label>
               <FieldError id="contactEmail-error" message={fieldErrors.contactEmail} />
-            </label>
+              </div>
 
-            <label className="block sm:col-span-2">
-              <span className="text-sm font-bold text-daet-ink">Business address <span className="text-rose-600">*</span></span>
+            <div className="block sm:col-span-2">
+              <label className="block">
+              <span className="text-sm font-bold text-daet-ink">Business address <span className="text-red-600" aria-hidden="true">*</span></span>
               <textarea
                 data-step-field="1"
                 name="businessAddress"
@@ -328,15 +351,16 @@ export function OperatorRegistrationForm({
                 placeholder="Barangay, municipality, province"
                 aria-invalid={Boolean(fieldErrors.businessAddress)}
                 aria-describedby={fieldErrors.businessAddress ? "businessAddress-error" : undefined}
-                className="mt-2 w-full rounded-2xl border border-daet-ink/15 bg-white px-4 py-3 text-base outline-none transition placeholder:text-daet-ink/35 focus:border-daet-forest focus:ring-4 focus:ring-daet-forest/10 aria-[invalid=true]:border-rose-400"
+                className="mt-2 w-full rounded-2xl border border-daet-ink/15 bg-white px-4 py-3 text-base outline-none transition placeholder:text-daet-ink/35 focus:border-daet-forest focus:ring-4 focus:ring-daet-forest/10 aria-[invalid=true]:border-red-400"
               />
+              </label>
               <FieldError id="businessAddress-error" message={fieldErrors.businessAddress} />
-            </label>
+              </div>
           </div>
         </fieldset>
 
         <fieldset hidden={activeStep !== 2}>
-          <legend className="text-xl font-black text-daet-ink">Business documents</legend>
+          <legend className="text-xl font-bold text-daet-ink">Business documents</legend>
           <p className="mt-1 text-sm leading-6 text-daet-ink/65">Upload readable photos or PDFs. Make sure the business name and validity dates are visible.</p>
 
           <div className="mt-6 grid gap-4">
@@ -356,9 +380,9 @@ export function OperatorRegistrationForm({
                 requiredText: "Business permit",
               },
             ]).map((item) => (
-              <label key={item.field} className="block rounded-2xl border border-daet-ink/10 bg-daet-sand/50 p-4 sm:p-5">
+              <label key={item.field} className="block rounded-2xl bg-slate-50 p-4 sm:p-5">
                 <span className="flex flex-wrap items-center gap-2 text-sm font-bold text-daet-ink">
-                  {item.title} <span className="text-rose-600">*</span>
+                  {item.title} <span className="text-red-600" aria-hidden="true">*</span>
                 </span>
                 <span className="mt-1 block text-sm leading-6 text-daet-ink/70">{item.description}</span>
                 <input
@@ -370,10 +394,10 @@ export function OperatorRegistrationForm({
                   onChange={(event) => updateFile(item.field, event.target.files?.[0] ?? null)}
                   aria-invalid={Boolean(fieldErrors[item.field])}
                   aria-describedby={fieldErrors[item.field] ? `${item.field}-error` : undefined}
-                  className="mt-4 block min-h-11 w-full cursor-pointer rounded-xl border border-daet-ink/15 bg-white text-sm text-daet-ink file:mr-3 file:min-h-11 file:border-0 file:bg-daet-forest file:px-4 file:font-bold file:text-white hover:file:bg-daet-ink focus:outline-none focus:ring-4 focus:ring-daet-forest/10"
+                  className="mt-4 block min-h-11 w-full cursor-pointer rounded-2xl border border-daet-ink/15 bg-white text-sm text-daet-ink file:mr-3 file:min-h-11 file:border-0 file:bg-daet-forest file:px-4 file:font-bold file:text-white hover:file:bg-daet-ink focus:outline-none focus:ring-4 focus:ring-daet-forest/10"
                 />
                 {files[item.field] ? (
-                  <span className="mt-3 flex items-start justify-between gap-3 text-xs text-daet-ink/70">
+                  <span className="mt-3 flex items-start justify-between gap-3 text-sm text-slate-600">
                     <span className="min-w-0 break-all font-semibold">{files[item.field]?.name}</span>
                     <span className="shrink-0">{formatFileSize(files[item.field]?.size ?? 0)}</span>
                   </span>
@@ -383,17 +407,18 @@ export function OperatorRegistrationForm({
             ))}
           </div>
 
-          <p className="mt-4 rounded-2xl bg-emerald-50 px-4 py-3 text-xs leading-5 text-emerald-900">
+          <p className="mt-4 rounded-2xl bg-green-50 px-4 py-3 text-xs leading-5 text-green-900">
             Image files are optimized on this device before upload. PDFs are uploaded as-is. Each file must be 5 MB or less.
           </p>
         </fieldset>
 
         <fieldset hidden={activeStep !== 3}>
-          <legend className="text-xl font-black text-daet-ink">GCash QR code</legend>
+          <legend className="text-xl font-bold text-daet-ink">GCash QR code</legend>
           <p className="mt-1 text-sm leading-6 text-daet-ink/65">Tourists will use this QR to pay you directly. The platform does not collect or route payments.</p>
 
-          <label className="mt-6 block rounded-2xl border border-dashed border-daet-forest/30 bg-daet-sand/50 p-5 sm:p-7">
-            <span className="block text-sm font-bold text-daet-ink">Your business GCash QR <span className="text-rose-600">*</span></span>
+          <div className="mt-6 block rounded-2xl border border-dashed border-daet-forest/30 bg-daet-sand/50 p-5 sm:p-7">
+            <label className="block">
+            <span className="block text-sm font-bold text-daet-ink">Your business GCash QR <span className="text-red-600" aria-hidden="true">*</span></span>
             <span className="mt-1 block text-sm leading-6 text-daet-ink/70">Upload a clear JPG, PNG, or WebP image. Do not upload a screenshot containing your balance or transaction history.</span>
             <input
               data-step-field="3"
@@ -404,16 +429,17 @@ export function OperatorRegistrationForm({
               onChange={(event) => updateFile("gcashQr", event.target.files?.[0] ?? null)}
               aria-invalid={Boolean(fieldErrors.gcashQr)}
               aria-describedby={fieldErrors.gcashQr ? "gcashQr-error" : undefined}
-              className="mt-4 block min-h-11 w-full cursor-pointer rounded-xl border border-daet-ink/15 bg-white text-sm text-daet-ink file:mr-3 file:min-h-11 file:border-0 file:bg-daet-forest file:px-4 file:font-bold file:text-white hover:file:bg-daet-ink focus:outline-none focus:ring-4 focus:ring-daet-forest/10"
+              className="mt-4 block min-h-11 w-full cursor-pointer rounded-2xl border border-daet-ink/15 bg-white text-sm text-daet-ink file:mr-3 file:min-h-11 file:border-0 file:bg-daet-forest file:px-4 file:font-bold file:text-white hover:file:bg-daet-ink focus:outline-none focus:ring-4 focus:ring-daet-forest/10"
             />
             {files.gcashQr ? (
-              <span className="mt-3 flex items-start justify-between gap-3 text-xs text-daet-ink/70">
+              <span className="mt-3 flex items-start justify-between gap-3 text-sm text-slate-600">
                 <span className="min-w-0 break-all font-semibold">{files.gcashQr.name}</span>
                 <span className="shrink-0">{formatFileSize(files.gcashQr.size)}</span>
               </span>
             ) : null}
+            </label>
             <FieldError id="gcashQr-error" message={fieldErrors.gcashQr} />
-          </label>
+            </div>
 
           <Notice variant="info" title="Your application stays private" className="mt-5">
             Your documents and payment QR are kept in private storage. Only authorized Tourism Office reviewers can open the application documents.
@@ -440,7 +466,7 @@ export function OperatorRegistrationForm({
                 setClientError("");
                 if (validateCurrentStep(activeStep)) setActiveStep((step) => Math.min(3, step + 1));
               }}
-              className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-daet-forest px-7 text-sm font-bold text-white shadow-sm transition hover:bg-daet-ink focus:outline-none focus:ring-4 focus:ring-daet-forest/20"
+              className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-daet-forest px-7 text-sm font-bold text-white transition hover:bg-blue-700 focus:outline-none focus:ring-4 focus:ring-daet-forest/20"
             >
               Continue <span aria-hidden="true">→</span>
             </button>
@@ -448,7 +474,7 @@ export function OperatorRegistrationForm({
             <button
               type="submit"
               disabled={busy || submissionDisabled}
-              className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-daet-forest px-7 text-sm font-bold text-white shadow-sm transition hover:bg-daet-ink focus:outline-none focus:ring-4 focus:ring-daet-forest/20 disabled:cursor-not-allowed disabled:opacity-60"
+              className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-daet-forest px-7 text-sm font-bold text-white transition hover:bg-blue-700 focus:outline-none focus:ring-4 focus:ring-daet-forest/20 disabled:cursor-not-allowed disabled:opacity-60"
             >
               {compressing ? "Preparing secure upload…" : actionPending || isDispatchPending ? "Submitting…" : submissionDisabled ? "Connect Supabase to submit" : "Submit for approval"}
               {!busy && !submissionDisabled ? <span aria-hidden="true">↗</span> : null}

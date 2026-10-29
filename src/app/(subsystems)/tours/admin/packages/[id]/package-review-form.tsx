@@ -34,7 +34,6 @@ export function PackageReviewForm({ packageId, currentStatus }: PackageReviewFor
     formData.append('status', status);
     formData.append('notes', notes);
 
-    console.log('Submitting status:', status); // Debug log
 
     const result = await updatePackageStatus(formData);
 
@@ -50,12 +49,12 @@ export function PackageReviewForm({ packageId, currentStatus }: PackageReviewFor
   };
 
   return (
-    <form onSubmit={handleSubmit} className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-      <h2 className="text-xl font-semibold text-gray-900 mb-4">Review & Update Status</h2>
+    <form onSubmit={handleSubmit} className="bg-white rounded-2xl border border-daet-ink/20 p-6">
+      <h2 className="text-xl font-bold text-daet-ink mb-4">Review & Update Status</h2>
 
       {message && (
-        <div className={`mb-4 p-4 rounded-lg ${
-          message.type === 'success' ? 'bg-green-50 text-green-800 border border-green-200' : 'bg-red-50 text-red-800 border border-red-200'
+        <div className={`mb-4 p-4 rounded-2xl ${
+          message.type === 'success' ? 'bg-green-50 text-green-800' : 'bg-red-50 text-red-800'
         }`}>
           {message.text}
         </div>
@@ -63,14 +62,14 @@ export function PackageReviewForm({ packageId, currentStatus }: PackageReviewFor
 
       <div className="space-y-4">
         <div>
-          <label htmlFor="status" className="block text-sm font-medium text-gray-700 mb-2">
+          <label htmlFor="status" className="block text-sm font-medium text-daet-ink/80 mb-2">
             Status
           </label>
           <select
             id="status"
             value={status}
             onChange={(e) => setStatus(e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-3 py-2 border border-daet-ink/20 rounded-2xl focus:outline-none focus:ring-2 focus:ring-daet-forest/30"
             disabled={isSubmitting}
           >
             <option value="draft">Draft</option>
@@ -78,7 +77,7 @@ export function PackageReviewForm({ packageId, currentStatus }: PackageReviewFor
             <option value="published">Published</option>
             <option value="archived">Archived</option>
           </select>
-          <p className="mt-1 text-sm text-gray-500">
+          <p className="mt-1 text-sm text-daet-ink/70">
             {status === 'draft' && 'Package is incomplete or being edited'}
             {status === 'pending_review' && 'Package is awaiting admin review'}
             {status === 'published' && 'Package will be visible to tourists'}
@@ -87,7 +86,7 @@ export function PackageReviewForm({ packageId, currentStatus }: PackageReviewFor
         </div>
 
         <div>
-          <label htmlFor="notes" className="block text-sm font-medium text-gray-700 mb-2">
+          <label htmlFor="notes" className="block text-sm font-medium text-daet-ink/80 mb-2">
             Admin Notes (Optional)
           </label>
           <textarea
@@ -95,7 +94,7 @@ export function PackageReviewForm({ packageId, currentStatus }: PackageReviewFor
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
             rows={4}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-3 py-2 border border-daet-ink/20 rounded-2xl focus:outline-none focus:ring-2 focus:ring-daet-forest/30"
             placeholder="Add notes about this review decision..."
             disabled={isSubmitting}
           />
@@ -105,7 +104,7 @@ export function PackageReviewForm({ packageId, currentStatus }: PackageReviewFor
           <button
             type="submit"
             disabled={isSubmitting || status === getValidStatus(currentStatus)}
-            className="flex-1 bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed font-medium"
+            className="min-h-11 flex-1 bg-daet-forest text-white px-4 py-2 rounded-2xl hover:bg-daet-leaf disabled:bg-slate-300 disabled:cursor-not-allowed font-medium"
           >
             {isSubmitting ? 'Updating...' : 'Update Status'}
           </button>
@@ -124,7 +123,7 @@ export function PackageReviewForm({ packageId, currentStatus }: PackageReviewFor
                 }, 100);
               }}
               disabled={isSubmitting}
-              className="px-6 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:bg-gray-300 disabled:cursor-not-allowed font-medium"
+              className="px-6 py-2 bg-green-600 text-white rounded-2xl hover:bg-green-700 disabled:bg-slate-300 disabled:cursor-not-allowed font-medium"
             >
               Quick Approve
             </button>

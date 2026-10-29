@@ -132,13 +132,13 @@ export function BasicDetailsStep({
   const durationError = getDurationError();
 
   return (
-    <div className="border rounded-lg p-6 bg-white">
-      <h2 className="text-xl font-semibold text-gray-900 mb-6">Basic Details</h2>
+    <div className="border rounded-2xl p-6 bg-white">
+      <h2 className="text-xl font-bold text-daet-ink mb-6">Basic Details</h2>
 
       <div className="space-y-6">
         {/* Title Field */}
         <div>
-          <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-1">
+          <label htmlFor="title" className="block text-sm font-medium text-daet-ink/80 mb-1">
             Title <span className="text-red-500">*</span>
           </label>
           <div className="relative">
@@ -149,21 +149,21 @@ export function BasicDetailsStep({
               onChange={(e) => handleTitleChange(e.target.value)}
               disabled={isReadOnly || !permissions.basic.title || loading}
               maxLength={EDIT_LIMITS.title.max}
-              className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition ${
-                titleError ? "border-red-300 bg-red-50" : "border-gray-300"
-              } disabled:bg-gray-100 disabled:text-gray-500 disabled:cursor-not-allowed`}
+              className={`w-full px-4 py-2 border rounded-2xl focus:ring-2 focus:ring-daet-forest/30 focus:border-transparent outline-none transition ${
+                titleError ? "border-red-300 bg-red-50" : "border-daet-ink/20"
+              } disabled:bg-slate-100 disabled:text-daet-ink/70 disabled:cursor-not-allowed`}
               placeholder="Enter package title"
             />
-            <div className="absolute right-3 top-2.5 text-xs text-gray-500">
+            <div className="absolute right-3 top-2.5 text-sm text-slate-600">
               {data.title.length}/{EDIT_LIMITS.title.max}
             </div>
           </div>
-          {titleError && <p className="text-red-600 text-sm mt-1">{titleError}</p>}
+          {titleError && <p className="text-red-700 text-sm mt-1">{titleError}</p>}
         </div>
 
         {/* Location Field */}
         <div>
-          <label htmlFor="location" className="block text-sm font-medium text-gray-700 mb-1">
+          <label htmlFor="location" className="block text-sm font-medium text-daet-ink/80 mb-1">
             Location <span className="text-red-500">*</span>
           </label>
           <div className="relative">
@@ -174,21 +174,21 @@ export function BasicDetailsStep({
               onChange={(e) => handleLocationChange(e.target.value)}
               disabled={isReadOnly || !permissions.basic.locationName || loading}
               maxLength={EDIT_LIMITS.locationName.max}
-              className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition ${
-                locationError ? "border-red-300 bg-red-50" : "border-gray-300"
-              } disabled:bg-gray-100 disabled:text-gray-500 disabled:cursor-not-allowed`}
+              className={`w-full px-4 py-2 border rounded-2xl focus:ring-2 focus:ring-daet-forest/30 focus:border-transparent outline-none transition ${
+                locationError ? "border-red-300 bg-red-50" : "border-daet-ink/20"
+              } disabled:bg-slate-100 disabled:text-daet-ink/70 disabled:cursor-not-allowed`}
               placeholder="Enter location"
             />
-            <div className="absolute right-3 top-2.5 text-xs text-gray-500">
+            <div className="absolute right-3 top-2.5 text-sm text-slate-600">
               {data.locationName.length}/{EDIT_LIMITS.locationName.max}
             </div>
           </div>
-          {locationError && <p className="text-red-600 text-sm mt-1">{locationError}</p>}
+          {locationError && <p className="text-red-700 text-sm mt-1">{locationError}</p>}
         </div>
 
         {/* Description Field */}
         <div>
-          <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1">
+          <label htmlFor="description" className="block text-sm font-medium text-daet-ink/80 mb-1">
             Description
           </label>
           <div className="relative">
@@ -199,22 +199,22 @@ export function BasicDetailsStep({
               disabled={isReadOnly || !permissions.basic.description || loading}
               maxLength={EDIT_LIMITS.description.max}
               rows={5}
-              className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition resize-none ${
-                descriptionError ? "border-red-300 bg-red-50" : "border-gray-300"
-              } disabled:bg-gray-100 disabled:text-gray-500 disabled:cursor-not-allowed`}
+              className={`w-full px-4 py-2 border rounded-2xl focus:ring-2 focus:ring-daet-forest/30 focus:border-transparent outline-none transition resize-none ${
+                descriptionError ? "border-red-300 bg-red-50" : "border-daet-ink/20"
+              } disabled:bg-slate-100 disabled:text-daet-ink/70 disabled:cursor-not-allowed`}
               placeholder="Enter package description (optional)"
             />
-            <div className="absolute right-3 bottom-2.5 text-xs text-gray-500">
+            <div className="absolute right-3 bottom-2.5 text-sm text-slate-600">
               {(data.description ?? "").length}/{EDIT_LIMITS.description.max}
             </div>
           </div>
-          {descriptionError && <p className="text-red-600 text-sm mt-1">{descriptionError}</p>}
+          {descriptionError && <p className="text-red-700 text-sm mt-1">{descriptionError}</p>}
         </div>
 
         {/* Duration Fields */}
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label htmlFor="duration-value" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="duration-value" className="block text-sm font-medium text-daet-ink/80 mb-1">
               Duration <span className="text-red-500">*</span>
             </label>
             <input
@@ -226,16 +226,16 @@ export function BasicDetailsStep({
               value={data.durationValue}
               onChange={(e) => handleDurationValueChange(parseFloat(e.target.value) || 0)}
               disabled={isReadOnly || !permissions.basic.durationValue || loading}
-              className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition ${
-                durationError ? "border-red-300 bg-red-50" : "border-gray-300"
-              } disabled:bg-gray-100 disabled:text-gray-500 disabled:cursor-not-allowed`}
+              className={`w-full px-4 py-2 border rounded-2xl focus:ring-2 focus:ring-daet-forest/30 focus:border-transparent outline-none transition ${
+                durationError ? "border-red-300 bg-red-50" : "border-daet-ink/20"
+              } disabled:bg-slate-100 disabled:text-daet-ink/70 disabled:cursor-not-allowed`}
               placeholder="e.g., 2.5"
             />
-            {durationError && <p className="text-red-600 text-sm mt-1">{durationError}</p>}
+            {durationError && <p className="text-red-700 text-sm mt-1">{durationError}</p>}
           </div>
 
           <div>
-            <label htmlFor="duration-type" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="duration-type" className="block text-sm font-medium text-daet-ink/80 mb-1">
               Unit <span className="text-red-500">*</span>
             </label>
             <select
@@ -243,7 +243,7 @@ export function BasicDetailsStep({
               value={data.durationType}
               onChange={(e) => handleDurationTypeChange(e.target.value as "hours" | "days")}
               disabled={isReadOnly || !permissions.basic.durationType || loading}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition disabled:bg-gray-100 disabled:text-gray-500 disabled:cursor-not-allowed"
+              className="w-full px-4 py-2 border border-daet-ink/20 rounded-2xl focus:ring-2 focus:ring-daet-forest/30 focus:border-transparent outline-none transition disabled:bg-slate-100 disabled:text-daet-ink/70 disabled:cursor-not-allowed"
             >
               <option value="hours">Hours</option>
               <option value="days">Days</option>
@@ -253,7 +253,7 @@ export function BasicDetailsStep({
 
         {/* Read-only indicator */}
         {!permissions.canEdit && (
-          <div className="p-3 bg-blue-50 border border-blue-200 rounded text-sm text-blue-800">
+          <div className="p-3 rounded-2xl bg-blue-50 text-sm text-blue-900">
             ℹ️ This package is {packageStatus} and cannot be edited.
           </div>
         )}

@@ -1,3 +1,10 @@
+import Image from "next/image";
+import { LineIcon } from "@/components/ui/icons";
+import { Badge } from "@/components/ui/badge";
+import { ButtonLink } from "@/components/ui/button";
+import { PHOTOS } from "@/lib/photo-credits";
+import { placePhoto } from "@/lib/tours/trip-board";
+import { formatPeso } from "@/lib/money";
 import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
 import { PageFrame } from "@/components/ui/page-frame";
@@ -15,6 +22,7 @@ import { ReviewList } from "@/components/tours/review-list";
 import type { Review } from "@/lib/tours/reviews";
 
 export const dynamic = "force-dynamic";
+export const metadata = { title: "Booking" };
 
 type PageProps = {
   params: Promise<{ id: string }>;
@@ -112,115 +120,110 @@ export default async function BookingDetailPage({ params, searchParams }: PagePr
       .maybeSingle(),
   ]);
 
-  const statusColors: Record<string, string> = {
-    pending: "bg-amber-100 text-amber-900",
-    confirmed: "bg-emerald-100 text-emerald-800",
-    cancelled: "bg-gray-100 text-gray-800",
-    completed: "bg-blue-100 text-blue-900",
-    rejected: "bg-rose-100 text-rose-800",
-  };
-
-  const statusLabels: Record<string, string> = {
-    pending: "Pending Confirmation",
+  const closed = booking.status === "cancelled" || booking.status === "rejected";
+  const photoKey = placePhoto(pkg?.title, pkg?.location_name);
+  const photo = PHOTOS[photoKey];
+  const steps = [
+    { label: "Requested", done: true },
+    { label: "Confirmed by the operator", done: booking.status === "confirmed" || booking.status === "completed" },
+    { label: "Paid in full", done: booking.payment_status === "paid" },
+    { label: "Trip done", done: booking.status === "completed" },
+  ];
+  const statusLabel: Record<string, string> = {
+    pending: "Waiting for the operator",
     confirmed: "Confirmed",
-    cancelled: "Cancelled",
     completed: "Completed",
-    rejected: "Declined by operator",
+    cancelled: "Cancelled",
+    rejected: "Declined by the operator",
   };
+  const longTourDate = new Date(`${booking.tour_date}T00:00:00+08:00`).toLocaleDateString("en-PH", {
+    weekday: "long",
+    month: "long",
+    day: "numeric",
+    year: "numeric",
+    timeZone: "Asia/Manila",
+  });
 
   return (
-    <PageFrame>
+    <PageFrame credits={pkg?.cover_image_url ? [] : [photoKey]}>
       <div className="mx-auto max-w-4xl">
-        {/* Success Message */}
-        {booking.status === "pending" && (
-          <div className="mb-6 rounded-3xl border border-emerald-200 bg-emerald-50 p-6 text-center">
-            <div className="mx-auto mb-4 grid h-16 w-16 place-items-center rounded-full bg-emerald-100 text-3xl">
-              ✓
-            </div>
-            <h2 className="text-2xl font-black text-emerald-900">Booking Submitted!</h2>
-            <p className="mt-2 text-sm text-emerald-800">
-              Your booking has been sent to the operator for confirmation.
-              <br />
-              You'll receive an email once it's confirmed.
-            </p>
+        <Link href="/tours/my-bookings" className="mb-4 inline-flex min-h-11 items-center gap-1 font-bold text-blue-700 hover:underline">
+          <LineIcon name="arrowRight" className="h-4 w-4 rotate-180" /> My bookings
+        </Link>
+
+        <header className="mb-6 grid overflow-hidden rounded-2xl bg-white md:grid-cols-[1fr_1.1fr]">
+          <div className="relative min-h-48 bg-blue-100 md:min-h-full">
+            {pkg?.cover_image_url ? (
+              <img src={pkg.cover_image_url} alt="" className="absolute inset-0 h-full w-full object-cover" />
+            ) : (
+              <Image src={photo.src} alt="" fill sizes="(min-width: 768px) 40vw, 100vw" className="object-cover" priority />
+            )}
           </div>
-        )}
+          <div className="p-5 sm:p-8">
+            <Badge tone={closed ? (booking.status === "rejected" ? "danger" : "neutral") : booking.status === "pending" ? "warning" : "success"}>
+              {statusLabel[booking.status] ?? booking.status}
+            </Badge>
+            <h1 className="display-2 mt-3 text-daet-ink">{pkg?.title ?? "Your booking"}</h1>
+            <p className="mt-2 text-lg text-daet-ink">{longTourDate}</p>
+            <p className="text-daet-ink">
+              {booking.number_of_pax} guest{booking.number_of_pax === 1 ? "" : "s"}
+              {pkg?.location_name ? ` · ${pkg.location_name}` : ""}
+              {operator ? ` · by ${operator.business_name}` : ""}
+            </p>
+            <p className="mt-4 text-sm text-slate-600">Booking reference</p>
+            <p className="font-mono text-2xl font-bold tracking-wide text-daet-ink">{booking.booking_reference}</p>
+            <div className="mt-5 flex flex-wrap gap-2">
+              {booking.status === "confirmed" ? <ButtonLink href={`/tours/bookings/${booking.id}/ticket`}>Show my ticket QR</ButtonLink> : null}
+              {!closed ? <OpenChatButton bookingId={booking.id} label="Message the operator" /> : null}
+              {!closed && booking.assigned_guide_id ? (
+                <OpenChatButton target={{ kind: "guide_tourist", bookingId: booking.id }} label="Message your guide" variant="ghost" />
+              ) : null}
+            </div>
+          </div>
+        </header>
 
-        {booking.status === "pending" || booking.status === "confirmed" ? <PushOptIn variant="prompt" /> : null}
-
-        {/* Booking Reference */}
-        <div className="mb-6 rounded-3xl border border-daet-ink/10 bg-white p-6 text-center shadow-sm">
-          <p className="text-sm font-bold text-daet-ink/70">BOOKING REFERENCE</p>
-          <h1 className="mt-2 text-3xl font-black text-daet-forest">
-            {booking.booking_reference}
-          </h1>
-          <p className="mt-2 text-xs text-daet-ink/70">
-            Save this reference number for your records
-          </p>
-        </div>
-
-        {/* Status Badge */}
-        <div className="mb-6 flex flex-col items-center gap-3">
-          <span
-            className={`rounded-full px-6 py-2 text-sm font-bold ${statusColors[booking.status] || "bg-gray-100 text-gray-800"}`}
-          >
-            {statusLabels[booking.status] || booking.status}
-          </span>
-          {booking.status !== "cancelled" && booking.status !== "rejected" ? (
-            <OpenChatButton bookingId={booking.id} label="Message the operator" />
-          ) : null}
-          {booking.status === "confirmed" ? (
-            <Link
-              href={`/tours/bookings/${booking.id}/ticket`}
-              className="inline-flex min-h-11 items-center justify-center rounded-full bg-daet-forest px-6 text-sm font-bold text-white transition hover:bg-daet-ink"
-            >
-              Show my ticket QR
-            </Link>
-          ) : null}
-        </div>
-
-        {(booking.status === "cancelled" || booking.status === "rejected") && booking.cancellation_reason ? (
-          <Notice variant={booking.status === "rejected" ? "warning" : "info"} className="mb-6" title={booking.status === "rejected" ? "The operator declined this booking" : "This booking was cancelled"}>
-            {booking.cancellation_reason}
-            {Number(booking.total_paid ?? 0) > 0 ? " Any amount you paid will be refunded by the operator." : ""}
+        {booking.status === "pending" ? (
+          <Notice variant="success" className="mb-6" title="Booking sent">
+            The operator will confirm it here and in your notifications. You can pay once it is confirmed.
           </Notice>
         ) : null}
 
-        {/* Package Details */}
-        {pkg && (
-          <section className="mb-6 rounded-3xl border border-daet-ink/10 bg-white p-6 shadow-sm">
-            <h3 className="text-sm font-bold uppercase tracking-wide text-daet-ink/70">
-              Tour Package
-            </h3>
-            <div className="mt-4 flex gap-4">
-              {pkg.cover_image_url && (
-                <img
-                  src={pkg.cover_image_url}
-                  alt={pkg.title}
-                  className="h-24 w-32 rounded-2xl object-cover"
-                />
-              )}
-              <div className="flex-1">
-                <h2 className="text-xl font-black text-daet-ink">{pkg.title}</h2>
-                <p className="mt-1 text-sm text-daet-ink/70">
-                  📍 {pkg.location_name} · ⏱️ {pkg.duration_value}{" "}
-                  {pkg.duration_type === "hours" ? "hours" : "days"}
-                </p>
-                {operator && (
-                  <p className="mt-1 text-sm font-bold text-daet-forest">
-                    by {operator.business_name}
-                  </p>
-                )}
-              </div>
-            </div>
+        {booking.status === "pending" || booking.status === "confirmed" ? <PushOptIn variant="prompt" /> : null}
+
+        {closed ? (
+          <Notice variant={booking.status === "rejected" ? "warning" : "info"} className="mb-6" title={booking.status === "rejected" ? "The operator declined this booking" : "This booking was cancelled"}>
+            {booking.cancellation_reason ?? ""}
+            {Number(booking.total_paid ?? 0) > 0 ? " Any amount you paid will be refunded by the operator." : ""}
+          </Notice>
+        ) : (
+          <section aria-labelledby="progress" className="mb-6 rounded-2xl bg-white p-5 sm:p-6">
+            <h2 id="progress" className="text-xl font-bold text-daet-ink">
+              Where it stands
+            </h2>
+            <ol className="mt-4 grid gap-3 sm:grid-cols-4">
+              {steps.map((step, i) => (
+                <li key={step.label} className="flex items-center gap-3 sm:flex-col sm:items-start">
+                  <span
+                    className={`grid h-9 w-9 shrink-0 place-items-center rounded-full text-sm font-bold ${step.done ? "bg-green-500 text-slate-950" : "bg-slate-100 text-slate-600"}`}
+                    aria-hidden="true"
+                  >
+                    {step.done ? <LineIcon name="check" className="h-5 w-5" /> : i + 1}
+                  </span>
+                  <span className={step.done ? "font-bold text-daet-ink" : "text-slate-600"}>
+                    {step.label}
+                    <span className="sr-only">{step.done ? " (done)" : " (not yet)"}</span>
+                  </span>
+                </li>
+              ))}
+            </ol>
           </section>
         )}
 
         {booking.status === "completed" ? (
-          <section id="review" className="mb-6 rounded-3xl border border-daet-ink/10 bg-white p-6 shadow-sm">
-            <h3 className="text-sm font-bold uppercase tracking-wide text-daet-ink/70">
+          <section id="review" aria-labelledby="review-title" className="mb-6 rounded-2xl bg-white p-5 sm:p-6">
+            <h2 id="review-title" className="text-xl font-bold text-daet-ink">
               {myReview ? "Your review" : "Rate your tour"}
-            </h3>
+            </h2>
             <div className="mt-4">
               {myReview ? (
                 <>
@@ -238,46 +241,26 @@ export default async function BookingDetailPage({ params, searchParams }: PagePr
           </section>
         ) : null}
 
-        {/* Booking Details */}
-        <section className="mb-6 rounded-3xl border border-daet-ink/10 bg-white p-6 shadow-sm">
-          <h3 className="text-sm font-bold uppercase tracking-wide text-daet-ink/70">
-            Booking Details
-          </h3>
-
-          <div className="mt-4 space-y-3">
-            <div className="flex justify-between border-b border-daet-ink/10 pb-3">
-              <span className="text-sm text-daet-ink/70">Tour Date</span>
-              <span className="font-bold text-daet-ink">
-                {new Date(booking.tour_date).toLocaleDateString("en-US", {
-                  weekday: "long",
-                  year: "numeric",
-                  month: "long",
-                  day: "numeric",
-                })}
-              </span>
+        <section aria-labelledby="cost" className="mb-6 rounded-2xl bg-white p-5 sm:p-6">
+          <h2 id="cost" className="text-xl font-bold text-daet-ink">
+            What it costs
+          </h2>
+          <dl className="mt-4 space-y-2 text-daet-ink">
+            <div className="flex justify-between gap-4">
+              <dt>Guests</dt>
+              <dd className="font-bold">{booking.number_of_pax}</dd>
             </div>
-
-            <div className="flex justify-between border-b border-daet-ink/10 pb-3">
-              <span className="text-sm text-daet-ink/70">Number of Participants</span>
-              <span className="font-bold text-daet-ink">{booking.number_of_pax} pax</span>
-            </div>
-
-            {booking.price_per_pax && (
-              <div className="flex justify-between border-b border-daet-ink/10 pb-3">
-                <span className="text-sm text-daet-ink/70">Price per Person</span>
-                <span className="font-bold text-daet-ink">
-                  ₱{booking.price_per_pax.toLocaleString()}
-                </span>
+            {booking.price_per_pax ? (
+              <div className="flex justify-between gap-4">
+                <dt>Price per person</dt>
+                <dd className="font-bold">{formatPeso(booking.price_per_pax)}</dd>
               </div>
-            )}
-
-            <div className="flex justify-between pt-2">
-              <span className="text-lg font-bold text-daet-ink">Total Amount</span>
-              <span className="text-2xl font-black text-daet-forest">
-                ₱{booking.total_amount.toLocaleString()}
-              </span>
+            ) : null}
+            <div className="flex items-baseline justify-between gap-4 rounded-2xl bg-slate-50 px-4 py-3">
+              <dt className="text-lg font-bold">Total</dt>
+              <dd className="text-2xl font-bold text-blue-700">{formatPeso(booking.total_amount)}</dd>
             </div>
-          </div>
+          </dl>
         </section>
 
         {booking.status !== "cancelled" && booking.status !== "rejected" ? (
@@ -297,49 +280,37 @@ export default async function BookingDetailPage({ params, searchParams }: PagePr
           cancellation={(cancellation as MyCancellation | null) ?? null}
         />
 
-        {/* Contact Information */}
-        <section className="mb-6 rounded-3xl border border-daet-ink/10 bg-white p-6 shadow-sm">
-          <h3 className="text-sm font-bold uppercase tracking-wide text-daet-ink/70">
-            Contact Information
-          </h3>
-
-          <div className="mt-4 space-y-2 text-sm">
+        <section aria-labelledby="contact" className="mb-6 rounded-2xl bg-white p-5 sm:p-6">
+          <h2 id="contact" className="text-xl font-bold text-daet-ink">
+            Your contact details
+          </h2>
+          <dl className="mt-4 grid gap-3 text-daet-ink sm:grid-cols-3">
             <div>
-              <span className="text-daet-ink/70">Name:</span>{" "}
-              <span className="font-bold text-daet-ink">{booking.contact_name}</span>
+              <dt className="text-sm text-slate-600">Name</dt>
+              <dd className="font-bold">{booking.contact_name}</dd>
+            </div>
+            <div className="min-w-0">
+              <dt className="text-sm text-slate-600">Email</dt>
+              <dd className="break-words font-bold">{booking.contact_email}</dd>
             </div>
             <div>
-              <span className="text-daet-ink/70">Email:</span>{" "}
-              <span className="font-bold text-daet-ink">{booking.contact_email}</span>
+              <dt className="text-sm text-slate-600">Phone</dt>
+              <dd className="font-bold">{booking.contact_phone}</dd>
             </div>
-            <div>
-              <span className="text-daet-ink/70">Phone:</span>{" "}
-              <span className="font-bold text-daet-ink">{booking.contact_phone}</span>
+          </dl>
+          {booking.special_requests ? (
+            <div className="mt-4 rounded-2xl bg-slate-50 p-4">
+              <p className="text-sm text-slate-600">Special requests</p>
+              <p className="mt-1 text-daet-ink">{booking.special_requests}</p>
             </div>
-
-            {booking.special_requests && (
-              <div className="mt-4 rounded-xl bg-daet-sand/30 p-3">
-                <p className="text-xs font-bold text-daet-ink/70">Special Requests:</p>
-                <p className="mt-1 text-sm text-daet-ink">{booking.special_requests}</p>
-              </div>
-            )}
-          </div>
+          ) : null}
         </section>
 
-        {/* Actions */}
-        <div className="flex gap-3">
-          <Link
-            href="/tours/browse"
-            className="flex-1 rounded-full border border-daet-ink/20 py-3 text-center text-sm font-bold text-daet-ink transition hover:bg-daet-sand"
-          >
-            Browse More Tours
-          </Link>
-          <Link
-            href="/tours/my-bookings"
-            className="flex-1 rounded-full bg-daet-forest py-3 text-center text-sm font-bold text-white transition hover:bg-daet-ink"
-          >
-            View My Bookings
-          </Link>
+        <div className="flex flex-wrap gap-2">
+          <ButtonLink href="/tours/my-bookings">View my bookings</ButtonLink>
+          <ButtonLink href="/tours/browse" variant="secondary">
+            Find another trip
+          </ButtonLink>
         </div>
       </div>
     </PageFrame>

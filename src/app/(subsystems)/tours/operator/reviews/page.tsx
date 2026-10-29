@@ -1,3 +1,4 @@
+import { LineIcon } from "@/components/ui/icons";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
@@ -50,8 +51,7 @@ export default async function OperatorReviewsPage() {
         <Link href="/tours/operator/dashboard" className="inline-flex min-h-11 items-center text-sm font-bold text-daet-forest hover:underline">
           ← Dashboard
         </Link>
-        <p className="text-xs font-black uppercase tracking-[0.18em] text-daet-leaf">{operator.business_name}</p>
-        <h1 className="mt-1 text-3xl font-black tracking-tight text-daet-ink">Reviews</h1>
+        <h1 className="display-2 text-daet-ink">Reviews</h1>
         <div className="mt-2 flex flex-wrap items-center gap-3 text-sm text-daet-ink/65">
           <RatingBadge summary={toSummary(ratingRow)} />
           {awaiting > 0 ? <Badge tone="warning">{awaiting} without a reply</Badge> : null}
@@ -61,7 +61,7 @@ export default async function OperatorReviewsPage() {
       {error ? <Notice variant="error" className="mb-4">Reviews could not be loaded.</Notice> : null}
 
       {rows.length === 0 ? (
-        <EmptyState icon="⭐" title="No reviews yet" description="Travellers can review a tour once you mark their booking as completed." />
+        <EmptyState icon={<LineIcon name="star" />} title="No reviews yet" description="Travellers can review a tour once you mark their booking as completed." />
       ) : (
         <ul className="space-y-4">
           {rows.map((review) => {
@@ -72,8 +72,8 @@ export default async function OperatorReviewsPage() {
                 <Card>
                   <div className="flex flex-wrap items-start justify-between gap-2">
                     <div>
-                      <p className="font-black text-daet-ink">{pkg?.title ?? "Tour"}</p>
-                      <p className="text-xs text-daet-ink/70">
+                      <p className="font-bold text-daet-ink">{pkg?.title ?? "Tour"}</p>
+                      <p className="text-sm text-slate-600">
                         {booking?.booking_reference} · reviewed {date(review.created_at)}
                       </p>
                     </div>
@@ -84,8 +84,8 @@ export default async function OperatorReviewsPage() {
                   </div>
                   {review.comment ? <p className="mt-3 whitespace-pre-line text-sm leading-6 text-daet-ink/80">{review.comment}</p> : <p className="mt-3 text-sm italic text-daet-ink/70">No comment, rating only.</p>}
                   {review.operator_reply ? (
-                    <div className="mt-3 rounded-xl bg-daet-sand/50 p-3 text-sm">
-                      <p className="text-xs font-bold text-daet-ink/70">Your reply{review.replied_at ? ` · ${date(review.replied_at)}` : ""}</p>
+                    <div className="mt-3 rounded-2xl bg-daet-sand/50 p-3 text-sm">
+                      <p className="text-sm text-slate-600">Your reply{review.replied_at ? ` · ${date(review.replied_at)}` : ""}</p>
                       <p className="mt-1 whitespace-pre-line text-daet-ink/80">{review.operator_reply}</p>
                     </div>
                   ) : null}

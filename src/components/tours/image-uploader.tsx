@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useId, useRef, useState } from 'react';
 
 interface ImageUploaderProps {
   onUpload: (files: File[]) => void;
@@ -9,116 +9,105 @@ interface ImageUploaderProps {
   multiple?: boolean;
   label?: string;
   description?: string;
+  /** Largest allowed file, in megabytes. */
+  maxSizeMb?: number;
 }
 
+/**
+ * Drop zone and file picker. The real file input stays in the tab order (it is
+ * only visually hidden), so keyboard and screen reader users can open the
+ * picker, and files that are rejected are listed instead of silently dropped.
+ */
 export function ImageUploader({
   onUpload,
   maxFiles = 5,
   accept = 'image/jpeg,image/jpg,image/png,image/webp',
   multiple = true,
-  label = 'Upload Images',
-  description = 'PNG, JPG, WebP up to 5MB each',
+  label = 'Upload images',
+  description = 'PNG, JPG or WebP, up to 5 MB each',
+  maxSizeMb = 5,
 }: ImageUploaderProps) {
   const [isDragging, setIsDragging] = useState(false);
+  const [problems, setProblems] = useState<string[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const inputId = useId();
+  const helpId = useId();
+  const errorId = useId();
 
-  const handleDragOver = (e: React.DragEvent) => {
-    e.preventDefault();
-    setIsDragging(true);
-  };
-
-  const handleDragLeave = (e: React.DragEvent) => {
-    e.preventDefault();
-    setIsDragging(false);
+  const accept_ = (incoming: File[]) => {
+    const issues: string[] = [];
+    const ok: File[] = [];
+    for (const file of incoming) {
+      if (!file.type.startsWith('image/')) {
+        issues.push(`${file.name} is not an image, so it was skipped.`);
+      } else if (file.size > maxSizeMb * 1024 * 1024) {
+        issues.push(`${file.name} is larger than ${maxSizeMb} MB, so it was skipped.`);
+      } else {
+        ok.push(file);
+      }
+    }
+    if (ok.length > maxFiles) {
+      issues.push(`Only the first ${maxFiles} ${maxFiles === 1 ? 'file was' : 'files were'} added.`);
+    }
+    setProblems(issues);
+    if (ok.length > 0) onUpload(ok.slice(0, maxFiles));
   };
 
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault();
     setIsDragging(false);
-
-    const files = Array.from(e.dataTransfer.files).filter((file) =>
-      file.type.startsWith('image/')
-    );
-
-    if (files.length > 0) {
-      const limitedFiles = files.slice(0, maxFiles);
-      onUpload(limitedFiles);
-    }
+    accept_(Array.from(e.dataTransfer.files));
   };
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files ? Array.from(e.target.files) : [];
-    if (files.length > 0) {
-      const limitedFiles = files.slice(0, maxFiles);
-      onUpload(limitedFiles);
-    }
-    // Reset input
-    if (fileInputRef.current) {
-      fileInputRef.current.value = '';
-    }
-  };
-
-  const handleClick = () => {
-    fileInputRef.current?.click();
+    accept_(e.target.files ? Array.from(e.target.files) : []);
+    // Reset so choosing the same file again still fires onChange.
+    if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
   return (
     <div>
-      <label className="block text-sm font-medium text-gray-700 mb-2">
-        {label}
-      </label>
-
-      <div
-        onClick={handleClick}
-        onDragOver={handleDragOver}
-        onDragLeave={handleDragLeave}
+      <label
+        htmlFor={inputId}
+        onDragOver={(e) => {
+          e.preventDefault();
+          setIsDragging(true);
+        }}
+        onDragLeave={(e) => {
+          e.preventDefault();
+          setIsDragging(false);
+        }}
         onDrop={handleDrop}
-        className={`
-          border-2 border-dashed rounded-lg p-8 text-center cursor-pointer
-          transition-colors duration-200
-          ${
-            isDragging
-              ? 'border-blue-500 bg-blue-50'
-              : 'border-gray-300 hover:border-gray-400 bg-white'
-          }
-        `}
+        className={`block cursor-pointer rounded-2xl border-2 border-dashed p-6 text-center transition has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-daet-forest sm:p-8 ${
+          isDragging ? 'border-daet-forest bg-daet-sand' : 'border-daet-ink/25 bg-white hover:border-daet-forest/60'
+        }`}
       >
         <input
           ref={fileInputRef}
+          id={inputId}
           type="file"
           accept={accept}
           multiple={multiple}
           onChange={handleFileSelect}
-          className="hidden"
+          aria-describedby={problems.length > 0 ? `${helpId} ${errorId}` : helpId}
+          className="sr-only"
         />
-
-        <svg
-          className="mx-auto h-12 w-12 text-gray-400"
-          stroke="currentColor"
-          fill="none"
-          viewBox="0 0 48 48"
-          aria-hidden="true"
-        >
-          <path
-            d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02"
-            strokeWidth={2}
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-        </svg>
-
-        <div className="mt-4">
-          <p className="text-sm font-medium text-gray-900">
-            Click to upload or drag and drop
-          </p>
-          <p className="text-xs text-gray-500 mt-1">{description}</p>
-          {multiple && (
-            <p className="text-xs text-gray-400 mt-1">
-              Maximum {maxFiles} {maxFiles === 1 ? 'file' : 'files'}
-            </p>
-          )}
-        </div>
-      </div>
+        <span className="block text-base font-bold text-daet-ink">{label}</span>
+        <span className="mt-1 block text-sm font-semibold text-daet-forest underline underline-offset-4">
+          Choose {multiple ? 'files' : 'a file'} or drop {multiple ? 'them' : 'it'} here
+        </span>
+        <span id={helpId} className="mt-2 block text-sm text-daet-ink/70">
+          {description}
+          {multiple ? `. Up to ${maxFiles} ${maxFiles === 1 ? 'file' : 'files'}.` : ''}
+        </span>
+      </label>
+      {problems.length > 0 ? (
+        <ul id={errorId} role="alert" className="mt-2 space-y-1 text-sm font-semibold text-red-700">
+          {problems.map((problem) => (
+            <li key={problem}>{problem}</li>
+          ))}
+        </ul>
+      ) : null}
     </div>
   );
 }

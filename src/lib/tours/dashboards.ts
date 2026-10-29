@@ -2,42 +2,43 @@
 
 export type DashboardRole = "tourist" | "operator" | "guide" | "admin";
 
-export type Tab = { href: string; label: string; icon: string };
+/** A role tab; its line icon is chosen by label (TabIcon in components/ui/icons.tsx). */
+export type Tab = { href: string; label: string };
 
 /** Bottom tab bar per role (phones). The first tab is the role's dashboard. */
 export function roleTabs(role: string | null): Tab[] {
   switch (role) {
     case "operator":
       return [
-        { href: "/tours/operator/dashboard", label: "Home", icon: "🏠" },
-        { href: "/tours/operator/bookings", label: "Bookings", icon: "📋" },
-        { href: "/tours/operator/packages", label: "Packages", icon: "🧭" },
-        { href: "/tours/operator/payments", label: "Revenue", icon: "₱" },
-        { href: "/tours/messages", label: "Messages", icon: "💬" },
+        { href: "/tours/operator/dashboard", label: "Home" },
+        { href: "/tours/operator/bookings", label: "Bookings" },
+        { href: "/tours/operator/packages", label: "Packages" },
+        { href: "/tours/operator/payments", label: "Revenue" },
+        { href: "/tours/messages", label: "Messages" },
       ];
     case "guide":
       return [
-        { href: "/tours/guide/dashboard", label: "Home", icon: "🏠" },
-        { href: "/tours/guide/my-tours", label: "Tours", icon: "🗓️" },
-        { href: "/tours/guide/check-in", label: "Scan", icon: "📷" },
-        { href: "/tours/guide/my-qr", label: "Badge", icon: "🪪" },
-        { href: "/tours/messages", label: "Messages", icon: "💬" },
+        { href: "/tours/guide/dashboard", label: "Home" },
+        { href: "/tours/guide/my-tours", label: "Tours" },
+        { href: "/tours/guide/check-in", label: "Scan" },
+        { href: "/tours/guide/my-qr", label: "Badge" },
+        { href: "/tours/messages", label: "Messages" },
       ];
     case "admin":
       return [
-        { href: "/tours/admin", label: "Home", icon: "🏠" },
-        { href: "/tours/admin/analytics", label: "Analytics", icon: "📊" },
-        { href: "/tours/admin/operators", label: "Approvals", icon: "✅" },
-        { href: "/tours/admin/reviews", label: "Reviews", icon: "⭐" },
-        { href: "/tours/admin/attractions", label: "Content", icon: "🗺️" },
+        { href: "/tours/admin", label: "Home" },
+        { href: "/tours/admin/analytics", label: "Analytics" },
+        { href: "/tours/admin/operators", label: "Approvals" },
+        { href: "/tours/admin/attractions", label: "Content" },
+        { href: "/tours/messages", label: "Messages" },
       ];
     case "tourist":
       return [
-        { href: "/tours/me", label: "Home", icon: "🏠" },
-        { href: "/tours/browse", label: "Tours", icon: "🧭" },
-        { href: "/tours/plan", label: "Plan", icon: "🗺️" },
-        { href: "/tours/my-bookings", label: "Bookings", icon: "🎟️" },
-        { href: "/tours/messages", label: "Messages", icon: "💬" },
+        { href: "/tours/me", label: "Home" },
+        { href: "/tours/browse", label: "Tours" },
+        { href: "/tours/plan", label: "Plan" },
+        { href: "/tours/my-bookings", label: "Bookings" },
+        { href: "/tours/messages", label: "Messages" },
       ];
     default:
       return [];

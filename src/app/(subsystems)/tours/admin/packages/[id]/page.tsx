@@ -1,6 +1,8 @@
+import { formatPeso } from "@/lib/money";
 import { createSupabaseServerClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
+import { PageFrame } from '@/components/ui/page-frame';
 import { PackageReviewForm } from './package-review-form';
 
 export default async function AdminPackageReviewPage({
@@ -35,14 +37,17 @@ export default async function AdminPackageReviewPage({
   if (error || !packageData) {
     console.error('Package fetch error:', error);
     return (
-      <div className="min-h-screen bg-gray-50 py-8">
-        <div className="max-w-4xl mx-auto px-4">
-          <div className="bg-red-50 border border-red-200 rounded-lg p-6 text-center">
-            <p className="text-red-800">Package not found</p>
-            {error && <p className="text-red-600 text-sm mt-2">{error.message}</p>}
+      <PageFrame adminNav>
+        <div className="max-w-4xl mx-auto">
+          <Link href="/tours/admin/packages" className="text-sm font-bold text-daet-ink/70 hover:text-daet-ink">
+            ← All packages
+          </Link>
+          <div className="mt-4 bg-red-50 rounded-2xl p-6 text-center">
+            <h1 className="text-lg font-bold text-red-800">Package not found</h1>
+            <p className="text-red-700 text-sm mt-2">It may have been deleted. Go back to the package list and try again.</p>
           </div>
         </div>
-      </div>
+      </PageFrame>
     );
   }
 
@@ -104,13 +109,14 @@ export default async function AdminPackageReviewPage({
   const operator = packageWithOperator.tours_operators;
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
+    <PageFrame adminNav>
+    <div>
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Back Button */}
         <div className="mb-4">
           <Link
             href="/tours/admin/packages"
-            className="inline-flex items-center text-sm font-medium text-gray-600 hover:text-gray-900"
+            className="inline-flex items-center text-sm font-medium text-daet-ink/80 hover:text-daet-ink"
           >
             <svg className="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -121,74 +127,74 @@ export default async function AdminPackageReviewPage({
 
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">{packageWithOperator.title}</h1>
-          <p className="mt-2 text-gray-600">Review package details and approve or reject</p>
+          <h1 className="display-2 text-daet-ink">{packageWithOperator.title}</h1>
+          <p className="mt-2 text-daet-ink/80">Review package details and approve or reject</p>
         </div>
 
         {/* Package Details */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
-          <h2 className="text-xl font-semibold text-gray-900 mb-4">Package Information</h2>
+        <div className="bg-white rounded-2xl border border-daet-ink/20 p-6 mb-6">
+          <h2 className="text-xl font-bold text-daet-ink mb-4">Package Information</h2>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
+              <label className="block text-sm font-medium text-daet-ink/80 mb-1">Status</label>
               <span className={`inline-flex px-3 py-1 rounded-full text-sm font-medium ${
                 packageWithOperator.status === 'pending_review' ? 'bg-yellow-100 text-yellow-800' :
                 packageWithOperator.status === 'published' ? 'bg-green-100 text-green-800' :
                 packageWithOperator.status === 'rejected' ? 'bg-red-100 text-red-800' :
-                'bg-gray-100 text-gray-800'
+                'bg-slate-100 text-daet-ink'
               }`}>
                 {packageWithOperator.status}
               </span>
             </div>
 
             <div className="md:col-span-2">
-              <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
-              <p className="text-gray-900 whitespace-pre-wrap">{packageWithOperator.description}</p>
+              <label className="block text-sm font-medium text-daet-ink/80 mb-1">Description</label>
+              <p className="text-daet-ink whitespace-pre-wrap">{packageWithOperator.description}</p>
             </div>
           </div>
         </div>
 
         {/* Operator Information */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
-          <h2 className="text-xl font-semibold text-gray-900 mb-4">Operator Information</h2>
+        <div className="bg-white rounded-2xl border border-daet-ink/20 p-6 mb-6">
+          <h2 className="text-xl font-bold text-daet-ink mb-4">Operator Information</h2>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Business Name</label>
-              <p className="text-gray-900">{operator?.business_name || 'N/A'}</p>
+              <label className="block text-sm font-medium text-daet-ink/80 mb-1">Business Name</label>
+              <p className="text-daet-ink">{operator?.business_name || 'N/A'}</p>
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Contact Person</label>
-              <p className="text-gray-900">{operator?.contact_person || 'N/A'}</p>
+              <label className="block text-sm font-medium text-daet-ink/80 mb-1">Contact Person</label>
+              <p className="text-daet-ink">{operator?.contact_person || 'N/A'}</p>
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Contact Number</label>
-              <p className="text-gray-900">{operator?.contact_phone || 'N/A'}</p>
+              <label className="block text-sm font-medium text-daet-ink/80 mb-1">Contact Number</label>
+              <p className="text-daet-ink">{operator?.contact_phone || 'N/A'}</p>
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
-              <p className="text-gray-900">{operator?.contact_email || 'N/A'}</p>
+              <label className="block text-sm font-medium text-daet-ink/80 mb-1">Email</label>
+              <p className="text-daet-ink">{operator?.contact_email || 'N/A'}</p>
             </div>
           </div>
         </div>
 
         {/* Price Variants */}
         {priceVariants && priceVariants.length > 0 && (
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
-            <h2 className="text-xl font-semibold text-gray-900 mb-4">Pricing</h2>
+          <div className="bg-white rounded-2xl border border-daet-ink/20 p-6 mb-6">
+            <h2 className="text-xl font-bold text-daet-ink mb-4">Pricing</h2>
             
             <div className="space-y-3">
               {priceVariants.map((variant, index) => (
-                <div key={index} className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
-                  <span className="text-gray-700">
+                <div key={index} className="flex justify-between items-center p-3 bg-slate-50 rounded-2xl">
+                  <span className="text-daet-ink/80">
                     {variant.min_pax} - {variant.max_pax} pax
                   </span>
-                  <span className="font-semibold text-gray-900">
-                    ₱{variant.price_per_pax.toLocaleString()} per person
+                  <span className="font-bold text-daet-ink">
+                    {formatPeso(variant.price_per_pax)} per person
                   </span>
                 </div>
               ))}
@@ -198,8 +204,8 @@ export default async function AdminPackageReviewPage({
 
         {/* Inclusions */}
         {inclusions && inclusions.length > 0 && (
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
-            <h2 className="text-xl font-semibold text-gray-900 mb-4">Inclusions</h2>
+          <div className="bg-white rounded-2xl border border-daet-ink/20 p-6 mb-6">
+            <h2 className="text-xl font-bold text-daet-ink mb-4">Inclusions</h2>
             
             <ul className="space-y-2">
               {inclusions.map((item, index) => (
@@ -207,7 +213,7 @@ export default async function AdminPackageReviewPage({
                   <span className={item.is_included ? "text-green-500 mr-2" : "text-red-500 mr-2"}>
                     {item.is_included ? "✓" : "✗"}
                   </span>
-                  <span className="text-gray-700">{item.item_text}</span>
+                  <span className="text-daet-ink/80">{item.item_text}</span>
                 </li>
               ))}
             </ul>
@@ -216,26 +222,26 @@ export default async function AdminPackageReviewPage({
 
         {/* Itinerary */}
         {stops && stops.length > 0 && (
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
-            <h2 className="text-xl font-semibold text-gray-900 mb-4">Itinerary</h2>
+          <div className="bg-white rounded-2xl border border-daet-ink/20 p-6 mb-6">
+            <h2 className="text-xl font-bold text-daet-ink mb-4">Itinerary</h2>
             
             <div className="space-y-4">
               {stops.map((stop, index) => (
                 <div key={index} className="flex">
                   <div className="flex flex-col items-center mr-4">
-                    <div className="w-8 h-8 bg-blue-500 text-white rounded-full flex items-center justify-center font-semibold text-sm">
+                    <div className="w-8 h-8 bg-blue-500 text-white rounded-full flex items-center justify-center font-bold text-sm">
                       {stop.stop_order}
                     </div>
                     {index < stops.length - 1 && (
-                      <div className="w-0.5 h-full bg-gray-300 mt-2" />
+                      <div className="w-0.5 h-full bg-slate-300 mt-2" />
                     )}
                   </div>
                   
                   <div className="flex-1 pb-6">
-                    <h3 className="font-semibold text-gray-900 mb-1">{stop.location_name}</h3>
-                    <p className="text-gray-600 text-sm">{stop.description}</p>
+                    <h3 className="font-bold text-daet-ink mb-1">{stop.location_name}</h3>
+                    <p className="text-daet-ink/80 text-sm">{stop.description}</p>
                     {stop.estimated_duration_minutes && (
-                      <p className="text-gray-500 text-sm mt-1">Duration: {stop.estimated_duration_minutes} min</p>
+                      <p className="text-daet-ink/70 text-sm mt-1">Duration: {stop.estimated_duration_minutes} min</p>
                     )}
                   </div>
                 </div>
@@ -246,9 +252,9 @@ export default async function AdminPackageReviewPage({
 
         {/* Gallery */}
         {gallery && gallery.length > 0 && (
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
-            <h2 className="text-xl font-semibold text-gray-900 mb-4">Gallery ({gallery.length} images)</h2>
-            <p className="text-gray-600 text-sm">Image URLs stored in database</p>
+          <div className="bg-white rounded-2xl border border-daet-ink/20 p-6 mb-6">
+            <h2 className="text-xl font-bold text-daet-ink mb-4">Gallery ({gallery.length} images)</h2>
+            <p className="text-daet-ink/80 text-sm">Image URLs stored in database</p>
           </div>
         )}
 
@@ -256,5 +262,6 @@ export default async function AdminPackageReviewPage({
         <PackageReviewForm packageId={id} currentStatus={packageWithOperator.status} />
       </div>
     </div>
+    </PageFrame>
   );
 }

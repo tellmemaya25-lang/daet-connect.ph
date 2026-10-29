@@ -1,3 +1,4 @@
+import { AuthShell } from "@/components/ui/auth-shell";
 import { redirect } from "next/navigation";
 import { PageFrame } from "@/components/ui/page-frame";
 import { Notice } from "@/components/ui/notice";
@@ -9,7 +10,7 @@ import { LoginForm } from "./login-form";
 
 export const dynamic = "force-dynamic";
 
-type SearchParams = Promise<{ next?: string }>;
+type SearchParams = Promise<{ next?: string; message?: string }>;
 
 export default async function LoginPage({ searchParams }: { searchParams: SearchParams }) {
   if (!isSupabaseConfigured()) {
@@ -37,22 +38,20 @@ export default async function LoginPage({ searchParams }: { searchParams: Search
   const livePayments = getPaymongoConfig()?.mode === "live";
 
   return (
-    <PageFrame>
-      <div className="mx-auto max-w-md">
-        <section className="rounded-3xl border border-daet-ink/10 bg-white p-6 shadow-card sm:p-10">
-          <p className="text-xs font-black uppercase tracking-[0.18em] text-daet-leaf">CONNECT-DAET</p>
-          <h1 className="mt-2 text-3xl font-black text-daet-ink">Sign in</h1>
-          <p className="mt-2 text-sm leading-6 text-daet-ink/65">
-            Enter your email and password to access your account.
-          </p>
-          <LoginForm nextUrl={nextUrl} />
-        </section>
-        {livePayments ? null : (
-          <Notice variant="info" title="Test environment: no real money" className="mt-4">
-            Online payments here use the PayMongo test sandbox (use its test cards and e-wallets), and receipt uploads are for practice. Nothing is charged.
-          </Notice>
-        )}
-      </div>
+    <PageFrame credits={["bagasbas"]}>
+      <AuthShell
+        title="Sign in"
+        description="Sign in to see your bookings and message your guide."
+        after={
+          livePayments ? null : (
+            <Notice variant="info" title="Test environment: no real money" className="mt-4">
+              Online payments here use the PayMongo test sandbox (use its test cards and e-wallets), and receipt uploads are for practice. Nothing is charged.
+            </Notice>
+          )
+        }
+      >
+        <LoginForm nextUrl={nextUrl} notice={params.message?.slice(0, 160)} />
+      </AuthShell>
     </PageFrame>
   );
 }

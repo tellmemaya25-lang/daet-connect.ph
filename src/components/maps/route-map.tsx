@@ -75,7 +75,7 @@ export function RouteMap({
           points.slice(1).forEach((dest, i) => {
             const encoded = polylines[i];
             const path = encoded ? decodePolyline(encoded) : [points[i], dest];
-            new google.maps.Polyline({ path, map, strokeColor: "#2f5d50", strokeOpacity: encoded ? 0.9 : 0.6, strokeWeight: 4, geodesic: !encoded });
+            new google.maps.Polyline({ path, map, strokeColor: "#2563eb", strokeOpacity: encoded ? 0.9 : 0.6, strokeWeight: 4, geodesic: !encoded });
           });
         }
         if (points.length === 1) {
@@ -100,31 +100,30 @@ export function RouteMap({
   const width = 640;
   const height = 360;
   const projected = projectPoints(points, width, height, 36);
+  // When two stops sit close together, put every other label under its pin so they don't overlap.
+  const labelBelow = (index: number): boolean =>
+    index > 0 && Math.hypot(projected[index].x - projected[index - 1].x, projected[index].y - projected[index - 1].y) < 70 && !labelBelow(index - 1);
+  // Keep labels inside the map near its left and right edges.
+  const labelX = (x: number) => Math.min(width - 90, Math.max(90, x));
   return (
     <figure className={className}>
-      <svg viewBox={`0 0 ${width} ${height}`} role="img" aria-label={title} className="h-auto w-full rounded-2xl border border-daet-ink/10 bg-[#eef4f1]">
-        <defs>
-          <pattern id="map-grid" width="40" height="40" patternUnits="userSpaceOnUse">
-            <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#d7e3dd" strokeWidth="1" />
-          </pattern>
-        </defs>
-        <rect width={width} height={height} fill="url(#map-grid)" />
+      <svg viewBox={`0 0 ${width} ${height}`} role="img" aria-label={title} className="h-auto w-full rounded-2xl bg-[#eff6ff]">
         {connect && projected.length > 1 ? (
-          <polyline points={projected.map((p) => `${p.x},${p.y}`).join(" ")} fill="none" stroke="#2f5d50" strokeWidth="4" strokeDasharray="10 8" strokeLinecap="round" />
+          <polyline points={projected.map((p) => `${p.x},${p.y}`).join(" ")} fill="none" stroke="#2563eb" strokeWidth="4" strokeDasharray="10 8" strokeLinecap="round" />
         ) : null}
         {projected.map((p, index) => (
           <g key={`${points[index].label}-${index}`}>
-            <circle cx={p.x} cy={p.y} r="13" fill="#2f5d50" stroke="#fff" strokeWidth="3" />
+            <circle cx={p.x} cy={p.y} r="13" fill="#2563eb" stroke="#fff" strokeWidth="3" />
             <text x={p.x} y={p.y + 4.5} textAnchor="middle" fontSize="13" fontWeight="800" fill="#fff">
               {connect ? index + 1 : "•"}
             </text>
-            <text x={p.x} y={p.y - 19} textAnchor="middle" fontSize="13" fontWeight="700" fill="#172b24" stroke="#eef4f1" strokeWidth="4" paintOrder="stroke">
+            <text x={labelX(p.x)} y={labelBelow(index) ? p.y + 32 : p.y - 19} textAnchor="middle" fontSize="13" fontWeight="700" fill="#0f172a" stroke="#eff6ff" strokeWidth="4" paintOrder="stroke">
               {points[index].label.length > 26 ? `${points[index].label.slice(0, 25)}…` : points[index].label}
             </text>
           </g>
         ))}
       </svg>
-      <figcaption className="mt-1 text-xs text-daet-ink/70">Sketch map (not to road scale). North is up.</figcaption>
+      <figcaption className="mt-1 px-1 text-sm text-daet-ink/75">Sketch map (not to road scale). North is up.</figcaption>
     </figure>
   );
 }

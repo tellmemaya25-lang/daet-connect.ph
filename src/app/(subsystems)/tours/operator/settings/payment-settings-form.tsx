@@ -1,6 +1,8 @@
 "use client";
 
+import { LineIcon } from "@/components/ui/icons";
 import { useState } from "react";
+import { useFeedback } from "@/components/ui/feedback";
 import { updatePaymentSettings } from "./actions";
 
 interface PaymentSettingsFormProps {
@@ -22,6 +24,7 @@ export function PaymentSettingsForm({
   bankAccountName: initialBankAccountName,
   paymentInstructions: initialInstructions,
 }: PaymentSettingsFormProps) {
+  const { toast, confirm } = useFeedback();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [gcashNumber, setGcashNumber] = useState(initialGcash || "");
   const [gcashName, setGcashName] = useState(initialGcashName || "");
@@ -49,18 +52,18 @@ export function PaymentSettingsForm({
     setIsSubmitting(false);
 
     if (result.success) {
-      alert("Payment settings updated successfully!");
+      toast("Payment settings saved.", "success");
     } else {
-      alert(`Error: ${result.error}`);
+      toast(result.error || "We could not save your payment settings.", "error");
     }
   };
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       {/* GCash Details */}
-      <div className="rounded-2xl border border-daet-ink/10 bg-daet-sand/20 p-4">
+      <div className="rounded-2xl bg-slate-50 p-4">
         <h3 className="mb-3 flex items-center gap-2 text-sm font-bold text-daet-ink">
-          <span className="text-xl">📱</span>
+          <span className="text-xl"><LineIcon name="phone" className="inline-block h-[1.1em] w-[1.1em] align-[-0.15em]" /></span>
           GCash Payment Details
         </h3>
         <div className="space-y-3">
@@ -72,7 +75,7 @@ export function PaymentSettingsForm({
               type="tel"
               value={gcashNumber}
               onChange={(e) => setGcashNumber(e.target.value)}
-              className="w-full rounded-xl border border-daet-ink/20 px-3 py-2 text-sm focus:border-daet-forest focus:outline-none"
+              className="w-full rounded-2xl border border-daet-ink/20 min-h-11 px-3 py-2 text-base focus:border-daet-forest focus:outline-none"
               placeholder="09171234567"
             />
           </div>
@@ -84,7 +87,7 @@ export function PaymentSettingsForm({
               type="text"
               value={gcashName}
               onChange={(e) => setGcashName(e.target.value)}
-              className="w-full rounded-xl border border-daet-ink/20 px-3 py-2 text-sm focus:border-daet-forest focus:outline-none"
+              className="w-full rounded-2xl border border-daet-ink/20 min-h-11 px-3 py-2 text-base focus:border-daet-forest focus:outline-none"
               placeholder="Juan Dela Cruz"
             />
           </div>
@@ -92,9 +95,9 @@ export function PaymentSettingsForm({
       </div>
 
       {/* Bank Details */}
-      <div className="rounded-2xl border border-daet-ink/10 bg-daet-sand/20 p-4">
+      <div className="rounded-2xl bg-slate-50 p-4">
         <h3 className="mb-3 flex items-center gap-2 text-sm font-bold text-daet-ink">
-          <span className="text-xl">🏦</span>
+          <span className="text-xl"><LineIcon name="bank" className="inline-block h-[1.1em] w-[1.1em] align-[-0.15em]" /></span>
           Bank Transfer Details
         </h3>
         <div className="space-y-3">
@@ -104,7 +107,7 @@ export function PaymentSettingsForm({
               type="text"
               value={bankName}
               onChange={(e) => setBankName(e.target.value)}
-              className="w-full rounded-xl border border-daet-ink/20 px-3 py-2 text-sm focus:border-daet-forest focus:outline-none"
+              className="w-full rounded-2xl border border-daet-ink/20 min-h-11 px-3 py-2 text-base focus:border-daet-forest focus:outline-none"
               placeholder="BPI, BDO, Metrobank, etc."
             />
           </div>
@@ -116,7 +119,7 @@ export function PaymentSettingsForm({
               type="text"
               value={bankAccountNumber}
               onChange={(e) => setBankAccountNumber(e.target.value)}
-              className="w-full rounded-xl border border-daet-ink/20 px-3 py-2 text-sm focus:border-daet-forest focus:outline-none"
+              className="w-full rounded-2xl border border-daet-ink/20 min-h-11 px-3 py-2 text-base focus:border-daet-forest focus:outline-none"
               placeholder="1234567890"
             />
           </div>
@@ -128,7 +131,7 @@ export function PaymentSettingsForm({
               type="text"
               value={bankAccountName}
               onChange={(e) => setBankAccountName(e.target.value)}
-              className="w-full rounded-xl border border-daet-ink/20 px-3 py-2 text-sm focus:border-daet-forest focus:outline-none"
+              className="w-full rounded-2xl border border-daet-ink/20 min-h-11 px-3 py-2 text-base focus:border-daet-forest focus:outline-none"
               placeholder="Juan Dela Cruz"
             />
           </div>
@@ -144,7 +147,7 @@ export function PaymentSettingsForm({
           value={paymentInstructions}
           onChange={(e) => setPaymentInstructions(e.target.value)}
           rows={4}
-          className="w-full rounded-xl border border-daet-ink/20 px-3 py-2 text-sm focus:border-daet-forest focus:outline-none"
+          className="w-full rounded-2xl border border-daet-ink/20 min-h-11 px-3 py-2 text-base focus:border-daet-forest focus:outline-none"
           placeholder="Example: Please include booking reference in payment message..."
         />
       </div>
@@ -153,12 +156,12 @@ export function PaymentSettingsForm({
       <button
         type="submit"
         disabled={isSubmitting}
-        className="w-full rounded-full bg-daet-forest px-6 py-3 font-bold text-white transition hover:bg-daet-ink disabled:opacity-50"
+        className="w-full rounded-full bg-daet-forest px-6 py-3 font-bold text-white transition hover:bg-blue-700 disabled:opacity-50"
       >
         {isSubmitting ? "Saving..." : "Save Payment Settings"}
       </button>
 
-      <p className="text-center text-xs text-daet-ink/70">
+      <p className="text-center text-sm text-slate-600">
         These details will be shown to tourists after they book and confirm their tour.
       </p>
     </form>

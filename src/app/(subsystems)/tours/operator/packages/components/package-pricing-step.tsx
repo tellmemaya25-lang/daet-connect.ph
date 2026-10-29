@@ -109,7 +109,7 @@ export function PackagePricingStep({
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       <div>
-        <h2 className="text-2xl font-black text-daet-ink">Pricing variants</h2>
+        <h2 className="text-2xl font-bold text-daet-ink">Pricing variants</h2>
         <p className="mt-2 text-sm text-daet-ink/65">
           Offer different pricing options based on group size or package features.
         </p>
@@ -120,7 +120,7 @@ export function PackagePricingStep({
         {variants.map((variant, index) => (
           <div
             key={index}
-            className="rounded-2xl border border-daet-ink/10 bg-white p-5 shadow-sm"
+            className="rounded-2xl bg-white p-5"
           >
             <div className="flex items-start justify-between gap-3">
               <div className="flex-1 space-y-4">
@@ -131,10 +131,10 @@ export function PackagePricingStep({
                     value={variant.variantName}
                     onChange={(e) => updateVariant(index, { variantName: e.target.value })}
                     placeholder="Variant name (e.g., Solo, Group)"
-                    className="w-full rounded-xl border border-daet-ink/15 bg-white px-3 py-2 text-sm font-bold outline-none transition focus:border-daet-forest focus:ring-2 focus:ring-daet-forest/20"
+                    className="w-full rounded-2xl border border-daet-ink/15 bg-white px-3 py-2 text-sm font-bold outline-none transition focus:border-daet-forest focus:ring-2 focus:ring-daet-forest/20"
                   />
                   {errors[index]?.variantName && (
-                    <p className="mt-1 text-xs text-rose-700">{errors[index].variantName}</p>
+                    <p className="mt-1 text-xs text-red-700">{errors[index].variantName}</p>
                   )}
                 </div>
 
@@ -147,10 +147,10 @@ export function PackagePricingStep({
                       value={variant.minPax}
                       onChange={(e) => updateVariant(index, { minPax: Number(e.target.value) })}
                       min={1}
-                      className="mt-1 w-full rounded-xl border border-daet-ink/15 px-3 py-2 text-sm"
+                      className="mt-1 w-full rounded-2xl border border-daet-ink/15 px-3 py-2 text-sm"
                     />
                     {errors[index]?.minPax && (
-                      <p className="mt-1 text-xs text-rose-700">{errors[index].minPax}</p>
+                      <p className="mt-1 text-xs text-red-700">{errors[index].minPax}</p>
                     )}
                   </div>
                   <div>
@@ -165,10 +165,10 @@ export function PackagePricingStep({
                       }
                       min={variant.minPax}
                       placeholder="Unlimited"
-                      className="mt-1 w-full rounded-xl border border-daet-ink/15 px-3 py-2 text-sm"
+                      className="mt-1 w-full rounded-2xl border border-daet-ink/15 px-3 py-2 text-sm"
                     />
                     {errors[index]?.maxPax && (
-                      <p className="mt-1 text-xs text-rose-700">{errors[index].maxPax}</p>
+                      <p className="mt-1 text-xs text-red-700">{errors[index].maxPax}</p>
                     )}
                   </div>
                 </div>
@@ -189,7 +189,7 @@ export function PackagePricingStep({
                       min={0}
                       step={0.01}
                       placeholder="0.00"
-                      className="mt-1 w-full rounded-xl border border-daet-ink/15 px-3 py-2 text-sm"
+                      className="mt-1 w-full rounded-2xl border border-daet-ink/15 px-3 py-2 text-sm"
                     />
                   </div>
                   <div>
@@ -206,12 +206,12 @@ export function PackagePricingStep({
                       min={0}
                       step={0.01}
                       placeholder="0.00"
-                      className="mt-1 w-full rounded-xl border border-daet-ink/15 px-3 py-2 text-sm"
+                      className="mt-1 w-full rounded-2xl border border-daet-ink/15 px-3 py-2 text-sm"
                     />
                   </div>
                 </div>
                 {errors[index]?.pricing && (
-                  <p className="text-xs text-rose-700">{errors[index].pricing}</p>
+                  <p className="text-xs text-red-700">{errors[index].pricing}</p>
                 )}
 
                 {/* Default Checkbox */}
@@ -220,9 +220,9 @@ export function PackagePricingStep({
                     type="checkbox"
                     checked={variant.isDefault}
                     onChange={() => setDefaultVariant(index)}
-                    className="h-4 w-4 rounded border-daet-ink/30 text-daet-forest focus:ring-2 focus:ring-daet-forest/20"
+                    className="h-4 w-4 rounded-2xl border-daet-ink/30 text-daet-forest focus:ring-2 focus:ring-daet-forest/20"
                   />
-                  <span className="font-semibold">Default variant</span>
+                  <span className="font-bold">Default variant</span>
                 </label>
               </div>
 
@@ -231,7 +231,7 @@ export function PackagePricingStep({
                 <button
                   type="button"
                   onClick={() => removeVariant(index)}
-                  className="grid h-8 w-8 place-items-center rounded-full text-rose-600 transition hover:bg-rose-50"
+                  className="grid h-8 w-8 place-items-center rounded-full text-red-600 transition hover:bg-red-50"
                   aria-label="Remove variant"
                 >
                   ✕
@@ -246,7 +246,7 @@ export function PackagePricingStep({
       <button
         type="button"
         onClick={addVariant}
-        className="inline-flex min-h-11 items-center gap-2 rounded-full border-2 border-dashed border-daet-forest/30 bg-daet-forest/5 px-5 text-sm font-bold text-daet-forest transition hover:border-daet-forest/50 hover:bg-daet-forest/10"
+        className="inline-flex min-h-11 items-center gap-2 rounded-full border-2 border-dashed border-daet-forest/30 bg-daet-forest/5 px-5 text-sm font-bold text-daet-leaf transition hover:border-daet-forest/50 hover:bg-daet-forest/10"
       >
         + Add another variant
       </button>
@@ -264,7 +264,7 @@ export function PackagePricingStep({
         <button
           type="submit"
           disabled={loading}
-          className="inline-flex min-h-12 items-center justify-center rounded-full bg-daet-forest px-8 text-sm font-black text-white transition hover:bg-daet-ink disabled:cursor-not-allowed disabled:opacity-50"
+          className="inline-flex min-h-12 items-center justify-center rounded-full bg-daet-forest px-8 text-sm font-bold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
         >
           {loading ? "Saving..." : "Continue →"}
         </button>

@@ -1,13 +1,26 @@
 @import "tailwindcss";
 
+/* CONNECT-DAET design system (team UI & mobile-first standards).
+   Primary blue-600 ("Daet Blue"), success green-500, warning yellow-500,
+   error red-600; rounded-2xl cards, rounded-full primary buttons, 44px touch
+   targets. Cards sit white on the slate-50 ground with no border or shadow:
+   the tone step separates them. The token names are older than the palette:
+   "forest" is the brand blue, "leaf" the deeper blue for small text and
+   links, and "sand" the pale blue tint for selected and hover states. */
 @theme {
-  --color-daet-ink: #172b24;
-  --color-daet-forest: #285a45;
-  --color-daet-leaf: #4f8063;
-  --color-daet-sand: #f5f3eb;
-  --color-daet-sun: #edbd58;
-  --color-daet-coral: #e88969;
-  --shadow-card: 0 18px 60px rgba(23, 43, 36, 0.08);
+  --color-daet-ink: #0f172a;
+  --color-daet-forest: #2563eb;
+  --color-daet-leaf: #1d4ed8;
+  --color-daet-sand: #eff6ff;
+  --color-daet-sun: #eab308;
+  --color-daet-coral: #dc2626;
+  /* Only for things that float above the page: menus, dialogs, the bottom booking bar. */
+  --shadow-float: 0 12px 32px rgba(15, 23, 42, 0.18);
+  --color-success: #22c55e;
+  --color-warning: #eab308;
+  --color-error: #dc2626;
+  --font-display: var(--font-fraunces), Georgia, "Times New Roman", serif;
+  --font-sans: var(--font-public-sans), system-ui, -apple-system, "Segoe UI", sans-serif;
 }
 
 /* Base styles live in the base layer so Tailwind utilities (e.g. font-bold on a
@@ -15,28 +28,42 @@
 @layer base {
   :root {
     color-scheme: light;
-    background: #f5f3eb;
-    color: #172b24;
+    background: #f8fafc;
+    color: #0f172a;
   }
 
   * {
     box-sizing: border-box;
   }
 
+  h1,
+  h2 {
+    font-family: var(--font-fraunces), Georgia, "Times New Roman", serif;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    text-wrap: balance;
+  }
+
+  h3 {
+    text-wrap: balance;
+  }
+
   html {
     min-width: 320px;
     scroll-behavior: smooth;
+    /* Pinned bottom bars (booking, planner save) must not cover a control that is scrolled or tabbed into view. */
+    scroll-padding-bottom: 7rem;
   }
 
   body {
     margin: 0;
     min-height: 100vh;
-    background:
-      radial-gradient(circle at 85% 0%, rgba(237, 189, 88, 0.13), transparent 25rem),
-      #f5f3eb;
-    color: #172b24;
-    font-family: Arial, Helvetica, sans-serif;
+    background: #f8fafc;
+    color: #0f172a;
+    font-family: var(--font-public-sans), system-ui, -apple-system, "Segoe UI", sans-serif;
     -webkit-font-smoothing: antialiased;
+    /* Only 400/600/700 are loaded; never fake a heavier weight for font-black. */
+    font-synthesis-weight: none;
   }
 
   button,
@@ -46,11 +73,72 @@
   }
 
   ::selection {
-    background: rgba(79, 128, 99, 0.2);
+    background: rgba(37, 99, 235, 0.2);
   }
 }
 
+/* Display sizes: large and tight. Mobile first; they scale with the viewport. */
+@utility display-1 {
+  font-family: var(--font-fraunces), Georgia, "Times New Roman", serif;
+  font-weight: 600;
+  font-size: clamp(2.5rem, 9vw, 6rem);
+  line-height: 0.95;
+  letter-spacing: -0.03em;
+}
+
+@utility display-2 {
+  font-family: var(--font-fraunces), Georgia, "Times New Roman", serif;
+  font-weight: 600;
+  font-size: clamp(1.75rem, 5vw, 3rem);
+  line-height: 1.05;
+  letter-spacing: -0.025em;
+}
+
+/* Section entrance: parts marked data-reveal rise into place as they scroll
+   into view (heading, then text, then picture via --reveal-index). Pure CSS,
+   scroll-driven; browsers without view timelines simply show the content, so
+   nothing can stay hidden. */
+@keyframes daet-reveal {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@supports (animation-timeline: view()) {
+  [data-reveal] {
+    animation: daet-reveal linear both;
+    animation-timeline: view();
+    animation-range: entry calc(var(--reveal-index, 0) * 6%) entry calc(45% + var(--reveal-index, 0) * 6%);
+  }
+}
+
+@keyframes daet-drift {
+  from {
+    transform: scale(1.04) translate3d(0, 0, 0);
+  }
+  to {
+    transform: scale(1.1) translate3d(-1.5%, -1%, 0);
+  }
+}
+
+.drift {
+  animation: daet-drift 24s ease-in-out infinite alternate;
+}
+
 @media (prefers-reduced-motion: reduce) {
+  [data-reveal] {
+    animation: none !important;
+  }
+
+  .drift {
+    animation: none;
+  }
+
   *,
   *::before,
   *::after {

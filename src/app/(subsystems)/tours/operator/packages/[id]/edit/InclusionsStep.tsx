@@ -1,6 +1,8 @@
 "use client";
 
+import { LineIcon } from "@/components/ui/icons";
 import React, { useCallback, useState } from "react";
+import { useFeedback } from "@/components/ui/feedback";
 import type { EditInclusion, EditPackageStatus, ValidationErrors, StepProps } from "./edit-types";
 import { EDIT_LIMITS } from "./edit-constants";
 import { getEditPermissions } from "./permissions";
@@ -27,6 +29,7 @@ export function InclusionsStep({
   loading,
 }: InclusionsStepProps) {
   const permissions = getEditPermissions(packageStatus);
+  const { toast, confirm } = useFeedback();
   const [showAddForm, setShowAddForm] = useState(false);
   const [editingId, setEditingId] = useState<string | undefined>();
   const [formData, setFormData] = useState<{ text: string; isIncluded: boolean }>({
@@ -86,7 +89,7 @@ export function InclusionsStep({
   const handleDelete = useCallback(
     (id: string | undefined) => {
       if (!id || data.filter((i) => i.isIncluded).length <= 1) {
-        alert("At least one inclusion is required");
+        toast("At least one inclusion is required.", "error");
         return;
       }
       onUpdate(data.filter((i) => i.id !== id));
@@ -134,9 +137,9 @@ export function InclusionsStep({
   const inclusionErrors = getInclusionErrors();
 
   return (
-    <div className="border rounded-lg p-6 bg-white">
+    <div className="border rounded-2xl p-6 bg-white">
       <div className="flex items-center justify-between mb-6">
-        <h2 className="text-xl font-semibold text-gray-900">Inclusions & Exclusions</h2>
+        <h2 className="text-xl font-bold text-daet-ink">Inclusions & Exclusions</h2>
         {canAddItems && (
           <button
             type="button"
@@ -145,7 +148,7 @@ export function InclusionsStep({
               setFormData({ text: "", isIncluded: true });
             }}
             disabled={loading}
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
+            className="px-4 py-2 bg-daet-forest text-white rounded-2xl text-sm font-medium hover:bg-daet-leaf transition disabled:opacity-50 disabled:cursor-not-allowed"
           >
             + Add Item
           </button>
@@ -154,7 +157,7 @@ export function InclusionsStep({
 
       {/* Inclusions Section */}
       <div className="mb-6">
-        <h3 className="text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
+        <h3 className="text-sm font-bold text-daet-ink/80 mb-3 flex items-center gap-2">
           <span className="w-4 h-4 rounded-full bg-green-100 border-2 border-green-500 flex items-center justify-center text-xs text-green-600 font-bold">✓</span>
           Included ({inclusions.length})
         </h3>
@@ -164,17 +167,17 @@ export function InclusionsStep({
             {inclusions.map((item, index) => (
               <div
                 key={item.id}
-                className="flex items-center gap-2 p-3 bg-green-50 border border-green-200 rounded-lg hover:bg-green-100 transition"
+                className="flex items-center gap-2 p-3 bg-green-50 rounded-2xl hover:bg-green-100 transition"
               >
                 <span className="text-sm font-medium text-green-700 min-w-4">{index + 1}.</span>
                 {canEditItems && editingId !== item.id ? (
-                  <span className="flex-1 text-gray-900">{item.text}</span>
+                  <span className="flex-1 text-daet-ink">{item.text}</span>
                 ) : (
                   <input
                     type="text"
                     value={item.text}
                     onChange={() => {}}
-                    className="flex-1 px-2 py-1 border border-gray-300 rounded bg-white"
+                    className="flex-1 px-2 py-1 border border-daet-ink/20 rounded-2xl bg-white"
                     disabled
                   />
                 )}
@@ -185,10 +188,10 @@ export function InclusionsStep({
                         type="button"
                         onClick={() => handleReorder(inclusions, "up", index)}
                         disabled={index === 0 || loading}
-                        className="p-1 hover:bg-green-200 rounded disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="p-1 hover:bg-green-200 rounded-2xl disabled:opacity-50 disabled:cursor-not-allowed"
                         title="Move up"
                       >
-                        <svg className="w-4 h-4 text-gray-600" fill="currentColor" viewBox="0 0 20 20">
+                        <svg className="w-4 h-4 text-daet-ink/80" fill="currentColor" viewBox="0 0 20 20">
                           <path fillRule="evenodd" d="M14.707 12.707a1 1 0 01-1.414 0L10 9.414l-3.293 3.293a1 1 0 01-1.414-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 010 1.414z" clipRule="evenodd" />
                         </svg>
                       </button>
@@ -196,10 +199,10 @@ export function InclusionsStep({
                         type="button"
                         onClick={() => handleReorder(inclusions, "down", index)}
                         disabled={index === inclusions.length - 1 || loading}
-                        className="p-1 hover:bg-green-200 rounded disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="p-1 hover:bg-green-200 rounded-2xl disabled:opacity-50 disabled:cursor-not-allowed"
                         title="Move down"
                       >
-                        <svg className="w-4 h-4 text-gray-600" fill="currentColor" viewBox="0 0 20 20">
+                        <svg className="w-4 h-4 text-daet-ink/80" fill="currentColor" viewBox="0 0 20 20">
                           <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
                         </svg>
                       </button>
@@ -210,7 +213,7 @@ export function InclusionsStep({
                       type="button"
                       onClick={() => handleEdit(item)}
                       disabled={loading}
-                      className="text-blue-600 hover:text-blue-800 text-xs font-medium disabled:opacity-50"
+                      className="text-daet-leaf hover:text-daet-leaf text-xs font-medium disabled:opacity-50"
                     >
                       Edit
                     </button>
@@ -218,13 +221,13 @@ export function InclusionsStep({
                   {canRemoveItems && (
                     <button
                       type="button"
-                      onClick={() => {
-                        if (window.confirm("Delete this item?")) {
+                      onClick={async () => {
+                        if (await confirm({ title: "Delete this item?", confirmLabel: "Delete" })) {
                           handleDelete(item.id);
                         }
                       }}
                       disabled={loading}
-                      className="text-red-600 hover:text-red-800 text-xs font-medium disabled:opacity-50"
+                      className="text-red-700 hover:text-red-800 text-xs font-medium disabled:opacity-50"
                     >
                       Delete
                     </button>
@@ -234,14 +237,14 @@ export function InclusionsStep({
             ))}
           </div>
         ) : (
-          <p className="text-gray-500 text-sm p-3 bg-gray-50 rounded">No inclusions yet.</p>
+          <p className="text-daet-ink/70 text-sm p-3 bg-slate-50 rounded-2xl">No inclusions yet.</p>
         )}
       </div>
 
       {/* Exclusions Section */}
       <div className="mb-6">
-        <h3 className="text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
-          <span className="w-4 h-4 rounded-full bg-red-100 border-2 border-red-500 flex items-center justify-center text-xs text-red-600 font-bold">✕</span>
+        <h3 className="text-sm font-bold text-daet-ink/80 mb-3 flex items-center gap-2">
+          <span className="w-4 h-4 rounded-full bg-red-100 border-2 border-red-500 flex items-center justify-center text-xs text-red-700 font-bold">✕</span>
           Excluded ({exclusions.length})
         </h3>
 
@@ -250,10 +253,10 @@ export function InclusionsStep({
             {exclusions.map((item, index) => (
               <div
                 key={item.id}
-                className="flex items-center gap-2 p-3 bg-red-50 border border-red-200 rounded-lg hover:bg-red-100 transition"
+                className="flex items-center gap-2 p-3 bg-red-50 rounded-2xl hover:bg-red-100 transition"
               >
                 <span className="text-sm font-medium text-red-700 min-w-4">{index + 1}.</span>
-                <span className="flex-1 text-gray-900 line-through">{item.text}</span>
+                <span className="flex-1 text-daet-ink line-through">{item.text}</span>
                 <div className="flex items-center gap-1">
                   {canToggleIncluded && (
                     <button
@@ -268,13 +271,13 @@ export function InclusionsStep({
                   {canRemoveItems && (
                     <button
                       type="button"
-                      onClick={() => {
-                        if (window.confirm("Delete this item?")) {
+                      onClick={async () => {
+                        if (await confirm({ title: "Delete this item?", confirmLabel: "Delete" })) {
                           handleDelete(item.id);
                         }
                       }}
                       disabled={loading}
-                      className="text-red-600 hover:text-red-800 text-xs font-medium disabled:opacity-50"
+                      className="text-red-700 hover:text-red-800 text-xs font-medium disabled:opacity-50"
                     >
                       Delete
                     </button>
@@ -284,13 +287,13 @@ export function InclusionsStep({
             ))}
           </div>
         ) : (
-          <p className="text-gray-500 text-sm p-3 bg-gray-50 rounded">No exclusions yet.</p>
+          <p className="text-daet-ink/70 text-sm p-3 bg-slate-50 rounded-2xl">No exclusions yet.</p>
         )}
       </div>
 
       {/* Validation Errors */}
       {Object.keys(inclusionErrors).length > 0 && (
-        <div className="p-3 bg-red-50 border border-red-200 rounded text-sm text-red-800">
+        <div className="p-3 bg-red-50 rounded-2xl text-sm text-red-800">
           <p className="font-medium">Inclusion errors:</p>
           <ul className="mt-1 space-y-1">
             {Object.entries(inclusionErrors).map(([key, message]) => (
@@ -303,15 +306,15 @@ export function InclusionsStep({
       {/* Add/Edit Form Modal */}
       {showAddForm && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg shadow-lg max-w-md w-full p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">
+          <div className="bg-white rounded-2xl max-w-md w-full p-6">
+            <h3 className="text-lg font-bold text-daet-ink mb-4">
               {editingId ? "Edit Item" : "Add Item"}
             </h3>
 
             <div className="space-y-4">
               {/* Item Text */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-daet-ink/80 mb-1">
                   Description <span className="text-red-500">*</span>
                 </label>
                 <textarea
@@ -319,17 +322,17 @@ export function InclusionsStep({
                   onChange={(e) => setFormData({ ...formData, text: e.target.value })}
                   maxLength={EDIT_LIMITS.inclusionText.max}
                   rows={3}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none resize-none"
+                  className="w-full px-3 py-2 border border-daet-ink/20 rounded-2xl focus:ring-2 focus:ring-daet-forest/30 outline-none resize-none"
                   placeholder="e.g., Hotel accommodation"
                 />
-                <p className="text-xs text-gray-500 mt-1">
+                <p className="text-sm text-slate-600 mt-1">
                   {formData.text.length}/{EDIT_LIMITS.inclusionText.max}
                 </p>
               </div>
 
               {/* Is Included Toggle */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Status</label>
+                <label className="block text-sm font-medium text-daet-ink/80 mb-2">Status</label>
                 <div className="flex items-center gap-4">
                   <label className="flex items-center gap-2 cursor-pointer">
                     <input
@@ -338,7 +341,7 @@ export function InclusionsStep({
                       onChange={() => setFormData({ ...formData, isIncluded: true })}
                       className="w-4 h-4"
                     />
-                    <span className="text-sm text-gray-700">Included</span>
+                    <span className="text-sm text-daet-ink/80">Included</span>
                   </label>
                   <label className="flex items-center gap-2 cursor-pointer">
                     <input
@@ -347,7 +350,7 @@ export function InclusionsStep({
                       onChange={() => setFormData({ ...formData, isIncluded: false })}
                       className="w-4 h-4"
                     />
-                    <span className="text-sm text-gray-700">Excluded</span>
+                    <span className="text-sm text-daet-ink/80">Excluded</span>
                   </label>
                 </div>
               </div>
@@ -360,14 +363,14 @@ export function InclusionsStep({
                     setShowAddForm(false);
                     setEditingId(undefined);
                   }}
-                  className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition"
+                  className="flex-1 px-4 py-2 border border-daet-ink/20 text-daet-ink/80 rounded-2xl hover:bg-slate-50 transition"
                 >
                   Cancel
                 </button>
                 <button
                   type="button"
                   onClick={handleAddItem}
-                  className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+                  className="min-h-11 flex-1 px-4 py-2 bg-daet-forest text-white rounded-2xl hover:bg-daet-leaf transition"
                 >
                   {editingId ? "Update" : "Add"}
                 </button>
@@ -379,8 +382,8 @@ export function InclusionsStep({
 
       {/* Help text */}
       {inclusions.length === 0 && (
-        <div className="p-3 bg-yellow-50 border border-yellow-200 rounded text-sm text-yellow-800">
-          ⚠️ At least one inclusion is required before submitting for review.
+        <div className="p-3 bg-yellow-50 rounded-2xl text-sm text-yellow-800">
+          <LineIcon name="warning" className="inline-block h-[1.1em] w-[1.1em] align-[-0.15em]" /> At least one inclusion is required before submitting for review.
         </div>
       )}
     </div>

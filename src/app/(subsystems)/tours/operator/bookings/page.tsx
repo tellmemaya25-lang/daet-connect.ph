@@ -1,3 +1,6 @@
+import { EmptyState } from "@/components/ui/empty-state";
+import { LineIcon } from "@/components/ui/icons";
+import { formatPeso } from "@/lib/money";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { PageFrame } from "@/components/ui/page-frame";
@@ -10,6 +13,8 @@ import { manilaDayStartUtc, toManilaDateKey } from "@/lib/tours/events-calendar"
 import { OpenChatButton } from "@/app/(subsystems)/tours/messages/open-chat-button";
 import { BookingActionButtons } from "./booking-action-buttons";
 import { CancellationReview, RefundPanel, type CancellationRequest } from "./cancellation-review";
+import { isBusyReason, type BusyReason } from "@/lib/tours/guide-swap";
+import { SwapReview, type PendingSwap } from "./swap-review";
 import { GuideAssignment } from "./guide-assignment";
 import { PaymentRecorder } from "./payment-recorder";
 import { ProofReview, type ReviewableProof } from "./proof-review";
@@ -140,7 +145,6 @@ export default async function OperatorBookingsPage({
     .eq("accreditation_status", "approved")
     .order("id", { ascending: true });
 
-  console.log("Guides data fetched:", guidesData?.length || 0);
   if (guidesError) {
     console.error("Guides fetch error:", guidesError);
     console.error("Guides error details:", JSON.stringify(guidesError, null, 2));
@@ -148,7 +152,6 @@ export default async function OperatorBookingsPage({
 
   // Get profile IDs
   const profileIds = guidesData?.map((g) => g.profile_id).filter(Boolean) || [];
-  console.log("Profile IDs to fetch:", profileIds);
 
   // Fetch profile names for guides (only if we have IDs)
   let profilesData = null;
@@ -159,7 +162,6 @@ export default async function OperatorBookingsPage({
       .in("id", profileIds);
     
     profilesData = data;
-    console.log("Profiles data fetched:", profilesData?.length || 0);
     if (profilesError) console.error("Profiles fetch error:", profilesError);
   }
 
@@ -172,7 +174,6 @@ export default async function OperatorBookingsPage({
         full_name: profile?.full_name || "Unknown Guide",
         contact_phone: guide.contact_phone,
       };
-      console.log("Mapped guide:", result);
       return result;
     }) || [];
 
@@ -189,12 +190,42 @@ export default async function OperatorBookingsPage({
   const availabilityFor = (date: string): Record<string, boolean> =>
     Object.fromEntries((availabilityRows ?? []).filter((r) => r.available_date === date).map((r) => [r.guide_id, r.is_available]));
 
+  // R6: who can take each upcoming date (approved, marked available, not on another tour that day).
+  const upcomingDates = tourDates.filter((d) => d >= today);
+  const busyRows = await Promise.all(
+    upcomingDates.map(async (date) => {
+      const { data } = await supabase.rpc("tours_guides_free_on", { p_date: date });
+      return [date, (data ?? []) as Array<{ guide_id: string; full_name: string; reason: string | null }>] as const;
+    }),
+  );
+  const busyByDate = new Map(busyRows.map(([date, rows]) => [date, rows]));
+  const busyFor = (date: string): Record<string, BusyReason | null> =>
+    Object.fromEntries((busyByDate.get(date) ?? []).map((r) => [r.guide_id, isBusyReason(r.reason) ? r.reason : null]));
+  const pickerFor = (date: string) =>
+    (busyByDate.get(date) ?? []).map((r) => ({ id: r.guide_id, full_name: r.full_name, reason: isBusyReason(r.reason) ? r.reason : null }));
+
+  // R6: guides' pending swap requests on these bookings.
+  const { data: swapRows } = bookingIds.length
+    ? await supabase
+        .from("tours_guide_swap_requests")
+        .select("id, booking_id, from_guide_id, to_guide_id, reason, created_at")
+        .in("booking_id", bookingIds)
+        .eq("status", "pending")
+    : { data: [] as Array<{ id: string; booking_id: string; from_guide_id: string; to_guide_id: string | null; reason: string; created_at: string }> };
+  const guideName = (id: string | null) => (id ? availableGuides.find((g) => g.id === id)?.full_name ?? "A guide" : null);
+  const swapByBooking = new Map<string, PendingSwap>(
+    (swapRows ?? []).map((row) => [
+      row.booking_id,
+      { id: row.id, fromGuideId: row.from_guide_id, fromGuideName: guideName(row.from_guide_id) ?? "A guide", toGuideId: row.to_guide_id, toGuideName: guideName(row.to_guide_id), reason: row.reason, createdAt: row.created_at },
+    ]),
+  );
+
   const statusColors: Record<string, string> = {
-    pending: "bg-amber-100 text-amber-900",
-    confirmed: "bg-emerald-100 text-emerald-800",
-    cancelled: "bg-gray-100 text-gray-800",
+    pending: "bg-yellow-500 text-slate-950",
+    confirmed: "bg-green-500 text-slate-950",
+    cancelled: "bg-slate-200 text-slate-900",
     completed: "bg-blue-100 text-blue-900",
-    rejected: "bg-rose-100 text-rose-800",
+    rejected: "bg-red-600 text-white",
   };
 
   const statusLabels: Record<string, string> = {
@@ -220,96 +251,46 @@ export default async function OperatorBookingsPage({
       <DashboardHeader role="operator" />
 
       <div className="mx-auto max-w-7xl">
-        {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-4xl font-black text-daet-ink">Booking Management</h1>
-          <p className="mt-2 text-sm text-daet-ink/70">
-            Manage bookings for {operator.business_name}
-          </p>
-        </div>
+        <header className="mb-6">
+          <h1 className="display-2 text-daet-ink">Bookings</h1>
+          <p className="mt-2 text-lg text-daet-ink">Every booking for {operator.business_name}, newest first.</p>
+        </header>
 
-        {/* Back Button */}
-        <div className="mb-6">
-          <Link
-            href="/tours/operator/dashboard"
-            className="inline-flex items-center gap-2 text-sm font-bold text-daet-ink/70 transition hover:text-daet-ink"
-          >
-            ← Back to Dashboard
-          </Link>
-        </div>
-
-        {/* Stats Cards */}
-        <div className="mb-8 grid grid-cols-2 gap-4 md:grid-cols-5">
-          <Link
-            href="/tours/operator/bookings?status=all"
-            className={`rounded-2xl border p-4 text-center transition hover:shadow-md ${
-              !params.status || params.status === "all"
-                ? "border-daet-forest bg-daet-forest/5"
-                : "border-daet-ink/10 bg-white"
-            }`}
-          >
-            <p className="text-3xl font-black text-daet-ink">{stats.total}</p>
-            <p className="text-xs text-daet-ink/70">Total</p>
-          </Link>
-          <Link
-            href="/tours/operator/bookings?status=pending"
-            className={`rounded-2xl border p-4 text-center transition hover:shadow-md ${
-              params.status === "pending"
-                ? "border-amber-300 bg-amber-50"
-                : "border-amber-200 bg-amber-50"
-            }`}
-          >
-            <p className="text-3xl font-black text-amber-900">{stats.pending}</p>
-            <p className="text-xs text-amber-900">Pending</p>
-          </Link>
-          <Link
-            href="/tours/operator/bookings?status=confirmed"
-            className={`rounded-2xl border p-4 text-center transition hover:shadow-md ${
-              params.status === "confirmed"
-                ? "border-emerald-300 bg-emerald-50"
-                : "border-emerald-200 bg-emerald-50"
-            }`}
-          >
-            <p className="text-3xl font-black text-emerald-900">{stats.confirmed}</p>
-            <p className="text-xs text-emerald-900">Confirmed</p>
-          </Link>
-          <Link
-            href="/tours/operator/bookings?status=completed"
-            className={`rounded-2xl border p-4 text-center transition hover:shadow-md ${
-              params.status === "completed"
-                ? "border-blue-300 bg-blue-50"
-                : "border-blue-200 bg-blue-50"
-            }`}
-          >
-            <p className="text-3xl font-black text-blue-900">{stats.completed}</p>
-            <p className="text-xs text-blue-900">Completed</p>
-          </Link>
-          <Link
-            href="/tours/operator/bookings?status=rejected"
-            className={`rounded-2xl border p-4 text-center transition hover:shadow-md ${
-              params.status === "rejected"
-                ? "border-gray-300 bg-gray-50"
-                : "border-gray-200 bg-gray-50"
-            }`}
-          >
-            <p className="text-3xl font-black text-gray-900">{stats.rejected}</p>
-            <p className="text-xs text-gray-900/60">Rejected</p>
-          </Link>
-        </div>
+        <nav aria-label="Filter by status" className="-mx-4 mb-6 overflow-x-auto px-4 sm:mx-0 sm:px-0">
+          <ul className="flex w-max gap-2">
+            {(
+              [
+                ["all", "All", stats.total],
+                ["pending", "To confirm", stats.pending],
+                ["confirmed", "Confirmed", stats.confirmed],
+                ["completed", "Completed", stats.completed],
+                ["rejected", "Declined", stats.rejected],
+              ] as const
+            ).map(([value, label, count]) => {
+              const active = (params.status ?? "all") === value;
+              return (
+                <li key={value}>
+                  <Link
+                    href={`/tours/operator/bookings?status=${value}`}
+                    aria-current={active ? "page" : undefined}
+                    className={`inline-flex min-h-11 items-center gap-2 rounded-full px-4 text-[15px] font-bold transition active:scale-[0.98] ${active ? "bg-blue-600 text-white" : "bg-white text-daet-ink hover:bg-blue-50"}`}
+                  >
+                    {label}
+                    <span className={`rounded-full px-2 text-sm ${active ? "bg-white/20" : value === "pending" && count > 0 ? "bg-yellow-500 text-slate-950" : "bg-slate-100"}`}>{count}</span>
+                  </Link>
+                </li>
+              );
+            })}
+          </ul>
+        </nav>
 
         {/* Bookings List */}
         {!bookings || bookings.length === 0 ? (
-          <div className="rounded-3xl border border-daet-ink/10 bg-white p-12 text-center shadow-sm">
-            <div className="mx-auto mb-4 grid h-20 w-20 place-items-center rounded-full bg-daet-sand text-4xl">
-              📅
-            </div>
-            <h2 className="text-xl font-black text-daet-ink">No bookings found</h2>
-            <p className="mt-2 text-sm text-daet-ink/70">
-              {params.status && params.status !== "all"
-                ? `No ${params.status} bookings at the moment.`
-                : "You don't have any bookings yet."}
-            </p>
-          </div>
+          <EmptyState
+            icon={<LineIcon name="calendar" />}
+            title="No bookings here"
+            description={params.status && params.status !== "all" ? "Nothing with this status right now." : "Bookings appear here as soon as tourists request a date."}
+          />
         ) : (
           <div className="space-y-4">
             {bookings.map((booking) => {
@@ -321,7 +302,7 @@ export default async function OperatorBookingsPage({
                 <div
                   key={booking.id}
                   id={`booking-${booking.id}`}
-                  className="scroll-mt-6 rounded-3xl border border-daet-ink/10 bg-white p-6 shadow-sm target:ring-2 target:ring-daet-forest/50"
+                  className="scroll-mt-6 rounded-2xl bg-white p-6 target:ring-2 target:ring-daet-forest/50"
                 >
                   <div className="flex gap-6">
                     {/* Package Image */}
@@ -338,7 +319,7 @@ export default async function OperatorBookingsPage({
                       {/* Top Row: Package + Status */}
                       <div className="mb-4 flex items-start justify-between gap-4">
                         <div>
-                          <h3 className="text-xl font-black text-daet-ink">
+                          <h3 className="text-xl font-bold text-daet-ink">
                             {pkg?.title || "Package"}
                           </h3>
                           <p className="mt-1 text-sm font-bold text-daet-forest">
@@ -346,7 +327,7 @@ export default async function OperatorBookingsPage({
                           </p>
                         </div>
                         <span
-                          className={`rounded-full px-4 py-1 text-xs font-bold ${statusColors[booking.status] || "bg-gray-100 text-gray-800"}`}
+                          className={`shrink-0 rounded-full px-3 py-1 text-sm font-bold ${statusColors[booking.status] || "bg-slate-100 text-slate-800"}`}
                         >
                           {statusLabels[booking.status] || booking.status}
                         </span>
@@ -371,20 +352,20 @@ export default async function OperatorBookingsPage({
                         <div>
                           <p className="text-daet-ink/70">Contact</p>
                           <p className="font-bold text-daet-ink">{booking.contact_name}</p>
-                          <p className="text-xs text-daet-ink/70">{booking.contact_phone}</p>
+                          <p className="text-sm text-slate-600">{booking.contact_phone}</p>
                         </div>
                         <div>
                           <p className="text-daet-ink/70">Total Amount</p>
-                          <p className="text-lg font-black text-daet-forest">
-                            ₱{booking.total_amount.toLocaleString()}
+                          <p className="text-lg font-bold text-daet-forest">
+                            {formatPeso(booking.total_amount)}
                           </p>
                         </div>
                       </div>
 
                       {/* Special Requests */}
                       {booking.special_requests && (
-                        <div className="mb-4 rounded-xl bg-daet-sand/30 p-3">
-                          <p className="text-xs font-bold text-daet-ink/70">Special Requests:</p>
+                        <div className="mb-4 rounded-2xl bg-slate-50 p-3">
+                          <p className="text-sm text-slate-600">Special Requests:</p>
                           <p className="mt-1 text-sm text-daet-ink">{booking.special_requests}</p>
                         </div>
                       )}
@@ -392,15 +373,19 @@ export default async function OperatorBookingsPage({
                       {/* Guide Assignment - Show for confirmed bookings */}
                       {booking.status === "confirmed" && (
                         <>
-                          <div className="mb-4 rounded-xl border border-daet-forest/20 bg-daet-forest/5 p-4">
-                            <p className="mb-3 text-xs font-bold uppercase tracking-wide text-daet-ink/70">
+                          <div className="mb-4 rounded-2xl bg-slate-50 p-4">
+                            <p className="mb-3 text-sm text-slate-600">
                               Guide Assignment
                             </p>
+                            {swapByBooking.get(booking.id) ? (
+                              <SwapReview swap={swapByBooking.get(booking.id)!} guides={pickerFor(booking.tour_date)} />
+                            ) : null}
                             <GuideAssignment
                               bookingId={booking.id}
                               currentGuideId={booking.assigned_guide_id}
                               availableGuides={availableGuides || []}
                               availability={availabilityFor(booking.tour_date)}
+                              busy={busyFor(booking.tour_date)}
                             />
                           </div>
 
@@ -420,7 +405,7 @@ export default async function OperatorBookingsPage({
                       )}
 
                       {(booking.status === "cancelled" || booking.status === "rejected") && booking.cancellation_reason ? (
-                        <p className="mb-4 rounded-xl bg-daet-sand/40 p-3 text-sm text-daet-ink">
+                        <p className="mb-4 rounded-2xl bg-slate-50 p-3 text-sm text-daet-ink">
                           <span className="font-bold">{booking.status === "cancelled" ? "Cancellation reason" : "Declined because"}:</span>{" "}
                           {booking.cancellation_reason}
                         </p>
@@ -443,8 +428,11 @@ export default async function OperatorBookingsPage({
                       ) : null}
 
                       {booking.status !== "cancelled" && booking.status !== "rejected" ? (
-                        <div className="mb-3">
+                        <div className="mb-3 flex flex-wrap gap-2">
                           <OpenChatButton bookingId={booking.id} label="Message tourist" variant="ghost" />
+                          {booking.assigned_guide_id ? (
+                            <OpenChatButton target={{ kind: "operator_guide", guideId: booking.assigned_guide_id }} label="Message guide" variant="ghost" />
+                          ) : null}
                         </div>
                       ) : null}
 

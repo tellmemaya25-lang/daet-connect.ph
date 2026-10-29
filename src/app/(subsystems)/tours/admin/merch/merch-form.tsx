@@ -79,7 +79,7 @@ export function MerchForm({
         <Link href={operator ? "/tours/operator/merch" : "/tours/admin/merch"} className="inline-flex min-h-11 items-center justify-center rounded-full border border-daet-ink/20 px-6 text-sm font-bold text-daet-ink hover:bg-daet-sand">
           Cancel
         </Link>
-        <button type="submit" disabled={pending} className="inline-flex min-h-11 items-center justify-center rounded-full bg-daet-forest px-6 text-sm font-bold text-white hover:bg-daet-ink disabled:opacity-60">
+        <button type="submit" disabled={pending} className="inline-flex min-h-11 items-center justify-center rounded-full bg-daet-forest px-6 text-sm font-bold text-white hover:bg-blue-700 disabled:opacity-60">
           {pending ? "Saving…" : operator ? (item ? "Save and resubmit" : "Submit for approval") : item ? "Save changes" : "Add product"}
         </button>
       </div>

@@ -66,7 +66,7 @@ export default async function AdminOperatorQueuePage({
     return (
       <PageFrame adminNav>
         <div className="mx-auto max-w-2xl py-8">
-          <h1 className="mb-4 text-3xl font-black tracking-tight text-daet-ink">Operator applications</h1>
+          <h1 className="display-2 mb-4 text-daet-ink">Operator applications</h1>
           <Notice variant="error" title="Server storage access is not configured">
             Set the service-role key on the server. It is required to make short-lived links to private application documents.
           </Notice>
@@ -130,11 +130,10 @@ export default async function AdminOperatorQueuePage({
     <PageFrame adminNav>
       <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <p className="text-xs font-black uppercase tracking-[0.18em] text-daet-leaf">Tourism Office</p>
-          <h1 className="mt-2 text-3xl font-black tracking-tight text-daet-ink sm:text-4xl">Operator applications</h1>
+          <h1 className="display-2 mt-2 text-daet-ink">Operator applications</h1>
           <p className="mt-2 max-w-2xl text-sm leading-6 text-daet-ink/65">Review the submitted business details and documents, then approve or return the application with a clear reason.</p>
         </div>
-        <span className="inline-flex min-h-10 items-center self-start rounded-full bg-amber-50 px-4 text-sm font-bold text-amber-900 sm:self-auto">Pending · page {page}</span>
+        <span className="inline-flex min-h-10 items-center self-start rounded-full bg-yellow-50 px-4 text-sm font-bold text-yellow-900 sm:self-auto">Pending · page {page}</span>
       </div>
 
       <Notice variant="info" className="mb-6">
@@ -142,9 +141,9 @@ export default async function AdminOperatorQueuePage({
       </Notice>
 
       {applications.length === 0 ? (
-        <section className="rounded-3xl border border-daet-ink/10 bg-white px-6 py-14 text-center shadow-sm">
-          <span className="mx-auto grid h-14 w-14 place-items-center rounded-2xl bg-emerald-50 text-2xl text-emerald-700" aria-hidden="true">✓</span>
-          <h2 className="mt-4 text-xl font-black text-daet-ink">You’re all caught up</h2>
+        <section className="rounded-2xl bg-white px-6 py-14 text-center">
+          <span className="mx-auto grid h-14 w-14 place-items-center rounded-2xl bg-green-50 text-2xl text-green-700" aria-hidden="true">✓</span>
+          <h2 className="mt-4 text-xl font-bold text-daet-ink">You’re all caught up</h2>
           <p className="mt-2 text-sm text-daet-ink/70">There are no pending operator applications on this page.</p>
         </section>
       ) : (

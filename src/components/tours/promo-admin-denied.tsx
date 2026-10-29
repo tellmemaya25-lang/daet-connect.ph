@@ -19,13 +19,11 @@ export function PromoAdminDenied({ message, next }: { message: string; next: str
 }
 
 export function AdminPageHeading({
-  eyebrow,
   title,
   backHref,
   backLabel,
   action,
 }: {
-  eyebrow: string;
   title: string;
   backHref: string;
   backLabel: string;
@@ -37,11 +35,10 @@ export function AdminPageHeading({
         <Link href={backHref} className="inline-flex min-h-11 items-center text-sm font-bold text-daet-forest hover:underline">
           ← {backLabel}
         </Link>
-        <p className="text-xs font-black uppercase tracking-[0.18em] text-daet-leaf">{eyebrow}</p>
-        <h1 className="mt-1 text-3xl font-black tracking-tight text-daet-ink">{title}</h1>
+        <h1 className="display-2 text-daet-ink">{title}</h1>
       </div>
       {action ? (
-        <Link href={action.href} className="inline-flex min-h-11 items-center justify-center rounded-full bg-daet-forest px-6 text-sm font-bold text-white hover:bg-daet-ink">
+        <Link href={action.href} className="inline-flex min-h-11 items-center justify-center rounded-full bg-blue-600 px-6 text-sm font-bold text-white hover:bg-blue-700">
           {action.label}
         </Link>
       ) : null}

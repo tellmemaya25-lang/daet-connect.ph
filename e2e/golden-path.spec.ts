@@ -20,7 +20,7 @@ test("tourist → guide → admin walkthrough screens", async ({ browser }) => {
 
   // 2. Open a package and reach the booking form with open dates.
   await page.goto("/tours/packages/aa000000-0000-4000-8000-000000000001", { waitUntil: "networkidle" });
-  await page.getByRole("link", { name: /book this experience/i }).click();
+  await page.getByRole("link", { name: /book this trip/i }).click();
   await expect(page).toHaveURL(/\/book$/);
   await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
   await checkA11y(page, "booking form");
@@ -66,8 +66,14 @@ test("guide can mark a day available", async ({ browser }) => {
   await signInAs(context, "guide");
   const page = await context.newPage();
   await page.goto("/tours/guide/dashboard", { waitUntil: "networkidle" });
-  // Past days are disabled; pick the first future day that is not set yet.
-  const day = page.locator('button[aria-label$=": not set"]:not([disabled])').first();
+  // Past days are disabled, so near month end today's month can run out of open days.
+  // Next month is always fully open; pick its first day that is not set yet.
+  const grid = page.getByRole("grid");
+  const currentMonth = (await grid.getAttribute("aria-label")) ?? "";
+  await page.getByRole("link", { name: "Next month" }).click();
+  await expect(page).toHaveURL(/[?&]month=\d{4}-\d{2}/);
+  await expect(grid).not.toHaveAttribute("aria-label", currentMonth);
+  const day = grid.locator('button[aria-label$=": not set"]:not([disabled])').first();
   const label = (await day.getAttribute("aria-label")) ?? "";
   await day.click();
   await expect(page.getByRole("button", { name: label.replace("not set", "available") })).toBeVisible();

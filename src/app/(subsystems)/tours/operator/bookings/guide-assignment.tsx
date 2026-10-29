@@ -1,7 +1,9 @@
 "use client";
 
 import { useState } from "react";
+import { useFeedback } from "@/components/ui/feedback";
 import { useRouter } from "next/navigation";
+import { BUSY_LABELS, type BusyReason } from "@/lib/tours/guide-swap";
 import { assignGuideToBooking } from "./actions";
 
 type GuideAssignmentProps = {
@@ -10,6 +12,8 @@ type GuideAssignmentProps = {
   availableGuides: Array<{ id: string; full_name: string; contact_phone: string }>;
   /** Guide id → marked available (true) / unavailable (false) on the tour date; missing = not set. */
   availability?: Record<string, boolean>;
+  /** R6: why each guide can't take the tour date (from tours_guides_free_on); null = free, missing = unknown. */
+  busy?: Record<string, BusyReason | null>;
 };
 
 export function GuideAssignment({
@@ -17,8 +21,11 @@ export function GuideAssignment({
   currentGuideId,
   availableGuides,
   availability = {},
+  busy = {},
 }: GuideAssignmentProps) {
+  const blocked = (id: string) => id !== currentGuideId && Boolean(busy[id]);
   const router = useRouter();
+  const { toast, confirm } = useFeedback();
   const [selectedGuideId, setSelectedGuideId] = useState(currentGuideId || "");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -48,7 +55,7 @@ export function GuideAssignment({
   };
 
   const handleUnassign = async () => {
-    if (!confirm("Are you sure you want to unassign this guide?")) {
+    if (!(await confirm({ title: "Unassign this guide?", confirmLabel: "Unassign" }))) {
       return;
     }
 
@@ -68,7 +75,7 @@ export function GuideAssignment({
 
   if (availableGuides.length === 0) {
     return (
-      <div className="rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800">
+      <div className="rounded-2xl bg-yellow-50 p-3 text-sm text-yellow-800">
         No approved guides available. Guides must be approved before assignment.
       </div>
     );
@@ -77,7 +84,7 @@ export function GuideAssignment({
   return (
     <div className="space-y-3">
       {error && (
-        <div className="rounded-xl border border-rose-200 bg-rose-50 p-3 text-sm text-rose-800">
+        <div className="rounded-2xl bg-red-50 p-3 text-sm text-red-800">
           {error}
         </div>
       )}
@@ -88,25 +95,28 @@ export function GuideAssignment({
           value={selectedGuideId}
           onChange={(e) => setSelectedGuideId(e.target.value)}
           disabled={isSubmitting}
-          className="flex-1 rounded-xl border border-daet-ink/20 px-4 py-2 text-sm focus:border-daet-forest focus:outline-none focus:ring-2 focus:ring-daet-forest/20"
+          className="flex-1 rounded-2xl border border-daet-ink/20 min-h-11 px-4 py-2 text-base focus:border-daet-forest focus:outline-none focus:ring-2 focus:ring-daet-forest/20"
         >
           <option value="">Select a guide...</option>
           {[...availableGuides]
-            .sort((a, b) => rank(availability[a.id]) - rank(availability[b.id]))
-            .map((guide) => (
-              <option key={guide.id} value={guide.id}>
-                {availability[guide.id] === true ? "✓ " : availability[guide.id] === false ? "✕ " : ""}
-                {guide.full_name} - {guide.contact_phone}
-                {availability[guide.id] === false ? " (not available)" : ""}
-              </option>
-            ))}
+            .sort((a, b) => Number(blocked(a.id)) - Number(blocked(b.id)) || rank(availability[a.id]) - rank(availability[b.id]))
+            .map((guide) => {
+              const reason = guide.id === currentGuideId ? null : busy[guide.id];
+              return (
+                <option key={guide.id} value={guide.id} disabled={Boolean(reason)}>
+                  {reason ? "✕ " : availability[guide.id] === true ? "✓ " : availability[guide.id] === false ? "✕ " : ""}
+                  {guide.full_name} - {guide.contact_phone}
+                  {reason ? ` (${BUSY_LABELS[reason]})` : availability[guide.id] === false ? " (not available)" : ""}
+                </option>
+              );
+            })}
         </select>
 
         {currentGuideId ? (
           <button
             onClick={handleUnassign}
             disabled={isSubmitting}
-            className="rounded-full border border-gray-300 bg-white px-4 py-2 text-sm font-bold text-gray-700 transition hover:bg-gray-50 disabled:opacity-50"
+            className="inline-flex min-h-11 items-center rounded-full bg-slate-100 px-4 text-sm font-bold text-daet-ink transition hover:bg-slate-200 disabled:opacity-50"
           >
             {isSubmitting ? "Unassigning..." : "Unassign"}
           </button>
@@ -114,7 +124,7 @@ export function GuideAssignment({
           <button
             onClick={handleAssign}
             disabled={isSubmitting || !selectedGuideId}
-            className="rounded-full bg-daet-forest px-6 py-2 text-sm font-bold text-white transition hover:bg-daet-ink disabled:opacity-50"
+            className="inline-flex min-h-11 items-center justify-center rounded-full bg-daet-forest px-6 py-2 text-sm font-bold text-white transition hover:bg-blue-700 disabled:opacity-50"
           >
             {isSubmitting ? "Assigning..." : "Assign"}
           </button>
@@ -122,7 +132,7 @@ export function GuideAssignment({
       </div>
 
       {selectedGuideId && availability[selectedGuideId] === false && selectedGuideId !== currentGuideId ? (
-        <p className="text-sm font-bold text-amber-800">This guide marked the tour date as not available. Message them before assigning.</p>
+        <p className="text-sm font-bold text-yellow-800">This guide marked the tour date as not available. Message them before assigning.</p>
       ) : null}
 
       {currentGuideId && (

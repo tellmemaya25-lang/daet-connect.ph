@@ -1,3 +1,4 @@
+import { formatPeso } from "@/lib/money";
 import type { LatLng } from "@/lib/maps/geo";
 import {
   addDays,
@@ -71,7 +72,7 @@ export function validatePlan(plan: Plan, attractions: Map<string, PlannerAttract
       const { hours } = effectiveHours(attraction);
       if (!openThroughout(hours, day.date, block.start, block.end)) issues.push({ day: d, block: b, message: `${attraction.name} is not open for the whole visit.` });
       const expectedCost = visitCost(attraction, prefs.groupSize);
-      if (Math.abs(block.cost - expectedCost) > 0.005) issues.push({ day: d, block: b, message: `Entrance cost for ${attraction.name} should be ₱${expectedCost}.` });
+      if (Math.abs(block.cost - expectedCost) > 0.005) issues.push({ day: d, block: b, message: `Entrance cost for ${attraction.name} should be ${formatPeso(expectedCost)}.` });
       if (block.end - block.start >= DAY_TRIP_MINUTES && block.start <= LUNCH.from && block.end >= LUNCH.until) lunchOk = true;
       dayCost += expectedCost;
       previousEnd = block.end;
@@ -80,7 +81,7 @@ export function validatePlan(plan: Plan, attractions: Map<string, PlannerAttract
 
     // Lunch: a lunch block, a day trip covering midday, or a free hour inside 11:30–13:30.
     if (needsLunch && !lunchOk && !hasFreeLunchHour(day.blocks)) issues.push({ day: d, message: "Leave time for lunch between 11:30 AM and 1:30 PM." });
-    if (dayCost > prefs.budgetPerDay * prefs.groupSize + 0.005) issues.push({ day: d, message: `Entrance fees (₱${dayCost}) are over the day's budget.` });
+    if (dayCost > prefs.budgetPerDay * prefs.groupSize + 0.005) issues.push({ day: d, message: `Entrance fees (${formatPeso(dayCost)}) are over the day's budget.` });
   });
 
   const totals = planTotals(plan.days);

@@ -33,7 +33,7 @@ export function ReviewForm({ bookingId }: { bookingId: string }) {
               aria-pressed={rating === value}
               onClick={() => setRating(value)}
               onMouseEnter={() => setHover(value)}
-              className={`grid h-11 w-11 place-items-center rounded-full text-3xl transition hover:bg-daet-sand ${value <= shown ? "text-amber-500" : "text-daet-ink/20"}`}
+              className={`grid h-11 w-11 place-items-center rounded-full text-3xl transition hover:bg-daet-sand ${value <= shown ? "text-yellow-500" : "text-daet-ink/20"}`}
             >
               ★
             </button>

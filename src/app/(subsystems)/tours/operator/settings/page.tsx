@@ -35,9 +35,6 @@ export default async function OperatorSettingsPage() {
   const supabase = await createSupabaseServerClient();
 
   // Debug logging
-  console.log("🔍 Settings Page Debug:");
-  console.log("  User ID:", session.user.id);
-  console.log("  OPERATOR_USER_ID_COLUMN:", OPERATOR_USER_ID_COLUMN);
 
   // Get operator profile - select specific columns to avoid missing column errors
   const { data: operator, error } = await supabase
@@ -46,11 +43,9 @@ export default async function OperatorSettingsPage() {
     .eq(OPERATOR_USER_ID_COLUMN, session.user.id)
     .maybeSingle();
 
-  console.log("  Query result:", operator);
-  console.log("  Query error:", error);
 
   if (error || !operator) {
-    console.error("❌ Settings query error:", error);
+    console.error("Settings query error:", error);
     return (
       <PageFrame>
         <Notice variant="error" title="Operator profile not found">
@@ -75,7 +70,7 @@ export default async function OperatorSettingsPage() {
       <div className="mx-auto max-w-4xl">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-4xl font-black text-daet-ink">Operator Settings</h1>
+          <h1 className="display-2 text-daet-ink">Operator Settings</h1>
           <p className="mt-2 text-sm text-daet-ink/70">
             Manage your business profile and payment details
           </p>
@@ -92,8 +87,8 @@ export default async function OperatorSettingsPage() {
         </div>
 
         {/* Business Info */}
-        <div className="mb-6 rounded-3xl border border-daet-ink/10 bg-white p-6 shadow-sm">
-          <h2 className="mb-4 text-xl font-black text-daet-ink">Business Information</h2>
+        <div className="mb-6 rounded-2xl bg-white p-6">
+          <h2 className="mb-4 text-xl font-bold text-daet-ink">Business Information</h2>
           <div className="grid grid-cols-2 gap-4 text-sm">
             <div>
               <p className="text-daet-ink/70">Business Name</p>
@@ -109,7 +104,7 @@ export default async function OperatorSettingsPage() {
             </div>
             <div>
               <p className="text-daet-ink/70">Status</p>
-              <p className="font-bold capitalize text-emerald-700">
+              <p className="font-bold capitalize text-green-700">
                 {operator.accreditation_status}
               </p>
             </div>
@@ -117,9 +112,9 @@ export default async function OperatorSettingsPage() {
         </div>
 
         {/* Payment Settings Form */}
-        <div className="rounded-3xl border border-daet-ink/10 bg-white p-6 shadow-sm">
+        <div className="rounded-2xl bg-white p-6">
           <div className="mb-4">
-            <h2 className="text-xl font-black text-daet-ink">Payment Details</h2>
+            <h2 className="text-xl font-bold text-daet-ink">Payment Details</h2>
             <p className="mt-1 text-sm text-daet-ink/70">
               Set up where tourists should send payments for confirmed bookings
             </p>

@@ -50,7 +50,7 @@ function Toast({
 }) {
   return (
     <div
-      className={`fixed bottom-4 right-4 px-6 py-4 rounded-lg text-white shadow-lg z-50 flex items-center gap-3 animate-in fade-in slide-in-from-bottom-4 duration-300 ${
+      className={`fixed bottom-4 right-4 px-6 py-4 rounded-2xl text-white shadow-[var(--shadow-float)] z-50 flex items-center gap-3 animate-in fade-in slide-in-from-bottom-4 duration-300 ${
         type === "success" ? "bg-green-500" : "bg-red-500"
       }`}
     >
@@ -79,9 +79,9 @@ function Toast({
 function LoadingOverlay() {
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg shadow-lg p-8 flex flex-col items-center gap-4">
+      <div className="bg-white rounded-2xl p-8 flex flex-col items-center gap-4">
         <div className="animate-spin">
-          <svg className="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg className="w-8 h-8 text-daet-leaf" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
             <path
               className="opacity-75"
@@ -90,7 +90,7 @@ function LoadingOverlay() {
             />
           </svg>
         </div>
-        <p className="text-gray-700 font-medium">Saving changes...</p>
+        <p className="text-daet-ink/80 font-medium">Saving changes...</p>
       </div>
     </div>
   );
@@ -101,7 +101,7 @@ function LoadingOverlay() {
  */
 function ErrorBanner({ message, onDismiss }: { message: string; onDismiss: () => void }) {
   return (
-    <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg flex items-start gap-4">
+    <div className="mb-6 p-4 bg-red-50 rounded-2xl flex items-start gap-4">
       <svg className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
         <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
       </svg>
@@ -128,7 +128,7 @@ function ConcurrencyConflictBanner({
   onDismiss: () => void;
 }) {
   return (
-    <div className="mb-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg flex items-start gap-4">
+    <div className="mb-6 p-4 bg-yellow-50 rounded-2xl flex items-start gap-4">
       <svg className="w-5 h-5 text-yellow-600 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
         <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
       </svg>
@@ -137,13 +137,13 @@ function ConcurrencyConflictBanner({
         <div className="flex gap-2">
           <button
             onClick={onReload}
-            className="px-3 py-1 bg-yellow-600 text-white text-sm rounded hover:bg-yellow-700 transition"
+            className="inline-flex min-h-11 items-center justify-center px-3 py-1 bg-yellow-600 text-white text-sm rounded-2xl hover:bg-yellow-700 transition"
           >
             Reload
           </button>
           <button
             onClick={onDismiss}
-            className="px-3 py-1 border border-yellow-300 text-yellow-700 text-sm rounded hover:bg-yellow-100 transition"
+            className="inline-flex min-h-11 items-center justify-center px-3 py-1 border border-yellow-300 text-yellow-700 text-sm rounded-2xl hover:bg-yellow-100 transition"
           >
             Dismiss
           </button>
@@ -454,7 +454,7 @@ export function EditPackageForm({ packageData }: EditPackageFormProps) {
           type="button"
           onClick={handleSaveDraft}
           disabled={isButtonDisabled}
-          className="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg font-medium hover:bg-gray-50 transition disabled:opacity-50 disabled:cursor-not-allowed"
+          className="inline-flex min-h-11 items-center justify-center px-6 py-2 border border-daet-ink/20 text-daet-ink/80 rounded-2xl font-medium hover:bg-slate-50 transition disabled:opacity-50 disabled:cursor-not-allowed"
         >
           Save as Draft
         </button>
@@ -463,7 +463,7 @@ export function EditPackageForm({ packageData }: EditPackageFormProps) {
             type="button"
             onClick={handleSubmitForReview}
             disabled={isButtonDisabled}
-            className="px-6 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
+            className="inline-flex min-h-11 items-center justify-center px-6 py-2 bg-daet-forest text-white rounded-2xl font-medium hover:bg-daet-leaf transition disabled:opacity-50 disabled:cursor-not-allowed"
           >
             Submit for Review
           </button>

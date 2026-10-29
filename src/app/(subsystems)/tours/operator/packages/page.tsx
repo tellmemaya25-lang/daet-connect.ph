@@ -1,8 +1,8 @@
+import { LineIcon } from "@/components/ui/icons";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { PageFrame } from "@/components/ui/page-frame";
 import { Notice } from "@/components/ui/notice";
-import { LogoutButton } from "@/components/ui/logout-button";
 import { DashboardHeader } from "@/components/ui/dashboard-header";
 import { canAccessOperatorDashboard } from "@/lib/tours/operator-access";
 import {
@@ -85,10 +85,6 @@ export default async function OperatorPackagesPage({
   const packagesResult = await listOperatorPackages();
   const packages = packagesResult.success ? packagesResult.data : [];
 
-  console.log('Operator packages loaded:', packages?.length || 0);
-  if (packages && packages.length > 0) {
-    console.log('First package:', JSON.stringify(packages[0], null, 2));
-  }
 
   const params = await searchParams;
   const justSubmitted = params.submitted === "true";
@@ -100,10 +96,7 @@ export default async function OperatorPackagesPage({
       <div className="mx-auto max-w-6xl">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between mb-6">
           <div className="flex-1">
-            <p className="text-xs font-black uppercase tracking-[0.18em] text-daet-leaf">
-              Package management
-            </p>
-            <h1 className="mt-2 text-3xl font-black text-daet-ink">Your packages</h1>
+            <h1 className="display-2 text-daet-ink">Your packages</h1>
             <p className="mt-2 text-sm leading-6 text-daet-ink/65">
               Create and manage tour packages for tourists to book.
             </p>
@@ -111,7 +104,7 @@ export default async function OperatorPackagesPage({
           <div className="flex gap-3">
             <Link
               href="/tours/operator/packages/create"
-              className="inline-flex min-h-12 items-center justify-center rounded-full bg-daet-forest px-6 text-sm font-black text-white transition hover:bg-daet-ink"
+              className="inline-flex min-h-12 items-center justify-center rounded-full bg-daet-forest px-6 text-sm font-bold text-white transition hover:bg-blue-700"
             >
               + Create package
             </Link>
@@ -125,20 +118,20 @@ export default async function OperatorPackagesPage({
         )}
 
         {!packages || packages.length === 0 ? (
-          <section className="mt-8 rounded-3xl border border-daet-ink/10 bg-white px-6 py-14 text-center shadow-sm">
+          <section className="mt-8 rounded-2xl bg-white px-6 py-14 text-center">
             <span
               className="mx-auto grid h-14 w-14 place-items-center rounded-2xl bg-daet-sand text-2xl"
               aria-hidden="true"
             >
-              📦
+              <LineIcon name="box" className="inline-block h-[1.1em] w-[1.1em] align-[-0.15em]" />
             </span>
-            <h2 className="mt-4 text-xl font-black text-daet-ink">No packages yet</h2>
+            <h2 className="mt-4 text-xl font-bold text-daet-ink">No packages yet</h2>
             <p className="mt-2 text-sm text-daet-ink/70">
               Create your first tour package to start receiving bookings.
             </p>
             <Link
               href="/tours/operator/packages/create"
-              className="mt-6 inline-flex min-h-12 items-center justify-center rounded-full bg-daet-forest px-8 text-sm font-black text-white transition hover:bg-daet-ink"
+              className="mt-6 inline-flex min-h-12 items-center justify-center rounded-full bg-daet-forest px-8 text-sm font-bold text-white transition hover:bg-blue-700"
             >
               Create first package
             </Link>
@@ -148,7 +141,7 @@ export default async function OperatorPackagesPage({
             {packages.map((pkg) => (
               <article
                 key={pkg.id}
-                className="overflow-hidden rounded-3xl border border-daet-ink/10 bg-white shadow-sm transition hover:shadow-md"
+                className="overflow-hidden rounded-2xl bg-white transition"
               >
                 {/* Cover Image */}
                 <div className="relative aspect-video overflow-hidden bg-gradient-to-br from-daet-forest to-daet-leaf">
@@ -160,21 +153,21 @@ export default async function OperatorPackagesPage({
                     />
                   ) : (
                     <div className="flex h-full items-center justify-center text-4xl text-white/20">
-                      📷
+                      <LineIcon name="camera" className="inline-block h-[1.1em] w-[1.1em] align-[-0.15em]" />
                     </div>
                   )}
                 </div>
                 <div className="p-5">
                   <div className="flex items-start justify-between gap-2">
-                    <h3 className="flex-1 font-black text-daet-ink">{pkg.title}</h3>
+                    <h3 className="flex-1 font-bold text-daet-ink">{pkg.title}</h3>
                     <span
                       className={`rounded-full px-3 py-1 text-xs font-bold ${
                         pkg.status === "published"
-                          ? "bg-emerald-100 text-emerald-800"
+                          ? "bg-green-100 text-green-800"
                           : pkg.status === "pending_review"
-                            ? "bg-amber-100 text-amber-900"
+                            ? "bg-yellow-100 text-yellow-900"
                             : pkg.status === "archived"
-                              ? "bg-gray-100 text-gray-800"
+                              ? "bg-slate-100 text-slate-800"
                               : "bg-daet-sand text-daet-ink/70"
                       }`}
                     >
@@ -187,13 +180,13 @@ export default async function OperatorPackagesPage({
                             : "Draft"}
                     </span>
                   </div>
-                  <p className="mt-2 text-sm text-daet-ink/70">📍 {pkg.location_name}</p>
-                  <p className="mt-1 text-xs text-daet-ink/70">
+                  <p className="mt-2 text-sm text-daet-ink/70"><LineIcon name="pin" className="inline-block h-[1.1em] w-[1.1em] align-[-0.15em]" /> {pkg.location_name}</p>
+                  <p className="mt-1 text-sm text-slate-600">
                     Updated {new Date(pkg.updated_at).toLocaleDateString()}
                   </p>
                   <Link
                     href={`/tours/operator/packages/${pkg.id}`}
-                    className="mt-4 inline-flex min-h-10 w-full items-center justify-center rounded-full bg-daet-forest/10 text-sm font-bold text-daet-forest transition hover:bg-daet-forest/20"
+                    className="mt-4 inline-flex min-h-10 w-full items-center justify-center rounded-full bg-daet-forest/10 text-sm font-bold text-daet-leaf transition hover:bg-daet-forest/20"
                   >
                     View details →
                   </Link>

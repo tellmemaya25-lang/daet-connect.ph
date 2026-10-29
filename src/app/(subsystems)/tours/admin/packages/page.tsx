@@ -1,6 +1,8 @@
+import { formatPeso } from "@/lib/money";
 import { createSupabaseServerClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
+import { PageFrame } from '@/components/ui/page-frame';
 
 export default async function AdminPackagesPage() {
   const supabase = await createSupabaseServerClient();
@@ -99,13 +101,14 @@ export default async function AdminPackagesPage() {
   const draftPackages = packagesWithOperators?.filter(p => p.status === 'draft') || [];
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
+    <PageFrame adminNav>
+    <div>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Back Button */}
         <div className="mb-4">
           <Link
             href="/tours/admin"
-            className="inline-flex items-center text-sm font-medium text-gray-600 hover:text-gray-900"
+            className="inline-flex items-center text-sm font-medium text-daet-ink/80 hover:text-daet-ink"
           >
             <svg className="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -116,21 +119,21 @@ export default async function AdminPackagesPage() {
 
         <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Package Management</h1>
-            <p className="mt-2 text-gray-600">Review and manage tour packages</p>
+            <h1 className="display-2 text-daet-ink">Package Management</h1>
+            <p className="mt-2 text-daet-ink/80">Review and manage tour packages</p>
           </div>
         </div>
 
         {/* Pending Packages */}
         <section className="mb-12">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-semibold text-gray-900">
+            <h2 className="text-xl font-bold text-daet-ink">
               Pending Approval ({pendingPackages.length})
             </h2>
           </div>
           
           {pendingPackages.length === 0 ? (
-            <div className="bg-white rounded-lg shadow p-6 text-center text-gray-500">
+            <div className="bg-white rounded-2xl p-6 text-center text-daet-ink/70">
               No pending packages
             </div>
           ) : (
@@ -145,13 +148,13 @@ export default async function AdminPackagesPage() {
         {/* Published Packages */}
         <section className="mb-12">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-semibold text-gray-900">
+            <h2 className="text-xl font-bold text-daet-ink">
               Published ({publishedPackages.length})
             </h2>
           </div>
           
           {publishedPackages.length === 0 ? (
-            <div className="bg-white rounded-lg shadow p-6 text-center text-gray-500">
+            <div className="bg-white rounded-2xl p-6 text-center text-daet-ink/70">
               No published packages
             </div>
           ) : (
@@ -167,7 +170,7 @@ export default async function AdminPackagesPage() {
         {archivedPackages.length > 0 && (
           <section>
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-semibold text-gray-900">
+              <h2 className="text-xl font-bold text-daet-ink">
                 Archived ({archivedPackages.length})
               </h2>
             </div>
@@ -181,6 +184,7 @@ export default async function AdminPackagesPage() {
         )}
       </div>
     </div>
+    </PageFrame>
   );
 }
 
@@ -188,7 +192,7 @@ function PackageCard({ package: pkg }: { package: any }) {
   const statusColors = {
     pending: 'bg-yellow-100 text-yellow-800',
     published: 'bg-green-100 text-green-800',
-    archived: 'bg-gray-100 text-gray-800',
+    archived: 'bg-slate-100 text-daet-ink',
   };
 
   const operator = pkg.tours_operators;
@@ -196,20 +200,20 @@ function PackageCard({ package: pkg }: { package: any }) {
   const contactName = operator?.profiles?.full_name || 'Unknown';
 
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+    <div className="bg-white rounded-2xl border border-daet-ink/20 p-6">
       <div className="flex items-start justify-between">
         <div className="flex-1">
           <div className="flex items-center gap-3 mb-2">
-            <h3 className="text-lg font-semibold text-gray-900">{pkg.title}</h3>
+            <h3 className="text-lg font-bold text-daet-ink">{pkg.title}</h3>
             <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${statusColors[pkg.status as keyof typeof statusColors]}`}>
               {pkg.status}
             </span>
           </div>
           
-          <div className="space-y-1 text-sm text-gray-600">
+          <div className="space-y-1 text-sm text-daet-ink/80">
             <p><span className="font-medium">Operator:</span> {operatorName}</p>
             <p><span className="font-medium">Contact:</span> {contactName}</p>
-            <p><span className="font-medium">Base Price:</span> ₱{pkg.base_price?.toLocaleString() || 'N/A'}</p>
+            <p><span className="font-medium">Base Price:</span> {pkg.base_price == null ? 'N/A' : formatPeso(pkg.base_price)}</p>
             <p><span className="font-medium">Submitted:</span> {new Date(pkg.created_at).toLocaleDateString()}</p>
           </div>
         </div>
@@ -217,7 +221,7 @@ function PackageCard({ package: pkg }: { package: any }) {
         <div className="ml-4">
           <Link
             href={`/tours/admin/packages/${pkg.id}`}
-            className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
+            className="min-h-11 inline-flex items-center px-4 py-2 border border-daet-ink/20 rounded-2xl text-sm font-medium text-daet-ink/80 bg-white hover:bg-slate-50"
           >
             Review
           </Link>

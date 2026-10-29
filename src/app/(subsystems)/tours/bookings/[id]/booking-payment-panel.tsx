@@ -1,3 +1,4 @@
+import { formatPeso } from "@/lib/money";
 import { Badge, type BadgeTone } from "@/components/ui/badge";
 import { Card, CardHeader } from "@/components/ui/card";
 import { Notice } from "@/components/ui/notice";
@@ -48,7 +49,7 @@ export type PanelProof = {
   submitted_at: string;
 };
 
-const peso = (value: number) => `₱${value.toLocaleString("en-PH", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+const peso = formatPeso;
 const date = (value: string | null) =>
   value ? new Intl.DateTimeFormat("en-PH", { dateStyle: "medium", timeZone: "Asia/Manila" }).format(new Date(value)) : "—";
 
@@ -96,7 +97,7 @@ export function BookingPaymentPanel({
 
   return (
     <Card id="payment" className="mb-6 scroll-mt-6" aria-labelledby="payment-heading">
-      <CardHeader eyebrow="Payment" title={<span id="payment-heading">Pay for this tour</span>} action={<Badge tone={status.tone}>{status.label}</Badge>} />
+      <CardHeader title={<span id="payment-heading">Pay for this tour</span>} action={<Badge tone={status.tone}>{status.label}</Badge>} />
 
       {paymentReturn === "success" && booking.payment_status !== "paid" ? (
         <Notice variant="info" title="Payment received by PayMongo" className="mb-4">
@@ -114,18 +115,18 @@ export function BookingPaymentPanel({
         </Notice>
       ) : null}
 
-      <dl className="grid grid-cols-3 gap-2 rounded-2xl bg-daet-sand/50 p-4 text-center">
+      <dl className="grid grid-cols-3 gap-2 rounded-2xl bg-slate-50 p-4 text-center">
         <div>
-          <dt className="text-xs font-bold text-daet-ink/70">Total</dt>
-          <dd className="mt-1 font-black text-daet-ink">{peso(Number(booking.total_amount))}</dd>
+          <dt className="text-sm text-slate-600">Total</dt>
+          <dd className="mt-1 font-bold text-daet-ink">{peso(Number(booking.total_amount))}</dd>
         </div>
         <div>
-          <dt className="text-xs font-bold text-daet-ink/70">Paid</dt>
-          <dd className="mt-1 font-black text-emerald-700">{peso(Number(booking.total_paid ?? 0))}</dd>
+          <dt className="text-sm text-slate-600">Paid</dt>
+          <dd className="mt-1 font-bold text-green-700">{peso(Number(booking.total_paid ?? 0))}</dd>
         </div>
         <div>
-          <dt className="text-xs font-bold text-daet-ink/70">Balance</dt>
-          <dd className="mt-1 font-black text-daet-forest">{peso(remaining)}</dd>
+          <dt className="text-sm text-slate-600">Balance</dt>
+          <dd className="mt-1 font-bold text-daet-forest">{peso(remaining)}</dd>
         </div>
       </dl>
 
@@ -141,7 +142,7 @@ export function BookingPaymentPanel({
             <OnlinePayButton bookingId={booking.id} amountLabel={peso(payable.amountPesos)} />
           ) : null}
 
-          <details className="group rounded-2xl border border-daet-ink/10 p-4" open={!onlinePaymentEnabled}>
+          <details className="group rounded-2xl bg-slate-50 p-4" open={!onlinePaymentEnabled}>
             <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between gap-3 font-bold text-daet-ink">
               {onlinePaymentEnabled ? "Paid the operator directly? Upload your receipt" : "Pay the operator and upload your receipt"}
               <span className="transition group-open:rotate-180" aria-hidden="true">⌄</span>
@@ -167,7 +168,7 @@ export function BookingPaymentPanel({
 
       {proofs.length > 0 ? (
         <section className="mt-6" aria-labelledby="proofs-heading">
-          <h3 id="proofs-heading" className="text-sm font-black uppercase tracking-wide text-daet-ink/70">
+          <h3 id="proofs-heading" className="text-lg font-bold text-daet-ink">
             Receipts you sent
           </h3>
           <ul className="mt-2 divide-y divide-daet-ink/10">
@@ -185,7 +186,7 @@ export function BookingPaymentPanel({
                     Ref {proof.reference_number} · sent {date(proof.submitted_at)}
                   </p>
                   {proof.verification_status === "rejected" && proof.rejection_reason ? (
-                    <p className="mt-1 rounded-xl bg-rose-50 px-3 py-2 text-rose-900">Operator&apos;s note: {proof.rejection_reason}</p>
+                    <p className="mt-1 rounded-2xl bg-red-50 px-3 py-2 text-red-900">Operator&apos;s note: {proof.rejection_reason}</p>
                   ) : null}
                 </li>
               );
@@ -196,7 +197,7 @@ export function BookingPaymentPanel({
 
       {payments.length > 0 ? (
         <section className="mt-6" aria-labelledby="payments-heading">
-          <h3 id="payments-heading" className="text-sm font-black uppercase tracking-wide text-daet-ink/70">
+          <h3 id="payments-heading" className="text-lg font-bold text-daet-ink">
             Payment history
           </h3>
           <ul className="mt-2 divide-y divide-daet-ink/10">
@@ -209,7 +210,7 @@ export function BookingPaymentPanel({
                     {payment.reference_number ? ` · Ref ${payment.reference_number}` : ""}
                   </p>
                 </div>
-                <span className={`shrink-0 font-black ${payment.payment_status === "refunded" ? "text-daet-ink/70 line-through" : "text-emerald-700"}`}>
+                <span className={`shrink-0 font-bold ${payment.payment_status === "refunded" ? "text-daet-ink/70 line-through" : "text-green-700"}`}>
                   {peso(Number(payment.amount))}
                 </span>
               </li>

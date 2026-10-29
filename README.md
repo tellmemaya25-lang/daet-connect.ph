@@ -7,12 +7,16 @@ This repository contains the CONNECT-DAET tours subsystem, including operator an
 1. Install Node.js 20.9+ and run `npm install`.
 2. Copy `.env.example` to `.env.local`; fill in the Supabase URL, anon/publishable key, and service-role key. Never commit `.env.local` or expose the service-role key to browser code.
 3. Create a **private** Supabase Storage bucket named `tours-operator-documents` (or set `TOURS_OPERATOR_DOCUMENTS_BUCKET`). Set its maximum file size to at least 5 MB and allow `image/jpeg`, `image/png`, `image/webp`, and `application/pdf`. The service-role key uploads files from the server; private signed URLs are generated for admins and expire after 10 minutes.
-4. Run `npm run dev`.
+4. Run `npm run dev`. Hot reloading is on: saved changes appear in the browser without a restart. If they don't (Windows, WSL with the project on the Windows drive, Docker, network drives), run `npm run dev:poll` instead, which watches files by polling. A hosted preview (such as the `*.e2b.app` one) must run `npm run dev`, not `npm start`, to hot-reload; `next.config.ts` already allows its origin.
 5. Run `npm test` for unit/component/action tests. `npm run test:e2e` runs the Playwright mobile registration flow in Supabase preview mode; install the browser once with `npx playwright install chromium` if needed.
 
 The app expects the existing `get_my_role()` RPC to return the signed-in user's `profiles.role` value. Registration is limited to `tourist`/`operator` accounts; the role is re-checked on the server. Admin approval sets `profiles.role = 'operator'` and the dashboard also requires an `approved` `tours_operators.accreditation_status` row. The platform-wide sign-in/profile-provisioning flow is not part of this feature; the pages link to `/login`, so wire that path to the shared Supabase Auth experience before launch.
 
 The existing schema should enforce at most one operator application per `user_id` (including rejected applications, which are updated on resubmission). The action checks current status and uses a conditional update, but database uniqueness is still required to prevent simultaneous first submissions from creating duplicates.
+
+## Password reset
+
+`/forgot-password` emails a reset link through Supabase Auth. In the Supabase dashboard (Authentication, URL Configuration) add `<your site URL>/auth/callback` to the allowed redirect URLs, or the link will be rejected. The link lands on `/auth/callback`, which signs the visitor in with the one-time code and sends them to `/reset-password`.
 
 ## Existing schema integration
 
@@ -98,7 +102,8 @@ To turn on push to phones and desktops:
   - keeps entrance fees within the per-person daily budget.
 - **Validator:** `validate.ts` re-checks every plan (opening hours, overlaps, travel, budget, known places, no repeats). Property tests assert that every generated plan passes it.
 - **Editing:** tourists can reorder, swap, remove and add stops. The day is re-timed and re-validated live, and saving re-validates on the server against the current dataset.
-- **Optional AI polish** (`llm.ts`): set `ITINERARY_LLM=on` and `ANTHROPIC_API_KEY`.
+- **24/7 travel assistant** (`src/lib/tours/assistant/`, `/api/assistant`, `/tours/help`): a chat on every page that answers from live data (tours, open dates and seats, prices, places, events, policies) and, for signed-in tourists, their own bookings, payments and tickets. It only reads; buttons under each reply lead to the real booking, payment or ticket pages. For complaints or anything it can't answer, it offers an editable message to the booking's operator or the Daet Tourism Office. Claude (tool runner, streaming) when `ANTHROPIC_API_KEY` is set; `ASSISTANT_LLM=off` disables it and `ASSISTANT_MODEL` overrides the model. Without a key it answers in basic mode. 30 AI messages per person per 10 minutes.
+- **AI trip assistant** (`assistant.ts`, `llm.ts`): "Describe your trip" fills the form from plain English or Taglish, and "Ask the assistant" edits a plan ("add Bagasbas Beach to day 2", "make it relaxed"). With `ANTHROPIC_API_KEY` set, Claude reads the request; without it, built-in rules do. Either way the result is re-validated before it is shown. `ITINERARY_LLM=off` turns the AI off. AI calls are limited to 20 per person per 10 minutes.
   - Claude (`claude-opus-5-5`, low effort, 15 s timeout, structured JSON output) sees only our attraction list and the draft. It may reorder stops and write tips.
   - Its order is re-timed by the engine and must pass the validator; any timeout, refusal or invalid plan keeps the rule-based draft.
   - Results are cached in memory per preference set.
@@ -112,6 +117,8 @@ To turn on push to phones and desktops:
 | E2E + accessibility at 375px (mock Supabase) | `npm run test:e2e:tours` (set `PW_CHROMIUM_PATH` to use a local Chromium) |
 | Database integration (rolls back) | `psql "$DATABASE_URL" -f supabase/tests/integration.sql` |
 | Demo accounts and data for a staging project | `DEMO_PASSWORD=… DEMO_GROUPS=3 npm run seed:demo` |
+| Realistic demo set (5 operators, 8 guides, 10 tourists, bookings) | `DEMO_PROFILE=realistic DEMO_PASSWORD=… npm run seed:demo` |
+| Guide schedule and swap checks (rolled back) | `psql "$DATABASE_URL" -f supabase/tests/guide_swaps.sql` |
 
 - Evaluator walkthroughs and the credentials sheet: `docs/EVALUATION_KIT.md`.
 - Security findings and what to do about them: `docs/SECURITY_REVIEW.md`.

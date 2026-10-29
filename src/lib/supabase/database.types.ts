@@ -551,27 +551,30 @@ export type Database = {
           created_at: string
           guide_id: string | null
           id: string
+          kind: string
           last_message_at: string
           operator_id: string | null
-          tourist_id: string
+          tourist_id: string | null
         }
         Insert: {
           booking_id?: string | null
           created_at?: string
           guide_id?: string | null
           id?: string
+          kind?: string
           last_message_at?: string
           operator_id?: string | null
-          tourist_id: string
+          tourist_id?: string | null
         }
         Update: {
           booking_id?: string | null
           created_at?: string
           guide_id?: string | null
           id?: string
+          kind?: string
           last_message_at?: string
           operator_id?: string | null
-          tourist_id?: string
+          tourist_id?: string | null
         }
         Relationships: [
           {
@@ -731,6 +734,74 @@ export type Database = {
             foreignKeyName: "tours_guide_sensitive_info_guide_id_fkey"
             columns: ["guide_id"]
             isOneToOne: true
+            referencedRelation: "tours_guides"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tours_guide_swap_requests: {
+        Row: {
+          booking_id: string
+          created_at: string
+          decided_at: string | null
+          decided_by: string | null
+          decision_note: string | null
+          from_guide_id: string
+          id: string
+          reason: string
+          status: string
+          to_guide_id: string | null
+        }
+        Insert: {
+          booking_id: string
+          created_at?: string
+          decided_at?: string | null
+          decided_by?: string | null
+          decision_note?: string | null
+          from_guide_id: string
+          id?: string
+          reason: string
+          status?: string
+          to_guide_id?: string | null
+        }
+        Update: {
+          booking_id?: string
+          created_at?: string
+          decided_at?: string | null
+          decided_by?: string | null
+          decision_note?: string | null
+          from_guide_id?: string
+          id?: string
+          reason?: string
+          status?: string
+          to_guide_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tours_guide_swap_requests_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: false
+            referencedRelation: "tours_bookings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tours_guide_swap_requests_decided_by_fkey"
+            columns: ["decided_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tours_guide_swap_requests_from_guide_id_fkey"
+            columns: ["from_guide_id"]
+            isOneToOne: false
+            referencedRelation: "tours_guides"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tours_guide_swap_requests_to_guide_id_fkey"
+            columns: ["to_guide_id"]
+            isOneToOne: false
             referencedRelation: "tours_guides"
             referencedColumns: ["id"]
           },
@@ -1973,6 +2044,24 @@ export type Database = {
           tourist: string
         }[]
       }
+      tours_cancel_guide_swap: {
+        Args: { p_request: string }
+        Returns: undefined
+      }
+      tours_chat_inbox: {
+        Args: never
+        Returns: {
+          booking_id: string
+          conversation_id: string
+          kind: string
+          last_message: string
+          last_message_at: string
+          last_sender_id: string
+          subtitle: string
+          title: string
+          unread: number
+        }[]
+      }
       tours_check_in: {
         Args: {
           p_booking_id: string
@@ -1981,9 +2070,38 @@ export type Database = {
         }
         Returns: string
       }
+      tours_conversation_header: {
+        Args: { p_conversation_id: string }
+        Returns: Json
+      }
       tours_count_booked_seats: {
         Args: { p_date: string; p_package_id: string }
         Returns: number
+      }
+      tours_decide_guide_swap: {
+        Args: {
+          p_approve: boolean
+          p_guide?: string
+          p_note?: string
+          p_request: string
+        }
+        Returns: undefined
+      }
+      tours_guide_busy_reason: {
+        Args: { p_date: string; p_exclude_booking?: string; p_guide: string }
+        Returns: string
+      }
+      tours_guide_is_free: {
+        Args: { p_date: string; p_exclude_booking?: string; p_guide: string }
+        Returns: boolean
+      }
+      tours_guides_free_on: {
+        Args: { p_date: string; p_exclude_booking?: string }
+        Returns: {
+          full_name: string
+          guide_id: string
+          reason: string
+        }[]
       }
       tours_inbox: {
         Args: never
@@ -2039,6 +2157,22 @@ export type Database = {
         Args: { p_booking_id: string }
         Returns: string
       }
+      tours_open_guide_tourist_conversation: {
+        Args: { p_booking_id: string }
+        Returns: string
+      }
+      tours_open_operator_admin_conversation: {
+        Args: { p_operator_id?: string }
+        Returns: string
+      }
+      tours_open_operator_guide_conversation: {
+        Args: { p_guide_id?: string; p_operator_id?: string }
+        Returns: string
+      }
+      tours_open_tourist_office_conversation: {
+        Args: { p_tourist_id?: string }
+        Returns: string
+      }
       tours_peso: { Args: { p_amount: number }; Returns: string }
       tours_record_refund: {
         Args: {
@@ -2059,6 +2193,10 @@ export type Database = {
       }
       tours_request_cancellation: {
         Args: { p_booking_id: string; p_reason: string }
+        Returns: string
+      }
+      tours_request_guide_swap: {
+        Args: { p_booking: string; p_reason: string; p_to_guide: string }
         Returns: string
       }
       tours_resolve_cancellation: {

@@ -13,36 +13,42 @@ export type NotificationRow = {
   created_at: string;
 };
 
-const ICONS: Record<string, string> = {
-  booking_created: "📥",
-  booking_confirmed: "✅",
-  booking_declined: "⛔",
-  booking_cancelled: "🚫",
-  booking_completed: "⭐",
-  cancellation_requested: "↩️",
-  cancellation_approved: "↩️",
-  cancellation_declined: "↩️",
-  guide_assigned: "🧭",
-  payment_received: "💸",
-  refund_recorded: "💸",
-  proof_submitted: "🧾",
-  proof_rejected: "🧾",
-  checked_in: "🎟️",
-  message: "💬",
-  accreditation_approved: "🏅",
-  accreditation_rejected: "📝",
-  package_approved: "🌴",
-  package_rejected: "📝",
-  review_received: "⭐",
-  review_reply: "💬",
-  points_earned: "🎁",
-  merch_submitted: "🛍️",
-  merch_approved: "🛍️",
-  merch_rejected: "📝",
+/** The kind of line icon each notification type shows (NotificationIcon in components/ui/icons.tsx). */
+export type NotificationKind = "inbox" | "check" | "cancel" | "star" | "return" | "guide" | "money" | "receipt" | "ticket" | "message" | "award" | "note" | "gift" | "bag" | "swap" | "bell";
+
+const KINDS: Record<string, NotificationKind> = {
+  booking_created: "inbox",
+  booking_confirmed: "check",
+  booking_declined: "cancel",
+  booking_cancelled: "cancel",
+  booking_completed: "star",
+  cancellation_requested: "return",
+  cancellation_approved: "return",
+  cancellation_declined: "return",
+  guide_assigned: "guide",
+  payment_received: "money",
+  refund_recorded: "money",
+  proof_submitted: "receipt",
+  proof_rejected: "receipt",
+  checked_in: "ticket",
+  message: "message",
+  accreditation_approved: "award",
+  accreditation_rejected: "note",
+  package_approved: "check",
+  package_rejected: "note",
+  review_received: "star",
+  review_reply: "message",
+  points_earned: "gift",
+  merch_submitted: "bag",
+  merch_approved: "bag",
+  merch_rejected: "note",
+  guide_swap_requested: "swap",
+  guide_swap_approved: "check",
+  guide_swap_rejected: "return",
 };
 
-export function notificationIcon(type: string): string {
-  return ICONS[type] ?? "🔔";
+export function notificationIcon(type: string): NotificationKind {
+  return KINDS[type] ?? "bell";
 }
 
 /** Links come from our triggers; anything else falls back to the notifications page. */

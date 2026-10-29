@@ -3,16 +3,17 @@
 import { revalidatePath } from "next/cache";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { userFacingDbError } from "@/lib/tours/db-errors";
-import { attachmentPath, MESSAGE_ATTACHMENT_BUCKET, parseMessageForm, type ChatMessage } from "@/lib/tours/messaging";
+import { attachmentPath, chatRpc, MESSAGE_ATTACHMENT_BUCKET, parseMessageForm, type ChatMessage, type ChatTarget } from "@/lib/tours/messaging";
 import { isUuid } from "@/lib/tours/operator-access";
 
 const SIGNED_URL_SECONDS = 60 * 60;
 
-/** Opens (or reuses) the booking's conversation. Only the booking's tourist, operator and guide can. */
-export async function openBookingChat(bookingId: string): Promise<{ conversationId?: string; error?: string }> {
-  if (!isUuid(bookingId)) return { error: "Booking not found." };
+/** Opens (or reuses) a conversation. The RPC checks the caller may join it. */
+export async function openChat(target: ChatTarget): Promise<{ conversationId?: string; error?: string }> {
+  const rpc = chatRpc(target);
+  if (!rpc) return { error: "This chat could not be found." };
   const supabase = await createSupabaseServerClient();
-  const { data, error } = await supabase.rpc("tours_open_booking_conversation", { p_booking_id: bookingId });
+  const { data, error } = await supabase.rpc(rpc.fn as "tours_open_booking_conversation", rpc.args as { p_booking_id: string });
   if (error || typeof data !== "string") {
     console.error("Open conversation error:", error);
     return { error: userFacingDbError(error, "The chat could not be opened. Please try again.") };

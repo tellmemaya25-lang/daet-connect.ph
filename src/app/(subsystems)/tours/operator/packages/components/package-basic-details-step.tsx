@@ -59,7 +59,7 @@ export function PackageBasicDetailsStep({
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       <div>
-        <h2 className="text-2xl font-black text-daet-ink">Basic details</h2>
+        <h2 className="text-2xl font-bold text-daet-ink">Basic details</h2>
         <p className="mt-2 text-sm text-daet-ink/65">
           Start with the essentials — name your tour package and describe what makes it special.
         </p>
@@ -68,7 +68,7 @@ export function PackageBasicDetailsStep({
       {/* Package Title */}
       <div>
         <label htmlFor="title" className="block text-sm font-bold text-daet-ink">
-          Package title <span className="text-rose-600">*</span>
+          Package title <span className="text-red-600">*</span>
         </label>
         <input
           type="text"
@@ -78,10 +78,10 @@ export function PackageBasicDetailsStep({
           placeholder="e.g., Bagasbas Beach Sunset Tour"
           maxLength={160}
           aria-invalid={Boolean(errors.title)}
-          className="mt-2 w-full rounded-2xl border border-daet-ink/15 bg-white px-4 py-3 text-sm outline-none transition placeholder:text-daet-ink/35 focus:border-daet-forest focus:ring-4 focus:ring-daet-forest/10 aria-[invalid=true]:border-rose-400"
+          className="mt-2 w-full rounded-2xl border border-daet-ink/15 bg-white px-4 py-3 text-sm outline-none transition placeholder:text-daet-ink/35 focus:border-daet-forest focus:ring-4 focus:ring-daet-forest/10 aria-[invalid=true]:border-red-400"
         />
         {errors.title && (
-          <p className="mt-1 text-sm font-semibold text-rose-700">{errors.title}</p>
+          <p className="mt-1 text-sm font-bold text-red-700">{errors.title}</p>
         )}
       </div>
 
@@ -97,9 +97,9 @@ export function PackageBasicDetailsStep({
           placeholder="Describe what tourists will experience on this tour..."
           rows={5}
           maxLength={2000}
-          className="mt-2 w-full rounded-2xl border border-daet-ink/15 bg-white px-4 py-3 text-sm outline-none transition placeholder:text-daet-ink/35 focus:border-daet-forest focus:ring-4 focus:ring-daet-forest/10"
+          className="mt-2 w-full rounded-2xl bg-white px-4 py-3 text-sm outline-none transition placeholder:text-daet-ink/35 focus:border-daet-forest focus:ring-4 focus:ring-daet-forest/10"
         />
-        <p className="mt-1 text-xs text-daet-ink/70">
+        <p className="mt-1 text-sm text-slate-600">
           {description.length}/2000 characters
         </p>
       </div>
@@ -107,7 +107,7 @@ export function PackageBasicDetailsStep({
       {/* Location */}
       <div>
         <label htmlFor="locationName" className="block text-sm font-bold text-daet-ink">
-          Location <span className="text-rose-600">*</span>
+          Location <span className="text-red-600">*</span>
         </label>
         <input
           type="text"
@@ -117,17 +117,17 @@ export function PackageBasicDetailsStep({
           placeholder="e.g., Bagasbas Beach, Daet"
           maxLength={200}
           aria-invalid={Boolean(errors.locationName)}
-          className="mt-2 w-full rounded-2xl border border-daet-ink/15 bg-white px-4 py-3 text-sm outline-none transition placeholder:text-daet-ink/35 focus:border-daet-forest focus:ring-4 focus:ring-daet-forest/10 aria-[invalid=true]:border-rose-400"
+          className="mt-2 w-full rounded-2xl border border-daet-ink/15 bg-white px-4 py-3 text-sm outline-none transition placeholder:text-daet-ink/35 focus:border-daet-forest focus:ring-4 focus:ring-daet-forest/10 aria-[invalid=true]:border-red-400"
         />
         {errors.locationName && (
-          <p className="mt-1 text-sm font-semibold text-rose-700">{errors.locationName}</p>
+          <p className="mt-1 text-sm font-bold text-red-700">{errors.locationName}</p>
         )}
       </div>
 
       {/* Duration */}
       <div>
         <label className="block text-sm font-bold text-daet-ink">
-          Duration <span className="text-rose-600">*</span>
+          Duration <span className="text-red-600">*</span>
         </label>
         <div className="mt-2 flex gap-3">
           <input
@@ -137,19 +137,19 @@ export function PackageBasicDetailsStep({
             min={1}
             max={365}
             aria-invalid={Boolean(errors.durationValue)}
-            className="w-24 rounded-2xl border border-daet-ink/15 bg-white px-4 py-3 text-sm outline-none transition focus:border-daet-forest focus:ring-4 focus:ring-daet-forest/10 aria-[invalid=true]:border-rose-400"
+            className="w-24 rounded-2xl border border-daet-ink/15 bg-white px-4 py-3 text-sm outline-none transition focus:border-daet-forest focus:ring-4 focus:ring-daet-forest/10 aria-[invalid=true]:border-red-400"
           />
           <select
             value={durationType}
             onChange={(e) => setDurationType(e.target.value as "hours" | "days")}
-            className="flex-1 rounded-2xl border border-daet-ink/15 bg-white px-4 py-3 text-sm outline-none transition focus:border-daet-forest focus:ring-4 focus:ring-daet-forest/10"
+            className="flex-1 rounded-2xl bg-white px-4 py-3 text-sm outline-none transition focus:border-daet-forest focus:ring-4 focus:ring-daet-forest/10"
           >
             <option value="hours">Hours</option>
             <option value="days">Days</option>
           </select>
         </div>
         {errors.durationValue && (
-          <p className="mt-1 text-sm font-semibold text-rose-700">{errors.durationValue}</p>
+          <p className="mt-1 text-sm font-bold text-red-700">{errors.durationValue}</p>
         )}
       </div>
 
@@ -158,7 +158,7 @@ export function PackageBasicDetailsStep({
         <button
           type="submit"
           disabled={loading}
-          className="inline-flex min-h-12 items-center justify-center rounded-full bg-daet-forest px-8 text-sm font-black text-white transition hover:bg-daet-ink disabled:cursor-not-allowed disabled:opacity-50"
+          className="inline-flex min-h-12 items-center justify-center rounded-full bg-daet-forest px-8 text-sm font-bold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
         >
           {loading ? "Saving..." : "Continue →"}
         </button>

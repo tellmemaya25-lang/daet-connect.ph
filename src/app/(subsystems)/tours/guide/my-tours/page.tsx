@@ -1,3 +1,4 @@
+import { LineIcon } from "@/components/ui/icons";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { PageFrame } from "@/components/ui/page-frame";
@@ -5,6 +6,8 @@ import { Notice } from "@/components/ui/notice";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { toManilaDateKey } from "@/lib/tours/events-calendar";
+import { isBusyReason } from "@/lib/tours/guide-swap";
+import { SwapRequest, type MySwap } from "./swap-request";
 
 export const dynamic = "force-dynamic";
 
@@ -96,7 +99,7 @@ export default async function GuideMyToursPage() {
   }
 
   const statusColors: Record<string, string> = {
-    confirmed: "bg-emerald-100 text-emerald-800",
+    confirmed: "bg-green-100 text-green-800",
     completed: "bg-blue-100 text-blue-900",
   };
 
@@ -113,12 +116,39 @@ export default async function GuideMyToursPage() {
   const completedTours =
     assignedTours?.filter((t) => t.status === "completed" || t.tour_date < today) || [];
 
+  // R6: other guides free on each upcoming date, and this guide's latest swap request per tour.
+  const pickers = new Map(
+    await Promise.all(
+      [...new Set(upcomingTours.map((t) => t.tour_date))].map(async (date) => {
+        const { data } = await supabase.rpc("tours_guides_free_on", { p_date: date });
+        const rows = ((data ?? []) as Array<{ guide_id: string; full_name: string; reason: string | null }>)
+          .filter((r) => r.guide_id !== guide.id)
+          .map((r) => ({ id: r.guide_id, full_name: r.full_name, reason: isBusyReason(r.reason) ? r.reason : null }));
+        return [date, rows] as const;
+      }),
+    ),
+  );
+  const { data: swapRows } = upcomingTours.length
+    ? await supabase
+        .from("tours_guide_swap_requests")
+        .select("id, booking_id, status, to_guide_id, reason, decision_note, created_at")
+        .eq("from_guide_id", guide.id)
+        .in("booking_id", upcomingTours.map((t) => t.id))
+        .order("created_at", { ascending: false })
+    : { data: [] as Array<{ id: string; booking_id: string; status: string; to_guide_id: string | null; reason: string; decision_note: string | null; created_at: string }> };
+  const latestSwap = new Map<string, MySwap>();
+  for (const row of swapRows ?? []) {
+    if (latestSwap.has(row.booking_id)) continue;
+    const toName = row.to_guide_id ? [...pickers.values()].flat().find((g) => g.id === row.to_guide_id)?.full_name ?? null : null;
+    latestSwap.set(row.booking_id, { id: row.id, status: row.status, toGuideName: toName, reason: row.reason, decisionNote: row.decision_note });
+  }
+
   return (
     <PageFrame>
       <div className="mx-auto max-w-6xl">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-4xl font-black text-daet-ink">My Assigned Tours</h1>
+          <h1 className="display-2 text-daet-ink">My Assigned Tours</h1>
           <p className="mt-2 text-sm text-daet-ink/70">
             Tours assigned to {guideName}
           </p>
@@ -134,7 +164,7 @@ export default async function GuideMyToursPage() {
           </Link>
           <Link
             href="/tours/guide/check-in"
-            className="inline-flex min-h-11 items-center justify-center rounded-full bg-daet-forest px-6 text-sm font-bold text-white transition hover:bg-daet-ink"
+            className="inline-flex min-h-11 items-center justify-center rounded-full bg-daet-forest px-6 text-sm font-bold text-white transition hover:bg-blue-700"
           >
             Scan tickets
           </Link>
@@ -142,18 +172,18 @@ export default async function GuideMyToursPage() {
 
         {/* Stats */}
         <div className="mb-8 grid grid-cols-2 gap-4 md:grid-cols-3">
-          <div className="rounded-2xl border border-daet-ink/10 bg-white p-4 text-center">
-            <p className="text-3xl font-black text-daet-ink">
+          <div className="rounded-2xl bg-white p-4 text-center">
+            <p className="text-3xl font-bold text-daet-ink">
               {assignedTours?.length || 0}
             </p>
-            <p className="text-xs text-daet-ink/70">Total Assigned</p>
+            <p className="text-sm text-slate-600">Total Assigned</p>
           </div>
-          <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-center">
-            <p className="text-3xl font-black text-emerald-900">{upcomingTours.length}</p>
-            <p className="text-xs text-emerald-900">Upcoming</p>
+          <div className="rounded-2xl bg-green-50 p-4 text-center">
+            <p className="text-3xl font-bold text-green-900">{upcomingTours.length}</p>
+            <p className="text-xs text-green-900">Upcoming</p>
           </div>
-          <div className="rounded-2xl border border-blue-200 bg-blue-50 p-4 text-center">
-            <p className="text-3xl font-black text-blue-900">{completedTours.length}</p>
+          <div className="rounded-2xl bg-blue-50 p-4 text-center">
+            <p className="text-3xl font-bold text-blue-900">{completedTours.length}</p>
             <p className="text-xs text-blue-900">Completed</p>
           </div>
         </div>
@@ -161,7 +191,7 @@ export default async function GuideMyToursPage() {
         {/* Upcoming Tours */}
         {upcomingTours.length > 0 && (
           <section className="mb-8">
-            <h2 className="mb-4 text-2xl font-black text-daet-ink">Upcoming Tours</h2>
+            <h2 className="mb-4 text-2xl font-bold text-daet-ink">Upcoming Tours</h2>
             <div className="space-y-4">
               {upcomingTours.map((booking) => {
                 const pkg = Array.isArray(booking.tours_packages)
@@ -175,7 +205,7 @@ export default async function GuideMyToursPage() {
                 return (
                   <div
                     key={booking.id}
-                    className="rounded-3xl border border-emerald-200 bg-emerald-50/50 p-6 shadow-sm"
+                    className="rounded-2xl bg-green-50/50 p-6"
                   >
                     <div className="flex gap-6">
                       {/* Package Image */}
@@ -191,14 +221,14 @@ export default async function GuideMyToursPage() {
                       <div className="flex-1">
                         <div className="mb-3 flex items-start justify-between gap-4">
                           <div>
-                            <h3 className="text-xl font-black text-daet-ink">
+                            <h3 className="text-xl font-bold text-daet-ink">
                               {pkg?.title || "Tour Package"}
                             </h3>
                             <p className="mt-1 text-sm text-daet-ink/70">
-                              📍 {pkg?.location_name || "Location"}
+                              <LineIcon name="pin" className="inline-block h-[1.1em] w-[1.1em] align-[-0.15em]" /> {pkg?.location_name || "Location"}
                             </p>
                           </div>
-                          <span className="rounded-full bg-emerald-100 px-4 py-1 text-xs font-bold text-emerald-800">
+                          <span className="rounded-full bg-green-100 px-4 py-1 text-xs font-bold text-green-800">
                             Upcoming
                           </span>
                         </div>
@@ -243,10 +273,16 @@ export default async function GuideMyToursPage() {
 
                         <Link
                           href={`/tours/guide/tours/${booking.id}/roster`}
-                          className="mt-4 inline-flex min-h-11 items-center justify-center rounded-full border border-daet-forest/30 bg-white px-5 text-sm font-bold text-daet-forest transition hover:bg-daet-forest/5"
+                          className="mt-4 inline-flex min-h-11 items-center justify-center rounded-full border border-daet-forest/30 bg-white px-5 text-sm font-bold text-daet-leaf transition hover:bg-daet-forest/5"
                         >
                           {booking.tour_date === today ? "Guest list & check-in" : "Guest list"}
                         </Link>
+                        <SwapRequest
+                          bookingId={booking.id}
+                          reference={booking.booking_reference}
+                          guides={pickers.get(booking.tour_date) ?? []}
+                          latest={latestSwap.get(booking.id) ?? null}
+                        />
                       </div>
                     </div>
                   </div>
@@ -259,7 +295,7 @@ export default async function GuideMyToursPage() {
         {/* Completed Tours */}
         {completedTours.length > 0 && (
           <section>
-            <h2 className="mb-4 text-2xl font-black text-daet-ink">Completed Tours</h2>
+            <h2 className="mb-4 text-2xl font-bold text-daet-ink">Completed Tours</h2>
             <div className="space-y-4">
               {completedTours.map((booking) => {
                 const pkg = Array.isArray(booking.tours_packages)
@@ -269,7 +305,7 @@ export default async function GuideMyToursPage() {
                 return (
                   <div
                     key={booking.id}
-                    className="rounded-3xl border border-daet-ink/10 bg-white p-6 shadow-sm opacity-75"
+                    className="rounded-2xl bg-white p-6"
                   >
                     <div className="flex gap-6">
                       {pkg?.cover_image_url && (
@@ -280,7 +316,7 @@ export default async function GuideMyToursPage() {
                         />
                       )}
                       <div className="flex-1">
-                        <h3 className="text-lg font-black text-daet-ink">
+                        <h3 className="text-lg font-bold text-daet-ink">
                           {pkg?.title || "Tour Package"}
                         </h3>
                         <p className="mt-1 text-sm text-daet-ink/70">
@@ -305,11 +341,11 @@ export default async function GuideMyToursPage() {
 
         {/* Empty State */}
         {(!assignedTours || assignedTours.length === 0) && (
-          <div className="rounded-3xl border border-daet-ink/10 bg-white p-12 text-center shadow-sm">
+          <div className="rounded-2xl bg-white p-12 text-center">
             <div className="mx-auto mb-4 grid h-20 w-20 place-items-center rounded-full bg-daet-sand text-4xl">
-              🗓️
+              <LineIcon name="calendar" className="inline-block h-[1.1em] w-[1.1em] align-[-0.15em]" />
             </div>
-            <h2 className="text-xl font-black text-daet-ink">No assigned tours yet</h2>
+            <h2 className="text-xl font-bold text-daet-ink">No assigned tours yet</h2>
             <p className="mt-2 text-sm text-daet-ink/70">
               Operators will assign you to tours once bookings are confirmed.
             </p>
