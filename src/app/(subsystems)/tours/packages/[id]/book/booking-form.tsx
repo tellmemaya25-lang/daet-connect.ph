@@ -141,7 +141,7 @@ export function BookingForm({ packageId, priceVariants, dateOptions, userProfile
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       {error && (
-        <div role="alert" className="rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-800">
+        <div role="alert" className="rounded-2xl bg-red-50 p-4 text-sm text-red-800">
           {error}
         </div>
       )}
@@ -166,7 +166,7 @@ export function BookingForm({ packageId, priceVariants, dateOptions, userProfile
                 required
                 className="mt-1 min-h-11 w-full rounded-2xl border border-daet-ink/20 px-4 py-2.5 text-base focus:border-daet-forest focus:outline-none focus:ring-2 focus:ring-daet-forest/20"
               />
-              <p className="mt-1 text-xs text-daet-ink/70">Earliest available: Tomorrow</p>
+              <p className="mt-1 text-sm text-slate-600">Earliest available: Tomorrow</p>
             </>
           ) : noOpenDates ? (
             <p className="mt-2 rounded-2xl bg-yellow-50 p-4 text-sm text-yellow-900">
@@ -187,7 +187,7 @@ export function BookingForm({ packageId, priceVariants, dateOptions, userProfile
                   </option>
                 ))}
               </select>
-              <p className="mt-1 text-xs text-daet-ink/70">Only dates the operator has opened are shown.</p>
+              <p className="mt-1 text-sm text-slate-600">Only dates the operator has opened are shown.</p>
             </>
           )}
         </div>
@@ -279,7 +279,7 @@ export function BookingForm({ packageId, priceVariants, dateOptions, userProfile
               </span>
             </div>
             {selectedVariant?.price_per_pax && (
-              <p className="mt-1 text-xs text-daet-ink/70">
+              <p className="mt-1 text-sm text-slate-600">
                 {formatPeso(selectedVariant.price_per_pax)} × {numberOfPax} pax
               </p>
             )}
@@ -364,7 +364,7 @@ export function BookingForm({ packageId, priceVariants, dateOptions, userProfile
       <div className="flex flex-col gap-4 rounded-2xl bg-white p-6 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <p className="text-sm font-bold text-daet-ink">Ready to book?</p>
-          <p className="text-xs text-daet-ink/70">
+          <p className="text-sm text-slate-600">
             Nothing is charged yet. You pay after the operator confirms.
           </p>
         </div>

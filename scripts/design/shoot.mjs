@@ -28,6 +28,15 @@ const pages = [
   ["operator", "/tours/operator/bookings", "operator-bookings"],
   ["guide", "/tours/guide/dashboard", "guide-home"],
   ["admin", "/tours/admin", "admin-home"],
+  ["operator", "/tours/operator/packages", "op-packages"],
+  ["operator", "/tours/operator/payments", "op-payments"],
+  ["operator", "/tours/operator/reviews", "op-reviews"],
+  ["operator", "/tours/operator/settings", "op-settings"],
+  ["guide", "/tours/guide/my-tours", "guide-tours"],
+  ["guide", "/tours/guide/check-in", "guide-checkin"],
+  ["admin", "/tours/admin/analytics", "admin-analytics"],
+  ["admin", "/tours/admin/operators", "admin-operators"],
+  ["admin", "/tours/admin/packages", "admin-packages"],
 ];
 const session = (role) => ({ access_token: `e2e-${role}`, refresh_token: "e2e-refresh", token_type: "bearer", expires_in: 3600, expires_at: Math.floor(Date.now() / 1000) + 3600, user: { id: "9b7e5a5e-0000-4000-8000-000000000001", aud: "authenticated", role: "authenticated", email: "juan@example.ph", app_metadata: {}, user_metadata: {} } });
 const browser = await chromium.launch(process.env.PW_CHROMIUM_PATH ? { executablePath: process.env.PW_CHROMIUM_PATH } : {});

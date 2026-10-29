@@ -56,7 +56,7 @@ export default async function MyGuideQrPage() {
   return (
     <PageFrame>
       <div className="mb-7 text-center print:hidden">
-        <h1 className="mt-2 text-3xl font-bold text-daet-ink">My QR Code</h1>
+        <h1 className="display-2 mt-2 text-daet-ink">My QR Code</h1>
         <p className="mt-2 text-sm leading-6 text-daet-ink/65">Download the PNG or print a badge insert. Anyone can scan it with a phone camera to check your accreditation. It never contains your ID number or documents.</p>
       </div>
       <GuideQrBadge

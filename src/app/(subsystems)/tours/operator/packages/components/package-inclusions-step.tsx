@@ -60,7 +60,7 @@ export function PackageInclusionsStep({
       {/* Inclusions */}
       <div>
         <label className="block text-sm font-bold text-daet-ink">Inclusions</label>
-        <p className="mt-1 text-xs text-daet-ink/70">
+        <p className="mt-1 text-sm text-slate-600">
           What's provided in this tour package?
         </p>
 
@@ -88,7 +88,7 @@ export function PackageInclusionsStep({
             {inclusions.map((item, index) => (
               <li
                 key={index}
-                className="flex items-center justify-between gap-3 rounded-2xl border border-green-200 bg-green-50 px-4 py-3 text-sm"
+                className="flex items-center justify-between gap-3 rounded-2xl bg-green-50 px-4 py-3 text-sm"
               >
                 <span className="flex items-center gap-2 text-green-900">
                   <span className="text-base" aria-hidden="true">
@@ -113,7 +113,7 @@ export function PackageInclusionsStep({
       {/* Exclusions */}
       <div>
         <label className="block text-sm font-bold text-daet-ink">Exclusions</label>
-        <p className="mt-1 text-xs text-daet-ink/70">
+        <p className="mt-1 text-sm text-slate-600">
           What should tourists prepare or pay for separately?
         </p>
 
@@ -141,7 +141,7 @@ export function PackageInclusionsStep({
             {exclusions.map((item, index) => (
               <li
                 key={index}
-                className="flex items-center justify-between gap-3 rounded-2xl border border-daet-ink/10 bg-daet-sand px-4 py-3 text-sm"
+                className="flex items-center justify-between gap-3 rounded-2xl bg-slate-50 px-4 py-3 text-sm"
               >
                 <span className="flex items-center gap-2 text-daet-ink/70">
                   <span className="text-base" aria-hidden="true">

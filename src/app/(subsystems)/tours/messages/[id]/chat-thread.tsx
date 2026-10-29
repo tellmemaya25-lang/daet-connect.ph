@@ -113,7 +113,7 @@ export function ChatThread({
 
   return (
     <div className="mt-4 flex flex-col">
-      <p className="mb-2 text-right text-xs text-daet-ink/70" aria-live="polite">
+      <p className="mb-2 text-right text-sm text-slate-600" aria-live="polite">
         {live === "live" ? "● Live" : live === "connecting" ? "Connecting…" : "Offline: refresh to see new messages"}
       </p>
 
@@ -191,7 +191,7 @@ export function ChatThread({
               />
               <LineIcon name="camera" className="inline-block h-[1.1em] w-[1.1em] align-[-0.15em]" /> {file ? <span className="max-w-[9rem] truncate">{file.name}</span> : "Photo"}
             </label>
-            <span className="text-xs text-daet-ink/70">
+            <span className="text-sm text-slate-600">
               {text.length}/{MESSAGE_MAX_LENGTH}
             </span>
             <Button type="submit" loading={pending} loadingText="Sending…" disabled={!text.trim() && !file}>

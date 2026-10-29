@@ -20,7 +20,7 @@ export function GuideSensitiveDocumentAccess({ guideId }: { guideId: string }) {
   );
 
   return (
-    <div className="rounded-2xl border border-yellow-200 bg-yellow-50 p-4">
+    <div className="rounded-2xl bg-yellow-50 p-4">
       <p className="text-sm font-bold text-yellow-950">Private identity document</p>
       <p className="mt-1 text-xs leading-5 text-yellow-900/75">Request a short-lived download link only when you need to verify this application. The sensitive table is never queried by this page or browser.</p>
       <form action={formAction} className="mt-3">
@@ -55,12 +55,12 @@ export function GuideReviewCard({ guide }: { guide: GuideAdminRecord }) {
           <h2 className="mt-3 break-words text-xl font-bold text-daet-ink">{guide.full_name}</h2>
           <p className="mt-1 text-sm text-daet-ink/70">Submitted {new Date(guide.created_at).toLocaleDateString("en-PH", { year: "numeric", month: "short", day: "numeric", timeZone: "Asia/Manila" })}</p>
         </div>
-        <span className="shrink-0 rounded-full bg-daet-sand px-3 py-1.5 text-xs font-bold text-daet-ink/70">ID · {guide.id.slice(0, 8)}</span>
+        <span className="shrink-0 rounded-full bg-daet-sand px-3 py-1.5 text-sm text-slate-600">ID · {guide.id.slice(0, 8)}</span>
       </div>
 
       <dl className="mt-5 grid gap-4 border-t border-daet-ink/10 pt-5 sm:grid-cols-2">
-        <div><dt className="text-xs font-bold text-daet-ink/70">Contact number</dt><dd className="mt-1 text-sm font-semibold text-daet-ink">{guide.contact_phone}</dd></div>
-        <div className="sm:col-span-2"><dt className="text-xs font-bold text-daet-ink/70">Guide introduction</dt><dd className="mt-1 whitespace-pre-wrap text-sm leading-6 text-daet-ink">{guide.bio}</dd></div>
+        <div><dt className="text-sm text-slate-600">Contact number</dt><dd className="mt-1 text-sm font-semibold text-daet-ink">{guide.contact_phone}</dd></div>
+        <div className="sm:col-span-2"><dt className="text-sm text-slate-600">Guide introduction</dt><dd className="mt-1 whitespace-pre-wrap text-sm leading-6 text-daet-ink">{guide.bio}</dd></div>
       </dl>
 
       <div className="mt-5">
@@ -86,10 +86,10 @@ export function GuideReviewCard({ guide }: { guide: GuideAdminRecord }) {
               aria-describedby={`guide-reason-help-${guide.id}${state.fieldErrors?.rejectionReason ? ` guide-reason-error-${guide.id}` : ""}`}
               className="mt-2 w-full rounded-2xl border border-daet-ink/15 px-4 py-3 text-sm outline-none focus:border-daet-forest focus:ring-4 focus:ring-daet-forest/10 aria-[invalid=true]:border-red-400"
             />
-            <span id={`guide-reason-help-${guide.id}`} className="mt-1 block text-xs text-daet-ink/70">Keep the note factual and limited to what the applicant needs to fix.</span>
+            <span id={`guide-reason-help-${guide.id}`} className="mt-1 block text-sm text-slate-600">Keep the note factual and limited to what the applicant needs to fix.</span>
             {state.fieldErrors?.rejectionReason ? <span id={`guide-reason-error-${guide.id}`} className="mt-1 block text-sm font-semibold text-red-700">{state.fieldErrors.rejectionReason}</span> : null}
           </label>
-          <button type="submit" disabled={locked} className="mt-3 inline-flex min-h-12 w-full items-center justify-center rounded-full border border-red-300 px-5 text-sm font-bold text-red-700 transition hover:bg-red-50 disabled:opacity-50 sm:w-auto">
+          <button type="submit" disabled={locked} className="mt-3 inline-flex min-h-12 w-full items-center justify-center rounded-full px-5 text-sm font-bold text-red-700 transition hover:bg-red-50 disabled:opacity-50 sm:w-auto">
             {pending ? "Saving…" : "Reject guide"}
           </button>
         </form>

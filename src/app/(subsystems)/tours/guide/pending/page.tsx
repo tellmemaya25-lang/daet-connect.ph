@@ -43,7 +43,7 @@ export default async function GuidePendingPage() {
       <PageFrame>
         <section className="mx-auto max-w-2xl rounded-2xl border-red-200 bg-white p-6 sm:p-10">
           <span className="inline-flex rounded-full bg-red-50 px-3 py-1 text-xs font-bold text-red-700">Changes requested</span>
-          <h1 className="mt-4 text-3xl font-bold text-daet-ink">Please update your guide application</h1>
+          <h1 className="display-2 mt-4 text-daet-ink">Please update your guide application</h1>
           <p className="mt-3 text-sm leading-6 text-daet-ink/70">The Tourism Office could not approve the application as submitted. Review the note below and send an updated profile and ID.</p>
           {guide[GUIDE_NOTES_COLUMN] ? <div className="mt-5 rounded-2xl bg-red-50 p-4 text-sm leading-6 text-red-950"><p className="font-bold">Reviewer’s note</p><p className="mt-1">{guide[GUIDE_NOTES_COLUMN]}</p></div> : null}
           <Link href="/tours/guide/register" className="mt-7 inline-flex min-h-12 items-center justify-center rounded-full bg-daet-forest px-6 text-sm font-bold text-white transition hover:bg-blue-700">Update application</Link>
@@ -57,7 +57,7 @@ export default async function GuidePendingPage() {
       <section className="mx-auto max-w-2xl overflow-hidden rounded-2xl bg-white">
         <div className="bg-daet-forest px-6 py-8 text-white sm:px-10 sm:py-10">
           <span className="inline-flex items-center gap-2 rounded-full bg-white/15 px-3 py-1 text-sm font-bold"><span className="h-2 w-2 animate-pulse rounded-full bg-daet-sun" /> In review</span>
-          <h1 className="mt-4 text-3xl font-bold sm:text-4xl">Pending Approval</h1>
+          <h1 className="display-2 mt-4">Pending Approval</h1>
           <p className="mt-3 max-w-lg text-sm leading-6 text-white">Your guide profile and private ID verification are with the Daet Tourism Office.</p>
         </div>
         <div className="p-6 sm:p-10">

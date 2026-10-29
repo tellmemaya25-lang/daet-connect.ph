@@ -61,7 +61,7 @@ export default async function GuideRosterPage({ params }: PageProps) {
         <Link href="/tours/guide/my-tours" className="text-sm font-bold text-daet-ink/70 hover:text-daet-ink">
           ← My tours
         </Link>
-        <h1 className="mt-4 text-3xl font-bold text-daet-ink">Guest list</h1>
+        <h1 className="display-2 mt-4 text-daet-ink">Guest list</h1>
         <p className="mt-1 text-sm text-daet-ink/65">
           {pkg?.title ?? "Tour"} · {tourDate(booking.tour_date)}
         </p>
@@ -113,7 +113,7 @@ export default async function GuideRosterPage({ params }: PageProps) {
                   <li key={guest.id} className="flex flex-wrap items-center justify-between gap-3 p-4">
                     <div>
                       <p className="font-bold text-daet-ink">{guest.full_name}</p>
-                      {guest.special_requirements ? <p className="text-xs text-daet-ink/70">{guest.special_requirements}</p> : null}
+                      {guest.special_requirements ? <p className="text-sm text-slate-600">{guest.special_requirements}</p> : null}
                     </div>
                     {done ? (
                       <Badge tone="success">Present {time(done.scanned_at)}</Badge>

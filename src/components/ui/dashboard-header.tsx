@@ -1,4 +1,5 @@
-import Link from 'next/link';
+import Link from "next/link";
+import { LineIcon } from "@/components/ui/icons";
 
 interface DashboardHeaderProps {
   title?: string;
@@ -6,107 +7,63 @@ interface DashboardHeaderProps {
   backHref?: string;
   backLabel?: string;
   children?: React.ReactNode;
-  role?: 'admin' | 'operator' | 'guide' | 'tourist';
+  role?: "admin" | "operator" | "guide" | "tourist";
 }
 
-export function DashboardHeader({
-  title,
-  description,
-  backHref,
-  backLabel = 'Back',
-  children,
-  role,
-}: DashboardHeaderProps) {
-  const dashboardLinks: Record<string, { home: string; label: string }> = {
-    admin: { home: '/tours/admin', label: 'Admin Dashboard' },
-    operator: { home: '/tours/operator/dashboard', label: 'Operator Dashboard' },
-    guide: { home: '/tours/guide/dashboard', label: 'Guide Dashboard' },
-    tourist: { home: '/tours/browse', label: 'Browse Tours' },
-  };
+const ROLE_LINKS: Record<NonNullable<DashboardHeaderProps["role"]>, { href: string; label: string }[]> = {
+  admin: [{ href: "/tours/admin", label: "Dashboard" }],
+  operator: [
+    { href: "/tours/operator/dashboard", label: "Dashboard" },
+    { href: "/tours/operator/packages", label: "Packages" },
+    { href: "/tours/operator/bookings", label: "Bookings" },
+    { href: "/tours/operator/reviews", label: "Reviews" },
+    { href: "/tours/messages", label: "Messages" },
+  ],
+  guide: [
+    { href: "/tours/guide/dashboard", label: "Dashboard" },
+    { href: "/tours/messages", label: "Messages" },
+  ],
+  tourist: [{ href: "/tours/browse", label: "Browse trips" }],
+};
 
-  const dashLink = role ? dashboardLinks[role] : null;
-
+/** A role's quick links as one row of pills, then an optional back link, title and actions. */
+export function DashboardHeader({ title, description, backHref, backLabel = "Back", children, role }: DashboardHeaderProps) {
   return (
     <>
-      {/* Navigation Bar */}
-      {role && (
-        <div className="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-2xl bg-white px-4 py-3 sm:px-6 sm:py-4">
-          <div className="flex min-w-0 flex-wrap items-center gap-x-4 gap-y-2">
-            {dashLink && (
-              <Link
-                href={dashLink.home}
-                className="text-sm font-bold text-daet-forest transition hover:text-daet-ink"
-              >
-                {dashLink.label}
-              </Link>
-            )}
-            {role === 'operator' && (
-              <>
-                <span className="text-daet-ink/20">|</span>
+      {role ? (
+        <nav aria-label="Work areas" className="-mx-4 mb-6 overflow-x-auto px-4 sm:mx-0 sm:px-0">
+          <ul className="flex w-max gap-2">
+            {ROLE_LINKS[role].map((link) => (
+              <li key={link.href}>
                 <Link
-                  href="/tours/operator/packages"
-                  className="text-sm font-bold text-daet-ink/70 transition hover:text-daet-ink"
+                  href={link.href}
+                  className="inline-flex min-h-11 items-center rounded-full bg-white px-4 text-[15px] font-bold text-daet-ink transition hover:bg-blue-50 active:scale-[0.98]"
                 >
-                  Packages
+                  {link.label}
                 </Link>
-                <Link
-                  href="/tours/operator/bookings"
-                  className="text-sm font-bold text-daet-ink/70 transition hover:text-daet-ink"
-                >
-                  Bookings
-                </Link>
-                <Link
-                  href="/tours/operator/reviews"
-                  className="text-sm font-bold text-daet-ink/70 transition hover:text-daet-ink"
-                >
-                  Reviews
-                </Link>
-              </>
-            )}
-            {(role === 'operator' || role === 'guide') && (
-              <Link
-                href="/tours/messages"
-                className="text-sm font-bold text-daet-ink/70 transition hover:text-daet-ink"
-              >
-                Messages
-              </Link>
-            )}
-          </div>
-        </div>
-      )}
+              </li>
+            ))}
+          </ul>
+        </nav>
+      ) : null}
 
-      {/* Header Section */}
-      {(title || description || backHref || children) && (
+      {title || description || backHref || children ? (
         <div className="mb-8">
-          {backHref && (
-            <div className="mb-4">
-              <Link
-                href={backHref}
-                className="inline-flex items-center text-sm font-medium text-daet-ink/70 transition hover:text-daet-ink"
-              >
-                <svg className="mr-1 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                </svg>
-                {backLabel}
-              </Link>
+          {backHref ? (
+            <Link href={backHref} className="mb-3 inline-flex min-h-11 items-center gap-1 font-bold text-blue-700 hover:underline">
+              <LineIcon name="arrowRight" className="h-4 w-4 rotate-180" />
+              {backLabel}
+            </Link>
+          ) : null}
+          <div className="flex flex-wrap items-end justify-between gap-4">
+            <div className="min-w-0 flex-1">
+              {title ? <h1 className="display-2 text-daet-ink">{title}</h1> : null}
+              {description ? <p className="mt-2 text-lg text-daet-ink">{description}</p> : null}
             </div>
-          )}
-          
-          <div className="flex items-start justify-between">
-            <div className="flex-1">
-              {title && <h1 className="text-3xl font-bold text-daet-ink">{title}</h1>}
-              {description && (
-                <p className="mt-2 text-daet-ink/70">{description}</p>
-              )}
-            </div>
-            {children && (
-              <div className="ml-4">
-                {children}
-              </div>
-            )}
+            {children ? <div className="flex flex-wrap gap-2">{children}</div> : null}
           </div>
         </div>
-      )}
+      ) : null}
     </>
   );
 }

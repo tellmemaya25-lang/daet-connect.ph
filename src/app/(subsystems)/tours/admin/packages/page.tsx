@@ -119,7 +119,7 @@ export default async function AdminPackagesPage() {
 
         <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-daet-ink">Package Management</h1>
+            <h1 className="display-2 text-daet-ink">Package Management</h1>
             <p className="mt-2 text-daet-ink/80">Review and manage tour packages</p>
           </div>
         </div>
@@ -221,7 +221,7 @@ function PackageCard({ package: pkg }: { package: any }) {
         <div className="ml-4">
           <Link
             href={`/tours/admin/packages/${pkg.id}`}
-            className="inline-flex items-center px-4 py-2 border border-daet-ink/20 rounded-2xl text-sm font-medium text-daet-ink/80 bg-white hover:bg-slate-50"
+            className="min-h-11 inline-flex items-center px-4 py-2 border border-daet-ink/20 rounded-2xl text-sm font-medium text-daet-ink/80 bg-white hover:bg-slate-50"
           >
             Review
           </Link>

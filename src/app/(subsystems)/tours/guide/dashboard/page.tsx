@@ -101,7 +101,7 @@ export default async function GuideDashboardPage({ searchParams }: { searchParam
     <PageFrame>
       <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight text-daet-ink">Welcome, {profile.full_name}.</h1>
+          <h1 className="display-2 text-daet-ink">Welcome, {profile.full_name}.</h1>
           <div className="mt-2">
             <RatingBadge summary={toSummary(ratingRow)} />
           </div>
@@ -125,7 +125,7 @@ export default async function GuideDashboardPage({ searchParams }: { searchParam
                 {todays.map((t) => (
                   <li key={t.id} className="rounded-2xl bg-daet-sand/40 p-3">
                     <p className="font-bold text-daet-ink">{pkgTitle(t)}</p>
-                    <p className="text-xs text-daet-ink/70">
+                    <p className="text-sm text-slate-600">
                       {t.booking_reference} · {t.contact_name} · {t.number_of_pax} pax
                     </p>
                     <div className="mt-2 flex flex-wrap gap-2">
@@ -157,7 +157,7 @@ export default async function GuideDashboardPage({ searchParams }: { searchParam
           </Card>
 
           <Card>
-            <CardHeader title="Next tours" action={<Link href="/tours/guide/my-tours" className="text-sm font-bold text-daet-forest hover:underline">All</Link>} />
+            <CardHeader title="Next tours" action={<Link href="/tours/guide/my-tours" className="inline-flex min-h-11 items-center font-bold text-daet-forest hover:underline">All tours</Link>} />
             {later.length === 0 ? (
               <p className="text-sm text-daet-ink/70">No upcoming assignments yet. Mark the days you can work so operators can assign you.</p>
             ) : (
@@ -165,7 +165,7 @@ export default async function GuideDashboardPage({ searchParams }: { searchParam
                 {later.map((t) => (
                   <li key={t.id} className="py-2">
                     <p className="font-bold text-daet-ink">{pkgTitle(t)}</p>
-                    <p className="text-xs text-daet-ink/70">
+                    <p className="text-sm text-slate-600">
                       {formatDayHeading(t.tour_date)} · {t.number_of_pax} pax
                     </p>
                   </li>

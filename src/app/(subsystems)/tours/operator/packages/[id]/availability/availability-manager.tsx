@@ -54,7 +54,7 @@ export function OpenDatesForm({ packageId, today }: { packageId: string; today: 
           ))}
         </div>
         {state.errors.weekday ? <p className="mt-1 text-sm font-semibold text-red-700">{state.errors.weekday}</p> : null}
-        <p className="mt-1 text-xs text-daet-ink/70">Up to {MAX_DATES_PER_BATCH} dates at a time. Dates already open are left unchanged.</p>
+        <p className="mt-1 text-sm text-slate-600">Up to {MAX_DATES_PER_BATCH} dates at a time. Dates already open are left unchanged.</p>
       </fieldset>
 
       <Button type="submit" loading={pending} loadingText="Opening dates…">
@@ -113,7 +113,7 @@ export function AvailabilityList({ packageId, rows }: { packageId: string; rows:
                 }}
               >
                 <input type="hidden" name="availabilityId" value={row.id} />
-                <label className="text-xs font-bold text-daet-ink/70">
+                <label className="text-sm text-slate-600">
                   Seats
                   <Input
                     name="capacity"

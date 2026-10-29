@@ -249,7 +249,7 @@ export function StopsStep({
 
       {/* Validation Errors */}
       {Object.keys(stopsErrors).length > 0 && (
-        <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded text-sm text-red-800">
+        <div className="mt-4 p-3 bg-red-50 rounded-2xl text-sm text-red-800">
           <p className="font-medium">Stop errors:</p>
           <ul className="mt-1 space-y-1">
             {Object.entries(stopsErrors).map(([key, message]) => (
@@ -376,7 +376,7 @@ export function StopsStep({
                 <button
                   type="button"
                   onClick={handleAddStop}
-                  className="flex-1 px-4 py-2 bg-daet-forest text-white rounded-2xl hover:bg-daet-leaf transition"
+                  className="min-h-11 flex-1 px-4 py-2 bg-daet-forest text-white rounded-2xl hover:bg-daet-leaf transition"
                 >
                   {editingId ? "Update" : "Add"}
                 </button>
@@ -388,7 +388,7 @@ export function StopsStep({
 
       {/* Help text */}
       {data.length === 0 && (
-        <div className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded text-sm text-yellow-800">
+        <div className="mt-4 p-3 bg-yellow-50 rounded-2xl text-sm text-yellow-800">
           <LineIcon name="warning" className="inline-block h-[1.1em] w-[1.1em] align-[-0.15em]" /> At least one stop is required before submitting for review.
         </div>
       )}

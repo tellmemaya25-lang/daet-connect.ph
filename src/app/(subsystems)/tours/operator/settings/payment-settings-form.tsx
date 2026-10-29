@@ -61,7 +61,7 @@ export function PaymentSettingsForm({
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       {/* GCash Details */}
-      <div className="rounded-2xl border border-daet-ink/10 bg-daet-sand/20 p-4">
+      <div className="rounded-2xl bg-slate-50 p-4">
         <h3 className="mb-3 flex items-center gap-2 text-sm font-bold text-daet-ink">
           <span className="text-xl"><LineIcon name="phone" className="inline-block h-[1.1em] w-[1.1em] align-[-0.15em]" /></span>
           GCash Payment Details
@@ -95,7 +95,7 @@ export function PaymentSettingsForm({
       </div>
 
       {/* Bank Details */}
-      <div className="rounded-2xl border border-daet-ink/10 bg-daet-sand/20 p-4">
+      <div className="rounded-2xl bg-slate-50 p-4">
         <h3 className="mb-3 flex items-center gap-2 text-sm font-bold text-daet-ink">
           <span className="text-xl"><LineIcon name="bank" className="inline-block h-[1.1em] w-[1.1em] align-[-0.15em]" /></span>
           Bank Transfer Details
@@ -161,7 +161,7 @@ export function PaymentSettingsForm({
         {isSubmitting ? "Saving..." : "Save Payment Settings"}
       </button>
 
-      <p className="text-center text-xs text-daet-ink/70">
+      <p className="text-center text-sm text-slate-600">
         These details will be shown to tourists after they book and confirm their tour.
       </p>
     </form>

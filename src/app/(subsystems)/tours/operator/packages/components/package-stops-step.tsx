@@ -166,7 +166,7 @@ export function PackageStopsStep({
           </div>
         </div>
 
-        <p className="mt-3 text-xs text-daet-ink/70">
+        <p className="mt-3 text-sm text-slate-600">
           <LineIcon name="tip" className="inline-block h-[1.1em] w-[1.1em] align-[-0.15em]" /> Use Google Maps to find latitude/longitude coordinates for accurate pin placement
         </p>
       </div>
@@ -190,14 +190,14 @@ export function PackageStopsStep({
                     </span>
                     <p className="font-bold text-daet-ink">{stop.locationName}</p>
                   </div>
-                  <p className="mt-1 text-xs text-daet-ink/70">
+                  <p className="mt-1 text-sm text-slate-600">
                     {stop.latitude.toFixed(4)}, {stop.longitude.toFixed(4)}
                   </p>
                   {stop.description && (
                     <p className="mt-1 text-sm text-daet-ink/70">{stop.description}</p>
                   )}
                   {stop.estimatedDurationMinutes && (
-                    <p className="mt-1 text-xs text-daet-ink/70">
+                    <p className="mt-1 text-sm text-slate-600">
                       ~{stop.estimatedDurationMinutes} minutes
                     </p>
                   )}

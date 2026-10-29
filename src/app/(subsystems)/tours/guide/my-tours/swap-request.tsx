@@ -47,7 +47,7 @@ export function SwapRequest({
 
   if (latest?.status === "pending") {
     return (
-      <div className="mt-4 rounded-2xl border border-yellow-200 bg-yellow-50/60 p-4 text-sm">
+      <div className="mt-4 rounded-2xl bg-yellow-50/60 p-4 text-sm">
         <p className="font-bold text-daet-ink">
           Swap requested{latest.toGuideName ? ` to ${latest.toGuideName}` : ""}: {SWAP_STATUS_LABELS.pending.toLowerCase()}.
         </p>
@@ -75,7 +75,7 @@ export function SwapRequest({
         <form
           id={`${idBase}-form`}
           aria-label={`Suggest another guide for ${reference}`}
-          className="space-y-3 rounded-2xl border border-daet-ink/10 bg-daet-sand/30 p-4"
+          className="space-y-3 rounded-2xl bg-slate-50 p-4"
           onSubmit={(event) => {
             event.preventDefault();
             const formData = new FormData();

@@ -1,3 +1,4 @@
+import { EmptyState } from "@/components/ui/empty-state";
 import { LineIcon } from "@/components/ui/icons";
 import { formatPeso } from "@/lib/money";
 import { redirect } from "next/navigation";
@@ -220,11 +221,11 @@ export default async function OperatorBookingsPage({
   );
 
   const statusColors: Record<string, string> = {
-    pending: "bg-yellow-100 text-yellow-900",
-    confirmed: "bg-green-100 text-green-800",
-    cancelled: "bg-slate-100 text-slate-800",
+    pending: "bg-yellow-500 text-slate-950",
+    confirmed: "bg-green-500 text-slate-950",
+    cancelled: "bg-slate-200 text-slate-900",
     completed: "bg-blue-100 text-blue-900",
-    rejected: "bg-red-100 text-red-800",
+    rejected: "bg-red-600 text-white",
   };
 
   const statusLabels: Record<string, string> = {
@@ -250,96 +251,46 @@ export default async function OperatorBookingsPage({
       <DashboardHeader role="operator" />
 
       <div className="mx-auto max-w-7xl">
-        {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-4xl font-bold text-daet-ink">Booking Management</h1>
-          <p className="mt-2 text-sm text-daet-ink/70">
-            Manage bookings for {operator.business_name}
-          </p>
-        </div>
+        <header className="mb-6">
+          <h1 className="display-2 text-daet-ink">Bookings</h1>
+          <p className="mt-2 text-lg text-daet-ink">Every booking for {operator.business_name}, newest first.</p>
+        </header>
 
-        {/* Back Button */}
-        <div className="mb-6">
-          <Link
-            href="/tours/operator/dashboard"
-            className="inline-flex items-center gap-2 text-sm font-bold text-daet-ink/70 transition hover:text-daet-ink"
-          >
-            ← Back to Dashboard
-          </Link>
-        </div>
-
-        {/* Stats Cards */}
-        <div className="mb-8 grid grid-cols-2 gap-4 md:grid-cols-5">
-          <Link
-            href="/tours/operator/bookings?status=all"
-            className={`rounded-2xl border p-4 text-center transition hover:bg-blue-50 ${
-              !params.status || params.status === "all"
-                ? "border-daet-forest bg-daet-forest/5"
-                : "border-daet-ink/10 bg-white"
-            }`}
-          >
-            <p className="text-3xl font-bold text-daet-ink">{stats.total}</p>
-            <p className="text-xs text-daet-ink/70">Total</p>
-          </Link>
-          <Link
-            href="/tours/operator/bookings?status=pending"
-            className={`rounded-2xl border p-4 text-center transition hover:bg-blue-50 ${
-              params.status === "pending"
-                ? "border-yellow-300 bg-yellow-50"
-                : "border-yellow-200 bg-yellow-50"
-            }`}
-          >
-            <p className="text-3xl font-bold text-yellow-900">{stats.pending}</p>
-            <p className="text-xs text-yellow-900">Pending</p>
-          </Link>
-          <Link
-            href="/tours/operator/bookings?status=confirmed"
-            className={`rounded-2xl border p-4 text-center transition hover:bg-blue-50 ${
-              params.status === "confirmed"
-                ? "border-green-300 bg-green-50"
-                : "border-green-200 bg-green-50"
-            }`}
-          >
-            <p className="text-3xl font-bold text-green-900">{stats.confirmed}</p>
-            <p className="text-xs text-green-900">Confirmed</p>
-          </Link>
-          <Link
-            href="/tours/operator/bookings?status=completed"
-            className={`rounded-2xl border p-4 text-center transition hover:bg-blue-50 ${
-              params.status === "completed"
-                ? "border-blue-300 bg-blue-50"
-                : "border-blue-200 bg-blue-50"
-            }`}
-          >
-            <p className="text-3xl font-bold text-blue-900">{stats.completed}</p>
-            <p className="text-xs text-blue-900">Completed</p>
-          </Link>
-          <Link
-            href="/tours/operator/bookings?status=rejected"
-            className={`rounded-2xl border p-4 text-center transition hover:bg-blue-50 ${
-              params.status === "rejected"
-                ? "border-slate-300 bg-slate-50"
-                : "border-slate-200 bg-slate-50"
-            }`}
-          >
-            <p className="text-3xl font-bold text-slate-900">{stats.rejected}</p>
-            <p className="text-xs text-slate-900/60">Rejected</p>
-          </Link>
-        </div>
+        <nav aria-label="Filter by status" className="-mx-4 mb-6 overflow-x-auto px-4 sm:mx-0 sm:px-0">
+          <ul className="flex w-max gap-2">
+            {(
+              [
+                ["all", "All", stats.total],
+                ["pending", "To confirm", stats.pending],
+                ["confirmed", "Confirmed", stats.confirmed],
+                ["completed", "Completed", stats.completed],
+                ["rejected", "Declined", stats.rejected],
+              ] as const
+            ).map(([value, label, count]) => {
+              const active = (params.status ?? "all") === value;
+              return (
+                <li key={value}>
+                  <Link
+                    href={`/tours/operator/bookings?status=${value}`}
+                    aria-current={active ? "page" : undefined}
+                    className={`inline-flex min-h-11 items-center gap-2 rounded-full px-4 text-[15px] font-bold transition active:scale-[0.98] ${active ? "bg-blue-600 text-white" : "bg-white text-daet-ink hover:bg-blue-50"}`}
+                  >
+                    {label}
+                    <span className={`rounded-full px-2 text-sm ${active ? "bg-white/20" : value === "pending" && count > 0 ? "bg-yellow-500 text-slate-950" : "bg-slate-100"}`}>{count}</span>
+                  </Link>
+                </li>
+              );
+            })}
+          </ul>
+        </nav>
 
         {/* Bookings List */}
         {!bookings || bookings.length === 0 ? (
-          <div className="rounded-2xl bg-white p-12 text-center">
-            <div className="mx-auto mb-4 grid h-20 w-20 place-items-center rounded-full bg-daet-sand text-4xl">
-              <LineIcon name="calendar" className="inline-block h-[1.1em] w-[1.1em] align-[-0.15em]" />
-            </div>
-            <h2 className="text-xl font-bold text-daet-ink">No bookings found</h2>
-            <p className="mt-2 text-sm text-daet-ink/70">
-              {params.status && params.status !== "all"
-                ? `No ${params.status} bookings at the moment.`
-                : "You don't have any bookings yet."}
-            </p>
-          </div>
+          <EmptyState
+            icon={<LineIcon name="calendar" />}
+            title="No bookings here"
+            description={params.status && params.status !== "all" ? "Nothing with this status right now." : "Bookings appear here as soon as tourists request a date."}
+          />
         ) : (
           <div className="space-y-4">
             {bookings.map((booking) => {
@@ -376,7 +327,7 @@ export default async function OperatorBookingsPage({
                           </p>
                         </div>
                         <span
-                          className={`rounded-full px-4 py-1 text-xs font-bold ${statusColors[booking.status] || "bg-slate-100 text-slate-800"}`}
+                          className={`shrink-0 rounded-full px-3 py-1 text-sm font-bold ${statusColors[booking.status] || "bg-slate-100 text-slate-800"}`}
                         >
                           {statusLabels[booking.status] || booking.status}
                         </span>
@@ -401,7 +352,7 @@ export default async function OperatorBookingsPage({
                         <div>
                           <p className="text-daet-ink/70">Contact</p>
                           <p className="font-bold text-daet-ink">{booking.contact_name}</p>
-                          <p className="text-xs text-daet-ink/70">{booking.contact_phone}</p>
+                          <p className="text-sm text-slate-600">{booking.contact_phone}</p>
                         </div>
                         <div>
                           <p className="text-daet-ink/70">Total Amount</p>
@@ -413,8 +364,8 @@ export default async function OperatorBookingsPage({
 
                       {/* Special Requests */}
                       {booking.special_requests && (
-                        <div className="mb-4 rounded-2xl bg-daet-sand/30 p-3">
-                          <p className="text-xs font-bold text-daet-ink/70">Special Requests:</p>
+                        <div className="mb-4 rounded-2xl bg-slate-50 p-3">
+                          <p className="text-sm text-slate-600">Special Requests:</p>
                           <p className="mt-1 text-sm text-daet-ink">{booking.special_requests}</p>
                         </div>
                       )}
@@ -422,8 +373,8 @@ export default async function OperatorBookingsPage({
                       {/* Guide Assignment - Show for confirmed bookings */}
                       {booking.status === "confirmed" && (
                         <>
-                          <div className="mb-4 rounded-2xl border border-daet-forest/20 bg-daet-forest/5 p-4">
-                            <p className="mb-3 text-xs font-bold text-daet-ink/70">
+                          <div className="mb-4 rounded-2xl bg-slate-50 p-4">
+                            <p className="mb-3 text-sm text-slate-600">
                               Guide Assignment
                             </p>
                             {swapByBooking.get(booking.id) ? (
@@ -454,7 +405,7 @@ export default async function OperatorBookingsPage({
                       )}
 
                       {(booking.status === "cancelled" || booking.status === "rejected") && booking.cancellation_reason ? (
-                        <p className="mb-4 rounded-2xl bg-daet-sand/40 p-3 text-sm text-daet-ink">
+                        <p className="mb-4 rounded-2xl bg-slate-50 p-3 text-sm text-daet-ink">
                           <span className="font-bold">{booking.status === "cancelled" ? "Cancellation reason" : "Declined because"}:</span>{" "}
                           {booking.cancellation_reason}
                         </p>

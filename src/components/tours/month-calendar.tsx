@@ -45,8 +45,8 @@ export function MonthCalendar({
           <span className="h-11 w-11" />
         )}
       </div>
-      <div role="grid" aria-label={title}>
-        <div role="row" className="grid grid-cols-7 text-center text-xs font-bold text-daet-ink/75">
+      <div role="grid" aria-label={title} className="-mx-3 sm:mx-0">
+        <div role="row" className="grid grid-cols-7 text-center text-sm font-semibold text-slate-600">
           {WEEKDAYS.map((d) => (
             <span role="columnheader" key={d} className="py-1">
               {d}

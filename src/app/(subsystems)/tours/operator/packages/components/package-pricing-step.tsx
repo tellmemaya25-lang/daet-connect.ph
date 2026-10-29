@@ -220,7 +220,7 @@ export function PackagePricingStep({
                     type="checkbox"
                     checked={variant.isDefault}
                     onChange={() => setDefaultVariant(index)}
-                    className="h-4 w-4 rounded border-daet-ink/30 text-daet-forest focus:ring-2 focus:ring-daet-forest/20"
+                    className="h-4 w-4 rounded-2xl border-daet-ink/30 text-daet-forest focus:ring-2 focus:ring-daet-forest/20"
                   />
                   <span className="font-bold">Default variant</span>
                 </label>

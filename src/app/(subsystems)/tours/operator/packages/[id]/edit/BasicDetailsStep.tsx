@@ -154,7 +154,7 @@ export function BasicDetailsStep({
               } disabled:bg-slate-100 disabled:text-daet-ink/70 disabled:cursor-not-allowed`}
               placeholder="Enter package title"
             />
-            <div className="absolute right-3 top-2.5 text-xs text-daet-ink/70">
+            <div className="absolute right-3 top-2.5 text-sm text-slate-600">
               {data.title.length}/{EDIT_LIMITS.title.max}
             </div>
           </div>
@@ -179,7 +179,7 @@ export function BasicDetailsStep({
               } disabled:bg-slate-100 disabled:text-daet-ink/70 disabled:cursor-not-allowed`}
               placeholder="Enter location"
             />
-            <div className="absolute right-3 top-2.5 text-xs text-daet-ink/70">
+            <div className="absolute right-3 top-2.5 text-sm text-slate-600">
               {data.locationName.length}/{EDIT_LIMITS.locationName.max}
             </div>
           </div>
@@ -204,7 +204,7 @@ export function BasicDetailsStep({
               } disabled:bg-slate-100 disabled:text-daet-ink/70 disabled:cursor-not-allowed`}
               placeholder="Enter package description (optional)"
             />
-            <div className="absolute right-3 bottom-2.5 text-xs text-daet-ink/70">
+            <div className="absolute right-3 bottom-2.5 text-sm text-slate-600">
               {(data.description ?? "").length}/{EDIT_LIMITS.description.max}
             </div>
           </div>
@@ -253,7 +253,7 @@ export function BasicDetailsStep({
 
         {/* Read-only indicator */}
         {!permissions.canEdit && (
-          <div className="p-3 bg-daet-sand border border-blue-200 rounded text-sm text-daet-leaf">
+          <div className="p-3 rounded-2xl bg-blue-50 text-sm text-blue-900">
             ℹ️ This package is {packageStatus} and cannot be edited.
           </div>
         )}

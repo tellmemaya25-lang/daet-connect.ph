@@ -82,7 +82,7 @@ export default async function AdminGuideQueuePage({ searchParams }: { searchPara
     <PageFrame adminNav>
       <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <h1 className="mt-2 text-3xl font-bold tracking-tight text-daet-ink sm:text-4xl">Guide applications</h1>
+          <h1 className="display-2 mt-2 text-daet-ink">Guide applications</h1>
           <p className="mt-2 max-w-2xl text-sm leading-6 text-daet-ink/65">Review public profile details and verify the submitted ID through a short-lived private document link.</p>
         </div>
         <span className="inline-flex min-h-10 items-center self-start rounded-full bg-yellow-50 px-4 text-sm font-bold text-yellow-900 sm:self-auto">Pending · page {page}</span>

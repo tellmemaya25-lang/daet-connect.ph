@@ -87,7 +87,7 @@ export async function OperatorHome({ operatorId, searchParams }: { operatorId: s
     <PageFrame>
       <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight text-daet-ink">{operator?.business_name ?? "Your business"}</h1>
+          <h1 className="display-2 text-daet-ink">{operator?.business_name ?? "Your business"}</h1>
         </div>
         <div className="flex flex-wrap gap-2">
           <ButtonLink href="/tours/operator/bookings">Bookings{pendingCount ? ` (${pendingCount} to confirm)` : ""}</ButtonLink>
@@ -100,28 +100,28 @@ export async function OperatorHome({ operatorId, searchParams }: { operatorId: s
 
       <div className="mb-6 grid grid-cols-2 gap-3 lg:grid-cols-4">
         <Card>
-          <p className="text-xs font-bold text-daet-ink/70">Waiting for you</p>
+          <p className="text-sm text-slate-600">Waiting for you</p>
           <p className="mt-1 text-2xl font-bold text-yellow-800">{pendingCount ?? 0}</p>
-          <p className="text-xs text-daet-ink/70">booking request{pendingCount === 1 ? "" : "s"}</p>
+          <p className="text-sm text-slate-600">booking request{pendingCount === 1 ? "" : "s"}</p>
         </Card>
         <Card>
-          <p className="text-xs font-bold text-daet-ink/70">Received in {key === monthKey(thisMonth) ? "this month" : key}</p>
+          <p className="text-sm text-slate-600">Received in {key === monthKey(thisMonth) ? "this month" : key}</p>
           <p className="mt-1 text-2xl font-bold text-daet-forest">{revenue ? peso(revenue.received) : "—"}</p>
-          <Link href={`/tours/operator/payments?month=${key}`} className="text-xs font-bold text-daet-forest hover:underline">
+          <Link href={`/tours/operator/payments?month=${key}`} className="inline-flex min-h-11 items-center font-bold text-daet-forest hover:underline">
             Revenue report →
           </Link>
         </Card>
         <Card>
-          <p className="text-xs font-bold text-daet-ink/70">Occupancy</p>
+          <p className="text-sm text-slate-600">Occupancy</p>
           <p className="mt-1 text-2xl font-bold text-daet-ink">{occ.percent === null ? "—" : `${occ.percent}%`}</p>
-          <p className="text-xs text-daet-ink/70">{occ.seats ? `${occ.booked} of ${occ.seats} seats · ${occ.openDays} open days` : "No open dates this month"}</p>
+          <p className="text-sm text-slate-600">{occ.seats ? `${occ.booked} of ${occ.seats} seats · ${occ.openDays} open days` : "No open dates this month"}</p>
         </Card>
         <Card>
-          <p className="text-xs font-bold text-daet-ink/70">Rating</p>
+          <p className="text-sm text-slate-600">Rating</p>
           <div className="mt-1">
             <RatingBadge summary={rating} />
           </div>
-          <Link href="/tours/operator/reviews" className="text-xs font-bold text-daet-forest hover:underline">
+          <Link href="/tours/operator/reviews" className="inline-flex min-h-11 items-center font-bold text-daet-forest hover:underline">
             {unreplied ? `${unreplied} to reply →` : "Reviews →"}
           </Link>
         </Card>
@@ -178,7 +178,7 @@ export async function OperatorHome({ operatorId, searchParams }: { operatorId: s
 
           {revenue && revenue.byPackage.length > 0 ? (
             <Card>
-              <CardHeader title="Revenue by package" action={<Link href={`/tours/operator/payments/export?month=${key}`} prefetch={false} className="text-sm font-bold text-daet-forest hover:underline">CSV</Link>} />
+              <CardHeader title="Revenue by package" action={<Link href={`/tours/operator/payments/export?month=${key}`} prefetch={false} className="inline-flex min-h-11 items-center font-bold text-daet-forest hover:underline">Download CSV</Link>} />
               <ul className="space-y-2">
                 {revenue.byPackage.slice(0, 5).map((entry) => (
                   <li key={entry.title}>
@@ -197,17 +197,17 @@ export async function OperatorHome({ operatorId, searchParams }: { operatorId: s
 
           <Card>
             <CardHeader title="Manage" />
-            <div className="grid grid-cols-2 gap-2 text-sm">
+            <div className="grid grid-cols-2 gap-2">
               {[
                 ["/tours/operator/packages", "Packages"],
                 ["/tours/operator/bookings", "Bookings"],
-                ["/tours/operator/payments", "₱ Payments"],
+                ["/tours/operator/payments", "Payments"],
                 ["/tours/operator/reviews", "Reviews"],
                 ["/tours/messages", "Messages"],
                 ["/tours/operator/merch", "Merchandise"],
                 ["/tours/operator/settings", "Payment settings"],
               ].map(([href, label]) => (
-                <Link key={href} href={href} className="flex min-h-11 items-center rounded-2xl border border-daet-ink/10 px-3 font-bold text-daet-ink hover:bg-daet-sand/50">
+                <Link key={href} href={href} className="flex min-h-12 items-center justify-between rounded-2xl bg-slate-50 px-4 font-bold text-daet-ink transition hover:bg-blue-50 active:scale-[0.98]">
                   {label}
                 </Link>
               ))}
@@ -225,10 +225,10 @@ function BookingLines({ bookings, title }: { bookings: DayBooking[]; title: (b: 
       {bookings.map((b) => (
         <li key={b.id} className="flex items-start justify-between gap-2 py-2">
           <div className="min-w-0">
-            <Link href={`/tours/operator/bookings?status=${b.status}#booking-${b.id}`} className="block truncate font-bold text-daet-ink hover:underline">
+            <Link href={`/tours/operator/bookings?status=${b.status}#booking-${b.id}`} className="flex min-h-11 items-center truncate font-bold text-daet-ink hover:underline">
               {title(b)}
             </Link>
-            <p className="truncate text-xs text-daet-ink/70">
+            <p className="truncate text-sm text-slate-600">
               {b.booking_reference} · {b.contact_name} · {b.number_of_pax} pax{b.assigned_guide_id ? "" : " · no guide yet"}
             </p>
           </div>

@@ -114,7 +114,7 @@ export default async function BookPackagePage({ params }: PageProps) {
               />
             )}
             <div className="flex-1">
-              <h1 className="text-2xl font-bold text-daet-ink">{pkg.title}</h1>
+              <h1 className="display-2 text-daet-ink">{pkg.title}</h1>
               <p className="mt-2 text-sm text-daet-ink/70">
                 <LineIcon name="pin" className="inline-block h-[1.1em] w-[1.1em] align-[-0.15em]" /> {pkg.location_name} · <LineIcon name="clock" className="inline-block h-[1.1em] w-[1.1em] align-[-0.15em]" /> {pkg.duration_value}{" "}
                 {pkg.duration_type === "hours" ? "hours" : "days"}

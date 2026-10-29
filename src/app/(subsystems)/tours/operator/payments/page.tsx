@@ -51,8 +51,7 @@ export default async function OperatorPaymentsPage({
           <Link href="/tours/operator/dashboard" className="inline-flex min-h-11 items-center text-sm font-bold text-daet-forest hover:underline">
             ← Dashboard
           </Link>
-          <p className="text-sm font-bold text-daet-leaf">{result.businessName}</p>
-          <h1 className="mt-1 text-3xl font-bold tracking-tight text-daet-ink">Revenue &amp; payments</h1>
+          <h1 className="display-2 text-daet-ink">Revenue &amp; payments</h1>
         </div>
         <ButtonLink href={`/tours/operator/payments/export?month=${key}`} variant="secondary" prefetch={false}>
           Download CSV
@@ -75,20 +74,20 @@ export default async function OperatorPaymentsPage({
 
       <div className="mb-6 grid grid-cols-2 gap-3 lg:grid-cols-4">
         <Card>
-          <p className="text-xs font-bold text-daet-ink/70">Received</p>
+          <p className="text-sm text-slate-600">Received</p>
           <p className="mt-1 text-2xl font-bold text-daet-forest">{peso(summary.received)}</p>
-          <p className="text-xs text-daet-ink/70">{summary.count} payment{summary.count === 1 ? "" : "s"}</p>
+          <p className="text-sm text-slate-600">{summary.count} payment{summary.count === 1 ? "" : "s"}</p>
         </Card>
         <Card>
-          <p className="text-xs font-bold text-daet-ink/70">Online (PayMongo)</p>
+          <p className="text-sm text-slate-600">Online (PayMongo)</p>
           <p className="mt-1 text-2xl font-bold text-daet-ink">{peso(summary.online)}</p>
         </Card>
         <Card>
-          <p className="text-xs font-bold text-daet-ink/70">Manual / verified receipts</p>
+          <p className="text-sm text-slate-600">Manual / verified receipts</p>
           <p className="mt-1 text-2xl font-bold text-daet-ink">{peso(summary.manual)}</p>
         </Card>
         <Card>
-          <p className="text-xs font-bold text-daet-ink/70">Refunded</p>
+          <p className="text-sm text-slate-600">Refunded</p>
           <p className="mt-1 text-2xl font-bold text-daet-ink">{peso(summary.refunded)}</p>
         </Card>
       </div>
@@ -140,7 +139,7 @@ export default async function OperatorPaymentsPage({
                     {row.booking_reference} · {row.tourist_name}
                   </p>
                   <p className="truncate text-sm text-daet-ink/70">{row.package_title}</p>
-                  <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-daet-ink/70">
+                  <div className="mt-1 flex flex-wrap items-center gap-2 text-sm text-slate-600">
                     <Badge tone={row.provider === "paymongo" ? "info" : "brand"}>{row.provider === "paymongo" ? "PayMongo" : "Manual"}</Badge>
                     <span>{ledgerMethodLabel(row)}</span>
                     {row.reference_number ? <span>Ref {row.reference_number}</span> : null}

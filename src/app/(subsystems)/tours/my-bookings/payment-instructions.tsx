@@ -39,7 +39,7 @@ export function PaymentInstructions({
           <p className="text-3xl font-bold text-daet-forest">
             {formatPeso(totalAmount)}
           </p>
-          <p className="mt-1 text-xs text-daet-ink/70">
+          <p className="mt-1 text-sm text-slate-600">
             Reference: {bookingReference}
           </p>
         </div>
@@ -107,7 +107,7 @@ export function PaymentInstructions({
 
         {/* Contact Operator */}
         <div className="rounded-2xl bg-daet-forest/10 p-4 text-center">
-          <p className="text-xs text-daet-ink/70">
+          <p className="text-sm text-slate-600">
             After sending payment, contact the operator:
           </p>
           <p className="mt-2 font-bold text-daet-ink">
@@ -119,7 +119,7 @@ export function PaymentInstructions({
               </>
             )}
           </p>
-          <p className="mt-2 text-xs text-daet-ink/70">
+          <p className="mt-2 text-sm text-slate-600">
             Send proof of payment (screenshot) to confirm your booking.
           </p>
         </div>

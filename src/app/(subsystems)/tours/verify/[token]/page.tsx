@@ -94,7 +94,7 @@ export default async function VerifyQrPage({ params }: PageProps) {
           ) : null}
           <p className="text-xl font-bold text-daet-ink">{badge.full_name}</p>
           <p className="mt-1">Accredited by the Daet Tourism Office through CONNECT-Daet.</p>
-          <p className="mt-3 text-xs text-daet-ink/70">Badge valid until {longDate(claims.exp * 1000)}</p>
+          <p className="mt-3 text-sm text-slate-600">Badge valid until {longDate(claims.exp * 1000)}</p>
         </ResultCard>
       </PageFrame>
     );
@@ -105,7 +105,7 @@ export default async function VerifyQrPage({ params }: PageProps) {
     data: { user },
   } = await supabase.auth.getUser();
   const signInLink = (
-    <Link href={`/login?next=${encodeURIComponent(`/tours/verify/${rawToken}`)}`} className="font-bold text-daet-forest underline">
+    <Link href={`/login?next=${encodeURIComponent(`/tours/verify/${rawToken}`)}`} className="inline-flex min-h-11 items-center font-bold text-daet-forest underline">
       Sign in
     </Link>
   );
@@ -169,7 +169,7 @@ export default async function VerifyQrPage({ params }: PageProps) {
         )}
         {!isTourist ? (
           <p className="mt-4">
-            <Link href={`/tours/guide/tours/${booking.id}/roster`} className="font-bold text-daet-forest underline">
+            <Link href={`/tours/guide/tours/${booking.id}/roster`} className="inline-flex min-h-11 items-center font-bold text-daet-forest underline">
               Open guest list
             </Link>
           </p>

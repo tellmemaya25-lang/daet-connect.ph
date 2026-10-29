@@ -186,7 +186,7 @@ export function OperatorRegistrationForm({
   return (
     <section className="mx-auto max-w-3xl">
       <div className="mb-7">
-        <h1 className="mt-2 text-3xl font-bold leading-tight tracking-tight text-daet-ink sm:text-4xl">
+        <h1 className="display-2 mt-2 text-daet-ink">
           Let’s get your tours on the map.
         </h1>
         <p className="mt-3 max-w-2xl text-base leading-7 text-daet-ink/70">
@@ -216,7 +216,7 @@ export function OperatorRegistrationForm({
                     <span className={`block truncate text-xs font-bold sm:text-sm ${active ? "text-daet-forest" : "text-daet-ink/65"}`}>
                       {step.title}
                     </span>
-                    <span className="hidden text-xs text-daet-ink/70 sm:block">{step.short}</span>
+                    <span className="hidden text-sm text-slate-600 sm:block">{step.short}</span>
                   </span>
                 </div>
               </li>
@@ -380,7 +380,7 @@ export function OperatorRegistrationForm({
                 requiredText: "Business permit",
               },
             ]).map((item) => (
-              <label key={item.field} className="block rounded-2xl border border-daet-ink/10 bg-daet-sand/50 p-4 sm:p-5">
+              <label key={item.field} className="block rounded-2xl bg-slate-50 p-4 sm:p-5">
                 <span className="flex flex-wrap items-center gap-2 text-sm font-bold text-daet-ink">
                   {item.title} <span className="text-red-600" aria-hidden="true">*</span>
                 </span>
@@ -397,7 +397,7 @@ export function OperatorRegistrationForm({
                   className="mt-4 block min-h-11 w-full cursor-pointer rounded-2xl border border-daet-ink/15 bg-white text-sm text-daet-ink file:mr-3 file:min-h-11 file:border-0 file:bg-daet-forest file:px-4 file:font-bold file:text-white hover:file:bg-daet-ink focus:outline-none focus:ring-4 focus:ring-daet-forest/10"
                 />
                 {files[item.field] ? (
-                  <span className="mt-3 flex items-start justify-between gap-3 text-xs text-daet-ink/70">
+                  <span className="mt-3 flex items-start justify-between gap-3 text-sm text-slate-600">
                     <span className="min-w-0 break-all font-semibold">{files[item.field]?.name}</span>
                     <span className="shrink-0">{formatFileSize(files[item.field]?.size ?? 0)}</span>
                   </span>
@@ -432,7 +432,7 @@ export function OperatorRegistrationForm({
               className="mt-4 block min-h-11 w-full cursor-pointer rounded-2xl border border-daet-ink/15 bg-white text-sm text-daet-ink file:mr-3 file:min-h-11 file:border-0 file:bg-daet-forest file:px-4 file:font-bold file:text-white hover:file:bg-daet-ink focus:outline-none focus:ring-4 focus:ring-daet-forest/10"
             />
             {files.gcashQr ? (
-              <span className="mt-3 flex items-start justify-between gap-3 text-xs text-daet-ink/70">
+              <span className="mt-3 flex items-start justify-between gap-3 text-sm text-slate-600">
                 <span className="min-w-0 break-all font-semibold">{files.gcashQr.name}</span>
                 <span className="shrink-0">{formatFileSize(files.gcashQr.size)}</span>
               </span>

@@ -217,7 +217,7 @@ export default async function OperatorPackageDetailPage({ params }: PageProps) {
         {/* Header with status */}
         <div className="mb-6 flex flex-wrap items-start justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-bold text-daet-ink">{pkg.title}</h1>
+            <h1 className="display-2 text-daet-ink">{pkg.title}</h1>
             <p className="mt-1 text-sm text-daet-ink/70">
               Last updated: {new Date(pkg.updated_at).toLocaleDateString()}
             </p>
@@ -315,7 +315,7 @@ export default async function OperatorPackageDetailPage({ params }: PageProps) {
                   {pkg.tours_package_price_variants.map((variant: any) => (
                     <div
                       key={variant.id}
-                      className="flex items-center justify-between rounded-2xl border border-daet-ink/10 p-4"
+                      className="bg-slate-50 flex items-center justify-between rounded-2xl p-4"
                     >
                       <div>
                         <p className="font-bold text-daet-ink">
@@ -325,7 +325,7 @@ export default async function OperatorPackageDetailPage({ params }: PageProps) {
                           )}
                         </p>
                         {(variant.min_pax || variant.max_pax) && (
-                          <p className="mt-1 text-xs text-daet-ink/70">
+                          <p className="mt-1 text-sm text-slate-600">
                             {variant.min_pax && `Min: ${variant.min_pax} pax`}
                             {variant.min_pax && variant.max_pax && " · "}
                             {variant.max_pax && `Max: ${variant.max_pax} pax`}
@@ -336,7 +336,7 @@ export default async function OperatorPackageDetailPage({ params }: PageProps) {
                         <p className="text-xl font-bold text-daet-ink">
                           {formatPeso(variant.price_per_pax || variant.flat_price || 0)}
                         </p>
-                        <p className="text-xs text-daet-ink/70">
+                        <p className="text-sm text-slate-600">
                           {variant.price_per_pax ? "per person" : "flat rate"}
                         </p>
                       </div>
@@ -405,7 +405,7 @@ export default async function OperatorPackageDetailPage({ params }: PageProps) {
                           </p>
                         )}
                         {(stop.latitude || stop.longitude) && (
-                          <p className="mt-1 text-xs text-daet-ink/70">
+                          <p className="mt-1 text-sm text-slate-600">
                             {stop.latitude}, {stop.longitude}
                           </p>
                         )}
@@ -429,7 +429,7 @@ export default async function OperatorPackageDetailPage({ params }: PageProps) {
                         className="aspect-video w-full object-cover"
                       />
                       {img.caption && (
-                        <p className="p-3 text-xs text-daet-ink/70">{img.caption}</p>
+                        <p className="p-3 text-sm text-slate-600">{img.caption}</p>
                       )}
                     </div>
                   ))}
@@ -445,11 +445,11 @@ export default async function OperatorPackageDetailPage({ params }: PageProps) {
 
               <div className="mt-4 space-y-4">
                 <div>
-                  <p className="text-xs text-daet-ink/70">Base price</p>
+                  <p className="text-sm text-slate-600">Base price</p>
                   <p className="mt-1 text-2xl font-bold text-daet-ink">
                     {formatPeso(displayPrice)}
                   </p>
-                  <p className="text-xs text-daet-ink/70">{priceLabel}</p>
+                  <p className="text-sm text-slate-600">{priceLabel}</p>
                 </div>
 
               </div>

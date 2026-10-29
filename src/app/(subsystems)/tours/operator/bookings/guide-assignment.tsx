@@ -75,7 +75,7 @@ export function GuideAssignment({
 
   if (availableGuides.length === 0) {
     return (
-      <div className="rounded-2xl border border-yellow-200 bg-yellow-50 p-3 text-sm text-yellow-800">
+      <div className="rounded-2xl bg-yellow-50 p-3 text-sm text-yellow-800">
         No approved guides available. Guides must be approved before assignment.
       </div>
     );
@@ -84,7 +84,7 @@ export function GuideAssignment({
   return (
     <div className="space-y-3">
       {error && (
-        <div className="rounded-2xl border border-red-200 bg-red-50 p-3 text-sm text-red-800">
+        <div className="rounded-2xl bg-red-50 p-3 text-sm text-red-800">
           {error}
         </div>
       )}
@@ -116,7 +116,7 @@ export function GuideAssignment({
           <button
             onClick={handleUnassign}
             disabled={isSubmitting}
-            className="rounded-full border border-daet-ink/20 bg-white px-4 py-2 text-sm font-bold text-daet-ink/80 transition hover:bg-slate-50 disabled:opacity-50"
+            className="inline-flex min-h-11 items-center rounded-full bg-slate-100 px-4 text-sm font-bold text-daet-ink transition hover:bg-slate-200 disabled:opacity-50"
           >
             {isSubmitting ? "Unassigning..." : "Unassign"}
           </button>
@@ -124,7 +124,7 @@ export function GuideAssignment({
           <button
             onClick={handleAssign}
             disabled={isSubmitting || !selectedGuideId}
-            className="rounded-full bg-daet-forest px-6 py-2 text-sm font-bold text-white transition hover:bg-blue-700 disabled:opacity-50"
+            className="inline-flex min-h-11 items-center justify-center rounded-full bg-daet-forest px-6 py-2 text-sm font-bold text-white transition hover:bg-blue-700 disabled:opacity-50"
           >
             {isSubmitting ? "Assigning..." : "Assign"}
           </button>

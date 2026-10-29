@@ -75,7 +75,7 @@ export default async function AdminReviewsPage({ searchParams }: { searchParams:
                       <Link href={`/tours/packages/${review.package_id}#reviews`} className="font-bold text-daet-ink hover:underline">
                         {pkg?.title ?? "Tour"}
                       </Link>
-                      <p className="text-xs text-daet-ink/70">
+                      <p className="text-sm text-slate-600">
                         {operator?.business_name} · {date(review.created_at)}
                       </p>
                     </div>

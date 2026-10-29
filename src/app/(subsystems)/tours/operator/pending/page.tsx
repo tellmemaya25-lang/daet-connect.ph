@@ -71,7 +71,7 @@ export default async function OperatorPendingPage() {
       <PageFrame>
         <section className="mx-auto max-w-2xl rounded-2xl border-red-200 bg-white p-6 sm:p-10">
           <span className="inline-flex rounded-full bg-red-50 px-3 py-1 text-xs font-bold text-red-700">Changes requested</span>
-          <h1 className="mt-4 text-3xl font-bold text-daet-ink">Please update your application</h1>
+          <h1 className="display-2 mt-4 text-daet-ink">Please update your application</h1>
           <p className="mt-3 text-sm leading-6 text-daet-ink/70">The Tourism Office could not approve the documents as submitted. You can review the note and send an updated application.</p>
           {application.accreditation_notes ? (
             <div className="mt-5 rounded-2xl bg-red-50 p-4 text-sm leading-6 text-red-950">
@@ -101,7 +101,7 @@ export default async function OperatorPendingPage() {
           <span className="inline-flex items-center gap-2 rounded-full bg-white/15 px-3 py-1 text-sm font-bold">
             <span className="h-2 w-2 animate-pulse rounded-full bg-daet-sun" /> In review
           </span>
-          <h1 className="mt-4 text-3xl font-bold sm:text-4xl">Pending Approval</h1>
+          <h1 className="display-2 mt-4">Pending Approval</h1>
           <p className="mt-3 max-w-lg text-sm leading-6 text-white">Your application is with the Daet Tourism Office. We’ll update this page once the review is complete.</p>
         </div>
         <div className="p-6 sm:p-10">

@@ -73,7 +73,7 @@ export default async function PackageAvailabilityPage({ params }: PageProps) {
           <span className="text-daet-ink">Dates &amp; seats</span>
         </nav>
 
-        <h1 className="text-3xl font-bold text-daet-ink">Dates &amp; seats</h1>
+        <h1 className="display-2 text-daet-ink">Dates &amp; seats</h1>
         <p className="mt-2 text-sm leading-6 text-daet-ink/70">
           Open the dates you run this tour and how many guests you can take. Tourists can then book only those dates, and a date
           closes automatically when its seats are taken. Cancelled and declined bookings give their seats back.

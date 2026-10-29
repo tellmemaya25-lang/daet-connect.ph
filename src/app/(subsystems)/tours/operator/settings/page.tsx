@@ -70,7 +70,7 @@ export default async function OperatorSettingsPage() {
       <div className="mx-auto max-w-4xl">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-4xl font-bold text-daet-ink">Operator Settings</h1>
+          <h1 className="display-2 text-daet-ink">Operator Settings</h1>
           <p className="mt-2 text-sm text-daet-ink/70">
             Manage your business profile and payment details
           </p>

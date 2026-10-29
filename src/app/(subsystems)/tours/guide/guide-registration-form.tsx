@@ -185,7 +185,7 @@ export function GuideRegistrationForm({
   return (
     <section className="mx-auto max-w-3xl">
       <div className="mb-7">
-        <h1 className="mt-2 text-3xl font-bold leading-tight tracking-tight text-daet-ink sm:text-4xl">Register as a local guide.</h1>
+        <h1 className="display-2 mt-2 text-daet-ink">Register as a local guide.</h1>
         <p className="mt-3 max-w-2xl text-base leading-7 text-daet-ink/70">Create your public guide profile and submit one government-issued ID for private Tourism Office verification.</p>
       </div>
 
@@ -238,7 +238,7 @@ export function GuideRegistrationForm({
               <label className="block">
               <span className="text-sm font-bold text-daet-ink">Guide introduction <span className="text-red-600" aria-hidden="true">*</span></span>
               <textarea data-guide-step="1" name="bio" value={values.bio} onChange={(event) => changeProfile("bio", event.target.value)} required={activeStep === 1} maxLength={1000} rows={4} placeholder="Tell visitors about your local knowledge, guiding experience, and the places you love to share." aria-invalid={Boolean(fieldErrors.bio)} aria-describedby={fieldErrors.bio ? fieldErrorId("bio") : undefined} className="mt-2 w-full rounded-2xl border border-daet-ink/15 px-4 py-3 text-base outline-none focus:border-daet-forest focus:ring-4 focus:ring-daet-forest/10 aria-[invalid=true]:border-red-400" />
-              <span className="mt-1 block text-xs text-daet-ink/70">20–1,000 characters.</span>
+              <span className="mt-1 block text-sm text-slate-600">20–1,000 characters.</span>
               </label>
               <FieldError id={fieldErrorId("bio")} message={fieldErrors.bio} />
               </div>
@@ -273,12 +273,12 @@ export function GuideRegistrationForm({
               <span className="mt-1 block text-sm leading-6 text-daet-ink/70">Show the full ID clearly. Upload only one side if it contains the required details.</span>
               <input data-guide-step="2" name="idDocument" type="file" accept="image/jpeg,image/png,image/webp,application/pdf,.pdf" required={activeStep === 2 && !idDocument} onChange={(event) => { setIdDocument(event.target.files?.[0] ?? null); setClientError(""); }} aria-invalid={Boolean(fieldErrors.idDocument)} aria-describedby={fieldErrors.idDocument ? fieldErrorId("idDocument") : "idDocument-help"} className="mt-3 block min-h-11 w-full cursor-pointer rounded-2xl border border-daet-ink/15 bg-white text-sm text-daet-ink file:mr-3 file:min-h-11 file:border-0 file:bg-daet-forest file:px-4 file:font-bold file:text-white hover:file:bg-daet-ink focus:outline-none focus:ring-4 focus:ring-daet-forest/10" />
               {idDocument ? <span className="mt-2 block break-all text-xs font-semibold text-daet-ink/70">{idDocument.name} · {formatBytes(idDocument.size)}</span> : null}
-              <span id="idDocument-help" className="mt-2 block text-xs text-daet-ink/70">JPG, PNG, WebP, or PDF · maximum 5 MB after image compression.</span>
+              <span id="idDocument-help" className="mt-2 block text-sm text-slate-600">JPG, PNG, WebP, or PDF · maximum 5 MB after image compression.</span>
               </label>
               <FieldError id={fieldErrorId("idDocument")} message={fieldErrors.idDocument} />
               </div>
 
-            <div className="rounded-2xl border border-yellow-200 bg-yellow-50 p-4 sm:col-span-2">
+            <div className="rounded-2xl bg-yellow-50 p-4 sm:col-span-2">
               <label className="flex cursor-pointer items-start gap-3">
                 <input data-guide-step="2" type="checkbox" name="consentFullIdDisplay" checked={consent} onChange={(event) => { setConsent(event.target.checked); setClientError(""); }} required={activeStep === 2} aria-invalid={Boolean(fieldErrors.consentFullIdDisplay)} aria-describedby={fieldErrors.consentFullIdDisplay ? fieldErrorId("consentFullIdDisplay") : "consent-text"} className="mt-1 h-5 w-5 shrink-0 accent-daet-forest" />
                 <span id="consent-text" className="text-sm leading-6 text-yellow-950">
@@ -299,13 +299,13 @@ export function GuideRegistrationForm({
           ) : qrLoading ? (
             <div className="mt-6 grid min-h-64 place-items-center rounded-2xl bg-daet-sand text-sm font-semibold text-daet-ink/70">Preparing QR preview…</div>
           ) : qrPreview?.status === "success" && qrPreview.qrDataUrl ? (
-            <div className="mt-6 flex flex-col items-center rounded-2xl border border-daet-ink/10 bg-daet-sand/50 p-5 text-center sm:p-8">
+            <div className="mt-6 flex flex-col items-center rounded-2xl bg-slate-50 p-5 text-center sm:p-8">
               <div className="rounded-2xl bg-white p-4"><img src={qrPreview.qrDataUrl} alt="Preview of your guide badge QR code" width={240} height={240} className="h-56 w-56 sm:h-64 sm:w-64" /></div>
               <p className="mt-4 text-sm font-bold text-daet-ink">Preview only · activates after approval</p>
               <p className="mt-1 max-w-md break-all text-xs leading-5 text-daet-ink/70">No personal or ID data is encoded. Your final badge image is protected until the Tourism Office approves your application.</p>
             </div>
           ) : (
-            <div className="mt-6 rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-900" role="alert">
+            <div className="mt-6 rounded-2xl bg-red-50 p-4 text-sm text-red-900" role="alert">
               {qrPreview?.message ?? "QR preview is unavailable."}
               <button type="button" onClick={() => { previewRequested.current = false; setQrPreview(null); setPreviewAttempt((attempt) => attempt + 1); }} className="ml-2 font-bold underline underline-offset-4">Try again</button>
             </div>

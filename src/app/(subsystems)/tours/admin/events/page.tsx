@@ -76,7 +76,7 @@ export default async function AdminEventsPage({
                     <input type="hidden" name="id" value={event.id} />
                     <ConfirmSubmitButton
                       message={`Delete "${event.title}"? This cannot be undone.`}
-                      className="inline-flex min-h-11 w-full items-center justify-center rounded-full border border-red-200 px-5 text-sm font-bold text-red-700 hover:bg-red-50"
+                      className="inline-flex min-h-11 w-full items-center justify-center rounded-full px-5 text-sm font-bold text-red-700 hover:bg-red-50"
                     >
                       Delete
                     </ConfirmSubmitButton>

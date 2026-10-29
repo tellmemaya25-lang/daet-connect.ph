@@ -99,7 +99,7 @@ export function PackageBasicDetailsStep({
           maxLength={2000}
           className="mt-2 w-full rounded-2xl bg-white px-4 py-3 text-sm outline-none transition placeholder:text-daet-ink/35 focus:border-daet-forest focus:ring-4 focus:ring-daet-forest/10"
         />
-        <p className="mt-1 text-xs text-daet-ink/70">
+        <p className="mt-1 text-sm text-slate-600">
           {description.length}/2000 characters
         </p>
       </div>

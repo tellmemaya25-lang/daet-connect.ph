@@ -66,7 +66,7 @@ export default async function AdminOperatorQueuePage({
     return (
       <PageFrame adminNav>
         <div className="mx-auto max-w-2xl py-8">
-          <h1 className="mb-4 text-3xl font-bold tracking-tight text-daet-ink">Operator applications</h1>
+          <h1 className="display-2 mb-4 text-daet-ink">Operator applications</h1>
           <Notice variant="error" title="Server storage access is not configured">
             Set the service-role key on the server. It is required to make short-lived links to private application documents.
           </Notice>
@@ -130,7 +130,7 @@ export default async function AdminOperatorQueuePage({
     <PageFrame adminNav>
       <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <h1 className="mt-2 text-3xl font-bold tracking-tight text-daet-ink sm:text-4xl">Operator applications</h1>
+          <h1 className="display-2 mt-2 text-daet-ink">Operator applications</h1>
           <p className="mt-2 max-w-2xl text-sm leading-6 text-daet-ink/65">Review the submitted business details and documents, then approve or return the application with a clear reason.</p>
         </div>
         <span className="inline-flex min-h-10 items-center self-start rounded-full bg-yellow-50 px-4 text-sm font-bold text-yellow-900 sm:self-auto">Pending · page {page}</span>

@@ -46,9 +46,9 @@ export function AttractionForm({ attraction }: { attraction?: Attraction }) {
         </PromoField>
       </div>
 
-      <fieldset className="rounded-2xl border border-daet-ink/10 p-4">
+      <fieldset className="bg-slate-50 rounded-2xl p-4">
         <legend className="px-1 text-sm font-bold text-daet-ink">Map pin</legend>
-        <p className="text-xs text-daet-ink/70">In Google Maps, long-press the spot and copy the two numbers. Leave both empty if unknown.</p>
+        <p className="text-sm text-slate-600">In Google Maps, long-press the spot and copy the two numbers. Leave both empty if unknown.</p>
         <div className="mt-3 grid gap-5 sm:grid-cols-2">
           <PromoField id="latitude" label="Latitude" error={errors.latitude}>
             <input id="latitude" name="latitude" inputMode="decimal" defaultValue={attraction?.latitude ?? ""} aria-invalid={invalid("latitude")} className={promoInputClass} placeholder="14.1131" />

@@ -47,8 +47,7 @@ export default async function OperatorMerchPage({ searchParams }: { searchParams
           <Link href="/tours/operator/dashboard" className="inline-flex min-h-11 items-center text-sm font-bold text-daet-forest hover:underline">
             ← Dashboard
           </Link>
-          <p className="text-sm font-bold text-daet-leaf">{operator.business_name}</p>
-          <h1 className="mt-1 text-3xl font-bold tracking-tight text-daet-ink">My merchandise</h1>
+          <h1 className="display-2 text-daet-ink">My merchandise</h1>
           <p className="mt-1 max-w-xl text-sm text-daet-ink/65">Sell shirts, souvenirs or pasalubong on the CONNECT-Daet merch showcase. The Tourism Office approves each product first.</p>
         </div>
         <ButtonLink href="/tours/operator/merch/new">+ Submit a product</ButtonLink>
@@ -71,8 +70,8 @@ export default async function OperatorMerchPage({ searchParams }: { searchParams
                 <div className="min-w-0">
                   <div className="flex flex-wrap items-center gap-2">
                     <Badge tone={TONE[item.review_status]}>{MERCH_REVIEW_LABELS[item.review_status]}</Badge>
-                    <span className="text-xs text-daet-ink/70">{MERCH_CATEGORIES[item.category]}</span>
-                    {item.review_status === "approved" && !item.is_active ? <span className="text-xs text-daet-ink/70">· hidden by you</span> : null}
+                    <span className="text-sm text-slate-600">{MERCH_CATEGORIES[item.category]}</span>
+                    {item.review_status === "approved" && !item.is_active ? <span className="text-sm text-slate-600">· hidden by you</span> : null}
                   </div>
                   <p className="mt-1 truncate font-bold text-daet-ink">{item.name}</p>
                   <p className="text-sm text-daet-ink/70">{formatPeso(item.price) ?? "Ask seller"} · {item.seller_name}</p>
@@ -89,7 +88,7 @@ export default async function OperatorMerchPage({ searchParams }: { searchParams
                   <input type="hidden" name="id" value={item.id} />
                   <ConfirmSubmitButton
                     message={`Remove "${item.name}"? This cannot be undone.`}
-                    className="inline-flex min-h-11 w-full items-center justify-center rounded-full border border-red-200 px-5 text-sm font-bold text-red-700 hover:bg-red-50"
+                    className="inline-flex min-h-11 w-full items-center justify-center rounded-full px-5 text-sm font-bold text-red-700 hover:bg-red-50"
                   >
                     Remove
                   </ConfirmSubmitButton>

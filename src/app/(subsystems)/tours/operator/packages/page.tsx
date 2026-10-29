@@ -96,10 +96,7 @@ export default async function OperatorPackagesPage({
       <div className="mx-auto max-w-6xl">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between mb-6">
           <div className="flex-1">
-            <p className="text-sm font-bold text-daet-leaf">
-              Package management
-            </p>
-            <h1 className="mt-2 text-3xl font-bold text-daet-ink">Your packages</h1>
+            <h1 className="display-2 text-daet-ink">Your packages</h1>
             <p className="mt-2 text-sm leading-6 text-daet-ink/65">
               Create and manage tour packages for tourists to book.
             </p>
@@ -184,7 +181,7 @@ export default async function OperatorPackagesPage({
                     </span>
                   </div>
                   <p className="mt-2 text-sm text-daet-ink/70"><LineIcon name="pin" className="inline-block h-[1.1em] w-[1.1em] align-[-0.15em]" /> {pkg.location_name}</p>
-                  <p className="mt-1 text-xs text-daet-ink/70">
+                  <p className="mt-1 text-sm text-slate-600">
                     Updated {new Date(pkg.updated_at).toLocaleDateString()}
                   </p>
                   <Link

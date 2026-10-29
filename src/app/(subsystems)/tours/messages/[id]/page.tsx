@@ -57,7 +57,7 @@ export default async function ConversationPage({ params }: PageProps) {
         </Link>
         <header className="mt-3 rounded-2xl bg-white p-4">
           <Badge tone="neutral">{KIND_LABELS[header.kind] ?? "Chat"}</Badge>
-          <h1 className="mt-1 text-2xl font-bold text-daet-ink">{view.title}</h1>
+          <h1 className="display-2 text-daet-ink">{view.title}</h1>
           <p className="text-slate-600">{view.subtitle}</p>
           {view.link ? (
             <Link href={view.link.href} className="mt-1 inline-flex min-h-11 items-center font-bold text-blue-700 underline">

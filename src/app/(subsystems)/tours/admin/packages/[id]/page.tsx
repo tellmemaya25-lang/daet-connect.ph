@@ -42,7 +42,7 @@ export default async function AdminPackageReviewPage({
           <Link href="/tours/admin/packages" className="text-sm font-bold text-daet-ink/70 hover:text-daet-ink">
             ← All packages
           </Link>
-          <div className="mt-4 bg-red-50 border border-red-200 rounded-2xl p-6 text-center">
+          <div className="mt-4 bg-red-50 rounded-2xl p-6 text-center">
             <h1 className="text-lg font-bold text-red-800">Package not found</h1>
             <p className="text-red-700 text-sm mt-2">It may have been deleted. Go back to the package list and try again.</p>
           </div>
@@ -127,7 +127,7 @@ export default async function AdminPackageReviewPage({
 
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-daet-ink">{packageWithOperator.title}</h1>
+          <h1 className="display-2 text-daet-ink">{packageWithOperator.title}</h1>
           <p className="mt-2 text-daet-ink/80">Review package details and approve or reject</p>
         </div>
 

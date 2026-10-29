@@ -156,7 +156,7 @@ export function CoverImageStep({
 
         {/* Upload Error */}
         {uploadError && (
-          <div className="p-3 bg-red-50 border border-red-200 rounded text-sm text-red-800 flex items-start gap-2">
+          <div className="p-3 bg-red-50 rounded-2xl text-sm text-red-800 flex items-start gap-2">
             <svg className="w-5 h-5 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
               <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
             </svg>
@@ -196,7 +196,7 @@ export function CoverImageStep({
                 })
               }
               disabled={uploadLoading || loading}
-              className="px-4 py-2 border border-red-300 text-red-700 rounded-2xl font-medium hover:bg-red-50 transition disabled:opacity-50 disabled:cursor-not-allowed"
+              className="px-4 py-2 text-red-700 rounded-2xl font-medium hover:bg-red-50 transition disabled:opacity-50 disabled:cursor-not-allowed"
             >
               Remove Image
             </button>
@@ -212,7 +212,7 @@ export function CoverImageStep({
 
         {/* Read-only indicator */}
         {isReadOnly && (
-          <div className="p-3 bg-daet-sand border border-blue-200 rounded text-sm text-daet-leaf">
+          <div className="p-3 rounded-2xl bg-blue-50 text-sm text-blue-900">
             ℹ️ Cover image cannot be changed for this package status.
           </div>
         )}

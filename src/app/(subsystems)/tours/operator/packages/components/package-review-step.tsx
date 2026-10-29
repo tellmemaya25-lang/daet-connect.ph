@@ -56,7 +56,7 @@ export function PackageReviewStep({
         {/* Description */}
         {data.description && (
           <div>
-            <p className="text-xs font-bold text-daet-ink/70">
+            <p className="text-sm text-slate-600">
               Description
             </p>
             <p className="mt-1 text-sm leading-6 text-daet-ink/70">{data.description}</p>
@@ -66,7 +66,7 @@ export function PackageReviewStep({
         {/* Inclusions */}
         {data.inclusions.length > 0 && (
           <div>
-            <p className="text-xs font-bold text-daet-ink/70">
+            <p className="text-sm text-slate-600">
               Inclusions ({data.inclusions.length})
             </p>
             <ul className="mt-2 space-y-1">
@@ -83,7 +83,7 @@ export function PackageReviewStep({
         {/* Exclusions */}
         {data.exclusions.length > 0 && (
           <div>
-            <p className="text-xs font-bold text-daet-ink/70">
+            <p className="text-sm text-slate-600">
               Exclusions ({data.exclusions.length})
             </p>
             <ul className="mt-2 space-y-1">
@@ -99,7 +99,7 @@ export function PackageReviewStep({
 
         {/* Price Variants */}
         <div>
-          <p className="text-xs font-bold text-daet-ink/70">
+          <p className="text-sm text-slate-600">
             Price variants ({data.priceVariants.length})
           </p>
           <div className="mt-2 space-y-2">
@@ -120,7 +120,7 @@ export function PackageReviewStep({
                         <span className="ml-2 text-xs text-daet-forest">(Default)</span>
                       )}
                     </p>
-                    <p className="text-xs text-daet-ink/70">
+                    <p className="text-sm text-slate-600">
                       {variant.minPax}
                       {variant.maxPax ? `–${variant.maxPax}` : "+"} pax
                     </p>
@@ -138,7 +138,7 @@ export function PackageReviewStep({
 
         {/* Stops */}
         <div>
-          <p className="text-xs font-bold text-daet-ink/70">
+          <p className="text-sm text-slate-600">
             Itinerary stops ({data.stops.length})
           </p>
           <div className="mt-2 space-y-1">
@@ -155,7 +155,7 @@ export function PackageReviewStep({
       </div>
 
       {/* Warning Box */}
-      <div className="rounded-2xl border border-yellow-200 bg-yellow-50 p-4 text-sm">
+      <div className="rounded-2xl bg-yellow-50 p-4 text-sm">
         <p className="font-bold text-yellow-900"><LineIcon name="warning" className="inline-block h-[1.1em] w-[1.1em] align-[-0.15em]" /> Before submitting</p>
         <ul className="mt-2 space-y-1 text-xs text-yellow-800">
           <li>• All information is accurate and up-to-date</li>

@@ -54,7 +54,7 @@ export function PackageReviewForm({ packageId, currentStatus }: PackageReviewFor
 
       {message && (
         <div className={`mb-4 p-4 rounded-2xl ${
-          message.type === 'success' ? 'bg-green-50 text-green-800 border border-green-200' : 'bg-red-50 text-red-800 border border-red-200'
+          message.type === 'success' ? 'bg-green-50 text-green-800' : 'bg-red-50 text-red-800'
         }`}>
           {message.text}
         </div>
@@ -104,7 +104,7 @@ export function PackageReviewForm({ packageId, currentStatus }: PackageReviewFor
           <button
             type="submit"
             disabled={isSubmitting || status === getValidStatus(currentStatus)}
-            className="flex-1 bg-daet-forest text-white px-4 py-2 rounded-2xl hover:bg-daet-leaf disabled:bg-slate-300 disabled:cursor-not-allowed font-medium"
+            className="min-h-11 flex-1 bg-daet-forest text-white px-4 py-2 rounded-2xl hover:bg-daet-leaf disabled:bg-slate-300 disabled:cursor-not-allowed font-medium"
           >
             {isSubmitting ? 'Updating...' : 'Update Status'}
           </button>

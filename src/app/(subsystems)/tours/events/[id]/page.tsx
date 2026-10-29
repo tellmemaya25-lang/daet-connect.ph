@@ -158,7 +158,7 @@ function EventTours({ tours, attractionName }: { tours: EventTour[]; attractionN
       {tours.length === 0 ? (
         <p className="mt-2 text-sm text-daet-ink/70">
           No tours have open dates during this event yet.{" "}
-          <Link href="/tours/browse" className="font-bold text-daet-forest underline">
+          <Link href="/tours/browse" className="inline-flex min-h-11 items-center font-bold text-daet-forest underline">
             Browse all tours
           </Link>
         </p>
@@ -172,7 +172,7 @@ function EventTours({ tours, attractionName }: { tours: EventTour[]; attractionN
                 </div>
                 <div className="min-w-0">
                   <p className="font-bold text-daet-ink">{tour.title}</p>
-                  <p className="mt-0.5 text-xs text-daet-ink/70">
+                  <p className="mt-0.5 text-sm text-slate-600">
                     Open {tour.dates.slice(0, 3).map(shortDate).join(", ")}
                     {tour.dates.length > 3 ? ` +${tour.dates.length - 3} more` : ""}
                   </p>

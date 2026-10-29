@@ -182,7 +182,7 @@ export function PricingStep({
                     checked={variant.isDefault}
                     onChange={() => handleSetDefault(variant.id)}
                     disabled={!canEditVariants || loading}
-                    className="w-4 h-4 rounded border-daet-ink/20 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="w-4 h-4 rounded-2xl border-daet-ink/20 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                   />
                 </td>
                 <td className="px-4 py-3 space-x-2">
@@ -225,7 +225,7 @@ export function PricingStep({
 
       {/* Validation Errors */}
       {Object.keys(pricingErrors).length > 0 && (
-        <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded text-sm text-red-800">
+        <div className="mt-4 p-3 bg-red-50 rounded-2xl text-sm text-red-800">
           <p className="font-medium">Pricing errors:</p>
           <ul className="mt-1 space-y-1">
             {Object.entries(pricingErrors).map(([key, message]) => (
@@ -349,7 +349,7 @@ export function PricingStep({
                 <button
                   type="button"
                   onClick={handleAddVariant}
-                  className="flex-1 px-4 py-2 bg-daet-forest text-white rounded-2xl hover:bg-daet-leaf transition"
+                  className="min-h-11 flex-1 px-4 py-2 bg-daet-forest text-white rounded-2xl hover:bg-daet-leaf transition"
                 >
                   {editingId ? "Update" : "Add"}
                 </button>
@@ -361,7 +361,7 @@ export function PricingStep({
 
       {/* Help text */}
       {!canAddVariants && (
-        <div className="mt-4 p-3 bg-daet-sand border border-blue-200 rounded text-sm text-daet-leaf">
+        <div className="mt-4 p-3 rounded-2xl bg-blue-50 text-sm text-blue-900">
           ℹ️ Price variants cannot be modified for this package status.
         </div>
       )}

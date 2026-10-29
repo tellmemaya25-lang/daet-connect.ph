@@ -75,10 +75,10 @@ export function PaymentRecorder({
   };
 
   return (
-    <div className="rounded-2xl border border-daet-ink/10 bg-daet-sand/30 p-4">
+    <div className="rounded-2xl bg-slate-50 p-4">
       <div className="mb-3 flex items-center justify-between">
         <div>
-          <p className="text-xs font-bold text-daet-ink/70">
+          <p className="text-sm text-slate-600">
             Payment Status
           </p>
           <span
@@ -92,7 +92,7 @@ export function PaymentRecorder({
         {paymentStatus !== "paid" && (
           <button
             onClick={() => setIsOpen(!isOpen)}
-            className="rounded-full bg-daet-forest px-4 py-2 text-sm font-bold text-white transition hover:bg-blue-700"
+            className="inline-flex min-h-11 items-center rounded-full bg-daet-forest px-4 text-sm font-bold text-white transition hover:bg-blue-700"
           >
             {isOpen ? "Cancel" : "Record Payment"}
           </button>
@@ -194,7 +194,7 @@ export function PaymentRecorder({
           <button
             type="submit"
             disabled={isSubmitting}
-            className="w-full rounded-full bg-daet-forest px-4 py-2 text-sm font-bold text-white transition hover:bg-blue-700 disabled:opacity-50"
+            className="inline-flex min-h-11 items-center justify-center w-full rounded-full bg-daet-forest px-4 py-2 text-sm font-bold text-white transition hover:bg-blue-700 disabled:opacity-50"
           >
             {isSubmitting ? "Recording..." : "Record Payment"}
           </button>

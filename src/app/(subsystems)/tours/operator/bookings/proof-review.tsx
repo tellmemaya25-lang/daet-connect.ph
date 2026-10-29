@@ -57,7 +57,7 @@ export function ProofReview({ proofs }: { proofs: ReviewableProof[] }) {
   }
 
   return (
-    <div className="mb-4 rounded-2xl border border-yellow-200 bg-yellow-50/60 p-4">
+    <div className="mb-4 rounded-2xl bg-yellow-50/60 p-4">
       <p className="mb-3 flex items-center gap-2 text-xs font-bold text-yellow-900">
         Receipts to verify <Badge tone="warning">{proofs.length}</Badge>
       </p>

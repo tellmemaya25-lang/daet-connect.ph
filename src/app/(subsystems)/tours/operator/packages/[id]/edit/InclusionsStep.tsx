@@ -167,7 +167,7 @@ export function InclusionsStep({
             {inclusions.map((item, index) => (
               <div
                 key={item.id}
-                className="flex items-center gap-2 p-3 bg-green-50 border border-green-200 rounded-2xl hover:bg-green-100 transition"
+                className="flex items-center gap-2 p-3 bg-green-50 rounded-2xl hover:bg-green-100 transition"
               >
                 <span className="text-sm font-medium text-green-700 min-w-4">{index + 1}.</span>
                 {canEditItems && editingId !== item.id ? (
@@ -177,7 +177,7 @@ export function InclusionsStep({
                     type="text"
                     value={item.text}
                     onChange={() => {}}
-                    className="flex-1 px-2 py-1 border border-daet-ink/20 rounded bg-white"
+                    className="flex-1 px-2 py-1 border border-daet-ink/20 rounded-2xl bg-white"
                     disabled
                   />
                 )}
@@ -188,7 +188,7 @@ export function InclusionsStep({
                         type="button"
                         onClick={() => handleReorder(inclusions, "up", index)}
                         disabled={index === 0 || loading}
-                        className="p-1 hover:bg-green-200 rounded disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="p-1 hover:bg-green-200 rounded-2xl disabled:opacity-50 disabled:cursor-not-allowed"
                         title="Move up"
                       >
                         <svg className="w-4 h-4 text-daet-ink/80" fill="currentColor" viewBox="0 0 20 20">
@@ -199,7 +199,7 @@ export function InclusionsStep({
                         type="button"
                         onClick={() => handleReorder(inclusions, "down", index)}
                         disabled={index === inclusions.length - 1 || loading}
-                        className="p-1 hover:bg-green-200 rounded disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="p-1 hover:bg-green-200 rounded-2xl disabled:opacity-50 disabled:cursor-not-allowed"
                         title="Move down"
                       >
                         <svg className="w-4 h-4 text-daet-ink/80" fill="currentColor" viewBox="0 0 20 20">
@@ -237,7 +237,7 @@ export function InclusionsStep({
             ))}
           </div>
         ) : (
-          <p className="text-daet-ink/70 text-sm p-3 bg-slate-50 rounded">No inclusions yet.</p>
+          <p className="text-daet-ink/70 text-sm p-3 bg-slate-50 rounded-2xl">No inclusions yet.</p>
         )}
       </div>
 
@@ -253,7 +253,7 @@ export function InclusionsStep({
             {exclusions.map((item, index) => (
               <div
                 key={item.id}
-                className="flex items-center gap-2 p-3 bg-red-50 border border-red-200 rounded-2xl hover:bg-red-100 transition"
+                className="flex items-center gap-2 p-3 bg-red-50 rounded-2xl hover:bg-red-100 transition"
               >
                 <span className="text-sm font-medium text-red-700 min-w-4">{index + 1}.</span>
                 <span className="flex-1 text-daet-ink line-through">{item.text}</span>
@@ -287,13 +287,13 @@ export function InclusionsStep({
             ))}
           </div>
         ) : (
-          <p className="text-daet-ink/70 text-sm p-3 bg-slate-50 rounded">No exclusions yet.</p>
+          <p className="text-daet-ink/70 text-sm p-3 bg-slate-50 rounded-2xl">No exclusions yet.</p>
         )}
       </div>
 
       {/* Validation Errors */}
       {Object.keys(inclusionErrors).length > 0 && (
-        <div className="p-3 bg-red-50 border border-red-200 rounded text-sm text-red-800">
+        <div className="p-3 bg-red-50 rounded-2xl text-sm text-red-800">
           <p className="font-medium">Inclusion errors:</p>
           <ul className="mt-1 space-y-1">
             {Object.entries(inclusionErrors).map(([key, message]) => (
@@ -325,7 +325,7 @@ export function InclusionsStep({
                   className="w-full px-3 py-2 border border-daet-ink/20 rounded-2xl focus:ring-2 focus:ring-daet-forest/30 outline-none resize-none"
                   placeholder="e.g., Hotel accommodation"
                 />
-                <p className="text-xs text-daet-ink/70 mt-1">
+                <p className="text-sm text-slate-600 mt-1">
                   {formData.text.length}/{EDIT_LIMITS.inclusionText.max}
                 </p>
               </div>
@@ -370,7 +370,7 @@ export function InclusionsStep({
                 <button
                   type="button"
                   onClick={handleAddItem}
-                  className="flex-1 px-4 py-2 bg-daet-forest text-white rounded-2xl hover:bg-daet-leaf transition"
+                  className="min-h-11 flex-1 px-4 py-2 bg-daet-forest text-white rounded-2xl hover:bg-daet-leaf transition"
                 >
                   {editingId ? "Update" : "Add"}
                 </button>
@@ -382,7 +382,7 @@ export function InclusionsStep({
 
       {/* Help text */}
       {inclusions.length === 0 && (
-        <div className="p-3 bg-yellow-50 border border-yellow-200 rounded text-sm text-yellow-800">
+        <div className="p-3 bg-yellow-50 rounded-2xl text-sm text-yellow-800">
           <LineIcon name="warning" className="inline-block h-[1.1em] w-[1.1em] align-[-0.15em]" /> At least one inclusion is required before submitting for review.
         </div>
       )}

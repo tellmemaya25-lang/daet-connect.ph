@@ -23,7 +23,7 @@ export function SavedItinerary({ days }: { days: SavedDay[] }) {
             <ol className="mt-4 space-y-3">
               {day.items.map((item, i) => (
                 <li key={i} className={`rounded-2xl border p-4 ${item.kind === "lunch" ? "border-daet-sun/40 bg-yellow-50/60" : "border-daet-ink/10"}`}>
-                  {item.travelMinutes > 0 ? <p className="mb-1 text-xs text-daet-ink/70">↓ about {item.travelMinutes} min travel</p> : null}
+                  {item.travelMinutes > 0 ? <p className="mb-1 text-sm text-slate-600">↓ about {item.travelMinutes} min travel</p> : null}
                   <div className="flex flex-wrap items-baseline justify-between gap-2">
                     <p className="font-bold text-daet-ink">
                       {item.kind === "lunch" ? "" : ""}

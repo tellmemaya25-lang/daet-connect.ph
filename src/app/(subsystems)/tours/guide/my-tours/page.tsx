@@ -148,7 +148,7 @@ export default async function GuideMyToursPage() {
       <div className="mx-auto max-w-6xl">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-4xl font-bold text-daet-ink">My Assigned Tours</h1>
+          <h1 className="display-2 text-daet-ink">My Assigned Tours</h1>
           <p className="mt-2 text-sm text-daet-ink/70">
             Tours assigned to {guideName}
           </p>
@@ -176,13 +176,13 @@ export default async function GuideMyToursPage() {
             <p className="text-3xl font-bold text-daet-ink">
               {assignedTours?.length || 0}
             </p>
-            <p className="text-xs text-daet-ink/70">Total Assigned</p>
+            <p className="text-sm text-slate-600">Total Assigned</p>
           </div>
-          <div className="rounded-2xl border border-green-200 bg-green-50 p-4 text-center">
+          <div className="rounded-2xl bg-green-50 p-4 text-center">
             <p className="text-3xl font-bold text-green-900">{upcomingTours.length}</p>
             <p className="text-xs text-green-900">Upcoming</p>
           </div>
-          <div className="rounded-2xl border border-blue-200 bg-blue-50 p-4 text-center">
+          <div className="rounded-2xl bg-blue-50 p-4 text-center">
             <p className="text-3xl font-bold text-blue-900">{completedTours.length}</p>
             <p className="text-xs text-blue-900">Completed</p>
           </div>
@@ -205,7 +205,7 @@ export default async function GuideMyToursPage() {
                 return (
                   <div
                     key={booking.id}
-                    className="rounded-2xl border border-green-200 bg-green-50/50 p-6"
+                    className="rounded-2xl bg-green-50/50 p-6"
                   >
                     <div className="flex gap-6">
                       {/* Package Image */}
