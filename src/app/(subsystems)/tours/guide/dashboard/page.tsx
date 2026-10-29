@@ -177,7 +177,7 @@ export default async function GuideDashboardPage({ searchParams }: { searchParam
 
         <Card>
           <CardHeader eyebrow="Schedule" title="Your availability" />
-          <p className="mb-3 text-sm text-daet-ink/70">Tap a day to mark it available, tap again for not available, and once more to clear it. Operators see this when assigning guides.</p>
+          <p className="mb-3 text-sm text-daet-ink/70">Tap a day to mark it available, tap again for not available, and once more to clear it. Operators can only assign you on days marked available. To give up a day you're already booked on, use “Suggest another guide” on that tour.</p>
           <AvailabilityCalendar
             key={key}
             month={month}

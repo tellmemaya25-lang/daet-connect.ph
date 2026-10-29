@@ -18,6 +18,9 @@ async function signedInRole(): Promise<string | null | undefined> {
   }
 }
 
+const isStaffRole = (role: string | null | undefined): role is "operator" | "guide" | "admin" =>
+  role === "operator" || role === "guide" || role === "admin";
+
 export async function PageFrame({
   children,
   adminNav = false,
@@ -35,7 +38,7 @@ export async function PageFrame({
       >
         Skip to main content
       </a>
-      <SiteHeader showAdminLink={adminNav} signedIn={role !== undefined} tabs={tabs} />
+      <SiteHeader showAdminLink={adminNav} signedIn={role !== undefined} role={isStaffRole(role) ? role : undefined} tabs={tabs} />
       <main id="main-content" tabIndex={-1} className={`mx-auto w-full max-w-7xl px-4 py-8 sm:px-6 sm:py-12 lg:px-8 ${tabs.length ? "pb-24 sm:pb-12" : ""}`}>
         {children}
       </main>

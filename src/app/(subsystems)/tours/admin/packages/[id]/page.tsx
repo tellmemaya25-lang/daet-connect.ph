@@ -1,3 +1,4 @@
+import { formatPeso } from "@/lib/money";
 import { createSupabaseServerClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
@@ -193,7 +194,7 @@ export default async function AdminPackageReviewPage({
                     {variant.min_pax} - {variant.max_pax} pax
                   </span>
                   <span className="font-bold text-daet-ink">
-                    ₱{variant.price_per_pax.toLocaleString()} per person
+                    {formatPeso(variant.price_per_pax)} per person
                   </span>
                 </div>
               ))}

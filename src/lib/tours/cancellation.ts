@@ -1,3 +1,4 @@
+import { formatPeso } from "@/lib/money";
 import { manilaDayStartUtc } from "@/lib/tours/events-calendar";
 
 /**
@@ -60,7 +61,7 @@ export function parseRefundForm(formData: FormData, refundable: number): { ok: t
   }
   const amount = Number(amountText);
   if (amount > refundable + 0.001) {
-    return { ok: false, error: `You can refund at most ₱${refundable.toFixed(2)} (what was paid, minus earlier refunds).` };
+    return { ok: false, error: `You can refund at most ${formatPeso(refundable)} (what was paid, minus earlier refunds).` };
   }
   const method = String(formData.get("method") ?? "");
   if (!["gcash", "bank_transfer", "cash", "other"].includes(method)) return { ok: false, error: "Choose how you refunded." };

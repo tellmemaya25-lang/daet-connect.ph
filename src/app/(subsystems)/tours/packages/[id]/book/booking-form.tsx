@@ -1,5 +1,6 @@
 "use client";
 
+import { formatPeso } from "@/lib/money";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import type { DateOption } from "@/lib/tours/availability";
@@ -213,10 +214,10 @@ export function BookingForm({ packageId, priceVariants, dateOptions, userProfile
               >
                 {priceVariants.map((variant) => (
                   <option key={variant.id} value={variant.id}>
-                    {variant.variant_name} - ₱
+                    {variant.variant_name} -{" "}
                     {variant.price_per_pax
-                      ? `${variant.price_per_pax}/person`
-                      : variant.flat_price?.toLocaleString()}
+                      ? `${formatPeso(variant.price_per_pax)}/person`
+                      : formatPeso(variant.flat_price)}
                     {variant.flat_price && " (flat rate)"}
                   </option>
                 ))}
@@ -274,12 +275,12 @@ export function BookingForm({ packageId, priceVariants, dateOptions, userProfile
             <div className="flex items-baseline justify-between">
               <span className="text-sm font-bold text-daet-ink">Total Amount:</span>
               <span className="text-3xl font-black text-daet-forest">
-                ₱{totalAmount.toLocaleString()}
+                {formatPeso(totalAmount)}
               </span>
             </div>
             {selectedVariant?.price_per_pax && (
               <p className="mt-1 text-xs text-daet-ink/70">
-                ₱{selectedVariant.price_per_pax.toLocaleString()} × {numberOfPax} pax
+                {formatPeso(selectedVariant.price_per_pax)} × {numberOfPax} pax
               </p>
             )}
           </div>
@@ -372,7 +373,7 @@ export function BookingForm({ packageId, priceVariants, dateOptions, userProfile
           disabled={isSubmitting || noOpenDates || notEnoughSeats || !tourDate}
           className="min-h-11 shrink-0 whitespace-nowrap rounded-full bg-daet-forest px-8 py-3 text-sm font-black text-white transition hover:bg-daet-ink disabled:opacity-50"
         >
-          {isSubmitting ? "Sending request..." : `Request booking · ₱${totalAmount.toLocaleString()}`}
+          {isSubmitting ? "Sending request..." : `Request booking · ${formatPeso(totalAmount)}`}
         </button>
       </div>
     </form>

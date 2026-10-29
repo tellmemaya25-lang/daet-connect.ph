@@ -1,3 +1,4 @@
+import { formatPeso } from "@/lib/money";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
@@ -13,7 +14,7 @@ import { loadOperatorLedger } from "./load-ledger";
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Payments ledger" };
 
-const peso = (value: number) => `₱${value.toLocaleString("en-PH", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+const peso = formatPeso;
 const dateTime = new Intl.DateTimeFormat("en-PH", { dateStyle: "medium", timeStyle: "short", timeZone: "Asia/Manila" });
 
 export default async function OperatorPaymentsPage({

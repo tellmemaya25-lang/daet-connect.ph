@@ -35,7 +35,7 @@ export function parsePreferences(input: Partial<PlannerInput>, today: string): {
   const days = Number(input.days);
   if (!Number.isInteger(days) || days < 1 || days > MAX_DAYS) errors.days = `Plan 1 to ${MAX_DAYS} days.`;
   const budget = Number(input.budgetPerDay);
-  if (!Number.isFinite(budget) || budget < 0 || budget > 100000) errors.budgetPerDay = "Enter a budget from ₱0 to ₱100,000.";
+  if (!Number.isFinite(budget) || budget < 0 || budget > 100000) errors.budgetPerDay = "Enter a budget from ₱0.00 to ₱100,000.00.";
   const groupSize = Number(input.groupSize);
   if (!Number.isInteger(groupSize) || groupSize < 1 || groupSize > MAX_GROUP) errors.groupSize = `Group size must be 1 to ${MAX_GROUP}.`;
   const pace = String(input.pace ?? "normal");

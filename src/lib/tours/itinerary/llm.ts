@@ -1,4 +1,5 @@
 import "server-only";
+import { formatPeso } from "@/lib/money";
 import Anthropic from "@anthropic-ai/sdk";
 import { zodOutputFormat } from "@anthropic-ai/sdk/helpers/zod";
 import { ATTRACTION_CATEGORIES } from "@/lib/tours/attractions";
@@ -58,7 +59,7 @@ export async function refineWithLlm(draft: Plan, attractions: PlannerAttraction[
 
   const data = attractionData(attractions, prefs);
   const request = [
-    `Trip: ${prefs.days} day(s) from ${prefs.startDate}, ${formatClock(prefs.dayStart)}–${formatClock(prefs.dayEnd)} each day, pace ${prefs.pace}, group of ${prefs.groupSize}, entrance-fee budget ₱${prefs.budgetPerDay} per person per day.`,
+    `Trip: ${prefs.days} day(s) from ${prefs.startDate}, ${formatClock(prefs.dayStart)}–${formatClock(prefs.dayEnd)} each day, pace ${prefs.pace}, group of ${prefs.groupSize}, entrance-fee budget ${formatPeso(prefs.budgetPerDay)} per person per day.`,
     `Interests: ${prefs.interests.map((c) => ATTRACTION_CATEGORIES[c]).join(", ") || "anything"}.`,
     `Attractions (JSON): ${JSON.stringify(data)}`,
     `Draft plan:\n${describeDraft(draft)}`,
@@ -164,7 +165,7 @@ export type AssistantChange = { refined: RefinedPlan; prefs: Preferences; reply:
 export async function changePlanWithLlm(text: string, plan: Plan, attractions: PlannerAttraction[], prefs: Preferences): Promise<AssistantChange | null> {
   if (!isLlmEnabled()) return null;
   const request = [
-    `Trip: ${prefs.days} day(s) from ${prefs.startDate}, ${formatClock(prefs.dayStart)}–${formatClock(prefs.dayEnd)} each day, pace ${prefs.pace}, group of ${prefs.groupSize}, entrance-fee budget ₱${prefs.budgetPerDay} per person per day.`,
+    `Trip: ${prefs.days} day(s) from ${prefs.startDate}, ${formatClock(prefs.dayStart)}–${formatClock(prefs.dayEnd)} each day, pace ${prefs.pace}, group of ${prefs.groupSize}, entrance-fee budget ${formatPeso(prefs.budgetPerDay)} per person per day.`,
     `Attractions (JSON): ${JSON.stringify(attractionData(attractions, prefs))}`,
     `Current plan:\n${describeDraft(plan)}`,
     `Tourist's request:\n<request>${text}</request>`,

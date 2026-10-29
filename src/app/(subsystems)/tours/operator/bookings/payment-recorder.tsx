@@ -1,5 +1,6 @@
 "use client";
 
+import { formatPeso } from "@/lib/money";
 import { useState } from "react";
 import { useFeedback } from "@/components/ui/feedback";
 import { recordPayment } from "./payment-actions";
@@ -101,15 +102,15 @@ export function PaymentRecorder({
       <div className="grid grid-cols-3 gap-3 text-sm">
         <div>
           <p className="text-daet-ink/70">Total Amount</p>
-          <p className="font-bold text-daet-ink">₱{totalAmount.toLocaleString()}</p>
+          <p className="font-bold text-daet-ink">{formatPeso(totalAmount)}</p>
         </div>
         <div>
           <p className="text-daet-ink/70">Total Paid</p>
-          <p className="font-bold text-emerald-700">₱{totalPaid.toLocaleString()}</p>
+          <p className="font-bold text-emerald-700">{formatPeso(totalPaid)}</p>
         </div>
         <div>
           <p className="text-daet-ink/70">Remaining</p>
-          <p className="font-bold text-amber-700">₱{remaining.toLocaleString()}</p>
+          <p className="font-bold text-amber-700">{formatPeso(remaining)}</p>
         </div>
       </div>
 
@@ -128,7 +129,7 @@ export function PaymentRecorder({
               onChange={(e) => setAmount(e.target.value)}
               required
               className="w-full rounded-xl border border-daet-ink/20 min-h-11 px-3 py-2 text-base focus:border-daet-forest focus:outline-none"
-              placeholder={`Max: ₱${remaining}`}
+              placeholder={`Max: ${formatPeso(remaining)}`}
             />
           </div>
 

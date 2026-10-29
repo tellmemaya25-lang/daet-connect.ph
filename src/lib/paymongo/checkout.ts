@@ -45,7 +45,7 @@ export function checkPayable(booking: PayableBooking): PayabilityResult {
   const amountPesos = remainingBalance(booking);
   if (amountPesos <= 0) return { ok: false, reason: "This booking has no balance to pay." };
   if (pesosToCentavos(amountPesos) < MIN_CHARGE_CENTAVOS) {
-    return { ok: false, reason: "The remaining balance is below PayMongo's ₱20 minimum. Please pay the operator directly." };
+    return { ok: false, reason: "The remaining balance is below PayMongo's ₱20.00 minimum. Please pay the operator directly." };
   }
   return { ok: true, amountPesos };
 }

@@ -1,5 +1,6 @@
 "use client";
 
+import { formatPeso } from "@/lib/money";
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
@@ -18,7 +19,7 @@ export type ReviewableProof = {
   submitted_at: string;
 };
 
-const peso = (value: number) => `₱${Number(value).toLocaleString("en-PH", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+const peso = formatPeso;
 
 export function ProofReview({ proofs }: { proofs: ReviewableProof[] }) {
   const router = useRouter();

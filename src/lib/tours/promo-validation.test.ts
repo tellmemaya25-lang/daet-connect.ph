@@ -167,8 +167,8 @@ describe("readPromoImage", () => {
 describe("formatPeso", () => {
   it("formats pesos", () => {
     expect(formatPeso(null)).toBeNull();
-    expect(formatPeso(350)).toBe("₱350");
-    expect(formatPeso(1299.5)).toBe("₱1,299.5");
+    expect(formatPeso(350)).toBe("₱350.00");
+    expect(formatPeso(1299.5)).toBe("₱1,299.50");
   });
 });
 

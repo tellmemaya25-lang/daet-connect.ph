@@ -1,3 +1,4 @@
+import { formatPeso } from "@/lib/money";
 import { notFound } from "next/navigation";
 import { RouteMap } from "@/components/maps/route-map";
 import { directionsUrl, formatDistance, formatDuration } from "@/lib/maps/geo";
@@ -365,7 +366,7 @@ export default async function PackageDetailPage({ params }: PageProps) {
           <div className="lg:col-span-1">
             <div className="sticky top-6 rounded-3xl border border-daet-ink/10 bg-white p-6 shadow-lg">
               <div className="text-3xl font-black text-daet-ink">
-                ₱{displayPrice.toLocaleString()}
+                {formatPeso(displayPrice)}
                 <span className="ml-2 text-sm font-normal text-daet-ink/70">{priceLabel}</span>
               </div>
 
@@ -405,7 +406,7 @@ export default async function PackageDetailPage({ params }: PageProps) {
           <div className="mx-auto flex max-w-7xl items-center justify-between gap-4">
             <p className="leading-tight">
               <span className="block text-xs text-daet-ink/70">From</span>
-              <span className="text-xl font-black text-daet-ink">₱{displayPrice.toLocaleString()}</span>{" "}
+              <span className="text-xl font-black text-daet-ink">{formatPeso(displayPrice)}</span>{" "}
               <span className="text-xs text-daet-ink/70">{priceLabel}</span>
             </p>
             <Link

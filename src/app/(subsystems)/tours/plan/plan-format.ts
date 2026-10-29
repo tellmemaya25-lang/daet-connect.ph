@@ -4,7 +4,7 @@ export const longDate = (date: string) =>
 export const shortDate = (date: string) =>
   new Date(`${date}T00:00:00Z`).toLocaleDateString("en-PH", { weekday: "short", month: "short", day: "numeric", timeZone: "UTC" });
 
-export const peso = (n: number) => `₱${n.toLocaleString("en-PH", { maximumFractionDigits: 2 })}`;
+export { formatPeso as peso } from "@/lib/money";
 
 /** Swaps the item at `index` with its neighbour `by` places away; out-of-range moves change nothing. */
 export function move(ids: string[], index: number, by: number): string[] {
