@@ -574,6 +574,19 @@ _Team guide §5; Ch. 4.2 §3 DB synchronization._
 - UI: floating dialog on every page (hidden on sign-in, ticket, scanner and chat threads) plus `/tours/help`; tour, booking, link and handoff cards. History stays in the browser tab (sessionStorage); nothing is stored server-side.
 - Tests: `src/lib/tours/assistant/assistant.test.ts`, covering the FAQ, tools on a fake client, basic mode with a property test that never leaks another tourist's booking, streaming/fallback with a fake model, and limits. `e2e/travel-assistant.spec.ts` covers the dialog, bookings, handoff and help page at 375px with axe. Manual eval with a key: `docs/ASSISTANT_EVAL.md`.
 
+## Adviser revisions (R1–R6)
+
+**Status (2026-10-29): built.** The specs and system design are in [`ADVISER_REVISIONS.md`](ADVISER_REVISIONS.md).
+- **R1:** the tourist exploration menu (Plan a trip, Attractions, Events, Souvenirs) shows only for visitors and tourists; staff dashboards show their own links.
+- **R2:** an **All** chip in "What do you enjoy?"; the trip assistant reads "everything/lahat" as all categories.
+- **R3:** every amount is shown with `formatPeso` (`src/lib/money.ts`) as ₱1,850.00. A guard test blocks hand-formatted pesos.
+- **R4:** `DEMO_PROFILE=realistic npm run seed:demo` creates 5 operators, 8 guides with schedules, 10 tourists with upcoming bookings, and 1 admin.
+- **R5:** the travel assistant answers getting-here, getting-around and boat questions (curated, provisional facts) and "how long from A to B" with the `travel_time` tool, which uses road legs from the Routes cache or an estimate, boat legs from a table, and adds a directions button.
+- **R6:** migration `20261108_guide_schedule_swaps.sql` (applied):
+  - a guide can be assigned only on a day they marked available, and never twice that day; a booked day can't be marked unavailable;
+  - guides can suggest a swap, and the operator approves or declines it;
+  - tests: `supabase/tests/guide_swaps.sql`.
+
 ## 3. Schedule (11 weeks)
 
 The schedule assumes about 4 developers. **A** = Transactions lead, **B** = Engagement, **C** = Planning/Maps, **D** = UI/QA. With fewer people, run the tracks one after another (about 16–18 weeks).

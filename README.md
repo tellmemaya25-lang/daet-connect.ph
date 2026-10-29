@@ -117,6 +117,8 @@ To turn on push to phones and desktops:
 | E2E + accessibility at 375px (mock Supabase) | `npm run test:e2e:tours` (set `PW_CHROMIUM_PATH` to use a local Chromium) |
 | Database integration (rolls back) | `psql "$DATABASE_URL" -f supabase/tests/integration.sql` |
 | Demo accounts and data for a staging project | `DEMO_PASSWORD=… DEMO_GROUPS=3 npm run seed:demo` |
+| Realistic demo set (5 operators, 8 guides, 10 tourists, bookings) | `DEMO_PROFILE=realistic DEMO_PASSWORD=… npm run seed:demo` |
+| Guide schedule and swap checks (rolled back) | `psql "$DATABASE_URL" -f supabase/tests/guide_swaps.sql` |
 
 - Evaluator walkthroughs and the credentials sheet: `docs/EVALUATION_KIT.md`.
 - Security findings and what to do about them: `docs/SECURITY_REVIEW.md`.

@@ -64,14 +64,15 @@ These are the capstone adviser's six review suggestions. Each one is written up 
 |---|---|---|
 | Operators | 5 | Approved businesses, 1–2 published packages each (Calaguas, Mercedes island hopping, Bagasbas surf, Daet heritage walk, Vinzons), price variants, open dates for 60 days |
 | Guides | 8 | Approved, bio and specialties, linked to packages, a 60-day schedule (some days unavailable or not set on purpose) |
-| Tourists | 10 | Past completed bookings with reviews, upcoming confirmed bookings with an assigned guide who is free that day, and pending requests |
+| Tourists | 10 | Upcoming bookings: confirmed with an assigned guide who is free that day (paid in full or in part), pending requests, and one cancellation |
 | Admins | 1 | Tourism Office |
 
 **Rules.**
 - Passwords come only from `DEMO_PASSWORD` and are never committed.
 - Emails use the reserved `demo.connect-daet.test` domain.
 - `--dry-run` prints the plan and changes nothing.
-- Re-running updates rows in place.
+- Re-running updates rows in place. Seeded bookings (`BK-DEMO-…`) are created once and never rewritten.
+- Bookings go through the real database rules (capacity, lifecycle, guide schedule). Those rules reject past dates, so past completed tours and reviews aren't seeded; the evaluation walkthroughs create them.
 - Use it on a staging or evaluation project, not the production project.
 
 **Tests.** `scripts/seed-demo.test.mjs` checks:
@@ -117,9 +118,9 @@ Transport facts are curated in `transport.ts`, each with a source and the date i
 **Spec: swap requests.**
 1. On an upcoming assigned tour, the guide taps **Suggest another guide**. They choose a guide who is free that day, or *Let the operator choose*, and write a reason (required, at most 300 characters).
 2. The operator is notified and sees the request on the booking, with **Approve** and **Reject**. If no guide was named, Approve asks the operator to pick one.
-3. **Approve** moves the booking to the new guide in one transaction, re-checking that they are still free. The old guide, the new guide and the tourist are notified.
+3. **Approve** moves the booking to the new guide in one transaction, re-checking that they are still free. The old guide gets "Swap approved"; the new guide and the tourist get the existing "guide assigned" notifications.
 4. **Reject** notifies the requesting guide, with the operator's note.
-5. A booking has at most one pending request. The guide can withdraw it. A request still pending after the tour date reads as expired and can't be decided.
+5. A booking has at most one pending request. The guide can withdraw it. Once the tour date has passed, a pending request can't be decided.
 
 **System design.**
 
@@ -137,7 +138,7 @@ sequenceDiagram
   O->>DB: tours_decide_guide_swap(request, approve, guide?, note)
   DB->>DB: lock booking FOR UPDATE, re-check guide is free
   DB->>DB: UPDATE tours_bookings.assigned_guide_id (guard trigger)
-  DB->>N: guide_swap_approved → G, guide_changed → T and G2
+  DB->>N: guide_swap_approved → G; guide_assigned → G2 and T (existing trigger)
 ```
 
 **Database objects.** The migration `20261108_guide_schedule_swaps.sql` adds:
@@ -152,7 +153,7 @@ sequenceDiagram
     - no one writes directly;
     - all writes go through SECURITY DEFINER RPCs.
 - **The RPCs** `tours_request_guide_swap`, `tours_decide_guide_swap` and `tours_cancel_guide_swap`, plus `tours_guides_free_on(date, exclude_booking)` for the pickers.
-- **Notifications** reuse `tours_notify(...)`, with the new types `guide_swap_requested`, `guide_swap_approved`, `guide_swap_rejected` and `guide_changed`.
+- **Notifications** reuse `tours_notify(...)`, with the new types `guide_swap_requested`, `guide_swap_approved` and `guide_swap_rejected`. The new guide and the tourist are told by the existing `guide_assigned` branch of `tours_notify_booking_events`.
 
 **App.**
 - `src/lib/tours/guide-swap.ts` holds the validation, labels and the reason-to-message mapping for database errors.
@@ -161,7 +162,7 @@ sequenceDiagram
 - The guide dashboard has the schedule calendar.
 
 **Tests.**
-- **Live database:** rolled-back checks in `supabase/tests/integration.sql`:
+- **Live database:** rolled-back checks in `supabase/tests/guide_swaps.sql` (20 checks):
   - unavailable and double-booked assignments fail;
   - a booked guide can't mark that day unavailable;
   - only the assigned guide can request a swap, and only one request can be pending;

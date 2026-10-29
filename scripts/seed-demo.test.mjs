@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { applyDemoPlan, buildDemoPlan, ROLES, weekendDates } from "./seed-demo.mjs";
+import { applyDemoPlan, buildDemoPlan, buildRealisticPlan, guideSchedule, ROLES, weekendDates } from "./seed-demo.mjs";
 
 test("weekend dates are Saturdays and Sundays after today", () => {
   const dates = weekendDates("2026-10-23", 10); // a Friday
@@ -94,4 +94,59 @@ test("apply creates accounts, sets roles, and is idempotent", async () => {
   assert.equal(db.tours_package_stops.length, 6);
   assert.equal(db.tours_package_availability.length, plan[0].availability.length * 2);
   assert.equal(db.tours_package_guides.length, 2);
+});
+
+test("realistic plan (R4): 5 operators, 8 guides, 10 tourists, 1 admin, unique emails", () => {
+  const plan = buildRealisticPlan({ today: "2026-10-29" });
+  assert.equal(plan.operators.length, 5);
+  assert.equal(plan.guides.length, 8);
+  assert.equal(plan.tourists.length, 10);
+  const emails = [plan.admin, ...plan.operators.map((o) => o.user), ...plan.guides.map((g) => g.user), ...plan.tourists].map((u) => u.email);
+  assert.equal(emails.length, 24);
+  assert.equal(new Set(emails).size, 24);
+  assert.ok(emails.every((e) => e.endsWith("@demo.connect-daet.test")));
+  for (const op of plan.operators) {
+    assert.equal(op.operator.accreditation_status, "approved");
+    for (const p of op.packages) {
+      assert.equal(p.pkg.status, "published");
+      assert.ok(p.availability.length >= 8);
+      assert.ok(p.stops.every((st) => Number.isFinite(st.latitude) && Number.isFinite(st.longitude)));
+    }
+  }
+});
+
+test("realistic bookings follow the real rules: future dates, open dates, free available guides", () => {
+  const today = "2026-10-29";
+  const plan = buildRealisticPlan({ today });
+  assert.ok(plan.bookings.length >= 12);
+  assert.equal(new Set(plan.bookings.map((b) => b.reference)).size, plan.bookings.length);
+  const seen = new Set();
+  for (const b of plan.bookings) {
+    assert.ok(b.tour_date > today);
+    const pkg = plan.operators[b.operator].packages[b.package];
+    assert.ok(pkg.availability.some((a) => a.available_date === b.tour_date), `${b.reference} on a closed date`);
+    assert.ok(b.number_of_pax >= pkg.variant.min_pax && b.number_of_pax <= pkg.variant.max_pax);
+    if (b.status === "confirmed") {
+      assert.notEqual(b.guide, null, `${b.reference} has no guide`);
+      const guide = plan.guides[b.guide];
+      assert.ok(guide.operators.includes(b.operator));
+      assert.ok(guide.schedule.some((s) => s.available_date === b.tour_date && s.is_available), `${b.reference}: guide not available`);
+      const key = `${b.guide}|${b.tour_date}`;
+      assert.ok(!seen.has(key), `${b.reference}: guide double-booked`);
+      seen.add(key);
+      assert.ok(b.paid >= 0 && b.paid <= b.total);
+    } else {
+      assert.equal(b.paid, 0);
+    }
+  }
+  const statuses = new Set(plan.bookings.map((b) => b.status));
+  for (const s of ["pending", "confirmed", "cancelled"]) assert.ok(statuses.has(s), `no ${s} booking`);
+  assert.ok(plan.bookings.some((b) => b.paid === b.total && b.paid > 0));
+  assert.ok(plan.bookings.some((b) => b.paid > 0 && b.paid < b.total));
+});
+
+test("guide schedules leave some days unavailable or not set on purpose", () => {
+  const all = guideSchedule(0, "2026-10-29");
+  assert.ok(all.some((d) => d.is_available) && all.some((d) => !d.is_available));
+  assert.ok(guideSchedule(7, "2026-10-29").length < all.length, "guide 8 leaves weekdays not set");
 });
