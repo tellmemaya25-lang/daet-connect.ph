@@ -1,43 +1,54 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState } from "react";
+import { cn } from "@/components/ui/cn";
 
-export function LogoutButton({ className = '' }: { className?: string }) {
-  const router = useRouter();
-  const [isLoggingOut, setIsLoggingOut] = useState(false);
+/**
+ * Signs out through POST /auth/logout, then loads the home page fresh so no
+ * signed-in data (or Realtime subscription) survives in the tab.
+ */
+export function LogoutButton({ className, compact = false }: { className?: string; compact?: boolean }) {
+  const [pending, setPending] = useState(false);
+  const [failed, setFailed] = useState(false);
 
-  const handleLogout = async () => {
-    if (isLoggingOut) return;
-    
-    setIsLoggingOut(true);
-    
+  async function signOut() {
+    if (pending) return;
+    setPending(true);
+    setFailed(false);
     try {
-      const response = await fetch('/auth/logout', { method: 'POST' });
-      
-      if (response.ok) {
-        router.push('/');
-        router.refresh();
-      } else {
-        alert('Logout failed. Please try again.');
-        setIsLoggingOut(false);
-      }
-    } catch (error) {
-      alert('Logout error. Please try again.');
-      setIsLoggingOut(false);
+      const response = await fetch("/auth/logout", { method: "POST" });
+      if (!response.ok) throw new Error(String(response.status));
+      // Saved tickets belong to the signed-in user; do not leave them on a shared phone.
+      if ("caches" in window) await caches.delete("daet-tickets-v1").catch(() => false);
+      window.location.assign("/");
+    } catch {
+      setFailed(true);
+      setPending(false);
     }
-  };
+  }
 
   return (
-    <button
-      onClick={handleLogout}
-      disabled={isLoggingOut}
-      className={`inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed ${className}`}
-    >
-      <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-      </svg>
-      {isLoggingOut ? 'Logging out...' : 'Logout'}
-    </button>
+    <span className="relative inline-flex">
+      <button
+        type="button"
+        onClick={signOut}
+        disabled={pending}
+        aria-label={compact ? "Sign out" : undefined}
+        className={cn(
+          "inline-flex min-h-11 min-w-11 shrink-0 items-center justify-center gap-2 rounded-full border border-daet-ink/15 bg-white px-3 text-sm font-bold text-daet-ink transition hover:bg-daet-sand disabled:cursor-wait disabled:opacity-60",
+          className,
+        )}
+      >
+        <svg aria-hidden="true" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+        </svg>
+        <span className={compact ? "sr-only sm:not-sr-only" : undefined}>{pending ? "Signing out…" : "Sign out"}</span>
+      </button>
+      {failed ? (
+        <span role="alert" className="absolute right-0 top-full z-50 mt-1 w-max max-w-[14rem] rounded-xl bg-rose-50 px-3 py-2 text-xs font-semibold text-rose-800 shadow-card">
+          Sign-out failed. Check your connection and try again.
+        </span>
+      ) : null}
+    </span>
   );
 }

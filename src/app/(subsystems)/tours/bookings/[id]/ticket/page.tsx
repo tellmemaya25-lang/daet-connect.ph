@@ -6,6 +6,8 @@ import { isSupabaseConfigured } from "@/lib/supabase/env";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { isUuid } from "@/lib/tours/operator-access";
 import { issueBookingTicket } from "@/lib/tours/qr-issue";
+import { SaveTicketOffline } from "@/components/tours/save-ticket-offline";
+import { MapPinIcon } from "@/components/ui/icons";
 import { PrintTicketButton } from "./print-ticket-button";
 
 export const dynamic = "force-dynamic";
@@ -69,7 +71,7 @@ export default async function BookingTicketPage({ params }: PageProps) {
       <div className="mx-auto max-w-md">
         {back}
         <section className="mt-4 rounded-3xl border border-daet-ink/10 bg-white p-6 text-center shadow-card print:border-black print:shadow-none">
-          <p className="text-xs font-black uppercase tracking-[0.2em] text-daet-leaf print:text-black">CONNECT-DAET · Tour ticket</p>
+          <p className="text-sm font-bold text-daet-leaf print:text-black">CONNECT-DAET tour ticket</p>
           <h1 className="mt-2 text-2xl font-black text-daet-ink">{pkg?.title ?? "Tour booking"}</h1>
           <p className="mt-1 text-sm text-daet-ink/70">{tourDate(booking.tour_date)}</p>
           {ticket ? (
@@ -89,14 +91,15 @@ export default async function BookingTicketPage({ params }: PageProps) {
           <p className="mt-1 text-sm text-daet-ink/70">
             {booking.number_of_pax} guest{booking.number_of_pax === 1 ? "" : "s"} · {booking.contact_name}
           </p>
-          {pkg?.location_name ? <p className="mt-1 text-xs text-daet-ink/70">📍 {pkg.location_name}</p> : null}
-          <p className="mt-4 text-xs leading-5 text-daet-ink/70">
-            {ticket
-              ? "Show this QR to your guide on the tour day. A screenshot works offline. Valid until the end of the tour day."
-              : "Show this booking reference to your guide on the tour day. A screenshot works offline."}
-          </p>
+          {pkg?.location_name ? <p className="mt-1 inline-flex items-center gap-1 text-xs text-daet-ink/70"><MapPinIcon className="h-3.5 w-3.5" /> {pkg.location_name}</p> : null}
+          {ticket ? (
+            <p className="mt-4 text-xs leading-5 text-daet-ink/70">
+              Show this QR to your guide on the tour day. Valid until the end of the tour day.
+            </p>
+          ) : null}
         </section>
         {ticket ? <PrintTicketButton /> : null}
+        {ticket ? <SaveTicketOffline /> : null}
       </div>
     </PageFrame>
   );

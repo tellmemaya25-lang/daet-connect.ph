@@ -69,7 +69,7 @@ export default async function AdminEventsPage({
                   <p className="text-sm text-daet-ink/70">{formatEventRange(event.starts_at, event.ends_at)} · {event.venue}</p>
                 </div>
                 <div className="flex gap-2">
-                  <Link href={`/tours/admin/events/${event.id}/edit`} className="inline-flex min-h-11 flex-1 items-center justify-center rounded-full border border-daet-forest/30 px-5 text-sm font-bold text-daet-forest hover:bg-daet-forest/5 sm:flex-none">
+                  <Link href={`/tours/admin/events/${event.id}/edit`} className="inline-flex min-h-11 flex-1 items-center justify-center rounded-full border border-daet-forest/30 px-5 text-sm font-bold text-daet-leaf hover:bg-daet-forest/5 sm:flex-none">
                     Edit
                   </Link>
                   <form action={deleteEvent} className="flex-1 sm:flex-none">

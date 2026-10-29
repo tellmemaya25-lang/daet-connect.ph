@@ -26,7 +26,7 @@ function fieldErrorId(field: string) {
 }
 
 function FieldError({ message, id }: { message?: string; id: string }) {
-  return message ? <p id={id} className="mt-2 text-sm font-medium text-rose-700">{message}</p> : null;
+  return message ? <p id={id} role="alert" className="mt-2 text-sm font-medium text-rose-700">{message}</p> : null;
 }
 
 function formatBytes(bytes: number): string {
@@ -49,6 +49,21 @@ export function GuideRegistrationForm({
   );
   const [transitionPending, startTransition] = useTransition();
   const [activeStep, setActiveStep] = useState(1);
+  const stepChanged = useRef(false);
+
+  // After "Next" or "Back", move focus to the new step's heading so keyboard
+  // and screen reader users land where the content changed.
+  useEffect(() => {
+    if (!stepChanged.current) {
+      stepChanged.current = true;
+      return;
+    }
+    const legend = formRef.current?.querySelector<HTMLElement>("fieldset:not([hidden]) > legend");
+    if (legend) {
+      legend.tabIndex = -1;
+      legend.focus();
+    }
+  }, [activeStep]);
   const [values, setValues] = useState({ fullName: "", contactPhone: "", bio: "", idType: "" as string, idNumber: "" });
   const [idDocument, setIdDocument] = useState<File | null>(null);
   const [consent, setConsent] = useState(false);
@@ -170,7 +185,7 @@ export function GuideRegistrationForm({
   return (
     <section className="mx-auto max-w-3xl">
       <div className="mb-7">
-        <p className="text-xs font-black uppercase tracking-[0.18em] text-daet-leaf">Guide accreditation</p>
+        <p className="text-sm font-bold text-daet-leaf">Guide accreditation</p>
         <h1 className="mt-2 text-3xl font-black leading-tight tracking-tight text-daet-ink sm:text-4xl">Register as a local guide.</h1>
         <p className="mt-3 max-w-2xl text-base leading-7 text-daet-ink/70">Create your public guide profile and submit one government-issued ID for private Tourism Office verification.</p>
       </div>
@@ -206,22 +221,28 @@ export function GuideRegistrationForm({
           <legend className="text-xl font-black text-daet-ink">Public profile</legend>
           <p className="mt-1 text-sm leading-6 text-daet-ink/65">This information appears on your public guide profile after accreditation.</p>
           <div className="mt-6 grid gap-5 sm:grid-cols-2">
-            <label className="block">
-              <span className="text-sm font-bold text-daet-ink">Full name <span className="text-rose-600">*</span></span>
+            <div className="block">
+              <label className="block">
+              <span className="text-sm font-bold text-daet-ink">Full name <span className="text-rose-600" aria-hidden="true">*</span></span>
               <input data-guide-step="1" name="fullName" value={values.fullName} onChange={(event) => changeProfile("fullName", event.target.value)} required={activeStep === 1} maxLength={160} autoComplete="name" placeholder="Name shown on your guide profile" aria-invalid={Boolean(fieldErrors.fullName)} aria-describedby={fieldErrors.fullName ? fieldErrorId("fullName") : undefined} className="mt-2 min-h-12 w-full rounded-2xl border border-daet-ink/15 px-4 text-base outline-none focus:border-daet-forest focus:ring-4 focus:ring-daet-forest/10 aria-[invalid=true]:border-rose-400" />
+              </label>
               <FieldError id={fieldErrorId("fullName")} message={fieldErrors.fullName} />
-            </label>
-            <label className="block">
-              <span className="text-sm font-bold text-daet-ink">Contact number <span className="text-rose-600">*</span></span>
+              </div>
+            <div className="block">
+              <label className="block">
+              <span className="text-sm font-bold text-daet-ink">Contact number <span className="text-rose-600" aria-hidden="true">*</span></span>
               <input data-guide-step="1" name="contactPhone" type="tel" value={values.contactPhone} onChange={(event) => changeProfile("contactPhone", event.target.value)} required={activeStep === 1} maxLength={24} autoComplete="tel" placeholder="09XX XXX XXXX" aria-invalid={Boolean(fieldErrors.contactPhone)} aria-describedby={fieldErrors.contactPhone ? fieldErrorId("contactPhone") : undefined} className="mt-2 min-h-12 w-full rounded-2xl border border-daet-ink/15 px-4 text-base outline-none focus:border-daet-forest focus:ring-4 focus:ring-daet-forest/10 aria-[invalid=true]:border-rose-400" />
+              </label>
               <FieldError id={fieldErrorId("contactPhone")} message={fieldErrors.contactPhone} />
-            </label>
-            <label className="block sm:col-span-2">
-              <span className="text-sm font-bold text-daet-ink">Guide introduction <span className="text-rose-600">*</span></span>
+              </div>
+            <div className="block sm:col-span-2">
+              <label className="block">
+              <span className="text-sm font-bold text-daet-ink">Guide introduction <span className="text-rose-600" aria-hidden="true">*</span></span>
               <textarea data-guide-step="1" name="bio" value={values.bio} onChange={(event) => changeProfile("bio", event.target.value)} required={activeStep === 1} maxLength={1000} rows={4} placeholder="Tell visitors about your local knowledge, guiding experience, and the places you love to share." aria-invalid={Boolean(fieldErrors.bio)} aria-describedby={fieldErrors.bio ? fieldErrorId("bio") : undefined} className="mt-2 w-full rounded-2xl border border-daet-ink/15 px-4 py-3 text-base outline-none focus:border-daet-forest focus:ring-4 focus:ring-daet-forest/10 aria-[invalid=true]:border-rose-400" />
               <span className="mt-1 block text-xs text-daet-ink/70">20–1,000 characters.</span>
+              </label>
               <FieldError id={fieldErrorId("bio")} message={fieldErrors.bio} />
-            </label>
+              </div>
           </div>
         </fieldset>
 
@@ -229,28 +250,34 @@ export function GuideRegistrationForm({
           <legend className="text-xl font-black text-daet-ink">Identity verification & consent</legend>
           <p className="mt-1 text-sm leading-6 text-daet-ink/65">Your ID details are stored separately from your public guide profile and are never queried by browser code.</p>
           <div className="mt-6 grid gap-5 sm:grid-cols-2">
-            <label className="block">
-              <span className="text-sm font-bold text-daet-ink">Government ID type <span className="text-rose-600">*</span></span>
+            <div className="block">
+              <label className="block">
+              <span className="text-sm font-bold text-daet-ink">Government ID type <span className="text-rose-600" aria-hidden="true">*</span></span>
               <select data-guide-step="2" name="idType" value={values.idType} onChange={(event) => setValues((previous) => ({ ...previous, idType: event.target.value }))} required={activeStep === 2} aria-invalid={Boolean(fieldErrors.idType)} aria-describedby={fieldErrors.idType ? fieldErrorId("idType") : undefined} className="mt-2 min-h-12 w-full rounded-2xl border border-daet-ink/15 bg-white px-4 text-base outline-none focus:border-daet-forest focus:ring-4 focus:ring-daet-forest/10 aria-[invalid=true]:border-rose-400">
                 <option value="">Choose an ID type</option>
                 {GUIDE_ID_TYPES.map((idType) => <option key={idType.value} value={idType.value}>{idType.label}</option>)}
               </select>
+              </label>
               <FieldError id={fieldErrorId("idType")} message={fieldErrors.idType} />
-            </label>
-            <label className="block">
-              <span className="text-sm font-bold text-daet-ink">ID number <span className="text-rose-600">*</span></span>
+              </div>
+            <div className="block">
+              <label className="block">
+              <span className="text-sm font-bold text-daet-ink">ID number <span className="text-rose-600" aria-hidden="true">*</span></span>
               <input data-guide-step="2" name="idNumber" type="text" value={values.idNumber} onChange={(event) => setValues((previous) => ({ ...previous, idNumber: event.target.value }))} required={activeStep === 2} maxLength={40} autoComplete="off" spellCheck={false} placeholder="As shown on your ID" aria-invalid={Boolean(fieldErrors.idNumber)} aria-describedby={fieldErrors.idNumber ? fieldErrorId("idNumber") : "idNumber-private"} className="mt-2 min-h-12 w-full rounded-2xl border border-daet-ink/15 px-4 text-base outline-none focus:border-daet-forest focus:ring-4 focus:ring-daet-forest/10 aria-[invalid=true]:border-rose-400" />
               <span id="idNumber-private" className="mt-1 block text-xs leading-5 text-daet-ink/70">Sent only to the server for protected storage. It is never placed in your QR code.</span>
+              </label>
               <FieldError id={fieldErrorId("idNumber")} message={fieldErrors.idNumber} />
-            </label>
-            <label className="block sm:col-span-2">
-              <span className="text-sm font-bold text-daet-ink">ID image or PDF <span className="text-rose-600">*</span></span>
+              </div>
+            <div className="block sm:col-span-2">
+              <label className="block">
+              <span className="text-sm font-bold text-daet-ink">ID image or PDF <span className="text-rose-600" aria-hidden="true">*</span></span>
               <span className="mt-1 block text-sm leading-6 text-daet-ink/70">Show the full ID clearly. Upload only one side if it contains the required details.</span>
               <input data-guide-step="2" name="idDocument" type="file" accept="image/jpeg,image/png,image/webp,application/pdf,.pdf" required={activeStep === 2 && !idDocument} onChange={(event) => { setIdDocument(event.target.files?.[0] ?? null); setClientError(""); }} aria-invalid={Boolean(fieldErrors.idDocument)} aria-describedby={fieldErrors.idDocument ? fieldErrorId("idDocument") : "idDocument-help"} className="mt-3 block min-h-11 w-full cursor-pointer rounded-xl border border-daet-ink/15 bg-white text-sm text-daet-ink file:mr-3 file:min-h-11 file:border-0 file:bg-daet-forest file:px-4 file:font-bold file:text-white hover:file:bg-daet-ink focus:outline-none focus:ring-4 focus:ring-daet-forest/10" />
               {idDocument ? <span className="mt-2 block break-all text-xs font-semibold text-daet-ink/70">{idDocument.name} · {formatBytes(idDocument.size)}</span> : null}
               <span id="idDocument-help" className="mt-2 block text-xs text-daet-ink/70">JPG, PNG, WebP, or PDF · maximum 5 MB after image compression.</span>
+              </label>
               <FieldError id={fieldErrorId("idDocument")} message={fieldErrors.idDocument} />
-            </label>
+              </div>
 
             <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4 sm:col-span-2">
               <label className="flex cursor-pointer items-start gap-3">

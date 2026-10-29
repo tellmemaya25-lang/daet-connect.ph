@@ -1,4 +1,4 @@
-import type { ComponentProps, ReactNode } from "react";
+import { cloneElement, isValidElement, type ComponentProps, type ReactElement, type ReactNode } from "react";
 import { cn } from "@/components/ui/cn";
 
 /**
@@ -32,6 +32,16 @@ export function Field({
   className?: string;
   children: ReactNode;
 }) {
+  // A single control child gets its id, description and invalid state from the
+  // Field, so callers cannot forget to connect the hint or the error message.
+  const control = isValidElement(children)
+    ? cloneElement(children as ReactElement<Record<string, unknown>>, {
+        id: (children.props as Record<string, unknown>).id ?? id,
+        "aria-describedby":
+          (children.props as Record<string, unknown>)["aria-describedby"] ?? fieldDescribedBy(id, { hint, error }),
+        "aria-invalid": (children.props as Record<string, unknown>)["aria-invalid"] ?? (error ? true : undefined),
+      })
+    : children;
   return (
     <div className={className}>
       <label htmlFor={id} className="block text-sm font-bold text-daet-ink">
@@ -42,14 +52,14 @@ export function Field({
           </span>
         ) : null}
       </label>
-      {children}
+      {control}
       {hint && !error ? (
         <p id={`${id}-hint`} className="mt-1 text-xs text-daet-ink/70">
           {hint}
         </p>
       ) : null}
       {error ? (
-        <p id={`${id}-error`} className="mt-1 text-sm font-semibold text-rose-700">
+        <p id={`${id}-error`} role="alert" className="mt-1 text-sm font-semibold text-rose-700">
           {error}
         </p>
       ) : null}

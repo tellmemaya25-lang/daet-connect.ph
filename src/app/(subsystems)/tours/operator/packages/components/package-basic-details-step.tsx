@@ -81,7 +81,7 @@ export function PackageBasicDetailsStep({
           className="mt-2 w-full rounded-2xl border border-daet-ink/15 bg-white px-4 py-3 text-sm outline-none transition placeholder:text-daet-ink/35 focus:border-daet-forest focus:ring-4 focus:ring-daet-forest/10 aria-[invalid=true]:border-rose-400"
         />
         {errors.title && (
-          <p className="mt-1 text-sm font-semibold text-rose-700">{errors.title}</p>
+          <p className="mt-1 text-sm font-bold text-rose-700">{errors.title}</p>
         )}
       </div>
 
@@ -120,7 +120,7 @@ export function PackageBasicDetailsStep({
           className="mt-2 w-full rounded-2xl border border-daet-ink/15 bg-white px-4 py-3 text-sm outline-none transition placeholder:text-daet-ink/35 focus:border-daet-forest focus:ring-4 focus:ring-daet-forest/10 aria-[invalid=true]:border-rose-400"
         />
         {errors.locationName && (
-          <p className="mt-1 text-sm font-semibold text-rose-700">{errors.locationName}</p>
+          <p className="mt-1 text-sm font-bold text-rose-700">{errors.locationName}</p>
         )}
       </div>
 
@@ -149,7 +149,7 @@ export function PackageBasicDetailsStep({
           </select>
         </div>
         {errors.durationValue && (
-          <p className="mt-1 text-sm font-semibold text-rose-700">{errors.durationValue}</p>
+          <p className="mt-1 text-sm font-bold text-rose-700">{errors.durationValue}</p>
         )}
       </div>
 

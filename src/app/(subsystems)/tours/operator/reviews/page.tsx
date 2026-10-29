@@ -50,7 +50,7 @@ export default async function OperatorReviewsPage() {
         <Link href="/tours/operator/dashboard" className="inline-flex min-h-11 items-center text-sm font-bold text-daet-forest hover:underline">
           ← Dashboard
         </Link>
-        <p className="text-xs font-black uppercase tracking-[0.18em] text-daet-leaf">{operator.business_name}</p>
+        <p className="text-sm font-bold text-daet-leaf">{operator.business_name}</p>
         <h1 className="mt-1 text-3xl font-black tracking-tight text-daet-ink">Reviews</h1>
         <div className="mt-2 flex flex-wrap items-center gap-3 text-sm text-daet-ink/65">
           <RatingBadge summary={toSummary(ratingRow)} />

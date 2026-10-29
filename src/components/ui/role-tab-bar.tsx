@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { TabIcon } from "@/components/ui/icons";
 import { activeTab, type Tab } from "@/lib/tours/dashboards";
 
 /** Bottom tab bar on phones for signed-in users; hidden from sm up, where the header has room. */
@@ -22,11 +23,9 @@ export function RoleTabBar({ tabs }: { tabs: Tab[] }) {
               <Link
                 href={tab.href}
                 aria-current={active ? "page" : undefined}
-                className={`flex min-h-14 flex-col items-center justify-center gap-0.5 text-[11px] font-bold transition ${active ? "text-daet-forest" : "text-daet-ink/70 hover:text-daet-ink"}`}
+                className={`flex min-h-14 flex-col items-center justify-center gap-0.5 text-xs font-bold transition ${active ? "text-daet-forest" : "text-daet-ink/70 hover:text-daet-ink"}`}
               >
-                <span aria-hidden="true" className={`text-lg leading-none ${active ? "" : "opacity-70 grayscale"}`}>
-                  {tab.icon}
-                </span>
+                <TabIcon label={tab.label} className="h-6 w-6" />
                 {tab.label}
               </Link>
             </li>

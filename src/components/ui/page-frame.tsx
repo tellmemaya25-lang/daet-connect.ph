@@ -1,4 +1,6 @@
+import Link from "next/link";
 import type { ReactNode } from "react";
+import { AssistantWidget } from "@/components/assistant/assistant-widget";
 import { RoleTabBar } from "@/components/ui/role-tab-bar";
 import { SiteHeader } from "@/components/ui/site-header";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
@@ -27,14 +29,24 @@ export async function PageFrame({
   const tabs = role === undefined ? [] : roleTabs(role);
   return (
     <div className="min-h-screen">
-      <SiteHeader showAdminLink={adminNav} signedIn={role !== undefined} />
-      <main className={`mx-auto w-full max-w-7xl px-4 py-8 sm:px-6 sm:py-12 lg:px-8 ${tabs.length ? "pb-24 sm:pb-12" : ""}`}>
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:rounded-full focus:bg-daet-forest focus:px-5 focus:py-3 focus:text-sm focus:font-bold focus:text-white"
+      >
+        Skip to main content
+      </a>
+      <SiteHeader showAdminLink={adminNav} signedIn={role !== undefined} tabs={tabs} />
+      <main id="main-content" tabIndex={-1} className={`mx-auto w-full max-w-7xl px-4 py-8 sm:px-6 sm:py-12 lg:px-8 ${tabs.length ? "pb-24 sm:pb-12" : ""}`}>
         {children}
       </main>
       <footer className={`mx-auto max-w-7xl px-4 pt-2 text-xs text-daet-ink/70 sm:px-6 sm:pb-8 lg:px-8 print:hidden ${tabs.length ? "pb-24" : "pb-8"}`}>
-        CONNECT-DAET.ph · Tourism in Daet, Camarines Norte
+        CONNECT-DAET.ph · Tourism in Daet, Camarines Norte ·{" "}
+        <Link href="/tours/help" className="font-bold text-daet-forest underline underline-offset-2">
+          Help (24/7 assistant)
+        </Link>
       </footer>
       <RoleTabBar tabs={tabs} />
+      <AssistantWidget signedIn={role !== undefined} raised={tabs.length > 0} />
     </div>
   );
 }

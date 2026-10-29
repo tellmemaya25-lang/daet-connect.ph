@@ -48,6 +48,8 @@ PayMongo sandbox: use the test cards and e-wallet flows listed at <https://devel
 | 6 | *(After the operator confirms, walkthrough 2 step 3)* On **Home** (`/tours/me`), tap **Pay ₱…** and pay with a PayMongo test method. | You return to the booking page and see "Payment received" within a minute (webhook) | Functional Correctness |
 | 7 | Tap **Show ticket QR**. | A QR code with the booking reference | Functional Appropriateness |
 | 8 | *(After the guide checks you in and the operator completes the tour)* Rate the tour 5★ with a comment. | "Thanks for your review"; points appear on Home | Functional Completeness |
+| 10 | Tap **💬 Ask the assistant** and ask "Paano mag-cancel?", then "Where is my ticket?". | The cancellation policy (48 hours), then your booking with **Show ticket QR** | Functional Appropriateness, Learnability |
+| 11 | Ask the assistant "I want to talk to a person". Edit the message and tap **Send to Tourism Office**. | "Sent"; the admin is notified and sees it in Messages | Functional Completeness |
 | 9 | *(Once a guide is assigned)* On the booking page tap **Message your guide** and ask about the meeting point. | A private chat with the guide opens; the operator can't read it | Functional Appropriateness |
 
 ## Walkthrough 2: Operator (12 minutes)

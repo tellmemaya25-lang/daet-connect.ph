@@ -21,6 +21,8 @@ const pages: Record<Role, string[]> = {
     "/tours/operator/merch",
     "/tours/operator/merch/new",
     "/tours/operator/packages",
+    "/tours/operator/packages/create",
+    "/tours/operator/settings",
     "/tours/messages",
   ],
   guide: ["/tours/guide/dashboard", "/tours/guide/my-tours", "/tours/guide/check-in", "/tours/guide/my-qr", "/tours/guide/tours/e9466de5-4877-47c1-ac14-d86deeb38b9e/roster"],
@@ -32,6 +34,8 @@ const pages: Record<Role, string[]> = {
     "/tours/admin/events",
     "/tours/admin/attractions",
     "/tours/admin/operators",
+    "/tours/admin/guides",
+    "/tours/admin/packages",
     "/tours/messages",
   ],
 };
@@ -100,5 +104,42 @@ test.describe("messaging channels", () => {
     await visit(page, "/tours/messages");
     await page.getByText("Message an operator").click();
     await expect(page.getByRole("button", { name: "Message" }).first()).toBeVisible();
+  });
+});
+
+test.describe("sign out", () => {
+  for (const role of ["tourist", "operator", "guide", "admin"] as Role[]) {
+    test(`${role} can find Sign out in the header at phone width`, async ({ context, page }) => {
+      await signInAs(context, role);
+      await page.goto(pages[role][0], { waitUntil: "networkidle" });
+      await expect(page.getByRole("banner").getByRole("button", { name: "Sign out" })).toBeVisible();
+    });
+  }
+
+  test("signing out returns to the home page", async ({ context, page }) => {
+    await signInAs(context, "guide");
+    await page.goto("/tours/guide/dashboard", { waitUntil: "networkidle" });
+    await page.getByRole("banner").getByRole("button", { name: "Sign out" }).click();
+    await expect(page).toHaveURL(/\/$/);
+  });
+
+  const framed: Array<[Role, string]> = [
+    ["admin", "/tours/admin/packages"],
+    ["admin", "/tours/admin/packages/aa000000-0000-4000-8000-000000000001"],
+    ["operator", "/tours/operator/packages/aa000000-0000-4000-8000-000000000001/edit"],
+    ["guide", "/tours/no-such-page"],
+  ];
+  for (const [role, path] of framed) {
+    test(`${role} has Sign out on ${path}`, async ({ context, page }) => {
+      await signInAs(context, role);
+      await page.goto(path, { waitUntil: "networkidle" });
+      await expect(page.getByRole("banner").getByRole("button", { name: "Sign out" })).toBeVisible();
+    });
+  }
+
+  test("signed-out visitors see Sign in instead", async ({ page }) => {
+    await page.goto("/tours/attractions", { waitUntil: "networkidle" });
+    await expect(page.getByRole("banner").getByRole("link", { name: "Sign in" })).toBeVisible();
+    await expect(page.getByRole("banner").getByRole("button", { name: "Sign out" })).toHaveCount(0);
   });
 });

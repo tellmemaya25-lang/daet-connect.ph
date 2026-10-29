@@ -154,3 +154,24 @@ describe("chat channels", () => {
       .toEqual([{ id: "1", business_name: "Alpha" }, { id: "3", business_name: "Mid" }, { id: "2", business_name: "Zeta" }]);
   });
 });
+
+describe("tourist ↔ Tourism Office chat", () => {
+  const touristId = "33333333-3333-4333-8333-333333333333";
+  it("opens the caller's own chat, or a named tourist's for admins", () => {
+    expect(chatRpc({ kind: "tourist_office" })).toEqual({ fn: "tours_open_tourist_office_conversation", args: {} });
+    expect(chatRpc({ kind: "tourist_office", touristId })).toEqual({ fn: "tours_open_tourist_office_conversation", args: { p_tourist_id: touristId } });
+    expect(chatRpc({ kind: "tourist_office", touristId: "nope" })).toBeNull();
+  });
+  it("shows the office to the tourist and the tourist to admins", () => {
+    const header: ConversationHeader = {
+      id: "c", kind: "tourist_office", is_member: true, booking_id: null, booking_reference: null, booking_status: null, tour_date: null, package_title: null,
+      tourist_id: "t", tourist_name: "Juan", operator_id: null, operator_profile_id: null, operator_name: null, guide_id: null, guide_profile_id: null, guide_name: null,
+    };
+    const tourist = describeThread(header, "t", "tourist");
+    expect(tourist.title).toBe("Daet Tourism Office");
+    expect(tourist.link).toBeNull();
+    expect(senderLabel("admin-1", "t", tourist.members)).toBe("Daet Tourism Office");
+    expect(describeThread(header, "admin-1", "admin").title).toBe("Juan");
+    expect(inboxFilters(["booking", "tourist_office"]).map((f) => f.label)).toEqual(["All", "Booking chats", "Tourism Office help"]);
+  });
+});

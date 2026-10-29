@@ -243,7 +243,7 @@ export default async function GuideMyToursPage() {
 
                         <Link
                           href={`/tours/guide/tours/${booking.id}/roster`}
-                          className="mt-4 inline-flex min-h-11 items-center justify-center rounded-full border border-daet-forest/30 bg-white px-5 text-sm font-bold text-daet-forest transition hover:bg-daet-forest/5"
+                          className="mt-4 inline-flex min-h-11 items-center justify-center rounded-full border border-daet-forest/30 bg-white px-5 text-sm font-bold text-daet-leaf transition hover:bg-daet-forest/5"
                         >
                           {booking.tour_date === today ? "Guest list & check-in" : "Guest list"}
                         </Link>
@@ -269,7 +269,7 @@ export default async function GuideMyToursPage() {
                 return (
                   <div
                     key={booking.id}
-                    className="rounded-3xl border border-daet-ink/10 bg-white p-6 shadow-sm opacity-75"
+                    className="rounded-3xl border border-daet-ink/10 bg-white p-6 shadow-sm"
                   >
                     <div className="flex gap-6">
                       {pkg?.cover_image_url && (

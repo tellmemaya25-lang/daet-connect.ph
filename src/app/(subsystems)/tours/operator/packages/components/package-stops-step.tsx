@@ -205,7 +205,7 @@ export function PackageStopsStep({
                   <button
                     type="button"
                     onClick={() => editStop(index)}
-                    className="grid h-8 w-8 place-items-center rounded-full text-daet-forest transition hover:bg-daet-forest/10"
+                    className="grid h-8 w-8 place-items-center rounded-full text-daet-leaf transition hover:bg-daet-forest/10"
                     aria-label="Edit stop"
                   >
                     ✏️

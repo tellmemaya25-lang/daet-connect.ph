@@ -1,13 +1,19 @@
 @import "tailwindcss";
 
+/* CONNECT-DAET design system: Daet Blue actions, deep navy ink, slate-50 pages.
+   The token names are older than the palette: "forest" is now the brand blue,
+   "leaf" the deeper blue for small text and links, and "sand" the pale blue
+   tint for selected and hover states. */
 @theme {
-  --color-daet-ink: #172b24;
-  --color-daet-forest: #285a45;
-  --color-daet-leaf: #4f8063;
-  --color-daet-sand: #f5f3eb;
-  --color-daet-sun: #edbd58;
-  --color-daet-coral: #e88969;
-  --shadow-card: 0 18px 60px rgba(23, 43, 36, 0.08);
+  --color-daet-ink: #0f172a;
+  --color-daet-forest: #2563eb;
+  --color-daet-leaf: #1d4ed8;
+  --color-daet-sand: #eff6ff;
+  --color-daet-sun: #eab308;
+  --color-daet-coral: #dc2626;
+  --shadow-card: 0 1px 2px rgba(15, 23, 42, 0.08), 0 8px 24px rgba(15, 23, 42, 0.06);
+  --font-display: var(--font-fraunces), Georgia, "Times New Roman", serif;
+  --font-sans: var(--font-public-sans), system-ui, -apple-system, "Segoe UI", sans-serif;
 }
 
 /* Base styles live in the base layer so Tailwind utilities (e.g. font-bold on a
@@ -15,28 +21,37 @@
 @layer base {
   :root {
     color-scheme: light;
-    background: #f5f3eb;
-    color: #172b24;
+    background: #f8fafc;
+    color: #0f172a;
   }
 
   * {
     box-sizing: border-box;
   }
 
+  h1,
+  h2 {
+    font-family: var(--font-fraunces), Georgia, "Times New Roman", serif;
+    font-weight: 600;
+    letter-spacing: -0.015em;
+  }
+
   html {
     min-width: 320px;
     scroll-behavior: smooth;
+    /* Pinned bottom bars (booking, planner save) must not cover a control that is scrolled or tabbed into view. */
+    scroll-padding-bottom: 7rem;
   }
 
   body {
     margin: 0;
     min-height: 100vh;
-    background:
-      radial-gradient(circle at 85% 0%, rgba(237, 189, 88, 0.13), transparent 25rem),
-      #f5f3eb;
-    color: #172b24;
-    font-family: Arial, Helvetica, sans-serif;
+    background: #f8fafc;
+    color: #0f172a;
+    font-family: var(--font-public-sans), system-ui, -apple-system, "Segoe UI", sans-serif;
     -webkit-font-smoothing: antialiased;
+    /* Only 400/600/700 are loaded; never fake a heavier weight for font-black. */
+    font-synthesis-weight: none;
   }
 
   button,
@@ -46,7 +61,7 @@
   }
 
   ::selection {
-    background: rgba(79, 128, 99, 0.2);
+    background: rgba(37, 99, 235, 0.2);
   }
 }
 

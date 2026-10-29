@@ -3,7 +3,6 @@ import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import { PageFrame } from '@/components/ui/page-frame';
 import { Notice } from '@/components/ui/notice';
-import { LogoutButton } from '@/components/ui/logout-button';
 
 export const dynamic = 'force-dynamic';
 
@@ -51,18 +50,20 @@ export default async function AdminDashboardPage() {
     guidesResult,
     pendingPackagesResult,
     publishedPackagesResult,
+    bookingsResult,
   ] = await Promise.all([
     supabase.from('tours_operators').select('*', { count: 'exact', head: true }).eq('accreditation_status', 'pending'),
     supabase.from('tours_guides').select('*', { count: 'exact', head: true }).eq('accreditation_status', 'pending'),
     supabase.from('tours_packages').select('*', { count: 'exact', head: true }).eq('status', 'pending_review'),
     supabase.from('tours_packages').select('*', { count: 'exact', head: true }).eq('status', 'published'),
+    supabase.from('tours_bookings').select('*', { count: 'exact', head: true }),
   ]);
 
   const pendingOperators = operatorsResult.count || 0;
   const pendingGuides = guidesResult.count || 0;
   const pendingPackages = pendingPackagesResult.count || 0;
   const publishedPackages = publishedPackagesResult.count || 0;
-  const totalBookings = 0; // Will be implemented with booking system
+  const totalBookings = bookingsResult.count || 0;
 
   // Get recent admin activities
   const { data: recentActivities } = await supabase
@@ -76,7 +77,7 @@ export default async function AdminDashboardPage() {
       <div className="mb-8">
         <div className="flex items-center justify-between">
           <div>
-            <p className="text-xs font-black uppercase tracking-[0.18em] text-daet-leaf">Tourism Office</p>
+            <p className="text-sm font-bold text-daet-leaf">Tourism Office</p>
             <h1 className="mt-2 text-3xl font-black tracking-tight text-daet-ink sm:text-4xl">
               Admin Dashboard
             </h1>
@@ -94,7 +95,6 @@ export default async function AdminDashboardPage() {
               </svg>
               Home
             </Link>
-            <LogoutButton />
           </div>
         </div>
       </div>
@@ -211,19 +211,19 @@ export default async function AdminDashboardPage() {
           </Link>
           <Link
             href="/tours/admin/events"
-            className="inline-flex min-h-11 items-center justify-center rounded-full border border-daet-forest/30 px-6 text-sm font-bold text-daet-forest hover:bg-daet-forest/5 transition"
+            className="inline-flex min-h-11 items-center justify-center rounded-full border border-daet-forest/30 px-6 text-sm font-bold text-daet-leaf hover:bg-daet-forest/5 transition"
           >
             Manage Events Calendar
           </Link>
           <Link
             href="/tours/admin/attractions"
-            className="inline-flex min-h-11 items-center justify-center rounded-full border border-daet-forest/30 px-6 text-sm font-bold text-daet-forest hover:bg-daet-forest/5 transition"
+            className="inline-flex min-h-11 items-center justify-center rounded-full border border-daet-forest/30 px-6 text-sm font-bold text-daet-leaf hover:bg-daet-forest/5 transition"
           >
             Manage Attractions
           </Link>
           <Link
             href="/tours/admin/reviews"
-            className="inline-flex min-h-11 items-center justify-center rounded-full border border-daet-forest/30 px-6 text-sm font-bold text-daet-forest hover:bg-daet-forest/5 transition"
+            className="inline-flex min-h-11 items-center justify-center rounded-full border border-daet-forest/30 px-6 text-sm font-bold text-daet-leaf hover:bg-daet-forest/5 transition"
           >
             Moderate Reviews
           </Link>
@@ -235,7 +235,7 @@ export default async function AdminDashboardPage() {
           </Link>
           <Link
             href="/tours/admin/merch"
-            className="inline-flex min-h-11 items-center justify-center rounded-full border border-daet-forest/30 px-6 text-sm font-bold text-daet-forest hover:bg-daet-forest/5 transition"
+            className="inline-flex min-h-11 items-center justify-center rounded-full border border-daet-forest/30 px-6 text-sm font-bold text-daet-leaf hover:bg-daet-forest/5 transition"
           >
             Manage Merchandise
           </Link>

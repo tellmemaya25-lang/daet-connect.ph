@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useFeedback } from "@/components/ui/feedback";
 import { updatePaymentSettings } from "./actions";
 
 interface PaymentSettingsFormProps {
@@ -22,6 +23,7 @@ export function PaymentSettingsForm({
   bankAccountName: initialBankAccountName,
   paymentInstructions: initialInstructions,
 }: PaymentSettingsFormProps) {
+  const { toast, confirm } = useFeedback();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [gcashNumber, setGcashNumber] = useState(initialGcash || "");
   const [gcashName, setGcashName] = useState(initialGcashName || "");
@@ -49,9 +51,9 @@ export function PaymentSettingsForm({
     setIsSubmitting(false);
 
     if (result.success) {
-      alert("Payment settings updated successfully!");
+      toast("Payment settings saved.", "success");
     } else {
-      alert(`Error: ${result.error}`);
+      toast(result.error || "We could not save your payment settings.", "error");
     }
   };
 
@@ -72,7 +74,7 @@ export function PaymentSettingsForm({
               type="tel"
               value={gcashNumber}
               onChange={(e) => setGcashNumber(e.target.value)}
-              className="w-full rounded-xl border border-daet-ink/20 px-3 py-2 text-sm focus:border-daet-forest focus:outline-none"
+              className="w-full rounded-xl border border-daet-ink/20 min-h-11 px-3 py-2 text-base focus:border-daet-forest focus:outline-none"
               placeholder="09171234567"
             />
           </div>
@@ -84,7 +86,7 @@ export function PaymentSettingsForm({
               type="text"
               value={gcashName}
               onChange={(e) => setGcashName(e.target.value)}
-              className="w-full rounded-xl border border-daet-ink/20 px-3 py-2 text-sm focus:border-daet-forest focus:outline-none"
+              className="w-full rounded-xl border border-daet-ink/20 min-h-11 px-3 py-2 text-base focus:border-daet-forest focus:outline-none"
               placeholder="Juan Dela Cruz"
             />
           </div>
@@ -104,7 +106,7 @@ export function PaymentSettingsForm({
               type="text"
               value={bankName}
               onChange={(e) => setBankName(e.target.value)}
-              className="w-full rounded-xl border border-daet-ink/20 px-3 py-2 text-sm focus:border-daet-forest focus:outline-none"
+              className="w-full rounded-xl border border-daet-ink/20 min-h-11 px-3 py-2 text-base focus:border-daet-forest focus:outline-none"
               placeholder="BPI, BDO, Metrobank, etc."
             />
           </div>
@@ -116,7 +118,7 @@ export function PaymentSettingsForm({
               type="text"
               value={bankAccountNumber}
               onChange={(e) => setBankAccountNumber(e.target.value)}
-              className="w-full rounded-xl border border-daet-ink/20 px-3 py-2 text-sm focus:border-daet-forest focus:outline-none"
+              className="w-full rounded-xl border border-daet-ink/20 min-h-11 px-3 py-2 text-base focus:border-daet-forest focus:outline-none"
               placeholder="1234567890"
             />
           </div>
@@ -128,7 +130,7 @@ export function PaymentSettingsForm({
               type="text"
               value={bankAccountName}
               onChange={(e) => setBankAccountName(e.target.value)}
-              className="w-full rounded-xl border border-daet-ink/20 px-3 py-2 text-sm focus:border-daet-forest focus:outline-none"
+              className="w-full rounded-xl border border-daet-ink/20 min-h-11 px-3 py-2 text-base focus:border-daet-forest focus:outline-none"
               placeholder="Juan Dela Cruz"
             />
           </div>
@@ -144,7 +146,7 @@ export function PaymentSettingsForm({
           value={paymentInstructions}
           onChange={(e) => setPaymentInstructions(e.target.value)}
           rows={4}
-          className="w-full rounded-xl border border-daet-ink/20 px-3 py-2 text-sm focus:border-daet-forest focus:outline-none"
+          className="w-full rounded-xl border border-daet-ink/20 min-h-11 px-3 py-2 text-base focus:border-daet-forest focus:outline-none"
           placeholder="Example: Please include booking reference in payment message..."
         />
       </div>

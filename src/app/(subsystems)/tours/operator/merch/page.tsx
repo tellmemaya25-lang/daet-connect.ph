@@ -46,7 +46,7 @@ export default async function OperatorMerchPage({ searchParams }: { searchParams
           <Link href="/tours/operator/dashboard" className="inline-flex min-h-11 items-center text-sm font-bold text-daet-forest hover:underline">
             ← Dashboard
           </Link>
-          <p className="text-xs font-black uppercase tracking-[0.18em] text-daet-leaf">{operator.business_name}</p>
+          <p className="text-sm font-bold text-daet-leaf">{operator.business_name}</p>
           <h1 className="mt-1 text-3xl font-black tracking-tight text-daet-ink">My merchandise</h1>
           <p className="mt-1 max-w-xl text-sm text-daet-ink/65">Sell shirts, souvenirs or pasalubong on the CONNECT-Daet merch showcase. The Tourism Office approves each product first.</p>
         </div>

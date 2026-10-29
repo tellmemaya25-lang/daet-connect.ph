@@ -53,7 +53,7 @@ export default async function AdminAnalyticsPage({ searchParams }: { searchParam
           <span aria-hidden="true">–</span>
           <label className="sr-only" htmlFor="to">To</label>
           <input id="to" name="to" type="date" defaultValue={range.to} max={today} className="min-h-11 rounded-full border border-daet-ink/15 bg-white px-3" />
-          <button type="submit" className="min-h-11 rounded-full border border-daet-forest/30 bg-white px-4 font-bold text-daet-forest hover:bg-daet-forest/5">
+          <button type="submit" className="min-h-11 rounded-full border border-daet-forest/30 bg-white px-4 font-bold text-daet-leaf hover:bg-daet-forest/5">
             Apply
           </button>
         </form>

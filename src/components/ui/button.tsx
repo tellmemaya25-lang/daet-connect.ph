@@ -28,7 +28,7 @@ type StyleProps = { variant?: ButtonVariant; size?: ButtonSize; fullWidth?: bool
 
 export function buttonClasses({ variant = "primary", size = "md", fullWidth = false }: StyleProps = {}): string {
   return cn(
-    "inline-flex items-center justify-center gap-2 rounded-full font-bold transition",
+    "inline-flex items-center justify-center gap-2 rounded-full font-bold transition-colors",
     "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-daet-forest/40 focus-visible:ring-offset-2",
     "disabled:cursor-not-allowed disabled:opacity-60",
     VARIANTS[variant],

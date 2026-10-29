@@ -77,7 +77,7 @@ export function PackageInclusionsStep({
           <button
             type="button"
             onClick={addInclusion}
-            className="inline-flex min-h-11 items-center justify-center rounded-full bg-daet-forest/10 px-5 text-sm font-bold text-daet-forest transition hover:bg-daet-forest/20"
+            className="inline-flex min-h-11 items-center justify-center rounded-full bg-daet-forest/10 px-5 text-sm font-bold text-daet-leaf transition hover:bg-daet-forest/20"
           >
             Add
           </button>

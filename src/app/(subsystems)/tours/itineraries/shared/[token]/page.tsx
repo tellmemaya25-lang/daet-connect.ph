@@ -24,7 +24,7 @@ export default async function SharedItineraryPage({ params }: { params: Promise<
   return (
     <PageFrame>
       <div className="mx-auto max-w-3xl">
-        <p className="text-xs font-black uppercase tracking-[0.18em] text-daet-leaf">Shared trip plan</p>
+        <p className="text-sm font-bold text-daet-leaf">Shared trip plan</p>
         <h1 className="mt-1 text-3xl font-black text-daet-ink">{shared.title}</h1>
         {shared.summary ? <p className="mt-3 rounded-2xl bg-daet-forest/5 p-4 text-sm leading-6 text-daet-ink">{shared.summary}</p> : null}
         <div className="mt-6">

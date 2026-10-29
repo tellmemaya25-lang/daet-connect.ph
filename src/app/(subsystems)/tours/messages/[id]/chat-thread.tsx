@@ -141,7 +141,7 @@ export function ChatThread({
                         )
                       ) : null}
                       {message.message_text ? <p className="whitespace-pre-wrap break-words text-sm">{message.message_text}</p> : null}
-                      <p className={`mt-1 text-right text-[10px] ${mine ? "text-white/70" : "text-daet-ink/70"}`}>{time(message.created_at)}</p>
+                      <p className={`mt-1 text-right text-[10px] ${mine ? "text-white" : "text-daet-ink/70"}`}>{time(message.created_at)}</p>
                     </div>
                   </li>
                 );

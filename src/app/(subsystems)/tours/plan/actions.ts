@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { headers } from "next/headers";
+import { aiCallerKey, allowAiCall } from "@/lib/ai/limits";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { ATTRACTION_COLUMNS, toAttraction } from "@/lib/tours/attractions";
 import { toManilaDateKey } from "@/lib/tours/events-calendar";
@@ -134,9 +135,6 @@ export async function suggestPackages(places: Array<{ name: string; lat: number;
 
 // ------------------------------------------------------------------ trip assistant
 
-const AI_LIMIT = { calls: 20, windowMs: 10 * 60 * 1000 };
-const aiCalls = new Map<string, number[]>();
-
 /** Up to 20 AI requests per person (or connection) per 10 minutes; past that the rules answer. */
 async function allowAi(): Promise<boolean> {
   if (!isLlmEnabled()) return false;
@@ -144,13 +142,7 @@ async function allowAi(): Promise<boolean> {
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  const key = user?.id ?? (await headers()).get("x-forwarded-for")?.split(",")[0]?.trim() ?? "anonymous";
-  const now = Date.now();
-  const recent = (aiCalls.get(key) ?? []).filter((at) => now - at < AI_LIMIT.windowMs);
-  if (recent.length >= AI_LIMIT.calls) return false;
-  aiCalls.set(key, [...recent, now]);
-  if (aiCalls.size > 5000) aiCalls.delete(aiCalls.keys().next().value!);
-  return true;
+  return allowAiCall("planner", aiCallerKey(user?.id, (await headers()).get("x-forwarded-for")));
 }
 
 const cleanText = (value: unknown) => (typeof value === "string" ? value.replace(/\s+/g, " ").trim() : "");
