@@ -1,5 +1,7 @@
+import { formatPeso } from "@/lib/money";
 import { FAQS, matchFaq } from "@/lib/tours/assistant/knowledge";
-import { attractionInfo, handoff, myBookings, planTripLink, searchTours, tourDetails, upcomingEvents, type ToolContext } from "@/lib/tours/assistant/tools";
+import { attractionInfo, handoff, myBookings, planTripLink, searchTours, tourDetails, travelTime, upcomingEvents, type ToolContext } from "@/lib/tours/assistant/tools";
+import { readTravelQuestion } from "@/lib/tours/assistant/transport";
 import { normalizeText } from "@/lib/tours/itinerary/assistant";
 
 /**
@@ -25,6 +27,18 @@ export async function basicReply(text: string, ctx: ToolContext): Promise<string
     return ctx.userId
       ? "I'll pass this to a person. Check the message below, edit it if you like, and send it."
       : "I'll pass this to a person. Sign in first so they can reply to you.";
+  }
+
+  // How long / how far between two places (R5)
+  const trip = readTravelQuestion(text);
+  if (trip) {
+    const result = await travelTime(ctx, { from: trip.from, to: trip.to });
+    if ("error" in result && result.error) return result.error;
+    if (result.kind === "boat") {
+      if ("options" in result && result.options) return `To ${result.to} by boat: ${result.options.map((o) => `from ${o.from}, ${o.duration}`).join("; ")}. ${result.note}`;
+      return `${result.from} to ${result.to} by boat takes ${result.duration}. ${result.note}`;
+    }
+    if ("distance" in result) return `${result.from} to ${result.to}: about ${result.duration} (${result.distance}) by ${result.kind === "walk" ? "foot" : "road"}. ${result.note}`;
   }
 
   // Their own bookings, payments and tickets
@@ -58,7 +72,7 @@ export async function basicReply(text: string, ctx: ToolContext): Promise<string
       const result = await attractionInfo(ctx, { name });
       if (result.places?.length) {
         const p = result.places[0];
-        return `${p.name}: ${p.hours}${p.entranceFee ? ` Entrance fee ₱${p.entranceFee} per person.` : ""}`;
+        return `${p.name}: ${p.hours}${p.entranceFee ? ` Entrance fee ${formatPeso(p.entranceFee)} per person.` : ""}`;
       }
     }
   }
@@ -75,7 +89,7 @@ export async function basicReply(text: string, ctx: ToolContext): Promise<string
       const details = await tourDetails(ctx, { packageId: result.tours[0].id });
       if (!("error" in details)) {
         const dates = details.nextOpenDates.slice(0, 4).map((d) => `${d.date} (${d.seatsLeft} seats)`).join(", ");
-        return `${details.title}${details.prices[0]?.perPerson ? ` from ₱${details.prices[0].perPerson} per person` : ""}. ${dates ? `Next open dates: ${dates}.` : "No open dates are listed right now."}`;
+        return `${details.title}${details.prices[0]?.perPerson ? ` from ${formatPeso(details.prices[0].perPerson)} per person` : ""}. ${dates ? `Next open dates: ${dates}.` : "No open dates are listed right now."}`;
       }
     }
     return `Here ${result.tours.length === 1 ? "is a tour" : "are some tours"} you can book. Open one to see its open dates.`;

@@ -1,5 +1,6 @@
 "use server";
 
+import { formatPeso } from "@/lib/money";
 import { revalidatePath } from "next/cache";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { parseRefundForm, parseStaffReason } from "@/lib/tours/cancellation";
@@ -83,6 +84,6 @@ export async function recordRefund(formData: FormData): Promise<CancellationActi
   const left = Number(remaining ?? 0);
   return {
     success: true,
-    message: left > 0 ? `Refund recorded. ₱${left.toFixed(2)} can still be refunded.` : "Refund recorded. Everything paid has been returned.",
+    message: left > 0 ? `Refund recorded. ${formatPeso(left)} can still be refunded.` : "Refund recorded. Everything paid has been returned.",
   };
 }

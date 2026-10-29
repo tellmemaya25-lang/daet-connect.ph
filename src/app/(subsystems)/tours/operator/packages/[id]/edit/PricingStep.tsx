@@ -1,5 +1,6 @@
 "use client";
 
+import { formatPeso } from "@/lib/money";
 import React, { useCallback, useState } from "react";
 import { useFeedback } from "@/components/ui/feedback";
 import type { EditPriceVariant, EditPackageStatus, ValidationErrors, StepProps } from "./edit-types";
@@ -173,7 +174,7 @@ export function PricingStep({
                 <td className="px-4 py-3 text-daet-ink/80">{variant.minPax}</td>
                 <td className="px-4 py-3 text-daet-ink/80">{variant.maxPax || "Unlimited"}</td>
                 <td className="px-4 py-3 text-daet-ink/80">
-                  {variant.pricePerPax ? `₱${variant.pricePerPax}/pax` : `₱${variant.flatPrice}`}
+                  {variant.pricePerPax ? `${formatPeso(variant.pricePerPax)}/pax` : formatPeso(variant.flatPrice)}
                 </td>
                 <td className="px-4 py-3">
                   <input

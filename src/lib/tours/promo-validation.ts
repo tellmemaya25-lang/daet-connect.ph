@@ -1,3 +1,4 @@
+import { formatPeso as formatMoney } from "@/lib/money";
 import { manilaLocalToIso, MAX_EVENT_SPAN_DAYS } from "@/lib/tours/events-calendar";
 
 /** Shared contract and validation for the events calendar and merchandise showcase. */
@@ -238,5 +239,5 @@ export function readPromoImage(formData: FormData): { file: File | null; error?:
 
 export function formatPeso(value: number | null): string | null {
   if (value === null) return null;
-  return `₱${value.toLocaleString("en-PH", { minimumFractionDigits: 0, maximumFractionDigits: 2 })}`;
+  return formatMoney(value);
 }

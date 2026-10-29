@@ -4,7 +4,7 @@ import { ButtonLink } from "@/components/ui/button";
 import { LogoutButton } from "@/components/ui/logout-button";
 import { SiteNavLink } from "@/components/ui/site-nav-link";
 import { NotificationBell } from "@/components/tours/notification-bell";
-import type { Tab } from "@/lib/tours/dashboards";
+import type { DashboardRole, Tab } from "@/lib/tours/dashboards";
 
 const PUBLIC_LINKS = [
   { href: "/tours/plan", label: "Plan a trip" },
@@ -16,16 +16,21 @@ const PUBLIC_LINKS = [
 export function SiteHeader({
   showAdminLink = false,
   signedIn = false,
+  role,
   tabs = [],
 }: {
   showAdminLink?: boolean;
   signedIn?: boolean;
+  /** Signed-in role. Staff (operator, guide, admin) don't get the tourist exploration menu (R1). */
+  role?: DashboardRole;
   /** The signed-in user's role tabs. Phones get them in the bottom bar; from md up they show here. */
   tabs?: Tab[];
 }) {
+  // Visitors and tourists get the exploration menu; staff only see their own work.
+  const publicLinks = !signedIn || !role || role === "tourist" ? PUBLIC_LINKS : [];
   // Tabs that the public links already cover are not repeated.
-  const publicHrefs = new Set(PUBLIC_LINKS.map((link) => link.href));
-  const roleLinks = tabs.filter((tab) => !publicHrefs.has(tab.href) && tab.label !== "Tours");
+  const publicHrefs = new Set(publicLinks.map((link) => link.href));
+  const roleLinks = publicLinks.length ? tabs.filter((tab) => !publicHrefs.has(tab.href) && tab.label !== "Tours") : tabs;
 
   return (
     <header className="border-b border-daet-ink/10 bg-white print:hidden">
@@ -53,7 +58,7 @@ export function SiteHeader({
           className="-mx-1 flex w-full min-w-0 items-center gap-1 overflow-x-auto pb-1 sm:mx-0 sm:w-auto sm:flex-1 sm:gap-2 sm:pb-0 lg:gap-3"
           aria-label="Main navigation"
         >
-          {PUBLIC_LINKS.map((link) => (
+          {publicLinks.map((link) => (
             <SiteNavLink key={link.href} href={link.href}>
               {link.label}
             </SiteNavLink>

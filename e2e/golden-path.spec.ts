@@ -67,7 +67,13 @@ test("guide can mark a day available", async ({ browser }) => {
   const page = await context.newPage();
   await page.goto("/tours/guide/dashboard", { waitUntil: "networkidle" });
   // Past days are disabled; pick the first future day that is not set yet.
-  const day = page.locator('button[aria-label$=": not set"]:not([disabled])').first();
+  // Near the end of a month there may be none left, so look in next month.
+  const notSet = page.locator('button[aria-label$=": not set"]:not([disabled])');
+  if ((await notSet.count()) === 0) {
+    await page.getByRole("link", { name: "Next month" }).click();
+    await expect(notSet.first()).toBeVisible();
+  }
+  const day = notSet.first();
   const label = (await day.getAttribute("aria-label")) ?? "";
   await day.click();
   await expect(page.getByRole("button", { name: label.replace("not set", "available") })).toBeVisible();

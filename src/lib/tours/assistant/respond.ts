@@ -34,6 +34,8 @@ export type RespondDeps = {
   today: string;
   /** Whether the AI may be used for this call (key configured and within the limit). */
   aiAllowed: boolean;
+  /** Road legs for travel_time (the cached Routes API); estimates when missing. */
+  route?: ToolContext["route"];
   runAi: (ctx: ToolContext, history: ChatTurn[], onText: (delta: string) => void) => Promise<{ stopReason: string | null }>;
 };
 
@@ -58,7 +60,7 @@ export async function* respond(raw: unknown, deps: RespondDeps): AsyncGenerator<
     return;
   }
   const { history } = cleaned;
-  const ctx: ToolContext = { supabase: deps.supabase, userId: deps.userId, today: deps.today, cards: [] };
+  const ctx: ToolContext = { supabase: deps.supabase, userId: deps.userId, today: deps.today, cards: [], route: deps.route };
 
   if (deps.aiAllowed) {
     const queue: string[] = [];

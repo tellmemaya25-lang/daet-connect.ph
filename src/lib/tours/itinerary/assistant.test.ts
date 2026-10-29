@@ -1,4 +1,5 @@
 import fc from "fast-check";
+import { ATTRACTION_CATEGORIES } from "@/lib/tours/attractions";
 import { applyChangeRequest, matchAttractions, mergeTripFields, parseTripRequest, prefsToInput } from "@/lib/tours/itinerary/assistant";
 import type { PlannerInput } from "@/lib/tours/itinerary/form";
 import { generatePlan } from "@/lib/tours/itinerary/schedule";
@@ -32,6 +33,14 @@ const prefs = (overrides: Partial<Preferences> = {}): Preferences => ({
 const ids = (plan: Plan) => plan.days.flatMap((d) => d.blocks.flatMap((b) => (b.kind === "visit" ? [b.attractionId] : [])));
 
 describe("parseTripRequest", () => {
+  it("reads 'everything' and 'lahat' as all categories (R2)", () => {
+    for (const text of ["2 days, everything", "2 araw, lahat"]) {
+      const { input, understood } = parseTripRequest(text, TODAY, base);
+      expect([...input.interests].sort()).toEqual(Object.keys(ATTRACTION_CATEGORIES).sort());
+      expect(understood).toContain("all categories");
+    }
+  });
+
   it("reads days, group, kids, pace, budget, dates and interests", () => {
     const { input, understood } = parseTripRequest("3 days next weekend with my 2 kids, beaches and food, ₱300 each", TODAY, base);
     expect(input).toMatchObject({ days: 3, groupSize: 3, pace: "relaxed", budgetPerDay: 300, interests: ["beach", "food"], startDate: "2026-10-31" });

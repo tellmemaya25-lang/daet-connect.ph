@@ -1,3 +1,4 @@
+import { formatPeso } from "@/lib/money";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { OpenChatButton } from "@/app/(subsystems)/tours/messages/open-chat-button";
@@ -14,7 +15,7 @@ import { summarizeLedger } from "@/lib/tours/ledger";
 import { toSummary } from "@/lib/tours/reviews";
 import { loadOperatorLedger } from "../payments/load-ledger";
 
-const peso = (value: number) => `₱${value.toLocaleString("en-PH", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+const peso = formatPeso;
 
 type DayBooking = {
   id: string;

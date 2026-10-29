@@ -1,3 +1,4 @@
+import { formatPeso } from "@/lib/money";
 interface PaymentInstructionsProps {
   operatorName: string;
   gcashNumber?: string | null;
@@ -35,7 +36,7 @@ export function PaymentInstructions({
         <div className="rounded-xl bg-white p-4 text-center">
           <p className="text-sm text-daet-ink/70">Total Amount to Pay</p>
           <p className="text-3xl font-black text-daet-forest">
-            ₱{totalAmount.toLocaleString()}
+            {formatPeso(totalAmount)}
           </p>
           <p className="mt-1 text-xs text-daet-ink/70">
             Reference: {bookingReference}

@@ -191,6 +191,11 @@ BEGIN
   RESET ROLE;
 
   -- ------------------------------------------------------------ messaging channels
+  -- R6: a guide can only be assigned on a day they marked available (and are free).
+  UPDATE tours_bookings SET assigned_guide_id = NULL WHERE assigned_guide_id = v_guide AND tour_date = (SELECT tour_date FROM tours_bookings WHERE id = v_booking) AND id <> v_booking;
+  INSERT INTO tours_guide_availability (guide_id, available_date, is_available)
+  SELECT v_guide, tour_date, true FROM tours_bookings WHERE id = v_booking
+  ON CONFLICT (guide_id, available_date) DO UPDATE SET is_available = true;
   UPDATE tours_bookings SET assigned_guide_id = v_guide WHERE id = v_booking;
   -- Tourist <-> guide: private to the two of them.
   PERFORM set_config('request.jwt.claims', json_build_object('sub', v_tourist, 'role', 'authenticated')::text, true);
