@@ -1,3 +1,4 @@
+import { LineIcon } from "@/components/ui/icons";
 import Link from "next/link";
 import { PageFrame } from "@/components/ui/page-frame";
 import { Notice } from "@/components/ui/notice";
@@ -31,7 +32,6 @@ export default async function AdminEventsPage({
   return (
     <PageFrame adminNav>
       <AdminPageHeading
-        eyebrow="Tourism Office"
         title="Events calendar"
         backHref="/tours/admin"
         backLabel="Admin dashboard"
@@ -44,8 +44,8 @@ export default async function AdminEventsPage({
       {error ? <Notice variant="error" className="mb-4">Events could not be loaded. Has the events migration been applied?</Notice> : null}
 
       {events.length === 0 && !error ? (
-        <div className="rounded-2xl border border-dashed border-daet-ink/20 bg-white p-8 text-center">
-          <p className="text-4xl" aria-hidden="true">📅</p>
+        <div className="rounded-2xl border-dashed bg-white p-8 text-center">
+          <LineIcon name="calendar" className="mx-auto h-10 w-10 text-blue-600" />
           <p className="mt-2 font-bold text-daet-ink">No events yet</p>
           <p className="text-sm text-daet-ink/70">Add festivals, cultural shows and markets for tourists to discover.</p>
         </div>
@@ -54,7 +54,7 @@ export default async function AdminEventsPage({
           {events.map((event) => {
             const isPast = Date.parse(event.ends_at) < now;
             return (
-              <li key={event.id} className="flex flex-col gap-3 rounded-2xl border border-daet-ink/10 bg-white p-4 shadow-sm sm:flex-row sm:items-center">
+              <li key={event.id} className="flex flex-col gap-3 rounded-2xl bg-white p-4 sm:flex-row sm:items-center">
                 <div className="min-w-0 flex-1">
                   <div className="flex flex-wrap items-center gap-2">
                     <span className="rounded-full bg-daet-sand px-2 py-0.5 text-xs font-bold text-daet-forest">{EVENT_CATEGORIES[event.category]}</span>

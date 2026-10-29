@@ -12,7 +12,7 @@ export default async function ForgotPasswordPage({ searchParams }: { searchParam
   return (
     <PageFrame>
       <div className="mx-auto max-w-md">
-        <section className="rounded-2xl bg-white p-6 shadow-card sm:p-10">
+        <section className="rounded-2xl bg-white p-6 sm:p-10">
           <h1 className="text-3xl font-black text-daet-ink">Reset your password</h1>
           <p className="mt-2 text-sm leading-6 text-daet-ink/80">
             Enter your email and we will send you a link to choose a new password.

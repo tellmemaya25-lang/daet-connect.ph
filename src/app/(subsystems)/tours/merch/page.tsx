@@ -1,3 +1,4 @@
+import { LineIcon } from "@/components/ui/icons";
 import Link from "next/link";
 import { PageFrame } from "@/components/ui/page-frame";
 import { Notice } from "@/components/ui/notice";
@@ -72,8 +73,8 @@ export default async function MerchPage({
           ))}
         </ul>
       ) : !error ? (
-        <div className="rounded-2xl border border-dashed border-daet-ink/20 bg-white p-8 text-center">
-          <p className="text-4xl" aria-hidden="true">🛍️</p>
+        <div className="rounded-2xl border-dashed bg-white p-8 text-center">
+          <LineIcon name="bag" className="mx-auto h-10 w-10 text-blue-600" />
           <p className="mt-2 font-bold text-daet-ink">No products in this category yet</p>
           <p className="text-sm text-daet-ink/70">Check back soon for new Daet souvenirs.</p>
         </div>

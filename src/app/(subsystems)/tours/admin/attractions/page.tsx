@@ -26,7 +26,6 @@ export default async function AdminAttractionsPage({ searchParams }: { searchPar
   return (
     <PageFrame adminNav>
       <AdminPageHeading
-        eyebrow="Tourism dataset"
         title="Attractions"
         backHref="/tours/admin"
         backLabel="Admin dashboard"
@@ -50,9 +49,9 @@ export default async function AdminAttractionsPage({ searchParams }: { searchPar
       </Card>
 
       {attractions.length === 0 ? (
-        <p className="rounded-3xl border border-daet-ink/10 bg-white p-8 text-center text-sm text-daet-ink/70">No attractions yet. Add one or import the Tourism Office list.</p>
+        <p className="rounded-2xl bg-white p-8 text-center text-sm text-daet-ink/70">No attractions yet. Add one or import the Tourism Office list.</p>
       ) : (
-        <ul className="divide-y divide-daet-ink/10 overflow-hidden rounded-3xl border border-daet-ink/10 bg-white shadow-sm">
+        <ul className="divide-y divide-daet-ink/10 overflow-hidden rounded-2xl bg-white">
           {attractions.map((attraction) => (
             <li key={attraction.id} className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between">
               <div className="min-w-0">
@@ -89,7 +88,7 @@ export default async function AdminAttractionsPage({ searchParams }: { searchPar
 
 function Stat({ label, value }: { label: string; value: number }) {
   return (
-    <div className="rounded-2xl border border-daet-ink/10 bg-white p-4">
+    <div className="rounded-2xl bg-white p-4">
       <p className="text-3xl font-black text-daet-ink">{value}</p>
       <p className="text-xs text-daet-ink/70">{label}</p>
     </div>

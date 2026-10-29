@@ -30,7 +30,7 @@ export function DashboardHeader({
     <>
       {/* Navigation Bar */}
       {role && (
-        <div className="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-daet-ink/10 bg-white px-4 py-3 sm:px-6 sm:py-4">
+        <div className="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-2xl bg-white px-4 py-3 sm:px-6 sm:py-4">
           <div className="flex min-w-0 flex-wrap items-center gap-x-4 gap-y-2">
             {dashLink && (
               <Link

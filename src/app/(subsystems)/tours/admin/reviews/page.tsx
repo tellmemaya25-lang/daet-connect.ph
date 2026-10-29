@@ -1,3 +1,4 @@
+import { LineIcon } from "@/components/ui/icons";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
@@ -38,7 +39,7 @@ export default async function AdminReviewsPage({ searchParams }: { searchParams:
 
   return (
     <PageFrame adminNav>
-      <AdminPageHeading eyebrow="Content moderation" title="Reviews" backHref="/tours/admin" backLabel="Admin dashboard" />
+      <AdminPageHeading title="Reviews" backHref="/tours/admin" backLabel="Admin dashboard" />
 
       <p className="mb-4 max-w-2xl text-sm text-daet-ink/65">
         Hidden reviews disappear from the public pages and no longer count toward ratings. The traveller and the operator still see them, with your reason.
@@ -60,7 +61,7 @@ export default async function AdminReviewsPage({ searchParams }: { searchParams:
       {error ? <Notice variant="error" className="mb-4">Reviews could not be loaded.</Notice> : null}
 
       {reviews.length === 0 ? (
-        <EmptyState icon="⭐" title="No reviews here" />
+        <EmptyState icon={<LineIcon name="star" />} title="No reviews here" />
       ) : (
         <ul className="space-y-4">
           {reviews.map((review) => {

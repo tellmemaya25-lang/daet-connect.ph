@@ -1,3 +1,4 @@
+import { LineIcon } from "@/components/ui/icons";
 import { formatPeso } from "@/lib/money";
 import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
@@ -271,7 +272,7 @@ export default async function OperatorPackageDetailPage({ params }: PageProps) {
           <div className="lg:col-span-2">
             {/* Cover image */}
             {pkg.cover_image_url ? (
-              <div className="aspect-video overflow-hidden rounded-3xl bg-daet-sand">
+              <div className="aspect-video overflow-hidden rounded-2xl bg-daet-sand">
                 <img
                   src={pkg.cover_image_url}
                   alt={pkg.title}
@@ -279,21 +280,21 @@ export default async function OperatorPackageDetailPage({ params }: PageProps) {
                 />
               </div>
             ) : (
-              <div className="aspect-video rounded-3xl bg-daet-sand" />
+              <div className="aspect-video rounded-2xl bg-daet-sand" />
             )}
 
             {/* Basic info */}
-            <div className="mt-6 rounded-2xl border border-daet-ink/10 bg-white p-6">
+            <div className="mt-6 rounded-2xl bg-white p-6">
               <h2 className="font-black text-daet-ink">Basic information</h2>
               <dl className="mt-4 space-y-3 text-sm">
                 <div>
                   <dt className="font-bold text-daet-ink/70">Location</dt>
-                  <dd className="mt-1 text-daet-ink">📍 {pkg.location_name}</dd>
+                  <dd className="mt-1 text-daet-ink"><LineIcon name="pin" className="inline-block h-[1.1em] w-[1.1em] align-[-0.15em]" /> {pkg.location_name}</dd>
                 </div>
                 <div>
                   <dt className="font-bold text-daet-ink/70">Duration</dt>
                   <dd className="mt-1 text-daet-ink">
-                    ⏱️ {pkg.duration_value}{" "}
+                    <LineIcon name="clock" className="inline-block h-[1.1em] w-[1.1em] align-[-0.15em]" /> {pkg.duration_value}{" "}
                     {pkg.duration_type === "hours" ? "hours" : "days"}
                   </dd>
                 </div>
@@ -308,7 +309,7 @@ export default async function OperatorPackageDetailPage({ params }: PageProps) {
 
             {/* Pricing */}
             {pkg.tours_package_price_variants && pkg.tours_package_price_variants.length > 0 && (
-              <div className="mt-6 rounded-2xl border border-daet-ink/10 bg-white p-6">
+              <div className="mt-6 rounded-2xl bg-white p-6">
                 <h2 className="font-black text-daet-ink">Pricing variants</h2>
                 <div className="mt-4 space-y-3">
                   {pkg.tours_package_price_variants.map((variant: any) => (
@@ -347,7 +348,7 @@ export default async function OperatorPackageDetailPage({ params }: PageProps) {
 
             {/* Inclusions */}
             {(included.length > 0 || excluded.length > 0) && (
-              <div className="mt-6 rounded-2xl border border-daet-ink/10 bg-white p-6">
+              <div className="mt-6 rounded-2xl bg-white p-6">
                 <h2 className="font-black text-daet-ink">Inclusions</h2>
 
                 {included.length > 0 && (
@@ -388,7 +389,7 @@ export default async function OperatorPackageDetailPage({ params }: PageProps) {
 
             {/* Itinerary */}
             {stops.length > 0 && (
-              <div className="mt-6 rounded-2xl border border-daet-ink/10 bg-white p-6">
+              <div className="mt-6 rounded-2xl bg-white p-6">
                 <h2 className="font-black text-daet-ink">Itinerary stops</h2>
                 <div className="mt-4 space-y-4">
                   {stops.map((stop: any, idx: number) => (
@@ -417,7 +418,7 @@ export default async function OperatorPackageDetailPage({ params }: PageProps) {
 
             {/* Gallery */}
             {gallery.length > 0 && (
-              <div className="mt-6 rounded-2xl border border-daet-ink/10 bg-white p-6">
+              <div className="mt-6 rounded-2xl bg-white p-6">
                 <h2 className="font-black text-daet-ink">Photo gallery</h2>
                 <div className="mt-4 grid gap-4 sm:grid-cols-2">
                   {gallery.map((img: any) => (
@@ -439,7 +440,7 @@ export default async function OperatorPackageDetailPage({ params }: PageProps) {
 
           {/* Sidebar - Stats */}
           <div className="lg:col-span-1">
-            <div className="sticky top-6 rounded-3xl border border-daet-ink/10 bg-white p-6 shadow-lg">
+            <div className="sticky top-6 rounded-2xl bg-white p-6 shadow-[var(--shadow-float)]">
               <h2 className="font-black text-daet-ink">Package stats</h2>
 
               <div className="mt-4 space-y-4">

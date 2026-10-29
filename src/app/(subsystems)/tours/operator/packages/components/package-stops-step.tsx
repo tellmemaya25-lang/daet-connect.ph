@@ -1,5 +1,6 @@
 "use client";
 
+import { LineIcon } from "@/components/ui/icons";
 import { useState } from "react";
 import type { PackageDraft, StopDraft } from "../package-types";
 
@@ -166,7 +167,7 @@ export function PackageStopsStep({
         </div>
 
         <p className="mt-3 text-xs text-daet-ink/70">
-          💡 Use Google Maps to find latitude/longitude coordinates for accurate pin placement
+          <LineIcon name="tip" className="inline-block h-[1.1em] w-[1.1em] align-[-0.15em]" /> Use Google Maps to find latitude/longitude coordinates for accurate pin placement
         </p>
       </div>
 
@@ -180,7 +181,7 @@ export function PackageStopsStep({
             {stops.map((stop, index) => (
               <li
                 key={index}
-                className="flex items-start justify-between gap-3 rounded-2xl border border-daet-ink/10 bg-white p-4"
+                className="flex items-start justify-between gap-3 rounded-2xl bg-white p-4"
               >
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2">
@@ -208,7 +209,7 @@ export function PackageStopsStep({
                     className="grid h-8 w-8 place-items-center rounded-full text-daet-leaf transition hover:bg-daet-forest/10"
                     aria-label="Edit stop"
                   >
-                    ✏️
+                    <LineIcon name="edit" className="inline-block h-[1.1em] w-[1.1em] align-[-0.15em]" />
                   </button>
                   <button
                     type="button"

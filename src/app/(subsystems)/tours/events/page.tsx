@@ -1,3 +1,4 @@
+import { LineIcon } from "@/components/ui/icons";
 import Link from "next/link";
 import { PageFrame } from "@/components/ui/page-frame";
 import { Notice } from "@/components/ui/notice";
@@ -116,7 +117,7 @@ export default async function EventsCalendarPage({ searchParams }: { searchParam
       ) : null}
 
       <div className="grid gap-6 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
-        <section aria-labelledby="calendar-month" className="rounded-2xl border border-daet-ink/10 bg-white p-3 shadow-sm sm:p-5">
+        <section aria-labelledby="calendar-month" className="rounded-2xl bg-white p-3 sm:p-5">
           <div className="mb-3 flex items-center justify-between gap-2">
             <Link href={calendarHref({ month: prev, category })} aria-label="Previous month" className="grid h-11 w-11 place-items-center rounded-full border border-daet-ink/15 text-lg font-black hover:bg-daet-sand">
               ‹
@@ -135,7 +136,7 @@ export default async function EventsCalendarPage({ searchParams }: { searchParam
           </div>
 
           <div role="grid" aria-labelledby="calendar-month">
-            <div role="row" className="grid grid-cols-7 text-center text-[11px] font-black uppercase tracking-wide text-daet-ink/70">
+            <div role="row" className="grid grid-cols-7 text-center text-[11px] font-black text-daet-ink/70">
               {WEEKDAYS.map((day) => (
                 <div role="columnheader" key={day} className="py-2">
                   <abbr title={day} className="no-underline">{day.slice(0, 1)}<span className="hidden sm:inline">{day.slice(1)}</span></abbr>
@@ -227,8 +228,8 @@ export default async function EventsCalendarPage({ searchParams }: { searchParam
               ))}
             </ul>
           ) : (
-            <div className="rounded-2xl border border-dashed border-daet-ink/20 bg-white p-6 text-center">
-              <p className="text-3xl" aria-hidden="true">🗓️</p>
+            <div className="rounded-2xl border-dashed bg-white p-6 text-center">
+              <LineIcon name="calendar" className="mx-auto h-10 w-10 text-blue-600" />
               <p className="mt-2 font-bold text-daet-ink">
                 {selectedDay ? "No events on this day" : "No events this month yet"}
               </p>

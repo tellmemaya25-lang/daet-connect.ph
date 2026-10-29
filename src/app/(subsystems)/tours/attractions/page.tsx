@@ -1,3 +1,4 @@
+import { CategoryIcon } from "@/components/ui/icons";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { RouteMap } from "@/components/maps/route-map";
@@ -6,7 +7,7 @@ import { Notice } from "@/components/ui/notice";
 import { PageFrame } from "@/components/ui/page-frame";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-import { ATTRACTION_CATEGORIES, ATTRACTION_COLUMNS, CATEGORY_ICONS, isAttractionCategory, toAttraction } from "@/lib/tours/attractions";
+import { ATTRACTION_CATEGORIES, ATTRACTION_COLUMNS, isAttractionCategory, toAttraction } from "@/lib/tours/attractions";
 import { openStatus } from "@/lib/tours/opening-hours";
 
 export const dynamic = "force-dynamic";
@@ -87,19 +88,19 @@ export default async function AttractionsPage({ searchParams }: PageProps) {
         ) : null}
 
         {attractions.length === 0 && !error ? (
-          <p className="mt-8 rounded-3xl border border-daet-ink/10 bg-white p-8 text-center text-sm text-daet-ink/70">
+          <p className="mt-8 rounded-2xl bg-white p-8 text-center text-sm text-daet-ink/70">
             {openNow ? "Nothing listed is open right now. Try again later or clear the filter." : "No attractions listed in this category yet."}
           </p>
         ) : (
           <ul className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {attractions.map((attraction) => (
               <li key={attraction.id}>
-                <Link href={`/tours/attractions/${attraction.slug}`} className="flex h-full flex-col overflow-hidden rounded-3xl border border-daet-ink/10 bg-white shadow-sm transition hover:shadow-card">
+                <Link href={`/tours/attractions/${attraction.slug}`} className="flex h-full flex-col overflow-hidden rounded-2xl bg-white transition">
                   {attraction.photo_url ? (
                     <img src={attraction.photo_url} alt="" className="h-40 w-full object-cover" />
                   ) : (
                     <div className="grid h-24 place-items-center bg-daet-sand/60 text-3xl" aria-hidden="true">
-                      {CATEGORY_ICONS[attraction.category]}
+                      <CategoryIcon category={attraction.category} className="h-6 w-6" />
                     </div>
                   )}
                   <div className="flex flex-1 flex-col p-5">

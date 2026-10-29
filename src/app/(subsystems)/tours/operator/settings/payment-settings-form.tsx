@@ -1,5 +1,6 @@
 "use client";
 
+import { LineIcon } from "@/components/ui/icons";
 import { useState } from "react";
 import { useFeedback } from "@/components/ui/feedback";
 import { updatePaymentSettings } from "./actions";
@@ -62,7 +63,7 @@ export function PaymentSettingsForm({
       {/* GCash Details */}
       <div className="rounded-2xl border border-daet-ink/10 bg-daet-sand/20 p-4">
         <h3 className="mb-3 flex items-center gap-2 text-sm font-bold text-daet-ink">
-          <span className="text-xl">📱</span>
+          <span className="text-xl"><LineIcon name="phone" className="inline-block h-[1.1em] w-[1.1em] align-[-0.15em]" /></span>
           GCash Payment Details
         </h3>
         <div className="space-y-3">
@@ -96,7 +97,7 @@ export function PaymentSettingsForm({
       {/* Bank Details */}
       <div className="rounded-2xl border border-daet-ink/10 bg-daet-sand/20 p-4">
         <h3 className="mb-3 flex items-center gap-2 text-sm font-bold text-daet-ink">
-          <span className="text-xl">🏦</span>
+          <span className="text-xl"><LineIcon name="bank" className="inline-block h-[1.1em] w-[1.1em] align-[-0.15em]" /></span>
           Bank Transfer Details
         </h3>
         <div className="space-y-3">

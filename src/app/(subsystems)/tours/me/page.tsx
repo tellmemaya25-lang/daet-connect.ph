@@ -1,3 +1,4 @@
+import { LineIcon } from "@/components/ui/icons";
 import { formatPeso } from "@/lib/money";
 import Link from "next/link";
 import { redirect } from "next/navigation";
@@ -108,9 +109,9 @@ export default async function TouristDashboardPage() {
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         <div className="space-y-6 lg:col-span-2">
           <Card>
-            <CardHeader eyebrow="Coming up" title="Upcoming tours" action={<Link href="/tours/my-bookings" className="text-sm font-bold text-daet-forest hover:underline">All bookings</Link>} />
+            <CardHeader title="Upcoming tours" action={<Link href="/tours/my-bookings" className="text-sm font-bold text-daet-forest hover:underline">All bookings</Link>} />
             {upcoming.length === 0 ? (
-              <EmptyState icon="🏝️" title="No upcoming tours" description="Book a tour and it will show up here with your ticket." action={<ButtonLink href="/tours/browse">Browse tours</ButtonLink>} />
+              <EmptyState icon={<LineIcon name="boat" />} title="No upcoming tours" description="Book a tour and it will show up here with your ticket." action={<ButtonLink href="/tours/browse">Browse tours</ButtonLink>} />
             ) : (
               <ul className="divide-y divide-daet-ink/10">
                 {upcoming.map((b) => {
@@ -158,7 +159,7 @@ export default async function TouristDashboardPage() {
 
           {toReview.length > 0 ? (
             <Card>
-              <CardHeader eyebrow="Your feedback helps" title="Rate your recent tours" />
+              <CardHeader title="Rate your recent tours" />
               <ul className="space-y-3">
                 {toReview.map((b) => (
                   <li key={b.id} className="flex flex-wrap items-center justify-between gap-2 rounded-2xl bg-daet-sand/40 p-3">
@@ -178,7 +179,7 @@ export default async function TouristDashboardPage() {
 
         <div className="space-y-6">
           <Card id="rewards" className="scroll-mt-6">
-            <CardHeader eyebrow="CONNECT-Daet rewards" title="Your points" />
+            <CardHeader title="Your points" />
             <p className="text-4xl font-black text-daet-forest">
               {points.toLocaleString("en-PH")}
               <span className="ml-1 text-sm font-bold text-daet-ink/70">pts</span>

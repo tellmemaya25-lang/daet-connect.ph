@@ -120,7 +120,7 @@ export function PackagePricingStep({
         {variants.map((variant, index) => (
           <div
             key={index}
-            className="rounded-2xl border border-daet-ink/10 bg-white p-5 shadow-sm"
+            className="rounded-2xl bg-white p-5"
           >
             <div className="flex items-start justify-between gap-3">
               <div className="flex-1 space-y-4">

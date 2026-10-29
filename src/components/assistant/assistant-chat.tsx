@@ -202,7 +202,7 @@ function AssistantCards({ cards, signedIn, onNavigate }: { cards: AssistantCard[
       {cards.map((card, i) => {
         if (card.type === "tour") {
           return (
-            <div key={i} className="rounded-2xl border border-daet-ink/10 bg-white p-3">
+            <div key={i} className="rounded-2xl bg-white p-3">
               <p className="font-bold text-daet-ink">{card.title}</p>
               <p className="text-xs text-daet-ink/70">{[card.location, card.duration, card.priceFrom ? `from ${peso(card.priceFrom)} per person` : null].filter(Boolean).join(" · ")}</p>
               <Link href={card.href} onClick={onNavigate} className={`${linkClass} mt-2`}>
@@ -213,7 +213,7 @@ function AssistantCards({ cards, signedIn, onNavigate }: { cards: AssistantCard[
         }
         if (card.type === "booking") {
           return (
-            <div key={i} className="rounded-2xl border border-daet-ink/10 bg-white p-3">
+            <div key={i} className="rounded-2xl bg-white p-3">
               <p className="font-bold text-daet-ink">
                 {card.title} <span className="font-normal text-daet-ink/70">· {card.reference}</span>
               </p>
@@ -266,7 +266,7 @@ function HandoffPanel({ card, signedIn, onNavigate }: { card: HandoffCard; signe
 
   if (!signedIn || !card.signedIn) {
     return (
-      <div className="rounded-2xl border border-daet-forest/20 bg-white p-3 text-sm">
+      <div className="rounded-2xl border-daet-forest/20 bg-white p-3 text-sm">
         <p className="text-daet-ink">Sign in so {who} can reply to you.</p>
         <Link href="/login" onClick={onNavigate} className="mt-2 inline-flex min-h-11 items-center rounded-full bg-daet-forest px-4 text-xs font-bold text-white">
           Sign in to message
@@ -285,7 +285,7 @@ function HandoffPanel({ card, signedIn, onNavigate }: { card: HandoffCard; signe
     );
   }
   return (
-    <div className="rounded-2xl border border-daet-forest/20 bg-white p-3">
+    <div className="rounded-2xl border-daet-forest/20 bg-white p-3">
       <label htmlFor={id} className="text-xs font-bold text-daet-ink">
         Message to {who} (edit before sending)
       </label>

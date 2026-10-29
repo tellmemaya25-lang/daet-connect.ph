@@ -1,3 +1,4 @@
+import { LineIcon } from "@/components/ui/icons";
 import { formatPeso } from "@/lib/money";
 import { redirect } from "next/navigation";
 import Link from "next/link";
@@ -114,9 +115,9 @@ export default async function MyBookingsPage() {
 
         {/* Bookings List */}
         {!bookings || bookings.length === 0 ? (
-          <div className="rounded-3xl border border-daet-ink/10 bg-white p-12 text-center shadow-sm">
+          <div className="rounded-2xl bg-white p-12 text-center">
             <div className="mx-auto mb-4 grid h-20 w-20 place-items-center rounded-full bg-daet-sand text-4xl">
-              📅
+              <LineIcon name="calendar" className="inline-block h-[1.1em] w-[1.1em] align-[-0.15em]" />
             </div>
             <h2 className="text-xl font-black text-daet-ink">No bookings yet</h2>
             <p className="mt-2 text-sm text-daet-ink/70">
@@ -143,7 +144,7 @@ export default async function MyBookingsPage() {
               return (
                 <div
                   key={booking.id}
-                  className="rounded-3xl border border-daet-ink/10 bg-white p-6 shadow-sm"
+                  className="rounded-2xl bg-white p-6"
                 >
                   <div className="flex gap-4">
                     {/* Package Image */}
@@ -214,7 +215,7 @@ export default async function MyBookingsPage() {
                           {booking.payment_status === "paid" ? (
                             <div className="rounded-xl bg-emerald-50 p-3 text-center">
                               <p className="text-sm font-bold text-emerald-800">
-                                ✅ Payment Completed
+                                <LineIcon name="check" className="inline-block h-[1.1em] w-[1.1em] align-[-0.15em]" /> Payment Completed
                               </p>
                             </div>
                           ) : (
@@ -246,7 +247,7 @@ export default async function MyBookingsPage() {
         {/* Stats Summary - if there are bookings */}
         {bookings && bookings.length > 0 && (
           <div className="mt-8 grid grid-cols-5 gap-4">
-            <div className="rounded-2xl border border-daet-ink/10 bg-white p-4 text-center">
+            <div className="rounded-2xl bg-white p-4 text-center">
               <p className="text-2xl font-black text-daet-ink">{bookings.length}</p>
               <p className="text-xs text-daet-ink/70">Total</p>
             </div>

@@ -55,7 +55,7 @@ export default async function ConversationPage({ params }: PageProps) {
         <Link href="/tours/messages" className="text-sm font-bold text-daet-ink/70 hover:text-daet-ink">
           ← All messages
         </Link>
-        <header className="mt-3 rounded-2xl border border-daet-ink/10 bg-white p-4 shadow-sm">
+        <header className="mt-3 rounded-2xl bg-white p-4">
           <Badge tone="neutral">{KIND_LABELS[header.kind] ?? "Chat"}</Badge>
           <h1 className="mt-1 text-lg font-black text-daet-ink">{view.title}</h1>
           <p className="text-xs text-daet-ink/70">{view.subtitle}</p>

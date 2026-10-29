@@ -1,3 +1,4 @@
+import { LineIcon } from "@/components/ui/icons";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
@@ -61,7 +62,7 @@ export default async function OperatorReviewsPage() {
       {error ? <Notice variant="error" className="mb-4">Reviews could not be loaded.</Notice> : null}
 
       {rows.length === 0 ? (
-        <EmptyState icon="⭐" title="No reviews yet" description="Travellers can review a tour once you mark their booking as completed." />
+        <EmptyState icon={<LineIcon name="star" />} title="No reviews yet" description="Travellers can review a tour once you mark their booking as completed." />
       ) : (
         <ul className="space-y-4">
           {rows.map((review) => {

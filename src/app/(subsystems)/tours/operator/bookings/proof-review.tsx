@@ -58,13 +58,13 @@ export function ProofReview({ proofs }: { proofs: ReviewableProof[] }) {
 
   return (
     <div className="mb-4 rounded-2xl border border-amber-200 bg-amber-50/60 p-4">
-      <p className="mb-3 flex items-center gap-2 text-xs font-bold uppercase tracking-wide text-amber-900">
+      <p className="mb-3 flex items-center gap-2 text-xs font-bold text-amber-900">
         Receipts to verify <Badge tone="warning">{proofs.length}</Badge>
       </p>
       {result ? <Notice variant={result.tone} className="mb-3">{result.text}</Notice> : null}
       <ul className="space-y-3">
         {proofs.map((proof) => (
-          <li key={proof.id} className="rounded-xl bg-white p-3 text-sm shadow-sm">
+          <li key={proof.id} className="rounded-xl bg-white p-3 text-sm">
             <div className="flex flex-wrap items-baseline justify-between gap-2">
               <span className="text-base font-black text-daet-ink">{peso(proof.amount)}</span>
               <span className="text-daet-ink/70">

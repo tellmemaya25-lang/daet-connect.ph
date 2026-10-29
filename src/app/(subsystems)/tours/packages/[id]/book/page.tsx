@@ -1,3 +1,4 @@
+import { LineIcon } from "@/components/ui/icons";
 import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
 import { PageFrame } from "@/components/ui/page-frame";
@@ -103,7 +104,7 @@ export default async function BookPackagePage({ params }: PageProps) {
         </nav>
 
         {/* Package Header */}
-        <div className="mb-8 rounded-3xl border border-daet-ink/10 bg-white p-6 shadow-sm">
+        <div className="mb-8 rounded-2xl bg-white p-6">
           <div className="flex gap-6">
             {pkg.cover_image_url && (
               <img
@@ -115,7 +116,7 @@ export default async function BookPackagePage({ params }: PageProps) {
             <div className="flex-1">
               <h1 className="text-2xl font-black text-daet-ink">{pkg.title}</h1>
               <p className="mt-2 text-sm text-daet-ink/70">
-                📍 {pkg.location_name} · ⏱️ {pkg.duration_value}{" "}
+                <LineIcon name="pin" className="inline-block h-[1.1em] w-[1.1em] align-[-0.15em]" /> {pkg.location_name} · <LineIcon name="clock" className="inline-block h-[1.1em] w-[1.1em] align-[-0.15em]" /> {pkg.duration_value}{" "}
                 {pkg.duration_type === "hours" ? "hours" : "days"}
               </p>
               {Array.isArray(pkg.tours_operators) && pkg.tours_operators[0] && (

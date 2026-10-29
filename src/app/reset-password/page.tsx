@@ -21,7 +21,7 @@ export default async function ResetPasswordPage() {
   return (
     <PageFrame>
       <div className="mx-auto max-w-md">
-        <section className="rounded-2xl bg-white p-6 shadow-card sm:p-10">
+        <section className="rounded-2xl bg-white p-6 sm:p-10">
           <h1 className="text-3xl font-black text-daet-ink">Choose a new password</h1>
           <p className="mt-2 text-sm leading-6 text-daet-ink/80">You will stay signed in once it is saved.</p>
           <ResetPasswordForm />

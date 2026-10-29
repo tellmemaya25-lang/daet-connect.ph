@@ -99,7 +99,7 @@ describe("Card, Badge, EmptyState", () => {
   it("renders content", () => {
     render(
       <Card>
-        <CardHeader eyebrow="Today" title="Bookings" action={<Badge tone="success">3 new</Badge>} />
+        <CardHeader title="Bookings" action={<Badge tone="success">3 new</Badge>} />
         <EmptyState icon="📅" title="Nothing scheduled" description="Open dates in the calendar." />
       </Card>,
     );

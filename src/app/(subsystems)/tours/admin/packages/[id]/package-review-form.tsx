@@ -49,7 +49,7 @@ export function PackageReviewForm({ packageId, currentStatus }: PackageReviewFor
   };
 
   return (
-    <form onSubmit={handleSubmit} className="bg-white rounded-xl shadow-sm border border-daet-ink/20 p-6">
+    <form onSubmit={handleSubmit} className="bg-white rounded-xl border border-daet-ink/20 p-6">
       <h2 className="text-xl font-bold text-daet-ink mb-4">Review & Update Status</h2>
 
       {message && (

@@ -78,7 +78,7 @@ export function PaymentRecorder({
     <div className="rounded-2xl border border-daet-ink/10 bg-daet-sand/30 p-4">
       <div className="mb-3 flex items-center justify-between">
         <div>
-          <p className="text-xs font-bold uppercase tracking-wider text-daet-ink/70">
+          <p className="text-xs font-bold text-daet-ink/70">
             Payment Status
           </p>
           <span

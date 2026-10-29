@@ -1,3 +1,5 @@
+import { CategoryIcon } from "@/components/ui/icons";
+import { LineIcon } from "@/components/ui/icons";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { PageFrame } from "@/components/ui/page-frame";
@@ -5,7 +7,7 @@ import { EVENT_CATEGORY_STYLES } from "@/components/tours/event-card";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { formatEventRange, toManilaDateKey } from "@/lib/tours/events-calendar";
 import { EVENT_CATEGORIES, EVENT_COLUMNS, type TourEvent } from "@/lib/tours/promo-validation";
-import { ATTRACTION_CATEGORIES, CATEGORY_ICONS, isAttractionCategory } from "@/lib/tours/attractions";
+import { ATTRACTION_CATEGORIES, isAttractionCategory } from "@/lib/tours/attractions";
 import { eventDayRange, toursDuringEvent, type AvailabilityWithPackage, type EventTour } from "@/lib/tours/event-tours";
 
 export const dynamic = "force-dynamic";
@@ -63,12 +65,12 @@ export default async function EventDetailPage({ params }: { params: Promise<{ id
           ← Back to calendar
         </Link>
 
-        <article className="overflow-hidden rounded-2xl border border-daet-ink/10 bg-white shadow-sm">
+        <article className="overflow-hidden rounded-2xl bg-white">
           <div className="aspect-video bg-gradient-to-br from-daet-forest to-daet-leaf">
             {event.image_url ? (
               <img src={event.image_url} alt={event.title} className="h-full w-full object-cover" />
             ) : (
-              <div className="grid h-full place-items-center text-6xl" aria-hidden="true">🎉</div>
+              <div className="grid h-full place-items-center text-6xl" aria-hidden="true"><LineIcon name="calendar" className="inline-block h-[1.1em] w-[1.1em] align-[-0.15em]" /></div>
             )}
           </div>
           <div className="p-5 sm:p-8">
@@ -82,16 +84,16 @@ export default async function EventDetailPage({ params }: { params: Promise<{ id
 
             <dl className="mt-5 space-y-3 text-sm">
               <div className="flex gap-3">
-                <dt className="w-6 shrink-0" aria-label="When">🗓️</dt>
+                <dt className="w-6 shrink-0" aria-label="When"><LineIcon name="calendar" className="inline-block h-[1.1em] w-[1.1em] align-[-0.15em]" /></dt>
                 <dd className="font-semibold text-daet-ink">{formatEventRange(event.starts_at, event.ends_at)}</dd>
               </div>
               <div className="flex gap-3">
-                <dt className="w-6 shrink-0" aria-label="Where">📍</dt>
+                <dt className="w-6 shrink-0" aria-label="Where"><LineIcon name="pin" className="inline-block h-[1.1em] w-[1.1em] align-[-0.15em]" /></dt>
                 <dd className="font-semibold text-daet-ink">{event.venue}</dd>
               </div>
               {event.organizer ? (
                 <div className="flex gap-3">
-                  <dt className="w-6 shrink-0" aria-label="Organizer">🏛️</dt>
+                  <dt className="w-6 shrink-0" aria-label="Organizer"><LineIcon name="building" className="inline-block h-[1.1em] w-[1.1em] align-[-0.15em]" /></dt>
                   <dd className="text-daet-ink/75">{event.organizer}</dd>
                 </div>
               ) : null}
@@ -104,10 +106,10 @@ export default async function EventDetailPage({ params }: { params: Promise<{ id
             {attraction ? (
               <Link href={`/tours/attractions/${attraction.slug}`} className="mt-6 flex items-center gap-3 rounded-2xl border border-daet-ink/10 bg-daet-sand/40 p-4 hover:bg-daet-sand">
                 <span className="text-2xl" aria-hidden="true">
-                  {isAttractionCategory(attraction.category) ? CATEGORY_ICONS[attraction.category] : "📍"}
+                  <CategoryIcon category={attraction.category} className="h-6 w-6" />
                 </span>
                 <span className="min-w-0">
-                  <span className="block text-xs font-bold uppercase tracking-wide text-daet-ink/70">
+                  <span className="block text-xs font-bold text-daet-ink/70">
                     {isAttractionCategory(attraction.category) ? ATTRACTION_CATEGORIES[attraction.category] : "Attraction"}
                   </span>
                   <span className="block font-black text-daet-ink">{attraction.name} →</span>
@@ -156,7 +158,7 @@ function EventTours({ tours, attractionName }: { tours: EventTour[]; attractionN
         <ul className="mt-4 grid gap-4 sm:grid-cols-2">
           {tours.map((tour) => (
             <li key={tour.id}>
-              <Link href={`/tours/packages/${tour.id}`} className="flex h-full gap-3 rounded-2xl border border-daet-ink/10 bg-white p-3 shadow-sm hover:shadow-md">
+              <Link href={`/tours/packages/${tour.id}`} className="flex h-full gap-3 rounded-2xl bg-white p-3">
                 <div className="h-20 w-24 shrink-0 overflow-hidden rounded-xl bg-gradient-to-br from-daet-forest to-daet-leaf">
                   {tour.cover_image_url ? <img src={tour.cover_image_url} alt="" className="h-full w-full object-cover" /> : null}
                 </div>

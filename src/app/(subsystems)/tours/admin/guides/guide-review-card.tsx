@@ -48,10 +48,10 @@ export function GuideReviewCard({ guide }: { guide: GuideAdminRecord }) {
   const locked = pending || state.status === "success";
 
   return (
-    <article className="rounded-3xl border border-daet-ink/10 bg-white p-5 shadow-sm sm:p-7">
+    <article className="rounded-2xl bg-white p-5 sm:p-7">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div className="min-w-0">
-          <span className="inline-flex rounded-full bg-amber-50 px-3 py-1 text-xs font-black uppercase tracking-wide text-amber-900">Pending guide review</span>
+          <span className="inline-flex rounded-full bg-amber-50 px-3 py-1 text-xs font-black text-amber-900">Pending guide review</span>
           <h2 className="mt-3 break-words text-xl font-black text-daet-ink">{guide.full_name}</h2>
           <p className="mt-1 text-sm text-daet-ink/70">Submitted {new Date(guide.created_at).toLocaleDateString("en-PH", { year: "numeric", month: "short", day: "numeric", timeZone: "Asia/Manila" })}</p>
         </div>
@@ -59,8 +59,8 @@ export function GuideReviewCard({ guide }: { guide: GuideAdminRecord }) {
       </div>
 
       <dl className="mt-5 grid gap-4 border-t border-daet-ink/10 pt-5 sm:grid-cols-2">
-        <div><dt className="text-xs font-bold uppercase tracking-wide text-daet-ink/70">Contact number</dt><dd className="mt-1 text-sm font-semibold text-daet-ink">{guide.contact_phone}</dd></div>
-        <div className="sm:col-span-2"><dt className="text-xs font-bold uppercase tracking-wide text-daet-ink/70">Guide introduction</dt><dd className="mt-1 whitespace-pre-wrap text-sm leading-6 text-daet-ink">{guide.bio}</dd></div>
+        <div><dt className="text-xs font-bold text-daet-ink/70">Contact number</dt><dd className="mt-1 text-sm font-semibold text-daet-ink">{guide.contact_phone}</dd></div>
+        <div className="sm:col-span-2"><dt className="text-xs font-bold text-daet-ink/70">Guide introduction</dt><dd className="mt-1 whitespace-pre-wrap text-sm leading-6 text-daet-ink">{guide.bio}</dd></div>
       </dl>
 
       <div className="mt-5">

@@ -78,7 +78,7 @@ export default async function MessagesInboxPage({ searchParams }: PageProps) {
         ) : null}
 
         {isAdmin ? (
-          <details className="mt-4 rounded-2xl border border-daet-ink/10 bg-white p-4 shadow-sm">
+          <details className="mt-4 rounded-2xl bg-white p-4">
             <summary className="min-h-11 cursor-pointer content-center text-sm font-bold text-daet-forest">Message an operator</summary>
             {(operatorList ?? []).length === 0 ? (
               <p className="mt-2 text-sm text-daet-ink/70">No operators have registered yet.</p>
@@ -100,14 +100,14 @@ export default async function MessagesInboxPage({ searchParams }: PageProps) {
         {error ? (
           <Notice variant="error" className="mt-6">Messages could not be loaded. Refresh to try again.</Notice>
         ) : rows.length === 0 ? (
-          <div className="mt-6 rounded-3xl border border-daet-ink/10 bg-white p-8 text-center shadow-sm">
+          <div className="mt-6 rounded-2xl bg-white p-8 text-center">
             <p className="text-lg font-black text-daet-ink">No conversations yet</p>
             <p className="mt-1 text-sm text-daet-ink/70">Open a booking, a guide or the Tourism Office and tap “Message” to start a chat.</p>
           </div>
         ) : (
-          <ul className="mt-6 divide-y divide-daet-ink/10 overflow-hidden rounded-3xl border border-daet-ink/10 bg-white shadow-sm">
+          <ul className="mt-6 divide-y divide-daet-ink/10 overflow-hidden rounded-2xl bg-white">
             {rows.map((row) => {
-              const preview = row.last_message ?? (row.last_sender_id ? "📷 Photo" : "No messages yet");
+              const preview = row.last_message ?? (row.last_sender_id ? "Photo" : "No messages yet");
               const mine = row.last_sender_id === user.id;
               return (
                 <li key={row.conversation_id}>

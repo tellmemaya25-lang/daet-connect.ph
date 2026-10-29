@@ -1,3 +1,4 @@
+import { LineIcon } from "@/components/ui/icons";
 import { createSupabaseServerClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
@@ -88,7 +89,7 @@ export default async function AdminDashboardPage() {
           <div className="flex gap-3">
             <Link
               href="/"
-              className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
+              className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
             >
               <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
@@ -104,7 +105,7 @@ export default async function AdminDashboardPage() {
         {/* Pending Operators */}
         <Link
           href="/tours/admin/operators"
-          className="block rounded-3xl border border-daet-ink/10 bg-white p-6 shadow-sm hover:shadow-md transition"
+          className="block rounded-2xl bg-white p-6 transition"
         >
           <div className="flex items-center justify-between">
             <div>
@@ -112,7 +113,7 @@ export default async function AdminDashboardPage() {
               <p className="mt-2 text-4xl font-black text-daet-ink">{pendingOperators || 0}</p>
             </div>
             <div className="grid h-14 w-14 place-items-center rounded-2xl bg-amber-50 text-2xl">
-              🏢
+              <LineIcon name="building" className="inline-block h-[1.1em] w-[1.1em] align-[-0.15em]" />
             </div>
           </div>
           <p className="mt-4 text-sm text-daet-ink/70">Applications awaiting review</p>
@@ -121,7 +122,7 @@ export default async function AdminDashboardPage() {
         {/* Pending Guides */}
         <Link
           href="/tours/admin/guides"
-          className="block rounded-3xl border border-daet-ink/10 bg-white p-6 shadow-sm hover:shadow-md transition"
+          className="block rounded-2xl bg-white p-6 transition"
         >
           <div className="flex items-center justify-between">
             <div>
@@ -129,7 +130,7 @@ export default async function AdminDashboardPage() {
               <p className="mt-2 text-4xl font-black text-daet-ink">{pendingGuides || 0}</p>
             </div>
             <div className="grid h-14 w-14 place-items-center rounded-2xl bg-amber-50 text-2xl">
-              👤
+              <LineIcon name="user" className="inline-block h-[1.1em] w-[1.1em] align-[-0.15em]" />
             </div>
           </div>
           <p className="mt-4 text-sm text-daet-ink/70">Guide applications to verify</p>
@@ -138,7 +139,7 @@ export default async function AdminDashboardPage() {
         {/* Pending Packages */}
         <Link
           href="/tours/admin/packages"
-          className="block rounded-3xl border border-daet-ink/10 bg-white p-6 shadow-sm hover:shadow-md transition"
+          className="block rounded-2xl bg-white p-6 transition"
         >
           <div className="flex items-center justify-between">
             <div>
@@ -146,14 +147,14 @@ export default async function AdminDashboardPage() {
               <p className="mt-2 text-4xl font-black text-daet-ink">{pendingPackages || 0}</p>
             </div>
             <div className="grid h-14 w-14 place-items-center rounded-2xl bg-amber-50 text-2xl">
-              📦
+              <LineIcon name="box" className="inline-block h-[1.1em] w-[1.1em] align-[-0.15em]" />
             </div>
           </div>
           <p className="mt-4 text-sm text-daet-ink/70">Tour packages awaiting approval</p>
         </Link>
 
         {/* Published Packages */}
-        <div className="rounded-3xl border border-daet-ink/10 bg-white p-6 shadow-sm">
+        <div className="rounded-2xl bg-white p-6">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-bold text-daet-ink/70">Published Packages</p>
@@ -167,14 +168,14 @@ export default async function AdminDashboardPage() {
         </div>
 
         {/* Total Bookings */}
-        <div className="rounded-3xl border border-daet-ink/10 bg-white p-6 shadow-sm">
+        <div className="rounded-2xl bg-white p-6">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-bold text-daet-ink/70">Total Bookings</p>
               <p className="mt-2 text-4xl font-black text-daet-ink">{totalBookings || 0}</p>
             </div>
             <div className="grid h-14 w-14 place-items-center rounded-2xl bg-blue-50 text-2xl">
-              📅
+              <LineIcon name="calendar" className="inline-block h-[1.1em] w-[1.1em] align-[-0.15em]" />
             </div>
           </div>
           <p className="mt-4 text-sm text-daet-ink/70">All-time reservations</p>
@@ -182,14 +183,14 @@ export default async function AdminDashboardPage() {
       </div>
 
       {/* Quick Actions */}
-      <div className="rounded-3xl border border-daet-ink/10 bg-white p-6 shadow-sm mb-8">
+      <div className="rounded-2xl bg-white p-6 mb-8">
         <h2 className="text-xl font-black text-daet-ink mb-4">Quick Actions</h2>
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           <Link
             href="/tours/admin/analytics"
             className="inline-flex min-h-11 items-center justify-center rounded-full bg-daet-ink px-6 text-sm font-bold text-white hover:bg-daet-forest transition"
           >
-            📊 Tourism Analytics
+            <LineIcon name="chart" className="inline-block h-[1.1em] w-[1.1em] align-[-0.15em]" /> Tourism Analytics
           </Link>
           <Link
             href="/tours/admin/operators"
@@ -244,7 +245,7 @@ export default async function AdminDashboardPage() {
 
       {/* Recent Activity */}
       {recentActivities && recentActivities.length > 0 && (
-        <div className="rounded-3xl border border-daet-ink/10 bg-white p-6 shadow-sm">
+        <div className="rounded-2xl bg-white p-6">
           <h2 className="text-xl font-black text-daet-ink mb-4">Recent Activity</h2>
           <div className="space-y-3">
             {recentActivities.map((activity: any) => (
@@ -284,11 +285,11 @@ function getActivityIcon(action: string): string {
     case 'reject_guide':
       return '✗';
     case 'update_package_status':
-      return '📦';
+      return '•';
     case 'delete_package':
-      return '🗑';
+      return '−';
     case 'ban_user':
-      return '🚫';
+      return '×';
     case 'unban_user':
       return '✓';
     default:

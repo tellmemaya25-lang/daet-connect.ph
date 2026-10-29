@@ -50,7 +50,7 @@ function Toast({
 }) {
   return (
     <div
-      className={`fixed bottom-4 right-4 px-6 py-4 rounded-xl text-white shadow-lg z-50 flex items-center gap-3 animate-in fade-in slide-in-from-bottom-4 duration-300 ${
+      className={`fixed bottom-4 right-4 px-6 py-4 rounded-2xl text-white shadow-[var(--shadow-float)] z-50 flex items-center gap-3 animate-in fade-in slide-in-from-bottom-4 duration-300 ${
         type === "success" ? "bg-green-500" : "bg-red-500"
       }`}
     >
@@ -79,7 +79,7 @@ function Toast({
 function LoadingOverlay() {
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-xl shadow-lg p-8 flex flex-col items-center gap-4">
+      <div className="bg-white rounded-xl p-8 flex flex-col items-center gap-4">
         <div className="animate-spin">
           <svg className="w-8 h-8 text-daet-leaf" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />

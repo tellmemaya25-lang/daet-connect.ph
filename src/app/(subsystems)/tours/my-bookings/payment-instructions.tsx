@@ -1,3 +1,4 @@
+import { LineIcon } from "@/components/ui/icons";
 import { formatPeso } from "@/lib/money";
 interface PaymentInstructionsProps {
   operatorName: string;
@@ -27,7 +28,7 @@ export function PaymentInstructions({
   return (
     <div className="rounded-2xl border border-amber-300 bg-amber-50 p-5">
       <div className="mb-3 flex items-center gap-2">
-        <span className="text-2xl">💰</span>
+        <span className="text-2xl"><LineIcon name="money" className="inline-block h-[1.1em] w-[1.1em] align-[-0.15em]" /></span>
         <h3 className="text-lg font-black text-amber-900">Payment Instructions</h3>
       </div>
 
@@ -47,7 +48,7 @@ export function PaymentInstructions({
         {gcashNumber && (
           <div className="rounded-xl bg-white p-4">
             <p className="mb-2 flex items-center gap-2 text-sm font-bold text-daet-ink">
-              <span className="text-xl">📱</span>
+              <span className="text-xl"><LineIcon name="phone" className="inline-block h-[1.1em] w-[1.1em] align-[-0.15em]" /></span>
               GCash Payment
             </p>
             <div className="space-y-2 text-sm">
@@ -69,7 +70,7 @@ export function PaymentInstructions({
         {bankName && bankAccountNumber && (
           <div className="rounded-xl bg-white p-4">
             <p className="mb-2 flex items-center gap-2 text-sm font-bold text-daet-ink">
-              <span className="text-xl">🏦</span>
+              <span className="text-xl"><LineIcon name="bank" className="inline-block h-[1.1em] w-[1.1em] align-[-0.15em]" /></span>
               Bank Transfer
             </p>
             <div className="space-y-2 text-sm">
@@ -95,7 +96,7 @@ export function PaymentInstructions({
         {paymentInstructions && (
           <div className="rounded-xl bg-white p-4">
             <p className="mb-2 flex items-center gap-2 text-sm font-bold text-daet-ink">
-              <span className="text-xl">📝</span>
+              <span className="text-xl"><LineIcon name="note" className="inline-block h-[1.1em] w-[1.1em] align-[-0.15em]" /></span>
               Additional Instructions
             </p>
             <p className="whitespace-pre-wrap text-sm text-daet-ink/80">
@@ -114,7 +115,7 @@ export function PaymentInstructions({
             {operatorPhone && (
               <>
                 <br />
-                <span className="text-sm">📞 {operatorPhone}</span>
+                <span className="text-sm"><LineIcon name="phone" className="inline-block h-[1.1em] w-[1.1em] align-[-0.15em]" /> {operatorPhone}</span>
               </>
             )}
           </p>
@@ -127,7 +128,7 @@ export function PaymentInstructions({
         {!gcashNumber && !bankName && (
           <div className="rounded-xl bg-rose-50 p-4 text-center">
             <p className="text-sm text-rose-800">
-              ⚠️ Operator has not set up payment details yet.
+              <LineIcon name="warning" className="inline-block h-[1.1em] w-[1.1em] align-[-0.15em]" /> Operator has not set up payment details yet.
               {operatorPhone && (
                 <>
                   {" "}

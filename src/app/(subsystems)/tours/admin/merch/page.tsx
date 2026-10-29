@@ -1,3 +1,4 @@
+import { LineIcon } from "@/components/ui/icons";
 import Link from "next/link";
 import { PageFrame } from "@/components/ui/page-frame";
 import { Notice } from "@/components/ui/notice";
@@ -37,7 +38,6 @@ export default async function AdminMerchPage({
   return (
     <PageFrame adminNav>
       <AdminPageHeading
-        eyebrow="Tourism Office"
         title="Merchandise"
         backHref="/tours/admin"
         backLabel="Admin dashboard"
@@ -66,18 +66,18 @@ export default async function AdminMerchPage({
       </nav>
 
       {items.length === 0 && !error ? (
-        <div className="rounded-2xl border border-dashed border-daet-ink/20 bg-white p-8 text-center">
-          <p className="text-4xl" aria-hidden="true">🛍️</p>
+        <div className="rounded-2xl border-dashed bg-white p-8 text-center">
+          <LineIcon name="bag" className="mx-auto h-10 w-10 text-blue-600" />
           <p className="mt-2 font-bold text-daet-ink">No products yet</p>
           <p className="text-sm text-daet-ink/70">Advertise local t-shirts, mugs, souvenirs and pasalubong.</p>
         </div>
       ) : (
         <ul className="space-y-3">
           {items.map((item) => (
-            <li key={item.id} className="flex flex-col gap-3 rounded-2xl border border-daet-ink/10 bg-white p-4 shadow-sm lg:flex-row lg:items-center">
+            <li key={item.id} className="flex flex-col gap-3 rounded-2xl bg-white p-4 lg:flex-row lg:items-center">
               <div className="flex min-w-0 flex-1 items-center gap-3">
                 <div className="grid h-16 w-16 shrink-0 place-items-center overflow-hidden rounded-xl bg-daet-sand text-2xl">
-                  {item.image_url ? <img src={item.image_url} alt="" className="h-full w-full object-cover" /> : <span aria-hidden="true">🛍️</span>}
+                  {item.image_url ? <img src={item.image_url} alt="" className="h-full w-full object-cover" /> : <span aria-hidden="true"><LineIcon name="bag" className="inline-block h-[1.1em] w-[1.1em] align-[-0.15em]" /></span>}
                 </div>
                 <div className="min-w-0">
                   <div className="flex flex-wrap items-center gap-2">

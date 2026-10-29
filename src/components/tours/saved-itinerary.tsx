@@ -1,3 +1,4 @@
+import { LineIcon } from "@/components/ui/icons";
 import Link from "next/link";
 import { RouteMap } from "@/components/maps/route-map";
 import type { SavedDay } from "@/lib/tours/itinerary/form";
@@ -14,7 +15,7 @@ export function SavedItinerary({ days }: { days: SavedDay[] }) {
       {days.map((day) => {
         const points = day.items.filter((i) => i.kind === "visit" && i.lat !== null && i.lng !== null).map((i) => ({ lat: i.lat!, lng: i.lng!, label: i.name }));
         return (
-          <section key={day.dayNumber} className="rounded-3xl border border-daet-ink/10 bg-white p-5 shadow-sm">
+          <section key={day.dayNumber} className="rounded-2xl bg-white p-5">
             <h2 className="text-lg font-black text-daet-ink">
               Day {day.dayNumber}
               {day.date ? ` · ${longDate(day.date)}` : ""}
@@ -25,7 +26,7 @@ export function SavedItinerary({ days }: { days: SavedDay[] }) {
                   {item.travelMinutes > 0 ? <p className="mb-1 text-xs text-daet-ink/70">↓ about {item.travelMinutes} min travel</p> : null}
                   <div className="flex flex-wrap items-baseline justify-between gap-2">
                     <p className="font-black text-daet-ink">
-                      {item.kind === "lunch" ? "🍽️ " : ""}
+                      {item.kind === "lunch" ? "" : ""}
                       {item.slug ? (
                         <Link href={`/tours/attractions/${item.slug}`} className="hover:underline">
                           {item.name}
@@ -40,7 +41,7 @@ export function SavedItinerary({ days }: { days: SavedDay[] }) {
                       </p>
                     ) : null}
                   </div>
-                  {item.tip ? <p className="mt-2 text-sm text-daet-ink/75">💡 {item.tip}</p> : null}
+                  {item.tip ? <p className="mt-2 text-sm text-daet-ink/75"><LineIcon name="tip" className="inline-block h-[1.1em] w-[1.1em] align-[-0.15em]" /> {item.tip}</p> : null}
                 </li>
               ))}
             </ol>

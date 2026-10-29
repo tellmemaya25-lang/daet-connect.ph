@@ -86,7 +86,7 @@ export function FeedbackProvider({ children }: { children: ReactNode }) {
           <div
             key={item.id}
             role={item.kind === "error" ? "alert" : "status"}
-            className={`pointer-events-auto flex w-full max-w-md items-start gap-3 rounded-2xl border p-4 text-sm font-semibold shadow-card ${TOAST_STYLES[item.kind]}`}
+            className={`pointer-events-auto flex w-full max-w-md items-start gap-3 rounded-2xl border p-4 text-sm font-semibold ${TOAST_STYLES[item.kind]}`}
           >
             <span className="flex-1">{item.message}</span>
             <button

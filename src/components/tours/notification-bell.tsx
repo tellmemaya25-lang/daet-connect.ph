@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
+import { LineIcon } from "@/components/ui/icons";
 import { notificationIcon, safeNotificationLink, timeAgo, type NotificationRow } from "@/lib/tours/notifications";
 import { markNotificationsRead } from "@/app/(subsystems)/tours/notifications/actions";
 
@@ -100,7 +101,7 @@ export function NotificationBell() {
       </button>
 
       {open ? (
-        <div className="absolute right-0 z-50 mt-2 w-[min(22rem,calc(100vw-2rem))] overflow-hidden rounded-2xl border border-daet-ink/10 bg-white text-left shadow-card">
+        <div className="absolute right-0 z-50 mt-2 w-[min(22rem,calc(100vw-2rem))] overflow-hidden rounded-2xl bg-white text-left shadow-[var(--shadow-float)]">
           <div className="flex items-center justify-between border-b border-daet-ink/10 px-4 py-3">
             <p className="font-black text-daet-ink">Notifications</p>
             {unread > 0 ? (
@@ -123,7 +124,7 @@ export function NotificationBell() {
                     }}
                     className={`flex gap-3 px-4 py-3 transition hover:bg-daet-sand/40 ${item.read_at ? "" : "bg-daet-forest/5"}`}
                   >
-                    <span aria-hidden="true" className="text-xl">{notificationIcon(item.type)}</span>
+                    <LineIcon name={notificationIcon(item.type)} className="h-6 w-6 text-blue-600" />
                     <span className="min-w-0 flex-1">
                       <span className={`block text-sm text-daet-ink ${item.read_at ? "font-semibold" : "font-black"}`}>{item.title}</span>
                       {item.body ? <span className="block line-clamp-2 text-xs text-daet-ink/65">{item.body}</span> : null}

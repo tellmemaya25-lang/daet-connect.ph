@@ -41,8 +41,8 @@ export default async function GuidePendingPage() {
   if (guide.accreditation_status === "rejected") {
     return (
       <PageFrame>
-        <section className="mx-auto max-w-2xl rounded-3xl border border-rose-200 bg-white p-6 shadow-card sm:p-10">
-          <span className="inline-flex rounded-full bg-rose-50 px-3 py-1 text-xs font-black uppercase tracking-wide text-rose-700">Changes requested</span>
+        <section className="mx-auto max-w-2xl rounded-2xl border-rose-200 bg-white p-6 sm:p-10">
+          <span className="inline-flex rounded-full bg-rose-50 px-3 py-1 text-xs font-black text-rose-700">Changes requested</span>
           <h1 className="mt-4 text-3xl font-black text-daet-ink">Please update your guide application</h1>
           <p className="mt-3 text-sm leading-6 text-daet-ink/70">The Tourism Office could not approve the application as submitted. Review the note below and send an updated profile and ID.</p>
           {guide[GUIDE_NOTES_COLUMN] ? <div className="mt-5 rounded-2xl bg-rose-50 p-4 text-sm leading-6 text-rose-950"><p className="font-bold">Reviewer’s note</p><p className="mt-1">{guide[GUIDE_NOTES_COLUMN]}</p></div> : null}
@@ -54,7 +54,7 @@ export default async function GuidePendingPage() {
 
   return (
     <PageFrame>
-      <section className="mx-auto max-w-2xl overflow-hidden rounded-3xl border border-daet-ink/10 bg-white shadow-card">
+      <section className="mx-auto max-w-2xl overflow-hidden rounded-2xl bg-white">
         <div className="bg-daet-forest px-6 py-8 text-white sm:px-10 sm:py-10">
           <span className="inline-flex items-center gap-2 rounded-full bg-white/15 px-3 py-1 text-sm font-bold"><span className="h-2 w-2 animate-pulse rounded-full bg-daet-sun" /> In review</span>
           <h1 className="mt-4 text-3xl font-black sm:text-4xl">Pending Approval</h1>

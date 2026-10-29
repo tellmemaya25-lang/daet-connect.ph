@@ -1,3 +1,4 @@
+import { LineIcon } from "@/components/ui/icons";
 import { formatPeso } from "@/lib/money";
 import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
@@ -134,7 +135,7 @@ export default async function BookingDetailPage({ params, searchParams }: PagePr
       <div className="mx-auto max-w-4xl">
         {/* Success Message */}
         {booking.status === "pending" && (
-          <div className="mb-6 rounded-3xl border border-emerald-200 bg-emerald-50 p-6 text-center">
+          <div className="mb-6 rounded-2xl border border-emerald-200 bg-emerald-50 p-6 text-center">
             <div className="mx-auto mb-4 grid h-16 w-16 place-items-center rounded-full bg-emerald-100 text-3xl">
               ✓
             </div>
@@ -150,7 +151,7 @@ export default async function BookingDetailPage({ params, searchParams }: PagePr
         {booking.status === "pending" || booking.status === "confirmed" ? <PushOptIn variant="prompt" /> : null}
 
         {/* Booking Reference */}
-        <div className="mb-6 rounded-3xl border border-daet-ink/10 bg-white p-6 text-center shadow-sm">
+        <div className="mb-6 rounded-2xl bg-white p-6 text-center">
           <p className="text-sm font-bold text-daet-ink/70">BOOKING REFERENCE</p>
           <h1 className="mt-2 text-3xl font-black text-daet-forest">
             {booking.booking_reference}
@@ -194,8 +195,8 @@ export default async function BookingDetailPage({ params, searchParams }: PagePr
 
         {/* Package Details */}
         {pkg && (
-          <section className="mb-6 rounded-3xl border border-daet-ink/10 bg-white p-6 shadow-sm">
-            <h3 className="text-sm font-bold uppercase tracking-wide text-daet-ink/70">
+          <section className="mb-6 rounded-2xl bg-white p-6">
+            <h3 className="text-sm font-bold text-daet-ink/70">
               Tour Package
             </h3>
             <div className="mt-4 flex gap-4">
@@ -209,7 +210,7 @@ export default async function BookingDetailPage({ params, searchParams }: PagePr
               <div className="flex-1">
                 <h2 className="text-xl font-black text-daet-ink">{pkg.title}</h2>
                 <p className="mt-1 text-sm text-daet-ink/70">
-                  📍 {pkg.location_name} · ⏱️ {pkg.duration_value}{" "}
+                  <LineIcon name="pin" className="inline-block h-[1.1em] w-[1.1em] align-[-0.15em]" /> {pkg.location_name} · <LineIcon name="clock" className="inline-block h-[1.1em] w-[1.1em] align-[-0.15em]" /> {pkg.duration_value}{" "}
                   {pkg.duration_type === "hours" ? "hours" : "days"}
                 </p>
                 {operator && (
@@ -223,8 +224,8 @@ export default async function BookingDetailPage({ params, searchParams }: PagePr
         )}
 
         {booking.status === "completed" ? (
-          <section id="review" className="mb-6 rounded-3xl border border-daet-ink/10 bg-white p-6 shadow-sm">
-            <h3 className="text-sm font-bold uppercase tracking-wide text-daet-ink/70">
+          <section id="review" className="mb-6 rounded-2xl bg-white p-6">
+            <h3 className="text-sm font-bold text-daet-ink/70">
               {myReview ? "Your review" : "Rate your tour"}
             </h3>
             <div className="mt-4">
@@ -245,8 +246,8 @@ export default async function BookingDetailPage({ params, searchParams }: PagePr
         ) : null}
 
         {/* Booking Details */}
-        <section className="mb-6 rounded-3xl border border-daet-ink/10 bg-white p-6 shadow-sm">
-          <h3 className="text-sm font-bold uppercase tracking-wide text-daet-ink/70">
+        <section className="mb-6 rounded-2xl bg-white p-6">
+          <h3 className="text-sm font-bold text-daet-ink/70">
             Booking Details
           </h3>
 
@@ -304,8 +305,8 @@ export default async function BookingDetailPage({ params, searchParams }: PagePr
         />
 
         {/* Contact Information */}
-        <section className="mb-6 rounded-3xl border border-daet-ink/10 bg-white p-6 shadow-sm">
-          <h3 className="text-sm font-bold uppercase tracking-wide text-daet-ink/70">
+        <section className="mb-6 rounded-2xl bg-white p-6">
+          <h3 className="text-sm font-bold text-daet-ink/70">
             Contact Information
           </h3>
 

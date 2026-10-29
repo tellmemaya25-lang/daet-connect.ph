@@ -1,5 +1,6 @@
 "use client";
 
+import { LineIcon } from "@/components/ui/icons";
 import { formatPeso } from "@/lib/money";
 import type { PackageDraft } from "../package-types";
 
@@ -42,20 +43,20 @@ export function PackageReviewStep({
       </div>
 
       {/* Package Summary */}
-      <div className="space-y-6 rounded-2xl border border-daet-ink/10 bg-white p-6">
+      <div className="space-y-6 rounded-2xl bg-white p-6">
         {/* Title & Location */}
         <div>
           <h3 className="text-xl font-black text-daet-ink">{data.title}</h3>
-          <p className="mt-1 text-sm text-daet-ink/70">📍 {data.locationName}</p>
+          <p className="mt-1 text-sm text-daet-ink/70"><LineIcon name="pin" className="inline-block h-[1.1em] w-[1.1em] align-[-0.15em]" /> {data.locationName}</p>
           <p className="mt-1 text-sm text-daet-ink/70">
-            ⏱️ {data.durationValue} {data.durationType}
+            <LineIcon name="clock" className="inline-block h-[1.1em] w-[1.1em] align-[-0.15em]" /> {data.durationValue} {data.durationType}
           </p>
         </div>
 
         {/* Description */}
         {data.description && (
           <div>
-            <p className="text-xs font-bold uppercase tracking-wide text-daet-ink/70">
+            <p className="text-xs font-bold text-daet-ink/70">
               Description
             </p>
             <p className="mt-1 text-sm leading-6 text-daet-ink/70">{data.description}</p>
@@ -65,7 +66,7 @@ export function PackageReviewStep({
         {/* Inclusions */}
         {data.inclusions.length > 0 && (
           <div>
-            <p className="text-xs font-bold uppercase tracking-wide text-daet-ink/70">
+            <p className="text-xs font-bold text-daet-ink/70">
               Inclusions ({data.inclusions.length})
             </p>
             <ul className="mt-2 space-y-1">
@@ -82,7 +83,7 @@ export function PackageReviewStep({
         {/* Exclusions */}
         {data.exclusions.length > 0 && (
           <div>
-            <p className="text-xs font-bold uppercase tracking-wide text-daet-ink/70">
+            <p className="text-xs font-bold text-daet-ink/70">
               Exclusions ({data.exclusions.length})
             </p>
             <ul className="mt-2 space-y-1">
@@ -98,7 +99,7 @@ export function PackageReviewStep({
 
         {/* Price Variants */}
         <div>
-          <p className="text-xs font-bold uppercase tracking-wide text-daet-ink/70">
+          <p className="text-xs font-bold text-daet-ink/70">
             Price variants ({data.priceVariants.length})
           </p>
           <div className="mt-2 space-y-2">
@@ -137,7 +138,7 @@ export function PackageReviewStep({
 
         {/* Stops */}
         <div>
-          <p className="text-xs font-bold uppercase tracking-wide text-daet-ink/70">
+          <p className="text-xs font-bold text-daet-ink/70">
             Itinerary stops ({data.stops.length})
           </p>
           <div className="mt-2 space-y-1">
@@ -155,7 +156,7 @@ export function PackageReviewStep({
 
       {/* Warning Box */}
       <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm">
-        <p className="font-bold text-amber-900">⚠️ Before submitting</p>
+        <p className="font-bold text-amber-900"><LineIcon name="warning" className="inline-block h-[1.1em] w-[1.1em] align-[-0.15em]" /> Before submitting</p>
         <ul className="mt-2 space-y-1 text-xs text-amber-800">
           <li>• All information is accurate and up-to-date</li>
           <li>• Pricing matches your actual tour costs</li>

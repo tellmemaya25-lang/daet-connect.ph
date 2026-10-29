@@ -97,7 +97,7 @@ export function BookingPaymentPanel({
 
   return (
     <Card id="payment" className="mb-6 scroll-mt-6" aria-labelledby="payment-heading">
-      <CardHeader eyebrow="Payment" title={<span id="payment-heading">Pay for this tour</span>} action={<Badge tone={status.tone}>{status.label}</Badge>} />
+      <CardHeader title={<span id="payment-heading">Pay for this tour</span>} action={<Badge tone={status.tone}>{status.label}</Badge>} />
 
       {paymentReturn === "success" && booking.payment_status !== "paid" ? (
         <Notice variant="info" title="Payment received by PayMongo" className="mb-4">
@@ -168,7 +168,7 @@ export function BookingPaymentPanel({
 
       {proofs.length > 0 ? (
         <section className="mt-6" aria-labelledby="proofs-heading">
-          <h3 id="proofs-heading" className="text-sm font-black uppercase tracking-wide text-daet-ink/70">
+          <h3 id="proofs-heading" className="text-sm font-black text-daet-ink/70">
             Receipts you sent
           </h3>
           <ul className="mt-2 divide-y divide-daet-ink/10">
@@ -197,7 +197,7 @@ export function BookingPaymentPanel({
 
       {payments.length > 0 ? (
         <section className="mt-6" aria-labelledby="payments-heading">
-          <h3 id="payments-heading" className="text-sm font-black uppercase tracking-wide text-daet-ink/70">
+          <h3 id="payments-heading" className="text-sm font-black text-daet-ink/70">
             Payment history
           </h3>
           <ul className="mt-2 divide-y divide-daet-ink/10">

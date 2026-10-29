@@ -1,3 +1,4 @@
+import { LineIcon } from "@/components/ui/icons";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { PageFrame } from "@/components/ui/page-frame";
@@ -171,7 +172,7 @@ export default async function GuideMyToursPage() {
 
         {/* Stats */}
         <div className="mb-8 grid grid-cols-2 gap-4 md:grid-cols-3">
-          <div className="rounded-2xl border border-daet-ink/10 bg-white p-4 text-center">
+          <div className="rounded-2xl bg-white p-4 text-center">
             <p className="text-3xl font-black text-daet-ink">
               {assignedTours?.length || 0}
             </p>
@@ -204,7 +205,7 @@ export default async function GuideMyToursPage() {
                 return (
                   <div
                     key={booking.id}
-                    className="rounded-3xl border border-emerald-200 bg-emerald-50/50 p-6 shadow-sm"
+                    className="rounded-2xl border border-emerald-200 bg-emerald-50/50 p-6"
                   >
                     <div className="flex gap-6">
                       {/* Package Image */}
@@ -224,7 +225,7 @@ export default async function GuideMyToursPage() {
                               {pkg?.title || "Tour Package"}
                             </h3>
                             <p className="mt-1 text-sm text-daet-ink/70">
-                              📍 {pkg?.location_name || "Location"}
+                              <LineIcon name="pin" className="inline-block h-[1.1em] w-[1.1em] align-[-0.15em]" /> {pkg?.location_name || "Location"}
                             </p>
                           </div>
                           <span className="rounded-full bg-emerald-100 px-4 py-1 text-xs font-bold text-emerald-800">
@@ -304,7 +305,7 @@ export default async function GuideMyToursPage() {
                 return (
                   <div
                     key={booking.id}
-                    className="rounded-3xl border border-daet-ink/10 bg-white p-6 shadow-sm"
+                    className="rounded-2xl bg-white p-6"
                   >
                     <div className="flex gap-6">
                       {pkg?.cover_image_url && (
@@ -340,9 +341,9 @@ export default async function GuideMyToursPage() {
 
         {/* Empty State */}
         {(!assignedTours || assignedTours.length === 0) && (
-          <div className="rounded-3xl border border-daet-ink/10 bg-white p-12 text-center shadow-sm">
+          <div className="rounded-2xl bg-white p-12 text-center">
             <div className="mx-auto mb-4 grid h-20 w-20 place-items-center rounded-full bg-daet-sand text-4xl">
-              🗓️
+              <LineIcon name="calendar" className="inline-block h-[1.1em] w-[1.1em] align-[-0.15em]" />
             </div>
             <h2 className="text-xl font-black text-daet-ink">No assigned tours yet</h2>
             <p className="mt-2 text-sm text-daet-ink/70">

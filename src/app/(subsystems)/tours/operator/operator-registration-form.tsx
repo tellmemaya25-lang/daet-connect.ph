@@ -195,7 +195,7 @@ export function OperatorRegistrationForm({
         </p>
       </div>
 
-      <div className="mb-5 rounded-2xl border border-daet-forest/10 bg-white px-4 py-4 shadow-sm sm:px-6">
+      <div className="mb-5 rounded-2xl border-daet-forest/10 bg-white px-4 py-4 sm:px-6">
         <ol className="grid grid-cols-3 gap-2" aria-label="Application steps">
           {steps.map((step) => {
             const complete = activeStep > step.number;
@@ -232,7 +232,7 @@ export function OperatorRegistrationForm({
         </div>
       </div>
 
-      <form ref={formRef} action={formAction} onSubmit={handleSubmit} className="rounded-3xl border border-daet-ink/10 bg-white p-5 shadow-card sm:p-8">
+      <form ref={formRef} action={formAction} onSubmit={handleSubmit} className="rounded-2xl bg-white p-5 sm:p-8">
         {rejectionReason ? (
           <Notice variant="warning" title="A few updates are needed before approval" className="mb-6">
             {rejectionReason}
@@ -467,7 +467,7 @@ export function OperatorRegistrationForm({
                 setClientError("");
                 if (validateCurrentStep(activeStep)) setActiveStep((step) => Math.min(3, step + 1));
               }}
-              className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-daet-forest px-7 text-sm font-bold text-white shadow-sm transition hover:bg-daet-ink focus:outline-none focus:ring-4 focus:ring-daet-forest/20"
+              className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-daet-forest px-7 text-sm font-bold text-white transition hover:bg-daet-ink focus:outline-none focus:ring-4 focus:ring-daet-forest/20"
             >
               Continue <span aria-hidden="true">→</span>
             </button>
@@ -475,7 +475,7 @@ export function OperatorRegistrationForm({
             <button
               type="submit"
               disabled={busy || submissionDisabled}
-              className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-daet-forest px-7 text-sm font-bold text-white shadow-sm transition hover:bg-daet-ink focus:outline-none focus:ring-4 focus:ring-daet-forest/20 disabled:cursor-not-allowed disabled:opacity-60"
+              className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-daet-forest px-7 text-sm font-bold text-white transition hover:bg-daet-ink focus:outline-none focus:ring-4 focus:ring-daet-forest/20 disabled:cursor-not-allowed disabled:opacity-60"
             >
               {compressing ? "Preparing secure upload…" : actionPending || isDispatchPending ? "Submitting…" : submissionDisabled ? "Connect Supabase to submit" : "Submit for approval"}
               {!busy && !submissionDisabled ? <span aria-hidden="true">↗</span> : null}

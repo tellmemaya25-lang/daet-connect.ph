@@ -14,9 +14,6 @@ export const ATTRACTION_CATEGORIES = {
 } as const;
 export type AttractionCategory = keyof typeof ATTRACTION_CATEGORIES;
 
-export const CATEGORY_ICONS: Record<AttractionCategory, string> = {
-  beach: "🏖️", heritage: "🏛️", nature: "🌿", park: "🌳", food: "🍲", adventure: "🏄", shopping: "🛍️", religious: "⛪",
-};
 
 export function isAttractionCategory(value: unknown): value is AttractionCategory {
   return typeof value === "string" && value in ATTRACTION_CATEGORIES;

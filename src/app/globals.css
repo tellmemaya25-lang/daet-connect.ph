@@ -1,9 +1,12 @@
 @import "tailwindcss";
 
-/* CONNECT-DAET design system: Daet Blue actions, deep navy ink, slate-50 pages.
-   The token names are older than the palette: "forest" is now the brand blue,
-   "leaf" the deeper blue for small text and links, and "sand" the pale blue
-   tint for selected and hover states. */
+/* CONNECT-DAET design system (team UI & mobile-first standards).
+   Primary blue-600 ("Daet Blue"), success green-500, warning yellow-500,
+   error red-600; rounded-2xl cards, rounded-full primary buttons, 44px touch
+   targets. Cards sit white on the slate-50 ground with no border or shadow:
+   the tone step separates them. The token names are older than the palette:
+   "forest" is the brand blue, "leaf" the deeper blue for small text and
+   links, and "sand" the pale blue tint for selected and hover states. */
 @theme {
   --color-daet-ink: #0f172a;
   --color-daet-forest: #2563eb;
@@ -11,7 +14,11 @@
   --color-daet-sand: #eff6ff;
   --color-daet-sun: #eab308;
   --color-daet-coral: #dc2626;
-  --shadow-card: 0 1px 2px rgba(15, 23, 42, 0.08), 0 8px 24px rgba(15, 23, 42, 0.06);
+  /* Only for things that float above the page: menus, dialogs, the bottom booking bar. */
+  --shadow-float: 0 12px 32px rgba(15, 23, 42, 0.18);
+  --color-success: #22c55e;
+  --color-warning: #eab308;
+  --color-error: #dc2626;
   --font-display: var(--font-fraunces), Georgia, "Times New Roman", serif;
   --font-sans: var(--font-public-sans), system-ui, -apple-system, "Segoe UI", sans-serif;
 }
@@ -33,7 +40,12 @@
   h2 {
     font-family: var(--font-fraunces), Georgia, "Times New Roman", serif;
     font-weight: 600;
-    letter-spacing: -0.015em;
+    letter-spacing: -0.02em;
+    text-wrap: balance;
+  }
+
+  h3 {
+    text-wrap: balance;
   }
 
   html {
@@ -65,7 +77,62 @@
   }
 }
 
+/* Display sizes: large and tight. Mobile first; they scale with the viewport. */
+@utility display-1 {
+  font-family: var(--font-fraunces), Georgia, "Times New Roman", serif;
+  font-weight: 600;
+  font-size: clamp(2.5rem, 9vw, 6rem);
+  line-height: 0.95;
+  letter-spacing: -0.03em;
+}
+
+@utility display-2 {
+  font-family: var(--font-fraunces), Georgia, "Times New Roman", serif;
+  font-weight: 600;
+  font-size: clamp(1.75rem, 5vw, 3rem);
+  line-height: 1.05;
+  letter-spacing: -0.025em;
+}
+
+/* Section entrance (reveal.tsx): heading, text, picture rise in turn. Content
+   is visible by default and only hidden once the script has marked the page. */
+.reveal-ready [data-reveal] {
+  opacity: 0;
+  transform: translateY(20px);
+  transition:
+    opacity 600ms cubic-bezier(0.2, 0.7, 0.2, 1),
+    transform 600ms cubic-bezier(0.2, 0.7, 0.2, 1);
+  transition-delay: calc(var(--reveal-index, 0) * 75ms);
+}
+
+.reveal-ready [data-reveal].is-revealed {
+  opacity: 1;
+  transform: none;
+}
+
+@keyframes daet-drift {
+  from {
+    transform: scale(1.04) translate3d(0, 0, 0);
+  }
+  to {
+    transform: scale(1.1) translate3d(-1.5%, -1%, 0);
+  }
+}
+
+.drift {
+  animation: daet-drift 24s ease-in-out infinite alternate;
+}
+
 @media (prefers-reduced-motion: reduce) {
+  .reveal-ready [data-reveal] {
+    opacity: 1;
+    transform: none;
+  }
+
+  .drift {
+    animation: none;
+  }
+
   *,
   *::before,
   *::after {

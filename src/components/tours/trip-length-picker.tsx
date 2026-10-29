@@ -94,7 +94,7 @@ export function TripLengthPicker() {
             <span>{option.travel}</span>
           </figcaption>
         </figure>
-        <div className="flex flex-col gap-4 rounded-2xl bg-white p-6 shadow-card sm:p-8" aria-live="polite">
+        <div className="flex flex-col gap-4 rounded-2xl bg-white p-6 sm:p-8" aria-live="polite">
           <h3 className="font-display text-3xl leading-tight text-daet-ink">{option.title}</h3>
           <p className="text-daet-ink">{option.text}</p>
           <Link

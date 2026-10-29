@@ -1,3 +1,4 @@
+import { LineIcon } from "@/components/ui/icons";
 import Link from "next/link";
 import { PageFrame } from "@/components/ui/page-frame";
 import { Notice } from "@/components/ui/notice";
@@ -155,12 +156,12 @@ export default async function BrowsePackagesPage({
 
         {/* Results */}
         {filteredPackages.length === 0 ? (
-          <section className="mt-8 rounded-3xl border border-daet-ink/10 bg-white px-6 py-14 text-center shadow-sm">
+          <section className="mt-8 rounded-2xl bg-white px-6 py-14 text-center">
             <span
               className="mx-auto grid h-14 w-14 place-items-center rounded-2xl bg-daet-sand text-2xl"
               aria-hidden="true"
             >
-              🔍
+              <LineIcon name="search" className="inline-block h-[1.1em] w-[1.1em] align-[-0.15em]" />
             </span>
             <h2 className="mt-4 text-xl font-black text-daet-ink">No packages found</h2>
             <p className="mt-2 text-sm text-daet-ink/70">

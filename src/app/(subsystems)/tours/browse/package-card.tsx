@@ -27,7 +27,7 @@ export function PackageCard({ package: pkg, rating = null }: PackageCardProps) {
   const priceLabel = defaultVariant?.price_per_pax ? "per person" : "per group";
 
   return (
-    <article className="group overflow-hidden rounded-2xl bg-white transition hover:shadow-card">
+    <article className="group overflow-hidden rounded-2xl bg-white transition">
       <Link href={`/tours/packages/${pkg.id}`}>
         {/* Cover Image */}
         <div className="relative aspect-video overflow-hidden bg-daet-leaf">
@@ -43,7 +43,7 @@ export function PackageCard({ package: pkg, rating = null }: PackageCardProps) {
             <div className="flex h-full items-end p-4 font-display text-2xl text-white">{pkg.location_name}</div>
           )}
           {/* Price Badge */}
-          <div className="absolute bottom-3 right-3 rounded-full bg-white px-4 py-2 shadow-lg">
+          <div className="absolute bottom-3 right-3 rounded-full bg-white px-4 py-2 shadow-[var(--shadow-float)]">
             <p className="text-xs font-bold text-daet-ink/70">From</p>
             <p className="text-lg font-black text-daet-forest">
               {formatPeso(price)}

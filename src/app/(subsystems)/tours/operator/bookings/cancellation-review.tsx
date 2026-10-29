@@ -52,7 +52,7 @@ export function CancellationReview({ bookingId, request, late }: { bookingId: st
 
   return (
     <div className="mb-4 rounded-2xl border border-rose-200 bg-rose-50/60 p-4">
-      <p className="mb-2 flex flex-wrap items-center gap-2 text-xs font-bold uppercase tracking-wide text-rose-900">
+      <p className="mb-2 flex flex-wrap items-center gap-2 text-xs font-bold text-rose-900">
         Cancellation requested
         {late ? <Badge tone="warning">Within 48 hours of the tour</Badge> : null}
       </p>
@@ -90,7 +90,7 @@ export function RefundPanel({ bookingId, refundable }: { bookingId: string; refu
 
   return (
     <div className="mb-4 rounded-2xl border border-sky-200 bg-sky-50/60 p-4">
-      <p className="text-xs font-bold uppercase tracking-wide text-sky-900">Refund due</p>
+      <p className="text-xs font-bold text-sky-900">Refund due</p>
       <p className="mt-1 text-sm text-daet-ink">
         The tourist paid <strong>{peso(refundable)}</strong> that has not been refunded yet. Send the refund, then record it here.
       </p>

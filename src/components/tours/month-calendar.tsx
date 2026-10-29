@@ -25,7 +25,7 @@ export function MonthCalendar({
 }) {
   const grid = buildMonthGrid(month);
   const title = formatMonthLabel(month);
-  const arrow = "grid h-11 w-11 place-items-center rounded-full border border-daet-ink/15 text-lg font-black hover:bg-daet-sand";
+  const arrow = "grid h-11 w-11 place-items-center rounded-full bg-slate-100 text-lg font-bold hover:bg-blue-50";
   return (
     <div>
       <div className="mb-3 flex items-center justify-between gap-2">
@@ -46,7 +46,7 @@ export function MonthCalendar({
         )}
       </div>
       <div role="grid" aria-label={title}>
-        <div role="row" className="grid grid-cols-7 text-center text-[11px] font-black uppercase tracking-wide text-daet-ink/70">
+        <div role="row" className="grid grid-cols-7 text-center text-xs font-bold text-daet-ink/75">
           {WEEKDAYS.map((d) => (
             <span role="columnheader" key={d} className="py-1">
               {d}
@@ -54,7 +54,7 @@ export function MonthCalendar({
           ))}
         </div>
         {grid.map((week) => (
-          <div role="row" key={week[0].dateKey} className="grid grid-cols-7 gap-1 py-0.5">
+          <div role="row" key={week[0].dateKey} className="grid grid-cols-7 gap-0.5 py-0.5">
             {week.map((cell) => (
               <div role="gridcell" key={cell.dateKey} className="min-w-0">
                 {cell.inMonth ? renderDay(cell, cell.dateKey === today) : <span className="block h-12" aria-hidden="true" />}

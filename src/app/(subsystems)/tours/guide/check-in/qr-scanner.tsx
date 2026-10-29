@@ -107,7 +107,7 @@ export function QrScanner() {
       ) : null}
 
       {supported ? (
-        <div className="overflow-hidden rounded-3xl border border-daet-ink/10 bg-daet-ink">
+        <div className="overflow-hidden rounded-2xl border border-daet-ink/10 bg-daet-ink">
           <video ref={videoRef} playsInline muted className={scanning ? "aspect-square w-full object-cover" : "hidden"} aria-label="Camera preview" />
           {!scanning ? (
             <div className="grid aspect-[4/3] place-items-center p-6 text-center text-white">

@@ -1,5 +1,6 @@
 "use client";
 
+import { LineIcon } from "@/components/ui/icons";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createPackage } from "./actions";
@@ -73,7 +74,7 @@ export function PackageCreateForm({ operatorId }: Props) {
       )}
 
       {/* Basic Details */}
-      <section className="rounded-3xl border border-daet-ink/10 bg-white p-6 shadow-sm">
+      <section className="rounded-2xl bg-white p-6">
         <h2 className="text-xl font-black text-daet-ink">Basic Details</h2>
         <p className="mt-1 text-sm text-daet-ink/70">
           Provide the essential information about your tour package.
@@ -160,7 +161,7 @@ export function PackageCreateForm({ operatorId }: Props) {
       </section>
 
       {/* Inclusions */}
-      <section className="rounded-3xl border border-daet-ink/10 bg-white p-6 shadow-sm">
+      <section className="rounded-2xl bg-white p-6">
         <h2 className="text-xl font-black text-daet-ink">What's Included</h2>
         <p className="mt-1 text-sm text-daet-ink/70">
           List what's included and not included in your package (one item per line).
@@ -199,7 +200,7 @@ export function PackageCreateForm({ operatorId }: Props) {
       </section>
 
       {/* Pricing */}
-      <section className="rounded-3xl border border-daet-ink/10 bg-white p-6 shadow-sm">
+      <section className="rounded-2xl bg-white p-6">
         <h2 className="text-xl font-black text-daet-ink">Pricing</h2>
         <p className="mt-1 text-sm text-daet-ink/70">
           Set the price for your tour package.
@@ -240,7 +241,7 @@ export function PackageCreateForm({ operatorId }: Props) {
       </section>
 
       {/* Itinerary */}
-      <section className="rounded-3xl border border-daet-ink/10 bg-white p-6 shadow-sm">
+      <section className="rounded-2xl bg-white p-6">
         <h2 className="text-xl font-black text-daet-ink">Itinerary</h2>
         <p className="mt-1 text-sm text-daet-ink/70">
           List the stops/locations in your tour (one per line).
@@ -265,7 +266,7 @@ export function PackageCreateForm({ operatorId }: Props) {
       </section>
 
       {/* Image Upload */}
-      <section className="rounded-3xl border border-daet-ink/10 bg-white p-6 shadow-sm">
+      <section className="rounded-2xl bg-white p-6">
         <h2 className="text-xl font-black text-daet-ink">Package Images</h2>
         <p className="mt-1 text-sm text-daet-ink/70">
           Upload photos to showcase your tour package. Images help tourists visualize the experience.
@@ -334,7 +335,7 @@ export function PackageCreateForm({ operatorId }: Props) {
 
           <div className="rounded-xl bg-daet-sand border border-blue-200 p-4">
             <p className="text-sm text-blue-900">
-              <span className="font-bold">💡 Tip:</span> High-quality images attract more bookings! 
+              <span className="font-bold"><LineIcon name="tip" className="inline-block h-[1.1em] w-[1.1em] align-[-0.15em]" /> Tip:</span> High-quality images attract more bookings! 
               Show the best aspects of your tour - scenery, activities, and happy tourists.
             </p>
           </div>
@@ -342,7 +343,7 @@ export function PackageCreateForm({ operatorId }: Props) {
       </section>
 
       {/* Submit */}
-      <div className="flex items-center justify-between rounded-3xl border border-daet-ink/10 bg-white p-6 shadow-sm">
+      <div className="flex items-center justify-between rounded-2xl bg-white p-6">
         <div>
           <p className="text-sm font-bold text-daet-ink">Ready to submit?</p>
           <p className="text-xs text-daet-ink/70">

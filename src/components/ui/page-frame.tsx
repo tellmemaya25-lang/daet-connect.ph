@@ -1,8 +1,9 @@
-import Link from "next/link";
 import type { ReactNode } from "react";
 import { AssistantWidget } from "@/components/assistant/assistant-widget";
 import { RoleTabBar } from "@/components/ui/role-tab-bar";
+import { SiteFooter } from "@/components/ui/site-footer";
 import { SiteHeader } from "@/components/ui/site-header";
+import type { PhotoKey } from "@/lib/photo-credits";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
 import { roleTabs } from "@/lib/tours/dashboards";
 import { getAuthenticatedSession } from "@/lib/tours/server-auth";
@@ -24,30 +25,37 @@ const isStaffRole = (role: string | null | undefined): role is "operator" | "gui
 export async function PageFrame({
   children,
   adminNav = false,
+  credits,
+  bleed = false,
 }: {
   children: ReactNode;
   adminNav?: boolean;
+  /** Photos shown on the page, credited in the footer. */
+  credits?: PhotoKey[];
+  /** The page lays out its own full-width sections (public pages); no inner padding or max width. */
+  bleed?: boolean;
 }) {
   const role = await signedInRole();
   const tabs = role === undefined ? [] : roleTabs(role);
+  const staff = isStaffRole(role);
   return (
     <div className="min-h-screen">
       <a
         href="#main-content"
-        className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:rounded-full focus:bg-daet-forest focus:px-5 focus:py-3 focus:text-sm focus:font-bold focus:text-white"
+        className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:rounded-full focus:bg-blue-600 focus:px-5 focus:py-3 focus:text-sm focus:font-bold focus:text-white"
       >
         Skip to main content
       </a>
       <SiteHeader showAdminLink={adminNav} signedIn={role !== undefined} role={isStaffRole(role) ? role : undefined} tabs={tabs} />
-      <main id="main-content" tabIndex={-1} className={`mx-auto w-full max-w-7xl px-4 py-8 sm:px-6 sm:py-12 lg:px-8 ${tabs.length ? "pb-24 sm:pb-12" : ""}`}>
+      <main
+        id="main-content"
+        tabIndex={-1}
+        className={bleed ? "w-full outline-none" : "mx-auto w-full max-w-7xl px-4 py-6 outline-none sm:px-6 sm:py-10 lg:px-8"}
+      >
         {children}
       </main>
-      <footer className={`mx-auto max-w-7xl px-4 pt-2 text-xs text-daet-ink/70 sm:px-6 sm:pb-8 lg:px-8 print:hidden ${tabs.length ? "pb-24" : "pb-8"}`}>
-        CONNECT-DAET.ph · Tourism in Daet, Camarines Norte ·{" "}
-        <Link href="/tours/help" className="font-bold text-daet-forest underline underline-offset-2">
-          Help (24/7 assistant)
-        </Link>
-      </footer>
+      {/* Work screens (signed-in staff) get a one-line footer; everyone else gets the full close. */}
+      <SiteFooter credits={credits} compact={staff} className={tabs.length ? "pb-24 sm:pb-10" : ""} />
       <RoleTabBar tabs={tabs} />
       <AssistantWidget signedIn={role !== undefined} raised={tabs.length > 0} />
     </div>

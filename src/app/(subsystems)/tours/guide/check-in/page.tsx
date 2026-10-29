@@ -54,7 +54,7 @@ export default async function GuideCheckInPage() {
         <section className="mt-8">
           <h2 className="mb-3 text-lg font-black text-daet-ink">Today&apos;s groups</h2>
           {tours && tours.length > 0 ? (
-            <ul className="divide-y divide-daet-ink/10 rounded-2xl border border-daet-ink/10 bg-white">
+            <ul className="divide-y divide-daet-ink/10 rounded-2xl bg-white">
               {tours.map((tour) => {
                 const pkg = Array.isArray(tour.tours_packages) ? tour.tours_packages[0] : tour.tours_packages;
                 const arrived = (tour.tours_checkins ?? []).some((row: { participant_id: string | null }) => row.participant_id === null);

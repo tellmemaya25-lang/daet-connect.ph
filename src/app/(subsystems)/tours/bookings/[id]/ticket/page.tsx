@@ -70,7 +70,7 @@ export default async function BookingTicketPage({ params }: PageProps) {
     <PageFrame>
       <div className="mx-auto max-w-md">
         {back}
-        <section className="mt-4 rounded-3xl border border-daet-ink/10 bg-white p-6 text-center shadow-card print:border-black print:shadow-none">
+        <section className="mt-4 rounded-2xl bg-white p-6 text-center print:border-black print:shadow-none">
           <p className="text-sm font-bold text-daet-leaf print:text-black">CONNECT-DAET tour ticket</p>
           <h1 className="mt-2 text-2xl font-black text-daet-ink">{pkg?.title ?? "Tour booking"}</h1>
           <p className="mt-1 text-sm text-daet-ink/65">{tourDate(booking.tour_date)}</p>

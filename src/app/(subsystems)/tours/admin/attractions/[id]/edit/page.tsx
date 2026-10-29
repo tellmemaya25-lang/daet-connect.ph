@@ -21,8 +21,8 @@ export default async function EditAttractionPage({ params }: { params: Promise<{
   return (
     <PageFrame adminNav>
       <div className="mx-auto max-w-2xl">
-        <AdminPageHeading eyebrow="Tourism dataset" title="Edit attraction" backHref="/tours/admin/attractions" backLabel="All attractions" />
-        <div className="rounded-2xl border border-daet-ink/10 bg-white p-5 shadow-sm sm:p-8">
+        <AdminPageHeading title="Edit attraction" backHref="/tours/admin/attractions" backLabel="All attractions" />
+        <div className="rounded-2xl bg-white p-5 sm:p-8">
           <AttractionForm attraction={toAttraction(data as Record<string, unknown>)} />
         </div>
       </div>

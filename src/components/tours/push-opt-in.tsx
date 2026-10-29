@@ -1,5 +1,6 @@
 "use client";
 
+import { LineIcon } from "@/components/ui/icons";
 import { useEffect, useState, useTransition } from "react";
 import { Button } from "@/components/ui/button";
 import { removePushSubscription, savePushSubscription } from "@/app/(subsystems)/tours/notifications/actions";
@@ -106,8 +107,8 @@ export function PushOptIn({ variant = "settings" }: { variant?: "prompt" | "sett
   if (variant === "prompt") {
     if (state !== "off" || dismissed) return null;
     return (
-      <section className="mb-6 rounded-3xl border border-daet-forest/20 bg-daet-forest/5 p-5">
-        <p className="font-black text-daet-ink">🔔 Get updates on your phone</p>
+      <section className="mb-6 rounded-2xl border border-daet-forest/20 bg-daet-forest/5 p-5">
+        <p className="font-black text-daet-ink"><LineIcon name="bell" className="inline-block h-[1.1em] w-[1.1em] align-[-0.15em]" /> Get updates on your phone</p>
         <p className="mt-1 text-sm text-daet-ink/70">We&apos;ll tell you when the operator confirms, when your guide is assigned and when you get a message.</p>
         {error ? <p className="mt-2 text-sm font-semibold text-rose-700">{error}</p> : null}
         <div className="mt-3 flex flex-wrap gap-3">

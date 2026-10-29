@@ -132,7 +132,7 @@ export default async function AdminPackageReviewPage({
         </div>
 
         {/* Package Details */}
-        <div className="bg-white rounded-xl shadow-sm border border-daet-ink/20 p-6 mb-6">
+        <div className="bg-white rounded-xl border border-daet-ink/20 p-6 mb-6">
           <h2 className="text-xl font-bold text-daet-ink mb-4">Package Information</h2>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -156,7 +156,7 @@ export default async function AdminPackageReviewPage({
         </div>
 
         {/* Operator Information */}
-        <div className="bg-white rounded-xl shadow-sm border border-daet-ink/20 p-6 mb-6">
+        <div className="bg-white rounded-xl border border-daet-ink/20 p-6 mb-6">
           <h2 className="text-xl font-bold text-daet-ink mb-4">Operator Information</h2>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -184,7 +184,7 @@ export default async function AdminPackageReviewPage({
 
         {/* Price Variants */}
         {priceVariants && priceVariants.length > 0 && (
-          <div className="bg-white rounded-xl shadow-sm border border-daet-ink/20 p-6 mb-6">
+          <div className="bg-white rounded-xl border border-daet-ink/20 p-6 mb-6">
             <h2 className="text-xl font-bold text-daet-ink mb-4">Pricing</h2>
             
             <div className="space-y-3">
@@ -204,7 +204,7 @@ export default async function AdminPackageReviewPage({
 
         {/* Inclusions */}
         {inclusions && inclusions.length > 0 && (
-          <div className="bg-white rounded-xl shadow-sm border border-daet-ink/20 p-6 mb-6">
+          <div className="bg-white rounded-xl border border-daet-ink/20 p-6 mb-6">
             <h2 className="text-xl font-bold text-daet-ink mb-4">Inclusions</h2>
             
             <ul className="space-y-2">
@@ -222,7 +222,7 @@ export default async function AdminPackageReviewPage({
 
         {/* Itinerary */}
         {stops && stops.length > 0 && (
-          <div className="bg-white rounded-xl shadow-sm border border-daet-ink/20 p-6 mb-6">
+          <div className="bg-white rounded-xl border border-daet-ink/20 p-6 mb-6">
             <h2 className="text-xl font-bold text-daet-ink mb-4">Itinerary</h2>
             
             <div className="space-y-4">
@@ -252,7 +252,7 @@ export default async function AdminPackageReviewPage({
 
         {/* Gallery */}
         {gallery && gallery.length > 0 && (
-          <div className="bg-white rounded-xl shadow-sm border border-daet-ink/20 p-6 mb-6">
+          <div className="bg-white rounded-xl border border-daet-ink/20 p-6 mb-6">
             <h2 className="text-xl font-bold text-daet-ink mb-4">Gallery ({gallery.length} images)</h2>
             <p className="text-daet-ink/80 text-sm">Image URLs stored in database</p>
           </div>

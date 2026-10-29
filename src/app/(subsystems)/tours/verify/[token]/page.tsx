@@ -25,7 +25,7 @@ function ResultCard({ tone, title, children }: { tone: "valid" | "invalid" | "ne
     neutral: { box: "border-daet-ink/15 bg-white", icon: "bg-daet-sand text-daet-ink", mark: "i", title: "text-daet-ink" },
   }[tone];
   return (
-    <section className={`mx-auto max-w-md rounded-3xl border-2 p-6 text-center shadow-card ${styles.box}`} aria-live="polite">
+    <section className={`mx-auto max-w-md rounded-2xl border-2 p-6 text-center ${styles.box}`} aria-live="polite">
       <div className={`mx-auto grid h-16 w-16 place-items-center rounded-full text-3xl font-black ${styles.icon}`} aria-hidden="true">
         {styles.mark}
       </div>
@@ -89,7 +89,7 @@ export default async function VerifyQrPage({ params }: PageProps) {
             <img
               src={badge.photo_url}
               alt={`Photo of ${badge.full_name}`}
-              className="mx-auto mb-3 h-28 w-28 rounded-full border-4 border-white object-cover shadow"
+              className="mx-auto mb-3 h-28 w-28 rounded-full border-4 border-white object-cover"
             />
           ) : null}
           <p className="text-xl font-black text-daet-ink">{badge.full_name}</p>

@@ -1,3 +1,4 @@
+import { LineIcon } from "@/components/ui/icons";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { Badge, type BadgeTone } from "@/components/ui/badge";
@@ -58,14 +59,14 @@ export default async function OperatorMerchPage({ searchParams }: { searchParams
       {params.error ? <Notice variant="error" className="mb-4">That action could not be completed.</Notice> : null}
 
       {items.length === 0 ? (
-        <EmptyState icon="🛍️" title="No products yet" description="Submit your first product and we'll let you know when it's approved." />
+        <EmptyState icon={<LineIcon name="bag" />} title="No products yet" description="Submit your first product and we'll let you know when it's approved." />
       ) : (
         <ul className="space-y-3">
           {items.map((item) => (
-            <li key={item.id} className="flex flex-col gap-3 rounded-2xl border border-daet-ink/10 bg-white p-4 shadow-sm sm:flex-row sm:items-center">
+            <li key={item.id} className="flex flex-col gap-3 rounded-2xl bg-white p-4 sm:flex-row sm:items-center">
               <div className="flex min-w-0 flex-1 items-center gap-3">
                 <div className="grid h-16 w-16 shrink-0 place-items-center overflow-hidden rounded-xl bg-daet-sand text-2xl">
-                  {item.image_url ? <img src={item.image_url} alt="" className="h-full w-full object-cover" /> : <span aria-hidden="true">🛍️</span>}
+                  {item.image_url ? <img src={item.image_url} alt="" className="h-full w-full object-cover" /> : <span aria-hidden="true"><LineIcon name="bag" className="inline-block h-[1.1em] w-[1.1em] align-[-0.15em]" /></span>}
                 </div>
                 <div className="min-w-0">
                   <div className="flex flex-wrap items-center gap-2">

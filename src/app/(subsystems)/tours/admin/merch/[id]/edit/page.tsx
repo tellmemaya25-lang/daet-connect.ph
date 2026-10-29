@@ -20,8 +20,8 @@ export default async function EditMerchPage({ params }: { params: Promise<{ id: 
   return (
     <PageFrame adminNav>
       <div className="mx-auto max-w-2xl">
-        <AdminPageHeading eyebrow="Merchandise" title="Edit product" backHref="/tours/admin/merch" backLabel="All products" />
-        <div className="rounded-2xl border border-daet-ink/10 bg-white p-5 shadow-sm sm:p-8">
+        <AdminPageHeading title="Edit product" backHref="/tours/admin/merch" backLabel="All products" />
+        <div className="rounded-2xl bg-white p-5 sm:p-8">
           <MerchForm item={item} />
         </div>
       </div>

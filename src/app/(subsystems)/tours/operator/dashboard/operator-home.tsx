@@ -1,3 +1,4 @@
+import { LineIcon } from "@/components/ui/icons";
 import { formatPeso } from "@/lib/money";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
@@ -129,7 +130,7 @@ export async function OperatorHome({ operatorId, searchParams }: { operatorId: s
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
         <Card>
-          <CardHeader eyebrow="Booking calendar" title="Tours by date" />
+          <CardHeader title="Tours by date" />
           <MonthCalendar
             month={month}
             today={today}
@@ -168,9 +169,9 @@ export async function OperatorHome({ operatorId, searchParams }: { operatorId: s
 
         <div className="space-y-6">
           <Card>
-            <CardHeader eyebrow={formatDayHeading(today)} title="Today's tours" />
+            <CardHeader description={formatDayHeading(today)} title="Today's tours" />
             {todayList.length === 0 ? (
-              <EmptyState icon="🌤️" title="No tours today" className="p-5" />
+              <EmptyState icon={<LineIcon name="calendar" />} title="No tours today" className="p-5" />
             ) : (
               <BookingLines bookings={todayList} title={title} />
             )}
@@ -199,13 +200,13 @@ export async function OperatorHome({ operatorId, searchParams }: { operatorId: s
             <CardHeader title="Manage" />
             <div className="grid grid-cols-2 gap-2 text-sm">
               {[
-                ["/tours/operator/packages", "🧭 Packages"],
-                ["/tours/operator/bookings", "📋 Bookings"],
+                ["/tours/operator/packages", "Packages"],
+                ["/tours/operator/bookings", "Bookings"],
                 ["/tours/operator/payments", "₱ Payments"],
-                ["/tours/operator/reviews", "⭐ Reviews"],
-                ["/tours/messages", "💬 Messages"],
-                ["/tours/operator/merch", "🛍️ Merchandise"],
-                ["/tours/operator/settings", "⚙️ Payment settings"],
+                ["/tours/operator/reviews", "Reviews"],
+                ["/tours/messages", "Messages"],
+                ["/tours/operator/merch", "Merchandise"],
+                ["/tours/operator/settings", "Payment settings"],
               ].map(([href, label]) => (
                 <Link key={href} href={href} className="flex min-h-11 items-center rounded-xl border border-daet-ink/10 px-3 font-bold text-daet-ink hover:bg-daet-sand/50">
                   {label}

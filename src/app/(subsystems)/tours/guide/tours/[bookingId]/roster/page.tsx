@@ -68,7 +68,7 @@ export default async function GuideRosterPage({ params }: PageProps) {
 
         {!rule.ok ? <Notice variant="info" className="mt-4">{rule.reason}</Notice> : null}
 
-        <section className="mt-6 rounded-3xl border border-daet-ink/10 bg-white p-5 shadow-sm">
+        <section className="mt-6 rounded-2xl bg-white p-5">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
               <p className="text-lg font-black text-daet-ink">{booking.contact_name}</p>
@@ -106,7 +106,7 @@ export default async function GuideRosterPage({ params }: PageProps) {
             <h2 className="mb-3 text-lg font-black text-daet-ink">
               Guests <span className="text-sm font-bold text-daet-ink/70">({checkedGuests} of {guests.length} present)</span>
             </h2>
-            <ul className="divide-y divide-daet-ink/10 rounded-2xl border border-daet-ink/10 bg-white">
+            <ul className="divide-y divide-daet-ink/10 rounded-2xl bg-white">
               {guests.map((guest) => {
                 const done = byParticipant.get(guest.id);
                 return (

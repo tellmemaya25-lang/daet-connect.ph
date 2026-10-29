@@ -97,7 +97,7 @@ export function PackageBasicDetailsStep({
           placeholder="Describe what tourists will experience on this tour..."
           rows={5}
           maxLength={2000}
-          className="mt-2 w-full rounded-2xl border border-daet-ink/15 bg-white px-4 py-3 text-sm outline-none transition placeholder:text-daet-ink/35 focus:border-daet-forest focus:ring-4 focus:ring-daet-forest/10"
+          className="mt-2 w-full rounded-2xl bg-white px-4 py-3 text-sm outline-none transition placeholder:text-daet-ink/35 focus:border-daet-forest focus:ring-4 focus:ring-daet-forest/10"
         />
         <p className="mt-1 text-xs text-daet-ink/70">
           {description.length}/2000 characters
@@ -142,7 +142,7 @@ export function PackageBasicDetailsStep({
           <select
             value={durationType}
             onChange={(e) => setDurationType(e.target.value as "hours" | "days")}
-            className="flex-1 rounded-2xl border border-daet-ink/15 bg-white px-4 py-3 text-sm outline-none transition focus:border-daet-forest focus:ring-4 focus:ring-daet-forest/10"
+            className="flex-1 rounded-2xl bg-white px-4 py-3 text-sm outline-none transition focus:border-daet-forest focus:ring-4 focus:ring-daet-forest/10"
           >
             <option value="hours">Hours</option>
             <option value="days">Days</option>

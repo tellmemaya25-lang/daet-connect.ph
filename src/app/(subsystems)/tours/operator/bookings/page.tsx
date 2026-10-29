@@ -1,3 +1,4 @@
+import { LineIcon } from "@/components/ui/icons";
 import { formatPeso } from "@/lib/money";
 import { redirect } from "next/navigation";
 import Link from "next/link";
@@ -271,7 +272,7 @@ export default async function OperatorBookingsPage({
         <div className="mb-8 grid grid-cols-2 gap-4 md:grid-cols-5">
           <Link
             href="/tours/operator/bookings?status=all"
-            className={`rounded-2xl border p-4 text-center transition hover:shadow-md ${
+            className={`rounded-2xl border p-4 text-center transition hover:bg-blue-50 ${
               !params.status || params.status === "all"
                 ? "border-daet-forest bg-daet-forest/5"
                 : "border-daet-ink/10 bg-white"
@@ -282,7 +283,7 @@ export default async function OperatorBookingsPage({
           </Link>
           <Link
             href="/tours/operator/bookings?status=pending"
-            className={`rounded-2xl border p-4 text-center transition hover:shadow-md ${
+            className={`rounded-2xl border p-4 text-center transition hover:bg-blue-50 ${
               params.status === "pending"
                 ? "border-amber-300 bg-amber-50"
                 : "border-amber-200 bg-amber-50"
@@ -293,7 +294,7 @@ export default async function OperatorBookingsPage({
           </Link>
           <Link
             href="/tours/operator/bookings?status=confirmed"
-            className={`rounded-2xl border p-4 text-center transition hover:shadow-md ${
+            className={`rounded-2xl border p-4 text-center transition hover:bg-blue-50 ${
               params.status === "confirmed"
                 ? "border-emerald-300 bg-emerald-50"
                 : "border-emerald-200 bg-emerald-50"
@@ -304,7 +305,7 @@ export default async function OperatorBookingsPage({
           </Link>
           <Link
             href="/tours/operator/bookings?status=completed"
-            className={`rounded-2xl border p-4 text-center transition hover:shadow-md ${
+            className={`rounded-2xl border p-4 text-center transition hover:bg-blue-50 ${
               params.status === "completed"
                 ? "border-blue-300 bg-blue-50"
                 : "border-blue-200 bg-blue-50"
@@ -315,7 +316,7 @@ export default async function OperatorBookingsPage({
           </Link>
           <Link
             href="/tours/operator/bookings?status=rejected"
-            className={`rounded-2xl border p-4 text-center transition hover:shadow-md ${
+            className={`rounded-2xl border p-4 text-center transition hover:bg-blue-50 ${
               params.status === "rejected"
                 ? "border-gray-300 bg-gray-50"
                 : "border-gray-200 bg-gray-50"
@@ -328,9 +329,9 @@ export default async function OperatorBookingsPage({
 
         {/* Bookings List */}
         {!bookings || bookings.length === 0 ? (
-          <div className="rounded-3xl border border-daet-ink/10 bg-white p-12 text-center shadow-sm">
+          <div className="rounded-2xl bg-white p-12 text-center">
             <div className="mx-auto mb-4 grid h-20 w-20 place-items-center rounded-full bg-daet-sand text-4xl">
-              📅
+              <LineIcon name="calendar" className="inline-block h-[1.1em] w-[1.1em] align-[-0.15em]" />
             </div>
             <h2 className="text-xl font-black text-daet-ink">No bookings found</h2>
             <p className="mt-2 text-sm text-daet-ink/70">
@@ -350,7 +351,7 @@ export default async function OperatorBookingsPage({
                 <div
                   key={booking.id}
                   id={`booking-${booking.id}`}
-                  className="scroll-mt-6 rounded-3xl border border-daet-ink/10 bg-white p-6 shadow-sm target:ring-2 target:ring-daet-forest/50"
+                  className="scroll-mt-6 rounded-2xl bg-white p-6 target:ring-2 target:ring-daet-forest/50"
                 >
                   <div className="flex gap-6">
                     {/* Package Image */}
@@ -422,7 +423,7 @@ export default async function OperatorBookingsPage({
                       {booking.status === "confirmed" && (
                         <>
                           <div className="mb-4 rounded-xl border border-daet-forest/20 bg-daet-forest/5 p-4">
-                            <p className="mb-3 text-xs font-bold uppercase tracking-wide text-daet-ink/70">
+                            <p className="mb-3 text-xs font-bold text-daet-ink/70">
                               Guide Assignment
                             </p>
                             {swapByBooking.get(booking.id) ? (

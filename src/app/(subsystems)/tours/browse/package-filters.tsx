@@ -42,7 +42,7 @@ export function PackageFilters({ currentParams }: PackageFiltersProps) {
   };
 
   return (
-    <div className="rounded-2xl border border-daet-ink/10 bg-white p-5 shadow-sm">
+    <div className="rounded-2xl bg-white p-5">
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {/* Location */}
         <div>

@@ -1,3 +1,4 @@
+import { LineIcon } from "@/components/ui/icons";
 import { formatPeso } from "@/lib/money";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
@@ -35,7 +36,7 @@ export default async function AdminAnalyticsPage({ searchParams }: { searchParam
 
   return (
     <PageFrame adminNav>
-      <AdminPageHeading eyebrow="Municipal tourism KPIs" title="Analytics" backHref="/tours/admin" backLabel="Admin dashboard" />
+      <AdminPageHeading title="Analytics" backHref="/tours/admin" backLabel="Admin dashboard" />
 
       <nav aria-label="Date range" className="mb-6 flex flex-wrap items-center gap-2">
         {RANGE_PRESETS.map((p) => (
@@ -124,7 +125,7 @@ export default async function AdminAnalyticsPage({ searchParams }: { searchParam
               <p className="text-xs text-daet-ink/70">{b.label}</p>
               {i === 2 && b.count > 0 ? (
                 <Badge tone="warning" className="mt-1">
-                  ⚠ Overdue
+                  <LineIcon name="warning" className="inline-block h-[1.1em] w-[1.1em] align-[-0.15em]" /> Overdue
                 </Badge>
               ) : null}
             </div>

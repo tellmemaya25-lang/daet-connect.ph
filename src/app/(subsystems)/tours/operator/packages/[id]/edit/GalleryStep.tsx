@@ -221,7 +221,7 @@ export function GalleryStep({
           {sortedImages.map((image, index) => (
             <div
               key={image.id}
-              className="border rounded-xl overflow-hidden bg-slate-50 hover:shadow-lg transition"
+              className="border rounded-xl overflow-hidden bg-slate-50 transition"
             >
               {/* Image Thumbnail */}
               <div className="relative h-40 w-full bg-slate-100">

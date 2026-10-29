@@ -1,3 +1,4 @@
+import { LineIcon } from "@/components/ui/icons";
 import { formatPeso } from "@/lib/money";
 import Link from "next/link";
 import { redirect } from "next/navigation";
@@ -58,7 +59,7 @@ export default async function OperatorPaymentsPage({
         </ButtonLink>
       </div>
 
-      <nav aria-label="Month" className="mb-6 flex items-center justify-between gap-3 rounded-2xl border border-daet-ink/10 bg-white p-2 shadow-sm">
+      <nav aria-label="Month" className="mb-6 flex items-center justify-between gap-3 rounded-2xl bg-white p-2">
         <ButtonLink href={`/tours/operator/payments?month=${monthKey(shiftMonth(month, -1))}`} variant="ghost" size="icon" aria-label="Previous month">
           ‹
         </ButtonLink>
@@ -128,7 +129,7 @@ export default async function OperatorPaymentsPage({
       ) : null}
 
       {result.rows.length === 0 ? (
-        <EmptyState icon="🧾" title={`No payments in ${formatMonthLabel(month)}`} description="Online payments and verified receipts will appear here." />
+        <EmptyState icon={<LineIcon name="receipt" />} title={`No payments in ${formatMonthLabel(month)}`} description="Online payments and verified receipts will appear here." />
       ) : (
         <Card padded={false}>
           <ul className="divide-y divide-daet-ink/10">

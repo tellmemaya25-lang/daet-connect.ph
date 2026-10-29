@@ -1,3 +1,4 @@
+import { LineIcon } from "@/components/ui/icons";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { PageFrame } from "@/components/ui/page-frame";
@@ -120,12 +121,12 @@ export default async function OperatorPackagesPage({
         )}
 
         {!packages || packages.length === 0 ? (
-          <section className="mt-8 rounded-3xl border border-daet-ink/10 bg-white px-6 py-14 text-center shadow-sm">
+          <section className="mt-8 rounded-2xl bg-white px-6 py-14 text-center">
             <span
               className="mx-auto grid h-14 w-14 place-items-center rounded-2xl bg-daet-sand text-2xl"
               aria-hidden="true"
             >
-              📦
+              <LineIcon name="box" className="inline-block h-[1.1em] w-[1.1em] align-[-0.15em]" />
             </span>
             <h2 className="mt-4 text-xl font-black text-daet-ink">No packages yet</h2>
             <p className="mt-2 text-sm text-daet-ink/70">
@@ -143,7 +144,7 @@ export default async function OperatorPackagesPage({
             {packages.map((pkg) => (
               <article
                 key={pkg.id}
-                className="overflow-hidden rounded-3xl border border-daet-ink/10 bg-white shadow-sm transition hover:shadow-md"
+                className="overflow-hidden rounded-2xl bg-white transition"
               >
                 {/* Cover Image */}
                 <div className="relative aspect-video overflow-hidden bg-gradient-to-br from-daet-forest to-daet-leaf">
@@ -155,7 +156,7 @@ export default async function OperatorPackagesPage({
                     />
                   ) : (
                     <div className="flex h-full items-center justify-center text-4xl text-white/20">
-                      📷
+                      <LineIcon name="camera" className="inline-block h-[1.1em] w-[1.1em] align-[-0.15em]" />
                     </div>
                   )}
                 </div>
@@ -182,7 +183,7 @@ export default async function OperatorPackagesPage({
                             : "Draft"}
                     </span>
                   </div>
-                  <p className="mt-2 text-sm text-daet-ink/70">📍 {pkg.location_name}</p>
+                  <p className="mt-2 text-sm text-daet-ink/70"><LineIcon name="pin" className="inline-block h-[1.1em] w-[1.1em] align-[-0.15em]" /> {pkg.location_name}</p>
                   <p className="mt-1 text-xs text-daet-ink/70">
                     Updated {new Date(pkg.updated_at).toLocaleDateString()}
                   </p>

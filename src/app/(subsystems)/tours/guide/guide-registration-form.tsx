@@ -190,7 +190,7 @@ export function GuideRegistrationForm({
         <p className="mt-3 max-w-2xl text-base leading-7 text-daet-ink/70">Create your public guide profile and submit one government-issued ID for private Tourism Office verification.</p>
       </div>
 
-      <div className="mb-5 rounded-2xl border border-daet-forest/10 bg-white px-4 py-4 shadow-sm sm:px-6">
+      <div className="mb-5 rounded-2xl border-daet-forest/10 bg-white px-4 py-4 sm:px-6">
         <ol className="grid grid-cols-3 gap-2" aria-label="Guide application steps">
           {steps.map((step) => {
             const complete = activeStep > step.number;
@@ -212,7 +212,7 @@ export function GuideRegistrationForm({
         </div>
       </div>
 
-      <form ref={formRef} action={formAction} onSubmit={handleSubmit} className="rounded-3xl border border-daet-ink/10 bg-white p-5 shadow-card sm:p-8">
+      <form ref={formRef} action={formAction} onSubmit={handleSubmit} className="rounded-2xl bg-white p-5 sm:p-8">
         {rejectionReason ? <Notice variant="warning" title="Updates requested by the Tourism Office" className="mb-6">{rejectionReason}</Notice> : null}
         {state.status === "error" && !state.fieldErrors ? <Notice variant="error" title="We couldn’t submit your application" className="mb-6">{state.message}</Notice> : null}
         {clientError ? <Notice variant="error" title="Please check your application" className="mb-6">{clientError}</Notice> : null}
@@ -300,8 +300,8 @@ export function GuideRegistrationForm({
           ) : qrLoading ? (
             <div className="mt-6 grid min-h-64 place-items-center rounded-2xl bg-daet-sand text-sm font-semibold text-daet-ink/70">Preparing QR preview…</div>
           ) : qrPreview?.status === "success" && qrPreview.qrDataUrl ? (
-            <div className="mt-6 flex flex-col items-center rounded-3xl border border-daet-ink/10 bg-daet-sand/50 p-5 text-center sm:p-8">
-              <div className="rounded-2xl bg-white p-4 shadow-sm"><img src={qrPreview.qrDataUrl} alt="Preview of your guide badge QR code" width={240} height={240} className="h-56 w-56 sm:h-64 sm:w-64" /></div>
+            <div className="mt-6 flex flex-col items-center rounded-2xl border border-daet-ink/10 bg-daet-sand/50 p-5 text-center sm:p-8">
+              <div className="rounded-2xl bg-white p-4"><img src={qrPreview.qrDataUrl} alt="Preview of your guide badge QR code" width={240} height={240} className="h-56 w-56 sm:h-64 sm:w-64" /></div>
               <p className="mt-4 text-sm font-black text-daet-ink">Preview only · activates after approval</p>
               <p className="mt-1 max-w-md break-all text-xs leading-5 text-daet-ink/70">No personal or ID data is encoded. Your final badge image is protected until the Tourism Office approves your application.</p>
             </div>
@@ -316,9 +316,9 @@ export function GuideRegistrationForm({
         <div className="mt-8 flex flex-col-reverse gap-3 border-t border-daet-ink/10 pt-5 sm:flex-row sm:items-center sm:justify-between">
           <button type="button" onClick={() => { setClientError(""); setActiveStep((step) => Math.max(1, step - 1)); }} disabled={activeStep === 1 || busy} className="inline-flex min-h-12 items-center justify-center rounded-full border border-daet-ink/15 px-6 text-sm font-bold text-daet-ink transition hover:bg-daet-sand disabled:cursor-not-allowed disabled:opacity-40">Back</button>
           {activeStep < 3 ? (
-            <button type="button" onClick={() => { setClientError(""); if (validateStep(activeStep)) setActiveStep((step) => Math.min(3, step + 1)); }} disabled={busy} className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-daet-forest px-7 text-sm font-bold text-white shadow-sm transition hover:bg-daet-ink disabled:cursor-wait disabled:opacity-60">Continue <span aria-hidden="true">→</span></button>
+            <button type="button" onClick={() => { setClientError(""); if (validateStep(activeStep)) setActiveStep((step) => Math.min(3, step + 1)); }} disabled={busy} className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-daet-forest px-7 text-sm font-bold text-white transition hover:bg-daet-ink disabled:cursor-wait disabled:opacity-60">Continue <span aria-hidden="true">→</span></button>
           ) : (
-            <button type="submit" disabled={busy || submissionDisabled || qrPreview?.status !== "success"} className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-daet-forest px-7 text-sm font-bold text-white shadow-sm transition hover:bg-daet-ink disabled:cursor-not-allowed disabled:opacity-60">
+            <button type="submit" disabled={busy || submissionDisabled || qrPreview?.status !== "success"} className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-daet-forest px-7 text-sm font-bold text-white transition hover:bg-daet-ink disabled:cursor-not-allowed disabled:opacity-60">
               {compressing ? "Optimizing private ID upload…" : actionPending || transitionPending ? "Submitting…" : submissionDisabled ? "Connect Supabase to submit" : "Submit for approval"}
             </button>
           )}

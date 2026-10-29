@@ -1,3 +1,4 @@
+import { CategoryIcon } from "@/components/ui/icons";
 import { formatPeso } from "@/lib/money";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
@@ -9,7 +10,7 @@ import { PageFrame } from "@/components/ui/page-frame";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { directionsUrl } from "@/lib/maps/geo";
-import { ATTRACTION_CATEGORIES, ATTRACTION_COLUMNS, CATEGORY_ICONS, toAttraction } from "@/lib/tours/attractions";
+import { ATTRACTION_CATEGORIES, ATTRACTION_COLUMNS, toAttraction } from "@/lib/tours/attractions";
 import { describeHours, openStatus } from "@/lib/tours/opening-hours";
 
 export const dynamic = "force-dynamic";
@@ -44,11 +45,11 @@ export default async function AttractionPage({ params }: PageProps) {
           ← All attractions
         </Link>
 
-        {attraction.photo_url ? <img src={attraction.photo_url} alt={attraction.name} className="mt-2 h-64 w-full rounded-3xl object-cover" /> : null}
+        {attraction.photo_url ? <img src={attraction.photo_url} alt={attraction.name} className="mt-2 h-64 w-full rounded-2xl object-cover" /> : null}
 
         <div className="mt-4 flex flex-wrap items-center gap-2">
           <Badge tone="brand">
-            {CATEGORY_ICONS[attraction.category]} {ATTRACTION_CATEGORIES[attraction.category]}
+            <CategoryIcon category={attraction.category} className="inline-block h-[1.1em] w-[1.1em] align-[-0.15em]" /> {ATTRACTION_CATEGORIES[attraction.category]}
           </Badge>
           <Badge tone={status.state === "open" ? "success" : "neutral"}>{status.label}</Badge>
         </div>
@@ -66,7 +67,7 @@ export default async function AttractionPage({ params }: PageProps) {
           <Fact label="Municipality" value={attraction.municipality} />
         </dl>
 
-        <section className="mt-6 rounded-3xl border border-daet-ink/10 bg-white p-5 shadow-sm">
+        <section className="mt-6 rounded-2xl bg-white p-5">
           <h2 className="text-lg font-black text-daet-ink">Opening hours</h2>
           {hours.length ? (
             <table className="mt-3 w-full text-sm">
@@ -116,7 +117,7 @@ export default async function AttractionPage({ params }: PageProps) {
 function Fact({ label, value }: { label: string; value: string }) {
   return (
     <div className="rounded-2xl bg-daet-sand/50 p-4">
-      <dt className="text-xs font-bold uppercase tracking-wide text-daet-ink/70">{label}</dt>
+      <dt className="text-xs font-bold text-daet-ink/70">{label}</dt>
       <dd className="mt-1 font-black text-daet-ink">{value}</dd>
     </div>
   );

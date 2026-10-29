@@ -1,5 +1,6 @@
 "use client";
 
+import { LineIcon } from "@/components/ui/icons";
 import React, { useCallback, useState } from "react";
 import { useFeedback } from "@/components/ui/feedback";
 import type { EditInclusion, EditPackageStatus, ValidationErrors, StepProps } from "./edit-types";
@@ -305,7 +306,7 @@ export function InclusionsStep({
       {/* Add/Edit Form Modal */}
       {showAddForm && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl shadow-lg max-w-md w-full p-6">
+          <div className="bg-white rounded-xl max-w-md w-full p-6">
             <h3 className="text-lg font-bold text-daet-ink mb-4">
               {editingId ? "Edit Item" : "Add Item"}
             </h3>
@@ -382,7 +383,7 @@ export function InclusionsStep({
       {/* Help text */}
       {inclusions.length === 0 && (
         <div className="p-3 bg-yellow-50 border border-yellow-200 rounded text-sm text-yellow-800">
-          ⚠️ At least one inclusion is required before submitting for review.
+          <LineIcon name="warning" className="inline-block h-[1.1em] w-[1.1em] align-[-0.15em]" /> At least one inclusion is required before submitting for review.
         </div>
       )}
     </div>

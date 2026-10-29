@@ -6,6 +6,7 @@ import { PageFrame } from "@/components/ui/page-frame";
 import { PushOptIn } from "@/components/tours/push-opt-in";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { LineIcon } from "@/components/ui/icons";
 import { notificationIcon, safeNotificationLink, timeAgo, type NotificationRow } from "@/lib/tours/notifications";
 import { MarkAllReadButton } from "./mark-all-read-button";
 
@@ -49,18 +50,18 @@ export default async function NotificationsPage() {
         {error ? (
           <Notice variant="error" className="mt-6">Notifications could not be loaded. Refresh to try again.</Notice>
         ) : rows.length === 0 ? (
-          <p className="mt-6 rounded-3xl border border-daet-ink/10 bg-white p-8 text-center text-sm text-daet-ink/70">
+          <p className="mt-6 rounded-2xl bg-white p-8 text-center text-sm text-daet-ink/70">
             Nothing yet. Updates about bookings, payments and messages appear here.
           </p>
         ) : (
-          <ul className="mt-6 divide-y divide-daet-ink/10 overflow-hidden rounded-3xl border border-daet-ink/10 bg-white shadow-sm">
+          <ul className="mt-6 divide-y divide-daet-ink/10 overflow-hidden rounded-2xl bg-white">
             {rows.map((row) => (
               <li key={row.id}>
                 <Link
                   href={safeNotificationLink(row.link)}
                   className={`flex gap-3 p-4 transition hover:bg-daet-sand/40 ${row.read_at ? "" : "bg-daet-forest/5"}`}
                 >
-                  <span aria-hidden="true" className="text-xl">{notificationIcon(row.type)}</span>
+                  <LineIcon name={notificationIcon(row.type)} className="h-6 w-6 text-blue-600" />
                   <span className="min-w-0 flex-1">
                     <span className={`block text-daet-ink ${row.read_at ? "font-semibold" : "font-black"}`}>{row.title}</span>
                     {row.body ? <span className="block text-sm text-daet-ink/70">{row.body}</span> : null}
