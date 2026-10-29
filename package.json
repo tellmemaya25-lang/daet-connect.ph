@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev --hostname 0.0.0.0",
+    "dev:poll": "node scripts/dev-poll.mjs",
     "build": "next build",
     "start": "next start --hostname 0.0.0.0",
     "test": "jest --runInBand",

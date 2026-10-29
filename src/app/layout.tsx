@@ -2,7 +2,6 @@ import type { Metadata, Viewport } from "next";
 import localFont from "next/font/local";
 import type { ReactNode } from "react";
 import { FeedbackProvider } from "@/components/ui/feedback";
-import { RevealObserver } from "@/components/ui/reveal";
 import "./globals.css";
 
 // Fraunces (display) and Public Sans (text), both SIL Open Font License 1.1,
@@ -42,7 +41,6 @@ export default function RootLayout({ children }: { children: ReactNode }) {
     <html lang="en" data-scroll-behavior="smooth" className={`${display.variable} ${sans.variable}`}>
       <body>
         <FeedbackProvider>{children}</FeedbackProvider>
-        <RevealObserver />
       </body>
     </html>
   );

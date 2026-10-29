@@ -25,7 +25,7 @@ This is the frontend redesign's rulebook. It follows the team's **UI & Mobile-Fi
   - `display-1` (`clamp(2.5rem, 9vw, 6rem)`) and `display-2` (`clamp(1.75rem, 5vw, 3rem)`) for page titles;
   - body text 16px or larger, in full ink.
 - **Motion:**
-  - add `data-reveal` (and optionally `style={{ "--reveal-index": n }}`) to the parts of a section; they rise in once as they scroll into view (`RevealObserver` in the root layout);
+  - add `data-reveal` (and optionally `style={{ "--reveal-index": n }}`) to the parts of a section; they rise in as they scroll into view (pure CSS scroll-driven animation in `globals.css`; browsers without it show the content at once);
   - buttons scale slightly when pressed;
   - everything is static under `prefers-reduced-motion`.
 

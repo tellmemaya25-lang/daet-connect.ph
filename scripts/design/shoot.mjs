@@ -33,6 +33,14 @@ for (const [role, path, name] of pages.filter((p) => p[2].includes(filter))) {
     if (role !== "visitor") await ctx.addCookies([{ name: "sb-127-auth-token", value: "base64-" + Buffer.from(JSON.stringify(session(role))).toString("base64url"), domain: "localhost", path: "/" }]);
     const page = await ctx.newPage();
     await page.goto(BASE + path, { waitUntil: "networkidle" }).catch(() => {});
+    // Scroll through once so scroll-driven entrances have played, as they would for a reader.
+    await page.evaluate(async () => {
+      for (let y = 0; y < document.body.scrollHeight; y += 400) {
+        window.scrollTo(0, y);
+        await new Promise((r) => setTimeout(r, 40));
+      }
+      window.scrollTo(0, document.body.scrollHeight);
+    });
     await page.waitForTimeout(600);
     await page.screenshot({ path: `${out}/${name}-${width}.png`, fullPage: true });
     await ctx.close();

@@ -1,38 +1,41 @@
-import { LineIcon } from "@/components/ui/icons";
 import Link from "next/link";
+import { LineIcon } from "@/components/ui/icons";
 import { formatEventRange } from "@/lib/tours/events-calendar";
 import { EVENT_CATEGORIES, type TourEvent } from "@/lib/tours/promo-validation";
 
+/** Category colours from the team palette; chips use dark text on the light fills. */
 export const EVENT_CATEGORY_STYLES: Record<TourEvent["category"], { dot: string; chip: string }> = {
-  festival: { dot: "bg-daet-coral", chip: "bg-orange-50 text-orange-800" },
-  cultural: { dot: "bg-violet-500", chip: "bg-violet-50 text-violet-800" },
-  sports: { dot: "bg-sky-500", chip: "bg-sky-50 text-sky-800" },
-  religious: { dot: "bg-daet-sun", chip: "bg-amber-50 text-amber-800" },
-  market: { dot: "bg-daet-leaf", chip: "bg-emerald-50 text-emerald-800" },
-  other: { dot: "bg-slate-400", chip: "bg-slate-100 text-slate-700" },
+  festival: { dot: "bg-red-600", chip: "bg-red-50 text-red-800" },
+  cultural: { dot: "bg-blue-600", chip: "bg-blue-50 text-blue-800" },
+  sports: { dot: "bg-green-500", chip: "bg-green-50 text-green-900" },
+  religious: { dot: "bg-yellow-500", chip: "bg-yellow-50 text-yellow-900" },
+  market: { dot: "bg-slate-600", chip: "bg-slate-100 text-slate-800" },
+  other: { dot: "bg-slate-400", chip: "bg-slate-100 text-slate-800" },
 };
 
+const manila = (iso: string, opts: Intl.DateTimeFormatOptions) => new Date(iso).toLocaleDateString("en-PH", { timeZone: "Asia/Manila", ...opts });
+
+/** An event as a dated row: the day set large, then what, when and where. */
 export function EventCard({ event, compact = false }: { event: TourEvent; compact?: boolean }) {
   const style = EVENT_CATEGORY_STYLES[event.category];
   return (
     <Link
       href={`/tours/events/${event.id}`}
-      className="group flex gap-4 rounded-2xl bg-white p-3 transition"
+      className="group flex items-center gap-4 rounded-2xl bg-white p-3 transition hover:bg-blue-50 active:scale-[0.99] sm:gap-5 sm:p-4"
     >
-      <div className={`grid shrink-0 place-items-center overflow-hidden rounded-xl bg-gradient-to-br from-daet-forest to-daet-leaf text-2xl ${compact ? "h-16 w-16" : "h-20 w-20 sm:h-24 sm:w-24"}`}>
-        {event.image_url ? (
-          <img src={event.image_url} alt="" className="h-full w-full object-cover" />
-        ) : (
-          <span aria-hidden="true"><LineIcon name="calendar" className="inline-block h-[1.1em] w-[1.1em] align-[-0.15em]" /></span>
-        )}
+      <div className={`grid shrink-0 place-content-center rounded-2xl bg-blue-600 text-center text-white ${compact ? "h-16 w-16" : "h-20 w-20"}`}>
+        <span className="text-sm font-semibold leading-none">{manila(event.starts_at, { month: "short" })}</span>
+        <span className="font-[family-name:var(--font-display)] text-3xl font-semibold leading-none">{manila(event.starts_at, { day: "numeric" })}</span>
       </div>
-      <div className="min-w-0 flex-1 py-1">
-        <span className={`inline-block rounded-full px-2 py-0.5 text-xs font-bold ${style.chip}`}>
-          {EVENT_CATEGORIES[event.category]}
-        </span>
-        <p className="mt-1 line-clamp-2 font-black text-daet-ink group-hover:text-daet-forest">{event.title}</p>
-        <p className="mt-0.5 text-sm text-daet-ink/65">{formatEventRange(event.starts_at, event.ends_at)}</p>
-        <p className="truncate text-sm text-daet-ink/70"><LineIcon name="pin" className="inline-block h-[1.1em] w-[1.1em] align-[-0.15em]" /> {event.venue}</p>
+      <div className="min-w-0 flex-1">
+        <p className="line-clamp-2 text-lg font-bold leading-snug text-daet-ink group-hover:text-blue-700">{event.title}</p>
+        <p className="mt-0.5 text-sm text-daet-ink/80">{formatEventRange(event.starts_at, event.ends_at)}</p>
+        <p className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-daet-ink/80">
+          <span className="inline-flex min-w-0 items-center gap-1">
+            <LineIcon name="pin" className="h-4 w-4" /> <span className="truncate">{event.venue}</span>
+          </span>
+          <span className={`rounded-full px-2 py-0.5 text-xs font-bold ${style.chip}`}>{EVENT_CATEGORIES[event.category]}</span>
+        </p>
       </div>
     </Link>
   );
