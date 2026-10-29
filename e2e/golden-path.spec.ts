@@ -66,14 +66,14 @@ test("guide can mark a day available", async ({ browser }) => {
   await signInAs(context, "guide");
   const page = await context.newPage();
   await page.goto("/tours/guide/dashboard", { waitUntil: "networkidle" });
-  // Past days are disabled; pick the first future day that is not set yet.
-  // Near the end of a month there may be none left, so look in next month.
-  const notSet = page.locator('button[aria-label$=": not set"]:not([disabled])');
-  if ((await notSet.count()) === 0) {
-    await page.getByRole("link", { name: "Next month" }).click();
-    await expect(notSet.first()).toBeVisible();
-  }
-  const day = notSet.first();
+  // Past days are disabled, so near month end today's month can run out of open days.
+  // Next month is always fully open; pick its first day that is not set yet.
+  const grid = page.getByRole("grid");
+  const currentMonth = (await grid.getAttribute("aria-label")) ?? "";
+  await page.getByRole("link", { name: "Next month" }).click();
+  await expect(page).toHaveURL(/[?&]month=\d{4}-\d{2}/);
+  await expect(grid).not.toHaveAttribute("aria-label", currentMonth);
+  const day = grid.locator('button[aria-label$=": not set"]:not([disabled])').first();
   const label = (await day.getAttribute("aria-label")) ?? "";
   await day.click();
   await expect(page.getByRole("button", { name: label.replace("not set", "available") })).toBeVisible();
