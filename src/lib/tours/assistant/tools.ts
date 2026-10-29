@@ -5,6 +5,8 @@ import { bookableDates, type AvailabilityRow } from "@/lib/tours/availability";
 import { STATUS_LABELS, isBookingStatus } from "@/lib/tours/booking-lifecycle";
 import { faqById, FAQS, type FaqLink } from "@/lib/tours/assistant/knowledge";
 import { hoursToText } from "@/lib/tours/opening-hours";
+import { directionsUrl, estimateLeg, formatDistance, formatDuration, type LatLng, type Leg } from "@/lib/maps/geo";
+import { boatOptionsTo, findBoatLeg, findTransportPlace, TRANSPORT_CHECKED } from "@/lib/tours/assistant/transport";
 
 /**
  * Read-only tools for the travel assistant (F13). They run with the
@@ -17,7 +19,8 @@ import { hoursToText } from "@/lib/tours/opening-hours";
 
 export type TourCard = { type: "tour"; id: string; title: string; location: string | null; priceFrom: number | null; duration: string | null; href: string };
 export type BookingCard = { type: "booking"; id: string; reference: string; title: string; date: string; status: string; statusLabel: string; amountDue: number; nextStep: string; links: FaqLink[] };
-export type LinkCard = { type: "link"; href: string; label: string };
+/** `external` links (Google Maps directions) open in a new tab. */
+export type LinkCard = { type: "link"; href: string; label: string; external?: boolean };
 export type HandoffCard = { type: "handoff"; target: "operator" | "tourism_office"; bookingId: string | null; operatorName: string | null; summary: string; signedIn: boolean };
 export type AssistantCard = TourCard | BookingCard | LinkCard | HandoffCard;
 
@@ -26,6 +29,8 @@ export type ToolContext = {
   userId: string | null;
   today: string;
   cards: AssistantCard[];
+  /** Road leg between two points (the cached Routes API on the server); an estimate when missing. */
+  route?: (from: LatLng, to: LatLng) => Promise<Leg>;
 };
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -288,4 +293,64 @@ export async function handoff(ctx: ToolContext, input: { summary: string; bookin
   ctx.cards.splice(0, ctx.cards.length, ...ctx.cards.filter((c) => c.type !== "handoff"));
   addCard(ctx, card);
   return { target: card.target === "operator" ? `the operator ${operatorName ?? ""}`.trim() : "the Daet Tourism Office", signedIn: card.signedIn, note: card.signedIn ? "A button to send this summary is shown below your reply." : "They must sign in before they can send a message." };
+}
+
+/** A listed attraction or a known town/port, with coordinates. */
+async function resolvePlace(ctx: ToolContext, name: string): Promise<{ name: string; point: LatLng } | null> {
+  const term = cleanTerm(name ?? "");
+  if (term.length < 3) return null;
+  // A bare town or port name ("Daet", "Mercedes") means the town, not a place named after it.
+  const town = findTransportPlace(term);
+  if (town && town.aliases.includes(term.toLowerCase())) return { name: town.name, point: town.point };
+  const { data } = await ctx.supabase.from("tours_attractions").select(ATTRACTION_COLUMNS).eq("is_active", true).ilike("name", `%${term}%`).limit(1);
+  const attraction = data?.[0] ? toAttraction(data[0] as Record<string, unknown>) : null;
+  if (attraction && attraction.latitude !== null && attraction.longitude !== null) return { name: attraction.name, point: { lat: attraction.latitude, lng: attraction.longitude } };
+  const place = findTransportPlace(name);
+  return place ? { name: place.name, point: place.point } : null;
+}
+
+const minutesText = ([low, high]: [number, number]) => `about ${formatDuration(low * 60)}–${formatDuration(high * 60)}`;
+
+/** R5: how long and how far between two places in or near Daet. */
+export async function travelTime(ctx: ToolContext, input: { from?: string | null; to: string; mode?: "drive" | "walk" | null }) {
+  const to = (input.to ?? "").trim();
+  if (!to) return { error: "Say where you want to go." };
+  const from = (input.from ?? "").trim() || "Daet town center";
+
+  // Islands have no road: use the curated boat times.
+  const boat = findBoatLeg(from, to);
+  if (boat) return { kind: "boat", from: boat.from, to: boat.to, duration: minutesText(boat.minutes), note: "By boat; trips are weather-dependent and usually leave early in the morning.", checked: TRANSPORT_CHECKED };
+  const options = boatOptionsTo(to);
+  if (options.length) {
+    return {
+      kind: "boat",
+      to: options[0].to,
+      options: options.map((leg) => ({ from: leg.from, duration: minutesText(leg.minutes) })),
+      note: "Reaching the port from Daet by road takes extra time. Boats are weather-dependent.",
+      checked: TRANSPORT_CHECKED,
+    };
+  }
+
+  const [origin, dest] = await Promise.all([resolvePlace(ctx, from), resolvePlace(ctx, to)]);
+  if (!origin || !dest) return { error: `I don't know where ${!origin ? from : to} is. Try a listed place, a town (Daet, Mercedes, Vinzons, Paracale) or a port.` };
+  const mode = input.mode === "walk" ? "walk" : "drive";
+  let leg: Leg;
+  try {
+    leg = ctx.route && mode === "drive" ? await ctx.route(origin.point, dest.point) : estimateLeg(origin.point, dest.point);
+  } catch {
+    leg = estimateLeg(origin.point, dest.point);
+  }
+  // Walking is about 5 km/h on the estimated road distance.
+  const durationS = mode === "walk" ? Math.round((leg.distanceM / 5000) * 3600) : leg.durationS;
+  const directions = directionsUrl([origin.point, dest.point]);
+  if (directions) addCard(ctx, { type: "link", href: directions, label: `Directions: ${origin.name} → ${dest.name}`, external: true });
+  return {
+    kind: mode,
+    from: origin.name,
+    to: dest.name,
+    distance: formatDistance(leg.distanceM),
+    duration: formatDuration(durationS),
+    estimated: leg.estimated || mode === "walk",
+    note: leg.estimated || mode === "walk" ? "Estimated from the map distance; traffic and stops add time." : "From the road route; traffic can add time.",
+  };
 }

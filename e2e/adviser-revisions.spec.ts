@@ -44,3 +44,17 @@ test("R3: package prices show two decimals", async ({ page }) => {
   await expect(page.getByText(/₱[\d,]+\.\d{2}/).first()).toBeVisible();
   await expect(page.getByText(/₱[\d,]+(?![\d.,])/)).toHaveCount(0);
 });
+
+test("R5: the assistant answers travel time in basic mode, with directions", async ({ page }) => {
+  await page.goto("/tours/browse", { waitUntil: "networkidle" });
+  await page.getByRole("button", { name: "Ask the assistant" }).click();
+  const dialog = page.getByRole("dialog", { name: "Daet travel assistant" });
+  await dialog.getByLabel("Ask the travel assistant").fill("How long from Daet to Bagasbas?");
+  await dialog.getByRole("button", { name: "Send" }).click();
+  await expect(dialog.getByText(/Daet town center to Bagasbas: about \d+ min/)).toBeVisible();
+  await expect(dialog.getByRole("link", { name: /Directions: Daet town center → Bagasbas/ })).toHaveAttribute("target", "_blank");
+  await dialog.getByLabel("Ask the travel assistant").fill("Paano pumunta sa Daet galing Manila?");
+  await dialog.getByRole("button", { name: "Send" }).click();
+  await expect(dialog.getByText(/7–9 hours/)).toBeVisible();
+  await checkA11y(page, "assistant travel answers");
+});

@@ -238,9 +238,16 @@ function AssistantCards({ cards, signedIn, onNavigate }: { cards: AssistantCard[
         <div className="flex flex-wrap gap-2">
           {links.map((card) =>
             card.type === "link" ? (
-              <Link key={card.href} href={card.href} onClick={onNavigate} className={linkClass}>
-                {card.label}
-              </Link>
+              card.external ? (
+                <a key={card.href} href={card.href} target="_blank" rel="noopener noreferrer" className={linkClass}>
+                  {card.label}
+                  <span className="sr-only"> (opens in a new tab)</span>
+                </a>
+              ) : (
+                <Link key={card.href} href={card.href} onClick={onNavigate} className={linkClass}>
+                  {card.label}
+                </Link>
+              )
             ) : null,
           )}
         </div>

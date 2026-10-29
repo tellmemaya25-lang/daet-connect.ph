@@ -3,6 +3,7 @@ import { FREE_CANCELLATION_HOURS } from "@/lib/tours/cancellation";
 import { normalizeText } from "@/lib/tours/itinerary/assistant";
 import { PROOF_METHODS } from "@/lib/tours/payment-proof";
 import { TOURS_REWARD_RULES } from "@/lib/rewards";
+import { TRANSPORT_FAQS } from "@/lib/tours/assistant/transport";
 
 /**
  * What the travel assistant (F13) knows about how CONNECT-Daet works. Every
@@ -104,6 +105,8 @@ export const FAQS: Faq[] = [
     answer: "Use Sign in at the top of any page; new visitors can create an account from there. Sign out is next to the bell once you're signed in. To change your password, use \"Forgot password\" on the sign-in page.",
     links: [{ href: "/login", label: "Sign in" }],
   },
+  // R5: getting here, getting around and boats (curated, provisional).
+  ...TRANSPORT_FAQS,
 ];
 
 /** Best FAQ for a question, or null. Matches whole words and phrases, English and Taglish. */

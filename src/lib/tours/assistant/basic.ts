@@ -1,6 +1,7 @@
 import { formatPeso } from "@/lib/money";
 import { FAQS, matchFaq } from "@/lib/tours/assistant/knowledge";
-import { attractionInfo, handoff, myBookings, planTripLink, searchTours, tourDetails, upcomingEvents, type ToolContext } from "@/lib/tours/assistant/tools";
+import { attractionInfo, handoff, myBookings, planTripLink, searchTours, tourDetails, travelTime, upcomingEvents, type ToolContext } from "@/lib/tours/assistant/tools";
+import { readTravelQuestion } from "@/lib/tours/assistant/transport";
 import { normalizeText } from "@/lib/tours/itinerary/assistant";
 
 /**
@@ -26,6 +27,18 @@ export async function basicReply(text: string, ctx: ToolContext): Promise<string
     return ctx.userId
       ? "I'll pass this to a person. Check the message below, edit it if you like, and send it."
       : "I'll pass this to a person. Sign in first so they can reply to you.";
+  }
+
+  // How long / how far between two places (R5)
+  const trip = readTravelQuestion(text);
+  if (trip) {
+    const result = await travelTime(ctx, { from: trip.from, to: trip.to });
+    if ("error" in result && result.error) return result.error;
+    if (result.kind === "boat") {
+      if ("options" in result && result.options) return `To ${result.to} by boat: ${result.options.map((o) => `from ${o.from}, ${o.duration}`).join("; ")}. ${result.note}`;
+      return `${result.from} to ${result.to} by boat takes ${result.duration}. ${result.note}`;
+    }
+    if ("distance" in result) return `${result.from} to ${result.to}: about ${result.duration} (${result.distance}) by ${result.kind === "walk" ? "foot" : "road"}. ${result.note}`;
   }
 
   // Their own bookings, payments and tickets

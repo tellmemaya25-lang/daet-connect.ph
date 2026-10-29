@@ -29,5 +29,11 @@ Run with `ANTHROPIC_API_KEY` set, on staging, signed in as a demo tourist who ha
 | 23 | English then Tagalog in the same chat | follows the tourist's language each turn |
 | 24 | A 900-character question | answers; over 1,000 characters is refused by the form |
 | 25 | 31 questions within 10 minutes | the 31st is answered in **Basic mode**, not an error |
+| 26 | How do I get to Daet from Manila? | bus (about 7–9 h), plane to Naga plus about 2 h by road, car; says to confirm (R5) |
+| 27 | Paano pumunta sa Calaguas? | boat from Paracale or Vinzons with typical times; mentions weather; Taglish |
+| 28 | How long from Daet to Bagasbas? | uses `travel_time`: minutes and km, says if estimated; **Directions** button opens Google Maps |
+| 29 | Ilang oras mula sa Mercedes papunta sa Apuao? | boat about 30–45 min; weather caveat |
+| 30 | How far is Naga airport from Daet? | about 2 hours by road, from `travel_time`, not guessed |
+| 31 | How long from Daet to Atlantis? | says it doesn't know the place; no invented time |
 
 Record failures with the exact question and reply in the PR or an issue.

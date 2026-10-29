@@ -13,6 +13,7 @@ import {
   POLICY_TOPICS,
   searchTours,
   tourDetails,
+  travelTime,
   upcomingEvents,
   type ToolContext,
 } from "@/lib/tours/assistant/tools";
@@ -82,9 +83,20 @@ export function assistantTools(ctx: ToolContext) {
     betaZodTool({
       name: "policy",
       eager_input_streaming: true,
-      description: "CONNECT-Daet rules and how-tos: cancel (cancellation and refunds), pay (payment methods), ticket (QR and check-in), status (booking statuses), book (how to book), rewards, plan (trip planner), contact (operators and the Tourism Office), account.",
+      description: "CONNECT-Daet rules and how-tos: cancel (cancellation and refunds), pay (payment methods), ticket (QR and check-in), status (booking statuses), book (how to book), rewards, plan (trip planner), contact (operators and the Tourism Office), account, getting_here (bus, plane, car to Daet), getting_around (tricycles, jeepneys, vans), boats (Calaguas and Mercedes islands).",
       inputSchema: z.object({ topic: z.enum(POLICY_TOPICS) }),
       run: (input) => guard(() => policy(ctx, input)),
+    }),
+    betaZodTool({
+      name: "travel_time",
+      eager_input_streaming: true,
+      description: "How long and how far between two places in or near Daet: listed attractions, towns (Daet, Mercedes, Vinzons, Paracale, Labo...), ports, Naga airport, and boat trips to Calaguas or the Mercedes islands. Adds a directions button.",
+      inputSchema: z.object({
+        from: z.string().max(60).nullable().describe("start; null means Daet town center"),
+        to: z.string().max(60),
+        mode: z.enum(["drive", "walk"]).nullable(),
+      }),
+      run: (input) => guard(() => travelTime(ctx, input)),
     }),
     betaZodTool({
       name: "my_bookings",
