@@ -77,10 +77,7 @@ export function SiteHeader({
         </nav>
         <div className="flex items-center gap-1 sm:gap-2">
           {signedIn ? (
-            <>
-              <NotificationBell />
-              <LogoutButton compact />
-            </>
+            <NotificationBell />
           ) : (
             <>
               <ButtonLink href="/login" variant="secondary" className="whitespace-nowrap px-4!">
@@ -101,6 +98,7 @@ export function SiteHeader({
               { label: "Tourism Office", links: adminLinks },
               { label: "Join CONNECT-Daet", links: signedIn ? [] : JOIN_LINKS },
             ]}
+            footer={signedIn ? <LogoutButton className="w-full justify-center" /> : null}
           />
         </div>
       </div>

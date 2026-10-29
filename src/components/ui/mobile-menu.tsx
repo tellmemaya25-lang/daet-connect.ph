@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, type ReactNode } from "react";
 import { LineIcon } from "@/components/ui/icons";
 
 export type MenuLink = { href: string; label: string };
@@ -11,14 +11,21 @@ export type MenuLink = { href: string; label: string };
  * The phone menu: a 44px "Menu" button that opens a sheet of links. Built on
  * <details>, so it opens without JavaScript; it closes itself after navigation.
  */
-export function MobileMenu({ groups }: { groups: Array<{ label: string; links: MenuLink[] }> }) {
+export function MobileMenu({
+  groups,
+  footer,
+}: {
+  groups: Array<{ label: string; links: MenuLink[] }>;
+  /** Shown at the bottom of the sheet, for account actions such as signing out. */
+  footer?: ReactNode;
+}) {
   const ref = useRef<HTMLDetailsElement>(null);
   const pathname = usePathname();
   useEffect(() => {
     if (ref.current) ref.current.open = false;
   }, [pathname]);
   const visible = groups.filter((g) => g.links.length);
-  if (!visible.length) return null;
+  if (!visible.length && !footer) return null;
 
   return (
     <details ref={ref} className="group md:hidden">
@@ -52,6 +59,7 @@ export function MobileMenu({ groups }: { groups: Array<{ label: string; links: M
             </ul>
           </div>
         ))}
+        {footer ? <div className="mt-6 border-t border-slate-200 pt-4">{footer}</div> : null}
       </nav>
     </details>
   );
