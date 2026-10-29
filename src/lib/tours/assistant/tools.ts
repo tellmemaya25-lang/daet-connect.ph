@@ -1,3 +1,4 @@
+import { formatPeso } from "@/lib/money";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { toAttraction, ATTRACTION_COLUMNS } from "@/lib/tours/attractions";
 import { bookableDates, type AvailabilityRow } from "@/lib/tours/availability";
@@ -208,7 +209,7 @@ export function bookingCard(row: BookingRow, today: string): BookingCard {
   let nextStep: string;
   if (row.status === "pending") nextStep = "Waiting for the operator to confirm. You'll be notified.";
   else if (row.status === "confirmed" && due > 0 && row.payment_status !== "refunded") {
-    nextStep = `Confirmed. ₱${due.toLocaleString("en-PH")} left to pay.`;
+    nextStep = `Confirmed. ${formatPeso(due)} left to pay.`;
     links.push({ href: `/tours/bookings/${row.id}#payment`, label: "Pay now" });
   } else if (row.status === "confirmed") nextStep = row.tour_date >= today ? "Confirmed and paid. Show your ticket QR on the tour day." : "Confirmed. The operator will mark it completed.";
   else if (row.status === "completed") nextStep = "Completed. You can leave a review.";

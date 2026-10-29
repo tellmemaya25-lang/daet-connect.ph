@@ -1,5 +1,6 @@
 "use client";
 
+import { formatPeso } from "@/lib/money";
 import { useEffect, useRef, useState, useTransition } from "react";
 import Link from "next/link";
 import { openChat, sendMessage } from "@/app/(subsystems)/tours/messages/actions";
@@ -31,7 +32,7 @@ function save(turns: Turn[]) {
   }
 }
 
-const peso = (n: number) => `₱${n.toLocaleString("en-PH", { maximumFractionDigits: 2 })}`;
+const peso = formatPeso;
 
 /** The travel assistant conversation: used by the floating widget and the /tours/help page. */
 export function AssistantChat({ signedIn, onNavigate, autoFocus = false }: { signedIn: boolean; onNavigate?: () => void; autoFocus?: boolean }) {

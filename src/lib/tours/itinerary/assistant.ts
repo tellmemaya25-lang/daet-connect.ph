@@ -1,3 +1,4 @@
+import { formatPeso } from "@/lib/money";
 import { ATTRACTION_CATEGORIES, type AttractionCategory } from "@/lib/tours/attractions";
 import type { PlannerInput } from "@/lib/tours/itinerary/form";
 import { scheduleOrder, withTotals } from "@/lib/tours/itinerary/schedule";
@@ -167,14 +168,14 @@ export function parseTripRequest(text: string, today: string, current: PlannerIn
     if (total) value = value / Math.max(1, input.groupSize) / Math.max(1, input.days);
     if (Number.isFinite(value) && value >= 0 && value <= 100000) {
       input.budgetPerDay = Math.round(value);
-      understood.push(`₱${input.budgetPerDay} per person per day for entrance fees${total ? " (from your total)" : ""}`);
+      understood.push(`${formatPeso(input.budgetPerDay)} per person per day for entrance fees${total ? " (from your total)" : ""}`);
     }
   } else if (/\b(free|no entrance|no fees|walang bayad|libre)\b/.test(t)) {
     input.budgetPerDay = 0;
     understood.push("free places only");
   } else if (/\b(cheap|budget trip|tight budget|low budget|tipid|mura)\b/.test(t)) {
     input.budgetPerDay = Math.min(input.budgetPerDay, 200);
-    understood.push(`up to ₱${input.budgetPerDay} per person per day`);
+    understood.push(`up to ${formatPeso(input.budgetPerDay)} per person per day`);
   }
 
   // --- times
@@ -196,9 +197,10 @@ export function parseTripRequest(text: string, today: string, current: PlannerIn
   if (interests.length) {
     input.interests = interests;
     understood.push(interests.map((c) => ATTRACTION_CATEGORIES[c]).join(", "));
-  } else if (/\b(anything|everything|surprise me|kahit ano|all kinds)\b/.test(t)) {
-    input.interests = [];
-    understood.push("a bit of everything");
+  } else if (/\b(anything|everything|surprise me|kahit ano|all kinds|all categories|lahat)\b/.test(t)) {
+    // R2: "everything" selects every category, so the planner shows All pressed.
+    input.interests = Object.keys(ATTRACTION_CATEGORIES) as AttractionCategory[];
+    understood.push("all categories");
   }
 
   return { input, understood };

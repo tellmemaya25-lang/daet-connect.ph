@@ -1,3 +1,4 @@
+import { formatPeso } from "@/lib/money";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { PageFrame } from "@/components/ui/page-frame";
@@ -372,7 +373,7 @@ export default async function OperatorBookingsPage({
                         <div>
                           <p className="text-daet-ink/70">Total Amount</p>
                           <p className="text-lg font-black text-daet-forest">
-                            ₱{booking.total_amount.toLocaleString()}
+                            {formatPeso(booking.total_amount)}
                           </p>
                         </div>
                       </div>

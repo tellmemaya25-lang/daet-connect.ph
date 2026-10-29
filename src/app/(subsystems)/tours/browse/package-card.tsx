@@ -1,3 +1,4 @@
+import { formatPeso } from "@/lib/money";
 import Link from "next/link";
 import { RatingBadge } from "@/components/tours/star-rating";
 import { ClockIcon, MapPinIcon } from "@/components/ui/icons";
@@ -45,7 +46,7 @@ export function PackageCard({ package: pkg, rating = null }: PackageCardProps) {
           <div className="absolute bottom-3 right-3 rounded-full bg-white px-4 py-2 shadow-lg">
             <p className="text-xs font-bold text-daet-ink/70">From</p>
             <p className="text-lg font-black text-daet-forest">
-              ₱{price.toLocaleString()}
+              {formatPeso(price)}
             </p>
             <p className="text-[10px] font-bold text-daet-ink/70">{priceLabel}</p>
           </div>

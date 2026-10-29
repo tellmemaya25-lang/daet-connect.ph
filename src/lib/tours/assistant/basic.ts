@@ -1,3 +1,4 @@
+import { formatPeso } from "@/lib/money";
 import { FAQS, matchFaq } from "@/lib/tours/assistant/knowledge";
 import { attractionInfo, handoff, myBookings, planTripLink, searchTours, tourDetails, upcomingEvents, type ToolContext } from "@/lib/tours/assistant/tools";
 import { normalizeText } from "@/lib/tours/itinerary/assistant";
@@ -58,7 +59,7 @@ export async function basicReply(text: string, ctx: ToolContext): Promise<string
       const result = await attractionInfo(ctx, { name });
       if (result.places?.length) {
         const p = result.places[0];
-        return `${p.name}: ${p.hours}${p.entranceFee ? ` Entrance fee ₱${p.entranceFee} per person.` : ""}`;
+        return `${p.name}: ${p.hours}${p.entranceFee ? ` Entrance fee ${formatPeso(p.entranceFee)} per person.` : ""}`;
       }
     }
   }
@@ -75,7 +76,7 @@ export async function basicReply(text: string, ctx: ToolContext): Promise<string
       const details = await tourDetails(ctx, { packageId: result.tours[0].id });
       if (!("error" in details)) {
         const dates = details.nextOpenDates.slice(0, 4).map((d) => `${d.date} (${d.seatsLeft} seats)`).join(", ");
-        return `${details.title}${details.prices[0]?.perPerson ? ` from ₱${details.prices[0].perPerson} per person` : ""}. ${dates ? `Next open dates: ${dates}.` : "No open dates are listed right now."}`;
+        return `${details.title}${details.prices[0]?.perPerson ? ` from ${formatPeso(details.prices[0].perPerson)} per person` : ""}. ${dates ? `Next open dates: ${dates}.` : "No open dates are listed right now."}`;
       }
     }
     return `Here ${result.tours.length === 1 ? "is a tour" : "are some tours"} you can book. Open one to see its open dates.`;

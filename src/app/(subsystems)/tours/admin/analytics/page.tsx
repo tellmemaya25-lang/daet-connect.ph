@@ -1,3 +1,4 @@
+import { formatPeso } from "@/lib/money";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardHeader } from "@/components/ui/card";
@@ -13,7 +14,7 @@ import { requirePromoAdmin } from "@/lib/tours/promo-admin";
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Tourism analytics" };
 
-const peso = (value: number) => `₱${value.toLocaleString("en-PH", { maximumFractionDigits: 0 })}`;
+const peso = formatPeso;
 const shortDay = (key: string) => new Date(`${key}T00:00:00+08:00`).toLocaleDateString("en-PH", { weekday: "short", month: "short", day: "numeric", timeZone: "Asia/Manila" });
 
 export default async function AdminAnalyticsPage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {

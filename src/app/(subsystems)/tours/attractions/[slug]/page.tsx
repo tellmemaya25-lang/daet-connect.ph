@@ -1,3 +1,4 @@
+import { formatPeso } from "@/lib/money";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
@@ -60,7 +61,7 @@ export default async function AttractionPage({ params }: PageProps) {
         {attraction.description ? <p className="mt-4 text-base leading-7 text-daet-ink/80">{attraction.description}</p> : null}
 
         <dl className="mt-6 grid gap-3 sm:grid-cols-3">
-          <Fact label="Entrance fee" value={attraction.entrance_fee === null ? "Not listed" : attraction.entrance_fee === 0 ? "Free" : `₱${attraction.entrance_fee.toLocaleString("en-PH")}`} />
+          <Fact label="Entrance fee" value={attraction.entrance_fee === null ? "Not listed" : attraction.entrance_fee === 0 ? "Free" : `${formatPeso(attraction.entrance_fee)}`} />
           <Fact label="Typical visit" value={attraction.dwell_minutes ? formatMinutes(attraction.dwell_minutes) : "Not listed"} />
           <Fact label="Municipality" value={attraction.municipality} />
         </dl>
