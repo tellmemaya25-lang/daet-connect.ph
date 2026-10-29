@@ -58,3 +58,43 @@ test("R5: the assistant answers travel time in basic mode, with directions", asy
   await expect(dialog.getByText(/7–9 hours/)).toBeVisible();
   await checkA11y(page, "assistant travel answers");
 });
+
+test.describe("R6: guide schedules and swap requests", () => {
+  test("a guide suggests another guide for an upcoming tour", async ({ context, page }) => {
+    await signInAs(context, "guide");
+    await page.goto("/tours/guide/my-tours", { waitUntil: "networkidle" });
+    await page.getByRole("button", { name: "Suggest another guide" }).first().click();
+    const form = page.getByRole("form", { name: /Suggest another guide for/ });
+    const picker = form.getByLabel("Who could take it?");
+    await expect(picker.getByRole("option", { name: "Liza Bautista" })).toBeEnabled();
+    await expect(picker.getByRole("option", { name: /Paolo Reyes \(Already on a tour that day\)/ })).toBeDisabled();
+    await expect(picker.getByRole("option", { name: /Jeremiah Sabihon/ })).toHaveCount(0);
+    await picker.selectOption({ label: "Liza Bautista" });
+    await form.getByLabel(/Why\?/).fill("Family emergency that day");
+    await checkA11y(page, "guide swap form");
+    await form.getByRole("button", { name: "Send to operator" }).click();
+    await expect(page.getByText(/Sent\. The operator will approve or decline it/)).toBeVisible();
+  });
+
+  test("the guide calendar shows booked days and fills weekends", async ({ context, page }) => {
+    await signInAs(context, "guide");
+    await page.goto("/tours/guide/dashboard", { waitUntil: "networkidle" });
+    await expect(page.locator('button[aria-label*="on a tour"]').first()).toBeVisible();
+    await page.getByRole("button", { name: /Mark every Sat & Sun available/ }).click();
+    await expect(page.getByRole("status").filter({ hasText: /weekend/ })).toBeVisible();
+  });
+
+  test("the operator sees the request and why some guides can't be picked", async ({ context, page }) => {
+    await signInAs(context, "operator");
+    await page.goto("/tours/operator/bookings", { waitUntil: "networkidle" });
+    const request = page.getByRole("region", { name: "Guide swap request" });
+    await expect(request.getByText(/asks to hand this tour to another guide/)).toBeVisible();
+    await expect(request.getByText("My boat license renewal is on that day.", { exact: false })).toBeVisible();
+    const picker = request.getByLabel("New guide");
+    await expect(picker.getByRole("option", { name: /Paolo Reyes \(Already on a tour that day\)/ })).toBeDisabled();
+    await picker.selectOption({ label: "Liza Bautista" });
+    await checkA11y(page, "operator swap review");
+    await request.getByRole("button", { name: "Approve swap" }).click();
+    await expect(request.getByText(/Approved\. The new guide and the tourist have been notified/)).toBeVisible();
+  });
+});

@@ -11,6 +11,8 @@ import { manilaDayStartUtc, toManilaDateKey } from "@/lib/tours/events-calendar"
 import { OpenChatButton } from "@/app/(subsystems)/tours/messages/open-chat-button";
 import { BookingActionButtons } from "./booking-action-buttons";
 import { CancellationReview, RefundPanel, type CancellationRequest } from "./cancellation-review";
+import { isBusyReason, type BusyReason } from "@/lib/tours/guide-swap";
+import { SwapReview, type PendingSwap } from "./swap-review";
 import { GuideAssignment } from "./guide-assignment";
 import { PaymentRecorder } from "./payment-recorder";
 import { ProofReview, type ReviewableProof } from "./proof-review";
@@ -185,6 +187,36 @@ export default async function OperatorBookingsPage({
       : { data: [] as { guide_id: string; available_date: string; is_available: boolean }[] };
   const availabilityFor = (date: string): Record<string, boolean> =>
     Object.fromEntries((availabilityRows ?? []).filter((r) => r.available_date === date).map((r) => [r.guide_id, r.is_available]));
+
+  // R6: who can take each upcoming date (approved, marked available, not on another tour that day).
+  const upcomingDates = tourDates.filter((d) => d >= today);
+  const busyRows = await Promise.all(
+    upcomingDates.map(async (date) => {
+      const { data } = await supabase.rpc("tours_guides_free_on", { p_date: date });
+      return [date, (data ?? []) as Array<{ guide_id: string; full_name: string; reason: string | null }>] as const;
+    }),
+  );
+  const busyByDate = new Map(busyRows.map(([date, rows]) => [date, rows]));
+  const busyFor = (date: string): Record<string, BusyReason | null> =>
+    Object.fromEntries((busyByDate.get(date) ?? []).map((r) => [r.guide_id, isBusyReason(r.reason) ? r.reason : null]));
+  const pickerFor = (date: string) =>
+    (busyByDate.get(date) ?? []).map((r) => ({ id: r.guide_id, full_name: r.full_name, reason: isBusyReason(r.reason) ? r.reason : null }));
+
+  // R6: guides' pending swap requests on these bookings.
+  const { data: swapRows } = bookingIds.length
+    ? await supabase
+        .from("tours_guide_swap_requests")
+        .select("id, booking_id, from_guide_id, to_guide_id, reason, created_at")
+        .in("booking_id", bookingIds)
+        .eq("status", "pending")
+    : { data: [] as Array<{ id: string; booking_id: string; from_guide_id: string; to_guide_id: string | null; reason: string; created_at: string }> };
+  const guideName = (id: string | null) => (id ? availableGuides.find((g) => g.id === id)?.full_name ?? "A guide" : null);
+  const swapByBooking = new Map<string, PendingSwap>(
+    (swapRows ?? []).map((row) => [
+      row.booking_id,
+      { id: row.id, fromGuideId: row.from_guide_id, fromGuideName: guideName(row.from_guide_id) ?? "A guide", toGuideId: row.to_guide_id, toGuideName: guideName(row.to_guide_id), reason: row.reason, createdAt: row.created_at },
+    ]),
+  );
 
   const statusColors: Record<string, string> = {
     pending: "bg-amber-100 text-amber-900",
@@ -393,11 +425,15 @@ export default async function OperatorBookingsPage({
                             <p className="mb-3 text-xs font-bold uppercase tracking-wide text-daet-ink/70">
                               Guide Assignment
                             </p>
+                            {swapByBooking.get(booking.id) ? (
+                              <SwapReview swap={swapByBooking.get(booking.id)!} guides={pickerFor(booking.tour_date)} />
+                            ) : null}
                             <GuideAssignment
                               bookingId={booking.id}
                               currentGuideId={booking.assigned_guide_id}
                               availableGuides={availableGuides || []}
                               availability={availabilityFor(booking.tour_date)}
+                              busy={busyFor(booking.tour_date)}
                             />
                           </div>
 

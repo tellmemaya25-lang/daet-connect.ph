@@ -167,6 +167,8 @@ const BID = "e9466de5-4877-47c1-ac14-d86deeb38b9e";
     tours_bookings: role === "operator" ? [booking, later, pendingB, cancelled] : [booking, later, pendingB, doneB], tours_packages: [pkg], tours_package_availability: availability, _event_availability: eventAvailability, tours_cancellations: cancellations, tours_payments: payments, tours_payment_proofs: proofs, tours_operators: [operator],
     tours_guides: guides, profiles: [{ id: "9b7e5a5e-0000-4000-8000-000000000001", role, full_name: "Juan Dela Cruz" }],
     tours_events: events, tours_merchandise: role === "operator" ? merch.filter((m) => m.submitted_by_operator_id) : merch,
+    // R6: the operator sees one pending swap request from the guide on today's booking.
+    tours_guide_swap_requests: role === "operator" ? [{ id: "5a000000-0000-4000-8000-000000000001", booking_id: BID, from_guide_id: guides[0].id, to_guide_id: null, reason: "My boat license renewal is on that day.", status: "pending", decision_note: null, created_at: "2026-10-28T08:00:00Z" }] : [],
   };
   return { tables, analytics, inbox, header, user };
   }
@@ -189,6 +191,15 @@ http.createServer((req, res) => {
     if (url.pathname === "/rest/v1/rpc/tours_conversation_header") return send(200, header);
     if (/^\/rest\/v1\/rpc\/tours_open_[a-z_]+_conversation$/.test(url.pathname)) return send(200, CONV_ID);
     if (url.pathname === "/rest/v1/rpc/tours_mark_conversation_read") return send(200, null);
+    // R6: guides free on a date (one free, one booked), and the swap RPCs.
+    if (url.pathname === "/rest/v1/rpc/tours_guides_free_on")
+      return send(200, [
+        { guide_id: "f66b1fe2-a997-4c0b-be13-22d62cf0dba6", full_name: "Jeremiah Sabihon", reason: null },
+        { guide_id: "b2000000-0000-4000-8000-000000000002", full_name: "Liza Bautista", reason: null },
+        { guide_id: "b2000000-0000-4000-8000-000000000003", full_name: "Paolo Reyes", reason: "already_booked" },
+      ]);
+    if (url.pathname === "/rest/v1/rpc/tours_request_guide_swap") return send(200, "5a000000-0000-4000-8000-000000000009");
+    if (url.pathname === "/rest/v1/rpc/tours_decide_guide_swap" || url.pathname === "/rest/v1/rpc/tours_cancel_guide_swap") return send(200, null);
     if (url.pathname === "/rest/v1/rpc/tours_badge_lookup") return send(200, [{ status: "approved", full_name: "Jeremiah Sabihon", photo_url: null, approved_at: "2026-10-16T13:18:25Z" }]);
     const table = url.pathname.replace("/rest/v1/", "");
     // The event page asks for availability joined to packages.

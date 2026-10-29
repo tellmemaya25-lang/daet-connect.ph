@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useFeedback } from "@/components/ui/feedback";
 import { useRouter } from "next/navigation";
+import { BUSY_LABELS, type BusyReason } from "@/lib/tours/guide-swap";
 import { assignGuideToBooking } from "./actions";
 
 type GuideAssignmentProps = {
@@ -11,6 +12,8 @@ type GuideAssignmentProps = {
   availableGuides: Array<{ id: string; full_name: string; contact_phone: string }>;
   /** Guide id → marked available (true) / unavailable (false) on the tour date; missing = not set. */
   availability?: Record<string, boolean>;
+  /** R6: why each guide can't take the tour date (from tours_guides_free_on); null = free, missing = unknown. */
+  busy?: Record<string, BusyReason | null>;
 };
 
 export function GuideAssignment({
@@ -18,7 +21,9 @@ export function GuideAssignment({
   currentGuideId,
   availableGuides,
   availability = {},
+  busy = {},
 }: GuideAssignmentProps) {
+  const blocked = (id: string) => id !== currentGuideId && Boolean(busy[id]);
   const router = useRouter();
   const { toast, confirm } = useFeedback();
   const [selectedGuideId, setSelectedGuideId] = useState(currentGuideId || "");
@@ -94,14 +99,17 @@ export function GuideAssignment({
         >
           <option value="">Select a guide...</option>
           {[...availableGuides]
-            .sort((a, b) => rank(availability[a.id]) - rank(availability[b.id]))
-            .map((guide) => (
-              <option key={guide.id} value={guide.id}>
-                {availability[guide.id] === true ? "✓ " : availability[guide.id] === false ? "✕ " : ""}
-                {guide.full_name} - {guide.contact_phone}
-                {availability[guide.id] === false ? " (not available)" : ""}
-              </option>
-            ))}
+            .sort((a, b) => Number(blocked(a.id)) - Number(blocked(b.id)) || rank(availability[a.id]) - rank(availability[b.id]))
+            .map((guide) => {
+              const reason = guide.id === currentGuideId ? null : busy[guide.id];
+              return (
+                <option key={guide.id} value={guide.id} disabled={Boolean(reason)}>
+                  {reason ? "✕ " : availability[guide.id] === true ? "✓ " : availability[guide.id] === false ? "✕ " : ""}
+                  {guide.full_name} - {guide.contact_phone}
+                  {reason ? ` (${BUSY_LABELS[reason]})` : availability[guide.id] === false ? " (not available)" : ""}
+                </option>
+              );
+            })}
         </select>
 
         {currentGuideId ? (
