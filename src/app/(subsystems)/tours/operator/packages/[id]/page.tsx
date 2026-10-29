@@ -2,6 +2,7 @@ import { LineIcon } from "@/components/ui/icons";
 import { formatPeso } from "@/lib/money";
 import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
+import { MeetingPointForm } from "./meeting-point-form";
 import { PageFrame } from "@/components/ui/page-frame";
 import { Notice } from "@/components/ui/notice";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
@@ -96,6 +97,10 @@ export default async function OperatorPackageDetailPage({ params }: PageProps) {
       title,
       description,
       location_name,
+      meeting_point_name,
+      meeting_lat,
+      meeting_lng,
+      meeting_time,
       duration_value,
       duration_type,
       cover_image_url,
@@ -415,6 +420,19 @@ export default async function OperatorPackageDetailPage({ params }: PageProps) {
                 </div>
               </div>
             )}
+
+            <section aria-labelledby="meeting-heading" className="mt-6 rounded-2xl bg-white p-6">
+              <h2 id="meeting-heading" className="font-bold text-daet-ink">Where guests meet</h2>
+              <div className="mt-3">
+                <MeetingPointForm
+                  packageId={pkg.id}
+                  name={pkg.meeting_point_name ?? null}
+                  latitude={pkg.meeting_lat === null || pkg.meeting_lat === undefined ? null : Number(pkg.meeting_lat)}
+                  longitude={pkg.meeting_lng === null || pkg.meeting_lng === undefined ? null : Number(pkg.meeting_lng)}
+                  time={pkg.meeting_time ?? null}
+                />
+              </div>
+            </section>
 
             {/* Gallery */}
             {gallery.length > 0 && (

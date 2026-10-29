@@ -209,6 +209,12 @@ export default async function AdminDashboardPage() {
             Manage Attractions
           </Link>
           <Link
+            href="/tours/admin/guide-places"
+            className="inline-flex min-h-11 items-center justify-center rounded-full border border-daet-forest/30 px-6 text-sm font-bold text-daet-leaf hover:bg-daet-forest/5 transition"
+          >
+            Local guide: food, stays, fares
+          </Link>
+          <Link
             href="/tours/admin/reviews"
             className="inline-flex min-h-11 items-center justify-center rounded-full border border-daet-forest/30 px-6 text-sm font-bold text-daet-leaf hover:bg-daet-forest/5 transition"
           >
