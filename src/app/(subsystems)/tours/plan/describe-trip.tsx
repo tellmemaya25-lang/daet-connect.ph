@@ -81,7 +81,7 @@ export function DescribeTrip({
       </div>
       <div aria-live="polite">
         {state?.tone === "error" ? (
-          <p className="mt-3 text-sm font-semibold text-rose-700">{state.text}</p>
+          <p className="mt-3 text-sm font-semibold text-red-700">{state.text}</p>
         ) : state?.understood ? (
           <div className="mt-3">
             <p className="text-sm font-bold text-daet-ink">

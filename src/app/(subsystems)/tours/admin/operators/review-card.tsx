@@ -49,8 +49,8 @@ export function OperatorReviewCard({
     <article className="rounded-2xl bg-white p-5 sm:p-7">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div className="min-w-0">
-          <span className="inline-flex rounded-full bg-amber-50 px-3 py-1 text-xs font-black text-amber-900">Pending review</span>
-          <h2 className="mt-3 break-words text-xl font-black text-daet-ink">{application.business_name}</h2>
+          <span className="inline-flex rounded-full bg-yellow-50 px-3 py-1 text-xs font-bold text-yellow-900">Pending review</span>
+          <h2 className="mt-3 break-words text-xl font-bold text-daet-ink">{application.business_name}</h2>
           <p className="mt-1 text-sm text-daet-ink/70">Submitted {new Date(application.created_at).toLocaleDateString("en-PH", { year: "numeric", month: "short", day: "numeric" })}</p>
         </div>
         <div className="flex shrink-0 flex-col items-start gap-2 sm:items-end">
@@ -97,15 +97,15 @@ export function OperatorReviewCard({
               placeholder="Explain what needs to be corrected (at least 10 characters)."
               aria-invalid={Boolean(state.fieldErrors?.rejectionReason)}
               aria-describedby={`reason-help-${application.id}${state.fieldErrors?.rejectionReason ? ` reason-error-${application.id}` : ""}`}
-              className="mt-2 w-full rounded-2xl border border-daet-ink/15 bg-white px-4 py-3 text-sm outline-none transition placeholder:text-daet-ink/35 focus:border-daet-forest focus:ring-4 focus:ring-daet-forest/10 aria-[invalid=true]:border-rose-400"
+              className="mt-2 w-full rounded-2xl border border-daet-ink/15 bg-white px-4 py-3 text-sm outline-none transition placeholder:text-daet-ink/35 focus:border-daet-forest focus:ring-4 focus:ring-daet-forest/10 aria-[invalid=true]:border-red-400"
             />
             <span id={`reason-help-${application.id}`} className="mt-1 block text-xs text-daet-ink/70">Keep the note factual and limited to what the applicant needs to fix.</span>
-            {state.fieldErrors?.rejectionReason ? <span id={`reason-error-${application.id}`} className="mt-1 block text-sm font-semibold text-rose-700">{state.fieldErrors.rejectionReason}</span> : null}
+            {state.fieldErrors?.rejectionReason ? <span id={`reason-error-${application.id}`} className="mt-1 block text-sm font-semibold text-red-700">{state.fieldErrors.rejectionReason}</span> : null}
           </label>
           <button
             type="submit"
             disabled={locked}
-            className="mt-3 inline-flex min-h-12 w-full items-center justify-center rounded-full border border-rose-300 px-5 text-sm font-bold text-rose-700 transition hover:bg-rose-50 disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto"
+            className="mt-3 inline-flex min-h-12 w-full items-center justify-center rounded-full border border-red-300 px-5 text-sm font-bold text-red-700 transition hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto"
           >
             {pending ? "Saving…" : "Reject application"}
           </button>
@@ -117,7 +117,7 @@ export function OperatorReviewCard({
           <button
             type="submit"
             disabled={locked}
-            className="inline-flex min-h-12 w-full items-center justify-center rounded-full bg-daet-forest px-6 text-sm font-black text-white transition hover:bg-daet-ink disabled:cursor-not-allowed disabled:opacity-50 lg:min-w-44"
+            className="inline-flex min-h-12 w-full items-center justify-center rounded-full bg-daet-forest px-6 text-sm font-bold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50 lg:min-w-44"
           >
             {pending ? "Saving…" : "Approve operator"}
           </button>

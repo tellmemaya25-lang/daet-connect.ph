@@ -33,8 +33,8 @@ type Feedback = {
 const FeedbackContext = createContext<Feedback | null>(null);
 
 const TOAST_STYLES: Record<ToastKind, string> = {
-  success: "border-emerald-200 bg-emerald-50 text-emerald-950",
-  error: "border-rose-200 bg-rose-50 text-rose-950",
+  success: "border-green-200 bg-green-50 text-green-950",
+  error: "border-red-200 bg-red-50 text-red-950",
   info: "border-sky-200 bg-sky-50 text-sky-950",
 };
 

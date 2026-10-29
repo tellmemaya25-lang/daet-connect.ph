@@ -76,25 +76,25 @@ export default async function AdminMerchPage({
           {items.map((item) => (
             <li key={item.id} className="flex flex-col gap-3 rounded-2xl bg-white p-4 lg:flex-row lg:items-center">
               <div className="flex min-w-0 flex-1 items-center gap-3">
-                <div className="grid h-16 w-16 shrink-0 place-items-center overflow-hidden rounded-xl bg-daet-sand text-2xl">
+                <div className="grid h-16 w-16 shrink-0 place-items-center overflow-hidden rounded-2xl bg-daet-sand text-2xl">
                   {item.image_url ? <img src={item.image_url} alt="" className="h-full w-full object-cover" /> : <span aria-hidden="true"><LineIcon name="bag" className="inline-block h-[1.1em] w-[1.1em] align-[-0.15em]" /></span>}
                 </div>
                 <div className="min-w-0">
                   <div className="flex flex-wrap items-center gap-2">
                     <span className="rounded-full bg-daet-sand px-2 py-0.5 text-xs font-bold text-daet-forest">{MERCH_CATEGORIES[item.category]}</span>
                     {item.is_active ? (
-                      <span className="rounded-full bg-emerald-50 px-2 py-0.5 text-xs font-bold text-emerald-700">Visible</span>
+                      <span className="rounded-full bg-green-50 px-2 py-0.5 text-xs font-bold text-green-700">Visible</span>
                     ) : (
-                      <span className="rounded-full bg-amber-50 px-2 py-0.5 text-xs font-bold text-amber-700">Hidden</span>
+                      <span className="rounded-full bg-yellow-50 px-2 py-0.5 text-xs font-bold text-yellow-800">Hidden</span>
                     )}
-                    {item.is_featured ? <span className="rounded-full bg-amber-100 px-2 py-0.5 text-xs font-bold text-amber-800">★ Featured</span> : null}
+                    {item.is_featured ? <span className="rounded-full bg-yellow-100 px-2 py-0.5 text-xs font-bold text-yellow-800">★ Featured</span> : null}
                     {item.submitted_by_operator_id ? (
-                      <span className={`rounded-full px-2 py-0.5 text-xs font-bold ${item.review_status === "pending" ? "bg-amber-100 text-amber-900" : item.review_status === "rejected" ? "bg-rose-50 text-rose-700" : "bg-sky-50 text-sky-800"}`}>
+                      <span className={`rounded-full px-2 py-0.5 text-xs font-bold ${item.review_status === "pending" ? "bg-yellow-100 text-yellow-900" : item.review_status === "rejected" ? "bg-red-50 text-red-700" : "bg-sky-50 text-sky-800"}`}>
                         {MERCH_REVIEW_LABELS[item.review_status]} · {operatorName(item) ?? "Operator"}
                       </span>
                     ) : null}
                   </div>
-                  <p className="mt-1 truncate font-black text-daet-ink">{item.name}</p>
+                  <p className="mt-1 truncate font-bold text-daet-ink">{item.name}</p>
                   <p className="text-sm text-daet-ink/70">
                     {formatPeso(item.price) ?? "Ask seller"} · {item.seller_name}
                   </p>
@@ -113,7 +113,7 @@ export default async function AdminMerchPage({
                   <input type="hidden" name="id" value={item.id} />
                   <ConfirmSubmitButton
                     message={`Delete "${item.name}"? This cannot be undone.`}
-                    className="inline-flex min-h-11 w-full items-center justify-center rounded-full border border-rose-200 px-5 text-sm font-bold text-rose-700 hover:bg-rose-50"
+                    className="inline-flex min-h-11 w-full items-center justify-center rounded-full border border-red-200 px-5 text-sm font-bold text-red-700 hover:bg-red-50"
                   >
                     Delete
                   </ConfirmSubmitButton>

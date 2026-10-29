@@ -174,7 +174,7 @@ export function GalleryStep({
   const galleryErrors = getGalleryErrors();
 
   return (
-    <div className="border rounded-xl p-6 bg-white">
+    <div className="border rounded-2xl p-6 bg-white">
       <div className="flex items-center justify-between mb-6">
         <div>
           <h2 className="text-xl font-bold text-daet-ink">Gallery Images</h2>
@@ -185,7 +185,7 @@ export function GalleryStep({
         {canAddImages && data.length < EDIT_LIMITS.maxGalleryImages && (
           <label htmlFor="gallery-upload" className="cursor-pointer">
             <div
-              className={`px-4 py-2 rounded-xl font-medium transition text-center ${
+              className={`px-4 py-2 rounded-2xl font-medium transition text-center ${
                 uploadLoading || loading
                   ? "bg-slate-100 text-daet-ink/70 cursor-not-allowed"
                   : "bg-daet-forest text-white hover:bg-daet-leaf"
@@ -221,7 +221,7 @@ export function GalleryStep({
           {sortedImages.map((image, index) => (
             <div
               key={image.id}
-              className="border rounded-xl overflow-hidden bg-slate-50 transition"
+              className="border rounded-2xl overflow-hidden bg-slate-50 transition"
             >
               {/* Image Thumbnail */}
               <div className="relative h-40 w-full bg-slate-100">
@@ -234,7 +234,7 @@ export function GalleryStep({
                     setUploadError("Failed to load image preview");
                   }}
                 />
-                <div className="absolute top-2 right-2 bg-gray-800 text-white px-2 py-1 rounded text-xs font-medium">
+                <div className="absolute top-2 right-2 bg-slate-800 text-white px-2 py-1 rounded text-xs font-medium">
                   {index + 1}
                 </div>
               </div>
@@ -280,7 +280,7 @@ export function GalleryStep({
                             type="button"
                             onClick={() => handleReorder("up", index)}
                             disabled={index === 0 || loading}
-                            className="flex-1 px-2 py-1 text-xs bg-gray-200 text-daet-ink/80 rounded hover:bg-gray-300 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="flex-1 px-2 py-1 text-xs bg-slate-200 text-daet-ink/80 rounded hover:bg-slate-300 transition disabled:opacity-50 disabled:cursor-not-allowed"
                             title="Move up"
                           >
                             ↑
@@ -289,7 +289,7 @@ export function GalleryStep({
                             type="button"
                             onClick={() => handleReorder("down", index)}
                             disabled={index === sortedImages.length - 1 || loading}
-                            className="flex-1 px-2 py-1 text-xs bg-gray-200 text-daet-ink/80 rounded hover:bg-gray-300 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="flex-1 px-2 py-1 text-xs bg-slate-200 text-daet-ink/80 rounded hover:bg-slate-300 transition disabled:opacity-50 disabled:cursor-not-allowed"
                             title="Move down"
                           >
                             ↓

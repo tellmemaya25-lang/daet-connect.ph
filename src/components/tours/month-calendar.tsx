@@ -36,7 +36,7 @@ export function MonthCalendar({
         ) : (
           <span className="h-11 w-11" />
         )}
-        <p className="font-black text-daet-ink">{label ? `${label} · ${title}` : title}</p>
+        <p className="font-bold text-daet-ink">{label ? `${label} · ${title}` : title}</p>
         {nextHref ? (
           <Link href={nextHref} aria-label="Next month" className={arrow} scroll={false}>
             ›

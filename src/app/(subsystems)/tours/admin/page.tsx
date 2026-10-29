@@ -78,8 +78,7 @@ export default async function AdminDashboardPage() {
       <div className="mb-8">
         <div className="flex items-center justify-between">
           <div>
-            <p className="text-sm font-bold text-daet-leaf">Tourism Office</p>
-            <h1 className="mt-2 text-3xl font-black tracking-tight text-daet-ink sm:text-4xl">
+            <h1 className="mt-2 text-3xl font-bold tracking-tight text-daet-ink sm:text-4xl">
               Admin Dashboard
             </h1>
             <p className="mt-2 text-sm text-daet-ink/65">
@@ -89,7 +88,7 @@ export default async function AdminDashboardPage() {
           <div className="flex gap-3">
             <Link
               href="/"
-              className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
+              className="inline-flex items-center px-4 py-2 border border-slate-300 rounded-md text-sm font-medium text-slate-700 bg-white hover:bg-slate-50"
             >
               <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
@@ -110,9 +109,9 @@ export default async function AdminDashboardPage() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-bold text-daet-ink/70">Pending Operators</p>
-              <p className="mt-2 text-4xl font-black text-daet-ink">{pendingOperators || 0}</p>
+              <p className="mt-2 text-4xl font-bold text-daet-ink">{pendingOperators || 0}</p>
             </div>
-            <div className="grid h-14 w-14 place-items-center rounded-2xl bg-amber-50 text-2xl">
+            <div className="grid h-14 w-14 place-items-center rounded-2xl bg-yellow-50 text-2xl">
               <LineIcon name="building" className="inline-block h-[1.1em] w-[1.1em] align-[-0.15em]" />
             </div>
           </div>
@@ -127,9 +126,9 @@ export default async function AdminDashboardPage() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-bold text-daet-ink/70">Pending Guides</p>
-              <p className="mt-2 text-4xl font-black text-daet-ink">{pendingGuides || 0}</p>
+              <p className="mt-2 text-4xl font-bold text-daet-ink">{pendingGuides || 0}</p>
             </div>
-            <div className="grid h-14 w-14 place-items-center rounded-2xl bg-amber-50 text-2xl">
+            <div className="grid h-14 w-14 place-items-center rounded-2xl bg-yellow-50 text-2xl">
               <LineIcon name="user" className="inline-block h-[1.1em] w-[1.1em] align-[-0.15em]" />
             </div>
           </div>
@@ -144,9 +143,9 @@ export default async function AdminDashboardPage() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-bold text-daet-ink/70">Pending Packages</p>
-              <p className="mt-2 text-4xl font-black text-daet-ink">{pendingPackages || 0}</p>
+              <p className="mt-2 text-4xl font-bold text-daet-ink">{pendingPackages || 0}</p>
             </div>
-            <div className="grid h-14 w-14 place-items-center rounded-2xl bg-amber-50 text-2xl">
+            <div className="grid h-14 w-14 place-items-center rounded-2xl bg-yellow-50 text-2xl">
               <LineIcon name="box" className="inline-block h-[1.1em] w-[1.1em] align-[-0.15em]" />
             </div>
           </div>
@@ -158,7 +157,7 @@ export default async function AdminDashboardPage() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-bold text-daet-ink/70">Published Packages</p>
-              <p className="mt-2 text-4xl font-black text-daet-ink">{publishedPackages || 0}</p>
+              <p className="mt-2 text-4xl font-bold text-daet-ink">{publishedPackages || 0}</p>
             </div>
             <div className="grid h-14 w-14 place-items-center rounded-2xl bg-green-50 text-2xl">
               ✓
@@ -172,7 +171,7 @@ export default async function AdminDashboardPage() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-bold text-daet-ink/70">Total Bookings</p>
-              <p className="mt-2 text-4xl font-black text-daet-ink">{totalBookings || 0}</p>
+              <p className="mt-2 text-4xl font-bold text-daet-ink">{totalBookings || 0}</p>
             </div>
             <div className="grid h-14 w-14 place-items-center rounded-2xl bg-blue-50 text-2xl">
               <LineIcon name="calendar" className="inline-block h-[1.1em] w-[1.1em] align-[-0.15em]" />
@@ -184,7 +183,7 @@ export default async function AdminDashboardPage() {
 
       {/* Quick Actions */}
       <div className="rounded-2xl bg-white p-6 mb-8">
-        <h2 className="text-xl font-black text-daet-ink mb-4">Quick Actions</h2>
+        <h2 className="text-xl font-bold text-daet-ink mb-4">Quick Actions</h2>
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           <Link
             href="/tours/admin/analytics"
@@ -194,19 +193,19 @@ export default async function AdminDashboardPage() {
           </Link>
           <Link
             href="/tours/admin/operators"
-            className="inline-flex min-h-11 items-center justify-center rounded-full bg-daet-forest px-6 text-sm font-bold text-white hover:bg-daet-ink transition"
+            className="inline-flex min-h-11 items-center justify-center rounded-full bg-daet-forest px-6 text-sm font-bold text-white hover:bg-blue-700 transition"
           >
             Review Operators
           </Link>
           <Link
             href="/tours/admin/guides"
-            className="inline-flex min-h-11 items-center justify-center rounded-full bg-daet-forest px-6 text-sm font-bold text-white hover:bg-daet-ink transition"
+            className="inline-flex min-h-11 items-center justify-center rounded-full bg-daet-forest px-6 text-sm font-bold text-white hover:bg-blue-700 transition"
           >
             Review Guides
           </Link>
           <Link
             href="/tours/admin/packages"
-            className="inline-flex min-h-11 items-center justify-center rounded-full bg-daet-forest px-6 text-sm font-bold text-white hover:bg-daet-ink transition"
+            className="inline-flex min-h-11 items-center justify-center rounded-full bg-daet-forest px-6 text-sm font-bold text-white hover:bg-blue-700 transition"
           >
             Review Packages
           </Link>
@@ -246,7 +245,7 @@ export default async function AdminDashboardPage() {
       {/* Recent Activity */}
       {recentActivities && recentActivities.length > 0 && (
         <div className="rounded-2xl bg-white p-6">
-          <h2 className="text-xl font-black text-daet-ink mb-4">Recent Activity</h2>
+          <h2 className="text-xl font-bold text-daet-ink mb-4">Recent Activity</h2>
           <div className="space-y-3">
             {recentActivities.map((activity: any) => (
               <div key={activity.id} className="flex items-start gap-3 text-sm">

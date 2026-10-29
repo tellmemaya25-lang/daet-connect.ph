@@ -99,7 +99,7 @@ export default async function GuideMyToursPage() {
   }
 
   const statusColors: Record<string, string> = {
-    confirmed: "bg-emerald-100 text-emerald-800",
+    confirmed: "bg-green-100 text-green-800",
     completed: "bg-blue-100 text-blue-900",
   };
 
@@ -148,7 +148,7 @@ export default async function GuideMyToursPage() {
       <div className="mx-auto max-w-6xl">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-4xl font-black text-daet-ink">My Assigned Tours</h1>
+          <h1 className="text-4xl font-bold text-daet-ink">My Assigned Tours</h1>
           <p className="mt-2 text-sm text-daet-ink/70">
             Tours assigned to {guideName}
           </p>
@@ -164,7 +164,7 @@ export default async function GuideMyToursPage() {
           </Link>
           <Link
             href="/tours/guide/check-in"
-            className="inline-flex min-h-11 items-center justify-center rounded-full bg-daet-forest px-6 text-sm font-bold text-white transition hover:bg-daet-ink"
+            className="inline-flex min-h-11 items-center justify-center rounded-full bg-daet-forest px-6 text-sm font-bold text-white transition hover:bg-blue-700"
           >
             Scan tickets
           </Link>
@@ -173,17 +173,17 @@ export default async function GuideMyToursPage() {
         {/* Stats */}
         <div className="mb-8 grid grid-cols-2 gap-4 md:grid-cols-3">
           <div className="rounded-2xl bg-white p-4 text-center">
-            <p className="text-3xl font-black text-daet-ink">
+            <p className="text-3xl font-bold text-daet-ink">
               {assignedTours?.length || 0}
             </p>
             <p className="text-xs text-daet-ink/70">Total Assigned</p>
           </div>
-          <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-center">
-            <p className="text-3xl font-black text-emerald-900">{upcomingTours.length}</p>
-            <p className="text-xs text-emerald-900">Upcoming</p>
+          <div className="rounded-2xl border border-green-200 bg-green-50 p-4 text-center">
+            <p className="text-3xl font-bold text-green-900">{upcomingTours.length}</p>
+            <p className="text-xs text-green-900">Upcoming</p>
           </div>
           <div className="rounded-2xl border border-blue-200 bg-blue-50 p-4 text-center">
-            <p className="text-3xl font-black text-blue-900">{completedTours.length}</p>
+            <p className="text-3xl font-bold text-blue-900">{completedTours.length}</p>
             <p className="text-xs text-blue-900">Completed</p>
           </div>
         </div>
@@ -191,7 +191,7 @@ export default async function GuideMyToursPage() {
         {/* Upcoming Tours */}
         {upcomingTours.length > 0 && (
           <section className="mb-8">
-            <h2 className="mb-4 text-2xl font-black text-daet-ink">Upcoming Tours</h2>
+            <h2 className="mb-4 text-2xl font-bold text-daet-ink">Upcoming Tours</h2>
             <div className="space-y-4">
               {upcomingTours.map((booking) => {
                 const pkg = Array.isArray(booking.tours_packages)
@@ -205,7 +205,7 @@ export default async function GuideMyToursPage() {
                 return (
                   <div
                     key={booking.id}
-                    className="rounded-2xl border border-emerald-200 bg-emerald-50/50 p-6"
+                    className="rounded-2xl border border-green-200 bg-green-50/50 p-6"
                   >
                     <div className="flex gap-6">
                       {/* Package Image */}
@@ -221,14 +221,14 @@ export default async function GuideMyToursPage() {
                       <div className="flex-1">
                         <div className="mb-3 flex items-start justify-between gap-4">
                           <div>
-                            <h3 className="text-xl font-black text-daet-ink">
+                            <h3 className="text-xl font-bold text-daet-ink">
                               {pkg?.title || "Tour Package"}
                             </h3>
                             <p className="mt-1 text-sm text-daet-ink/70">
                               <LineIcon name="pin" className="inline-block h-[1.1em] w-[1.1em] align-[-0.15em]" /> {pkg?.location_name || "Location"}
                             </p>
                           </div>
-                          <span className="rounded-full bg-emerald-100 px-4 py-1 text-xs font-bold text-emerald-800">
+                          <span className="rounded-full bg-green-100 px-4 py-1 text-xs font-bold text-green-800">
                             Upcoming
                           </span>
                         </div>
@@ -295,7 +295,7 @@ export default async function GuideMyToursPage() {
         {/* Completed Tours */}
         {completedTours.length > 0 && (
           <section>
-            <h2 className="mb-4 text-2xl font-black text-daet-ink">Completed Tours</h2>
+            <h2 className="mb-4 text-2xl font-bold text-daet-ink">Completed Tours</h2>
             <div className="space-y-4">
               {completedTours.map((booking) => {
                 const pkg = Array.isArray(booking.tours_packages)
@@ -316,7 +316,7 @@ export default async function GuideMyToursPage() {
                         />
                       )}
                       <div className="flex-1">
-                        <h3 className="text-lg font-black text-daet-ink">
+                        <h3 className="text-lg font-bold text-daet-ink">
                           {pkg?.title || "Tour Package"}
                         </h3>
                         <p className="mt-1 text-sm text-daet-ink/70">
@@ -345,7 +345,7 @@ export default async function GuideMyToursPage() {
             <div className="mx-auto mb-4 grid h-20 w-20 place-items-center rounded-full bg-daet-sand text-4xl">
               <LineIcon name="calendar" className="inline-block h-[1.1em] w-[1.1em] align-[-0.15em]" />
             </div>
-            <h2 className="text-xl font-black text-daet-ink">No assigned tours yet</h2>
+            <h2 className="text-xl font-bold text-daet-ink">No assigned tours yet</h2>
             <p className="mt-2 text-sm text-daet-ink/70">
               Operators will assign you to tours once bookings are confirmed.
             </p>

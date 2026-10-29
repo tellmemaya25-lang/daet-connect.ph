@@ -54,7 +54,7 @@ export function Modal({
       className="m-0 mt-auto w-full max-w-none rounded-t-2xl bg-white p-0 text-daet-ink shadow-[var(--shadow-float)] backdrop:bg-daet-ink/50 sm:m-auto sm:max-w-lg sm:rounded-2xl"
     >
       <div className="p-5 sm:p-6">
-        <h2 id={titleId} className="text-lg font-black">
+        <h2 id={titleId} className="text-lg font-bold">
           {title}
         </h2>
         {description ? (

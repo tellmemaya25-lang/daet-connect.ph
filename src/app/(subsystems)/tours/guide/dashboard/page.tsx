@@ -101,8 +101,7 @@ export default async function GuideDashboardPage({ searchParams }: { searchParam
     <PageFrame>
       <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <p className="text-sm font-bold text-daet-leaf">Approved guide</p>
-          <h1 className="mt-1 text-3xl font-black tracking-tight text-daet-ink">Welcome, {profile.full_name}.</h1>
+          <h1 className="text-3xl font-bold tracking-tight text-daet-ink">Welcome, {profile.full_name}.</h1>
           <div className="mt-2">
             <RatingBadge summary={toSummary(ratingRow)} />
           </div>
@@ -125,7 +124,7 @@ export default async function GuideDashboardPage({ searchParams }: { searchParam
               <ul className="space-y-3">
                 {todays.map((t) => (
                   <li key={t.id} className="rounded-2xl bg-daet-sand/40 p-3">
-                    <p className="font-black text-daet-ink">{pkgTitle(t)}</p>
+                    <p className="font-bold text-daet-ink">{pkgTitle(t)}</p>
                     <p className="text-xs text-daet-ink/70">
                       {t.booking_reference} · {t.contact_name} · {t.number_of_pax} pax
                     </p>

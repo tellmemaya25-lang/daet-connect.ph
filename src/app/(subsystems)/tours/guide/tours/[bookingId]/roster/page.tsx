@@ -61,7 +61,7 @@ export default async function GuideRosterPage({ params }: PageProps) {
         <Link href="/tours/guide/my-tours" className="text-sm font-bold text-daet-ink/70 hover:text-daet-ink">
           ← My tours
         </Link>
-        <h1 className="mt-4 text-3xl font-black text-daet-ink">Guest list</h1>
+        <h1 className="mt-4 text-3xl font-bold text-daet-ink">Guest list</h1>
         <p className="mt-1 text-sm text-daet-ink/65">
           {pkg?.title ?? "Tour"} · {tourDate(booking.tour_date)}
         </p>
@@ -71,7 +71,7 @@ export default async function GuideRosterPage({ params }: PageProps) {
         <section className="mt-6 rounded-2xl bg-white p-5">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
-              <p className="text-lg font-black text-daet-ink">{booking.contact_name}</p>
+              <p className="text-lg font-bold text-daet-ink">{booking.contact_name}</p>
               <p className="text-sm text-daet-ink/65">
                 {booking.booking_reference} · {booking.number_of_pax} guest{booking.number_of_pax === 1 ? "" : "s"}
               </p>
@@ -86,7 +86,7 @@ export default async function GuideRosterPage({ params }: PageProps) {
             )}
           </div>
           {booking.special_requests ? (
-            <p className="mt-3 rounded-xl bg-daet-sand/40 p-3 text-sm text-daet-ink">
+            <p className="mt-3 rounded-2xl bg-daet-sand/40 p-3 text-sm text-daet-ink">
               <span className="font-bold">Requests:</span> {booking.special_requests}
             </p>
           ) : null}
@@ -103,7 +103,7 @@ export default async function GuideRosterPage({ params }: PageProps) {
 
         {guests.length > 0 ? (
           <section className="mt-6">
-            <h2 className="mb-3 text-lg font-black text-daet-ink">
+            <h2 className="mb-3 text-lg font-bold text-daet-ink">
               Guests <span className="text-sm font-bold text-daet-ink/70">({checkedGuests} of {guests.length} present)</span>
             </h2>
             <ul className="divide-y divide-daet-ink/10 rounded-2xl bg-white">

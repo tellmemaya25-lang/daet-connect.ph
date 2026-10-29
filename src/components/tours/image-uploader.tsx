@@ -92,7 +92,7 @@ export function ImageUploader({
           aria-describedby={problems.length > 0 ? `${helpId} ${errorId}` : helpId}
           className="sr-only"
         />
-        <span className="block text-base font-black text-daet-ink">{label}</span>
+        <span className="block text-base font-bold text-daet-ink">{label}</span>
         <span className="mt-1 block text-sm font-semibold text-daet-forest underline underline-offset-4">
           Choose {multiple ? 'files' : 'a file'} or drop {multiple ? 'them' : 'it'} here
         </span>
@@ -102,7 +102,7 @@ export function ImageUploader({
         </span>
       </label>
       {problems.length > 0 ? (
-        <ul id={errorId} role="alert" className="mt-2 space-y-1 text-sm font-semibold text-rose-700">
+        <ul id={errorId} role="alert" className="mt-2 space-y-1 text-sm font-semibold text-red-700">
           {problems.map((problem) => (
             <li key={problem}>{problem}</li>
           ))}

@@ -152,7 +152,7 @@ const shortDate = (key: string) => new Date(`${key}T00:00:00+08:00`).toLocaleDat
 function EventTours({ tours, attractionName }: { tours: EventTour[]; attractionName: string | null }) {
   return (
     <section aria-labelledby="event-tours" className="mt-8">
-      <h2 id="event-tours" className="text-xl font-black text-daet-ink">
+      <h2 id="event-tours" className="text-xl font-bold text-daet-ink">
         Tours happening during this event
       </h2>
       {tours.length === 0 ? (
@@ -167,11 +167,11 @@ function EventTours({ tours, attractionName }: { tours: EventTour[]; attractionN
           {tours.map((tour) => (
             <li key={tour.id}>
               <Link href={`/tours/packages/${tour.id}`} className="flex h-full gap-3 rounded-2xl bg-white p-3">
-                <div className="h-20 w-24 shrink-0 overflow-hidden rounded-xl bg-gradient-to-br from-daet-forest to-daet-leaf">
+                <div className="h-20 w-24 shrink-0 overflow-hidden rounded-2xl bg-gradient-to-br from-daet-forest to-daet-leaf">
                   {tour.cover_image_url ? <img src={tour.cover_image_url} alt="" className="h-full w-full object-cover" /> : null}
                 </div>
                 <div className="min-w-0">
-                  <p className="font-black text-daet-ink">{tour.title}</p>
+                  <p className="font-bold text-daet-ink">{tour.title}</p>
                   <p className="mt-0.5 text-xs text-daet-ink/70">
                     Open {tour.dates.slice(0, 3).map(shortDate).join(", ")}
                     {tour.dates.length > 3 ? ` +${tour.dates.length - 3} more` : ""}

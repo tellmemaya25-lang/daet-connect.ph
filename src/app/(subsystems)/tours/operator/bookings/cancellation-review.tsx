@@ -51,8 +51,8 @@ export function CancellationReview({ bookingId, request, late }: { bookingId: st
   }
 
   return (
-    <div className="mb-4 rounded-2xl border border-rose-200 bg-rose-50/60 p-4">
-      <p className="mb-2 flex flex-wrap items-center gap-2 text-xs font-bold text-rose-900">
+    <div className="mb-4 rounded-2xl border border-red-200 bg-red-50/60 p-4">
+      <p className="mb-2 flex flex-wrap items-center gap-2 text-xs font-bold text-red-900">
         Cancellation requested
         {late ? <Badge tone="warning">Within 48 hours of the tour</Badge> : null}
       </p>

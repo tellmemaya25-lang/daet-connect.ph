@@ -15,7 +15,7 @@ export default async function NewOperatorMerchPage() {
   return (
     <PageFrame>
       <div className="mx-auto max-w-2xl">
-        <h1 className="mb-4 text-3xl font-black tracking-tight text-daet-ink">Submit a product</h1>
+        <h1 className="mb-4 text-3xl font-bold tracking-tight text-daet-ink">Submit a product</h1>
         <Card>
           <MerchForm mode="operator" action={saveMyMerch} />
         </Card>

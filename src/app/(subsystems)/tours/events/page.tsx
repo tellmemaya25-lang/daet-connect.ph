@@ -151,7 +151,7 @@ export default async function EventsCalendarPage({ searchParams }: { searchParam
                   const isSelected = cell.dateKey === selectedDay;
                   const isToday = cell.dateKey === todayKey;
                   const label = `${formatDayHeading(cell.dateKey)}${dayEvents.length ? `, ${dayEvents.length} event${dayEvents.length > 1 ? "s" : ""}` : ""}`;
-                  const cellClass = `flex min-h-12 flex-col items-center rounded-xl p-1 text-sm transition sm:min-h-24 sm:items-stretch sm:p-1.5 ${
+                  const cellClass = `flex min-h-12 flex-col items-center rounded-2xl p-1 text-sm transition sm:min-h-24 sm:items-stretch sm:p-1.5 ${
                     isSelected
                       ? "bg-blue-600 text-white"
                       : cell.inMonth

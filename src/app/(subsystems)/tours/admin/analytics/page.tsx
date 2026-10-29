@@ -121,7 +121,7 @@ export default async function AdminAnalyticsPage({ searchParams }: { searchParam
         <div className="grid grid-cols-3 gap-3">
           {buckets.map((b, i) => (
             <div key={b.label} className="rounded-2xl border border-daet-ink/10 p-3 text-center">
-              <p className="text-2xl font-black text-daet-ink">{b.count}</p>
+              <p className="text-2xl font-bold text-daet-ink">{b.count}</p>
               <p className="text-xs text-daet-ink/70">{b.label}</p>
               {i === 2 && b.count > 0 ? (
                 <Badge tone="warning" className="mt-1">
@@ -140,7 +140,7 @@ function Stat({ label, value, note }: { label: string; value: string; note: stri
   return (
     <Card>
       <p className="text-xs font-bold text-daet-ink/70">{label}</p>
-      <p className="mt-1 text-2xl font-black text-daet-ink">{value}</p>
+      <p className="mt-1 text-2xl font-bold text-daet-ink">{value}</p>
       <p className="text-xs text-daet-ink/70">{note}</p>
     </Card>
   );

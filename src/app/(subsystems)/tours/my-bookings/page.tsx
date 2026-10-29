@@ -1,13 +1,51 @@
-import { LineIcon } from "@/components/ui/icons";
-import { formatPeso } from "@/lib/money";
-import { redirect } from "next/navigation";
+import Image from "next/image";
 import Link from "next/link";
-import { PageFrame } from "@/components/ui/page-frame";
+import { redirect } from "next/navigation";
+import { Badge, type BadgeTone } from "@/components/ui/badge";
+import { ButtonLink } from "@/components/ui/button";
+import { EmptyState } from "@/components/ui/empty-state";
+import { LineIcon } from "@/components/ui/icons";
 import { Notice } from "@/components/ui/notice";
+import { PageFrame } from "@/components/ui/page-frame";
+import { formatPeso } from "@/lib/money";
+import { PHOTOS } from "@/lib/photo-credits";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { toManilaDateKey } from "@/lib/tours/events-calendar";
+import { placePhoto } from "@/lib/tours/trip-board";
 
 export const dynamic = "force-dynamic";
+export const metadata = { title: "My bookings" };
+
+const STATUS: Record<string, { label: string; tone: BadgeTone }> = {
+  pending: { label: "Waiting for operator", tone: "warning" },
+  confirmed: { label: "Confirmed", tone: "success" },
+  completed: { label: "Completed", tone: "info" },
+  cancelled: { label: "Cancelled", tone: "neutral" },
+  rejected: { label: "Declined", tone: "danger" },
+};
+
+const PAYMENT: Record<string, { label: string; tone: BadgeTone }> = {
+  unpaid: { label: "Unpaid", tone: "warning" },
+  partial: { label: "Partially paid", tone: "info" },
+  paid: { label: "Paid", tone: "success" },
+  refunded: { label: "Refunded", tone: "neutral" },
+};
+
+type Pkg = { id: string; title: string; location_name: string | null; cover_image_url: string | null };
+type Row = {
+  id: string;
+  booking_reference: string;
+  tour_date: string;
+  status: string;
+  number_of_pax: number;
+  total_amount: number;
+  payment_status: string | null;
+  tours_packages: Pkg | Pkg[] | null;
+};
+
+const longDate = (key: string) =>
+  new Date(`${key}T00:00:00+08:00`).toLocaleDateString("en-PH", { weekday: "short", month: "short", day: "numeric", year: "numeric", timeZone: "Asia/Manila" });
 
 export default async function MyBookingsPage() {
   if (!isSupabaseConfigured()) {
@@ -21,267 +59,129 @@ export default async function MyBookingsPage() {
   }
 
   const supabase = await createSupabaseServerClient();
-
-  // Get current user
   const {
     data: { user },
   } = await supabase.auth.getUser();
+  if (!user) redirect(`/login?next=${encodeURIComponent("/tours/my-bookings")}`);
 
-  if (!user) {
-    redirect(`/login?next=${encodeURIComponent("/tours/my-bookings")}`);
-  }
-
-  // Debug: Log user info
-
-  // Fetch all bookings for this user (without operator payment details for now)
-  const { data: bookings, error } = await supabase
+  const { data, error } = await supabase
     .from("tours_bookings")
-    .select(
-      `
-      *,
-      tours_packages (
-        id,
-        title,
-        location_name,
-        cover_image_url
-      )
-    `
-    )
+    .select("id, booking_reference, tour_date, status, number_of_pax, total_amount, payment_status, tours_packages ( id, title, location_name, cover_image_url )")
     .eq("user_id", user.id)
-    .order("created_at", { ascending: false });
+    .order("tour_date", { ascending: true });
+  if (error) console.error("Bookings fetch error:", error.message);
 
-  // Debug: Log query results
-
-  if (error) {
-    console.error("Bookings fetch error:", error);
-    console.error("Error message:", error.message);
-    console.error("Error details:", error.details);
-    console.error("Error hint:", error.hint);
-    console.error("Error code:", error.code);
-  }
-
-  const statusColors: Record<string, string> = {
-    pending: "bg-amber-100 text-amber-900",
-    confirmed: "bg-emerald-100 text-emerald-800",
-    cancelled: "bg-gray-100 text-gray-800",
-    completed: "bg-blue-100 text-blue-900",
-    rejected: "bg-rose-100 text-rose-800",
-  };
-
-  const statusLabels: Record<string, string> = {
-    pending: "Pending",
-    confirmed: "Confirmed",
-    cancelled: "Cancelled",
-    completed: "Completed",
-    rejected: "Rejected",
-  };
+  const rows = (data ?? []) as Row[];
+  const today = toManilaDateKey(new Date());
+  const isActive = (b: Row) => (b.status === "pending" || b.status === "confirmed") && b.tour_date >= today;
+  const upcoming = rows.filter(isActive);
+  const past = rows.filter((b) => !isActive(b)).reverse();
 
   return (
     <PageFrame>
-      <div className="mx-auto max-w-5xl">
-        {/* Header */}
-        <div className="mb-8 flex flex-wrap items-center justify-between gap-4">
+      <div className="mx-auto max-w-4xl">
+        <header className="mb-8 flex flex-wrap items-end justify-between gap-4">
           <div>
-            <h1 className="text-4xl font-black text-daet-ink">My Bookings</h1>
-            <p className="mt-2 text-sm text-daet-ink/70">
-              View and manage your tour bookings
+            <h1 className="display-2 text-daet-ink">My bookings</h1>
+            <p className="mt-2 text-lg text-daet-ink">
+              {rows.length === 0 ? "Nothing booked yet." : `${upcoming.length} coming up, ${past.length} past or cancelled.`}
             </p>
           </div>
-          <div className="flex flex-wrap gap-3">
-          <Link
-            href="/tours/messages"
-            className="inline-flex min-h-11 items-center rounded-full border border-daet-forest/30 bg-white px-6 text-sm font-bold text-daet-leaf transition hover:bg-daet-forest/5"
-          >
-            Messages
-          </Link>
-          <Link
-            href="/tours/browse"
-            className="rounded-full bg-daet-forest px-6 py-3 text-sm font-bold text-white transition hover:bg-daet-ink"
-          >
-            Browse Tours
-          </Link>
+          <div className="flex flex-wrap gap-2">
+            <ButtonLink href="/tours/messages" variant="secondary">
+              Messages
+            </ButtonLink>
+            <ButtonLink href="/tours/browse">Find a trip</ButtonLink>
           </div>
-        </div>
+        </header>
 
-        {/* Back Button */}
-        <div className="mb-6">
-          <Link
-            href="/tours/browse"
-            className="inline-flex items-center gap-2 text-sm font-bold text-daet-ink/70 transition hover:text-daet-ink"
-          >
-            ← Back to Browse
-          </Link>
-        </div>
+        {error ? <Notice variant="error" className="mb-6">Your bookings could not be loaded right now. Please try again.</Notice> : null}
 
-        {/* Bookings List */}
-        {!bookings || bookings.length === 0 ? (
-          <div className="rounded-2xl bg-white p-12 text-center">
-            <div className="mx-auto mb-4 grid h-20 w-20 place-items-center rounded-full bg-daet-sand text-4xl">
-              <LineIcon name="calendar" className="inline-block h-[1.1em] w-[1.1em] align-[-0.15em]" />
-            </div>
-            <h2 className="text-xl font-black text-daet-ink">No bookings yet</h2>
-            <p className="mt-2 text-sm text-daet-ink/70">
-              Start exploring and book your first tour!
-            </p>
-            <Link
-              href="/tours/browse"
-              className="mt-6 inline-block rounded-full bg-daet-forest px-8 py-3 text-sm font-bold text-white transition hover:bg-daet-ink"
-            >
-              Browse Tours
-            </Link>
-          </div>
-        ) : (
-          <div className="space-y-4">
-            {bookings.map((booking) => {
-              const pkg = Array.isArray(booking.tours_packages)
-                ? booking.tours_packages[0]
-                : booking.tours_packages;
+        {rows.length === 0 && !error ? (
+          <EmptyState
+            icon={<LineIcon name="calendar" />}
+            title="No bookings yet"
+            description="Choose a trip, pick a date, and it will show up here with your ticket and payment."
+            action={<ButtonLink href="/tours/browse">Find a trip</ButtonLink>}
+          />
+        ) : null}
 
-              const operator = Array.isArray(pkg?.tours_operators)
-                ? pkg.tours_operators[0]
-                : pkg?.tours_operators;
+        {upcoming.length > 0 ? (
+          <section aria-labelledby="upcoming" className="mb-10">
+            <h2 id="upcoming" className="mb-4 text-2xl font-bold text-daet-ink">
+              Coming up
+            </h2>
+            <ul className="space-y-3">
+              {upcoming.map((b) => (
+                <BookingRow key={b.id} booking={b} today={today} />
+              ))}
+            </ul>
+          </section>
+        ) : null}
 
-              return (
-                <div
-                  key={booking.id}
-                  className="rounded-2xl bg-white p-6"
-                >
-                  <div className="flex gap-4">
-                    {/* Package Image */}
-                    {pkg?.cover_image_url && (
-                      <img
-                        src={pkg.cover_image_url}
-                        alt={pkg.title}
-                        className="h-32 w-40 flex-shrink-0 rounded-2xl object-cover"
-                      />
-                    )}
-
-                    {/* Booking Info */}
-                    <div className="flex flex-1 flex-col">
-                      {/* Top Row: Package Title + Status */}
-                      <div className="mb-2 flex items-start justify-between gap-4">
-                        <div className="flex-1">
-                          <h3 className="text-xl font-black text-daet-ink">
-                            {pkg?.title || "Package"}
-                          </h3>
-                          {operator && (
-                            <p className="mt-1 text-sm font-bold text-daet-forest">
-                              by {operator.business_name}
-                            </p>
-                          )}
-                        </div>
-                        <span
-                          className={`rounded-full px-4 py-1 text-xs font-bold ${statusColors[booking.status] || "bg-gray-100 text-gray-800"}`}
-                        >
-                          {statusLabels[booking.status] || booking.status}
-                        </span>
-                      </div>
-
-                      {/* Details Grid */}
-                      <div className="grid grid-cols-2 gap-4 text-sm">
-                        <div>
-                          <p className="text-daet-ink/70">Booking Reference</p>
-                          <p className="font-bold text-daet-ink">
-                            {booking.booking_reference}
-                          </p>
-                        </div>
-                        <div>
-                          <p className="text-daet-ink/70">Tour Date</p>
-                          <p className="font-bold text-daet-ink">
-                            {new Date(booking.tour_date).toLocaleDateString("en-US", {
-                              month: "short",
-                              day: "numeric",
-                              year: "numeric",
-                            })}
-                          </p>
-                        </div>
-                        <div>
-                          <p className="text-daet-ink/70">Participants</p>
-                          <p className="font-bold text-daet-ink">
-                            {booking.number_of_pax} pax
-                          </p>
-                        </div>
-                        <div>
-                          <p className="text-daet-ink/70">Total Amount</p>
-                          <p className="text-lg font-black text-daet-forest">
-                            {formatPeso(booking.total_amount)}
-                          </p>
-                        </div>
-                      </div>
-
-                      {/* Payment Status - Show for confirmed bookings */}
-                      {booking.status === "confirmed" && (
-                        <div className="mt-4">
-                          {booking.payment_status === "paid" ? (
-                            <div className="rounded-xl bg-emerald-50 p-3 text-center">
-                              <p className="text-sm font-bold text-emerald-800">
-                                <LineIcon name="check" className="inline-block h-[1.1em] w-[1.1em] align-[-0.15em]" /> Payment Completed
-                              </p>
-                            </div>
-                          ) : (
-                            <Link
-                              href={`/tours/bookings/${booking.id}`}
-                              className="flex min-h-11 w-full items-center justify-center rounded-full bg-daet-forest px-6 text-sm font-bold text-white transition hover:bg-daet-ink"
-                            >
-                              {booking.payment_status === "partial" ? "Pay remaining balance" : "Pay now"} →
-                            </Link>
-                          )}
-                        </div>
-                      )}
-
-                      {/* View Details Link */}
-                      <Link
-                        href={`/tours/bookings/${booking.id}`}
-                        className="mt-3 text-sm font-bold text-daet-forest transition hover:text-daet-ink"
-                      >
-                        View Full Details →
-                      </Link>
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        )}
-
-        {/* Stats Summary - if there are bookings */}
-        {bookings && bookings.length > 0 && (
-          <div className="mt-8 grid grid-cols-5 gap-4">
-            <div className="rounded-2xl bg-white p-4 text-center">
-              <p className="text-2xl font-black text-daet-ink">{bookings.length}</p>
-              <p className="text-xs text-daet-ink/70">Total</p>
-            </div>
-            <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4 text-center">
-              <p className="text-2xl font-black text-amber-900">
-                {bookings.filter((b) => b.status === "pending").length}
-              </p>
-              <p className="text-xs text-amber-900">Pending</p>
-            </div>
-            <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-center">
-              <p className="text-2xl font-black text-emerald-900">
-                {bookings.filter((b) => b.status === "confirmed").length}
-              </p>
-              <p className="text-xs text-emerald-900">Confirmed</p>
-            </div>
-            <div className="rounded-2xl border border-blue-200 bg-blue-50 p-4 text-center">
-              <p className="text-2xl font-black text-blue-900">
-                {bookings.filter((b) => b.status === "completed").length}
-              </p>
-              <p className="text-xs text-blue-900">Completed</p>
-            </div>
-            <div className="rounded-2xl border border-gray-200 bg-gray-50 p-4 text-center">
-              <p className="text-2xl font-black text-gray-900">
-                {
-                  bookings.filter(
-                    (b) => b.status === "cancelled" || b.status === "rejected"
-                  ).length
-                }
-              </p>
-              <p className="text-xs text-gray-900/60">Cancelled</p>
-            </div>
-          </div>
-        )}
+        {past.length > 0 ? (
+          <section aria-labelledby="past">
+            <h2 id="past" className="mb-4 text-2xl font-bold text-daet-ink">
+              Past and cancelled
+            </h2>
+            <ul className="space-y-3">
+              {past.map((b) => (
+                <BookingRow key={b.id} booking={b} today={today} quiet />
+              ))}
+            </ul>
+          </section>
+        ) : null}
       </div>
     </PageFrame>
+  );
+}
+
+function BookingRow({ booking: b, today, quiet = false }: { booking: Row; today: string; quiet?: boolean }) {
+  const pkg = Array.isArray(b.tours_packages) ? b.tours_packages[0] : b.tours_packages;
+  const status = STATUS[b.status] ?? { label: b.status, tone: "neutral" as const };
+  const pay = PAYMENT[b.payment_status ?? "unpaid"] ?? PAYMENT.unpaid;
+  const photo = PHOTOS[placePhoto(pkg?.title, pkg?.location_name)];
+  const owes = b.status === "confirmed" && b.payment_status !== "paid" && b.payment_status !== "refunded";
+
+  return (
+    <li className="grid grid-cols-[88px_1fr] gap-4 rounded-2xl bg-white p-3 sm:grid-cols-[160px_1fr] sm:p-4">
+      <div className={`relative aspect-square overflow-hidden rounded-2xl bg-blue-100 sm:aspect-[4/3] ${quiet ? "opacity-80" : ""}`}>
+        {pkg?.cover_image_url ? (
+          <img src={pkg.cover_image_url} alt="" className="h-full w-full object-cover" loading="lazy" />
+        ) : (
+          <Image src={photo.src} alt="" fill sizes="160px" className="object-cover" />
+        )}
+      </div>
+      <div className="min-w-0">
+        <div className="flex flex-wrap gap-1.5">
+          <Badge tone={status.tone}>{status.label}</Badge>
+          {b.status === "confirmed" || b.status === "completed" ? <Badge tone={pay.tone}>{pay.label}</Badge> : null}
+        </div>
+        <Link href={`/tours/bookings/${b.id}`} className="mt-1 block text-lg font-bold leading-snug text-daet-ink hover:text-blue-700 sm:text-xl">
+          {pkg?.title ?? "Tour"}
+        </Link>
+        <p className="mt-1 text-daet-ink">
+          {b.tour_date === today ? <strong className="text-blue-700">Today</strong> : longDate(b.tour_date)} · {b.number_of_pax} guest{b.number_of_pax === 1 ? "" : "s"}
+        </p>
+        <p className="text-sm text-slate-600">
+          Ref {b.booking_reference} · {formatPeso(b.total_amount)}
+        </p>
+        <div className="mt-3 flex flex-wrap gap-2">
+          {owes ? (
+            <ButtonLink href={`/tours/bookings/${b.id}#payment`} variant="accent">
+              {b.payment_status === "partial" ? "Pay the balance" : "Pay now"}
+            </ButtonLink>
+          ) : null}
+          {b.status === "confirmed" ? (
+            <ButtonLink href={`/tours/bookings/${b.id}/ticket`} variant="secondary">
+              Ticket
+            </ButtonLink>
+          ) : null}
+          <ButtonLink href={`/tours/bookings/${b.id}`} variant="ghost">
+            Details
+          </ButtonLink>
+        </div>
+      </div>
+    </li>
   );
 }

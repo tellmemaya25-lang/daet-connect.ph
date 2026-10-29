@@ -133,7 +133,7 @@ export default async function AdminPackagesPage() {
           </div>
           
           {pendingPackages.length === 0 ? (
-            <div className="bg-white rounded-xl p-6 text-center text-daet-ink/70">
+            <div className="bg-white rounded-2xl p-6 text-center text-daet-ink/70">
               No pending packages
             </div>
           ) : (
@@ -154,7 +154,7 @@ export default async function AdminPackagesPage() {
           </div>
           
           {publishedPackages.length === 0 ? (
-            <div className="bg-white rounded-xl p-6 text-center text-daet-ink/70">
+            <div className="bg-white rounded-2xl p-6 text-center text-daet-ink/70">
               No published packages
             </div>
           ) : (
@@ -200,7 +200,7 @@ function PackageCard({ package: pkg }: { package: any }) {
   const contactName = operator?.profiles?.full_name || 'Unknown';
 
   return (
-    <div className="bg-white rounded-xl border border-daet-ink/20 p-6">
+    <div className="bg-white rounded-2xl border border-daet-ink/20 p-6">
       <div className="flex items-start justify-between">
         <div className="flex-1">
           <div className="flex items-center gap-3 mb-2">
@@ -221,7 +221,7 @@ function PackageCard({ package: pkg }: { package: any }) {
         <div className="ml-4">
           <Link
             href={`/tours/admin/packages/${pkg.id}`}
-            className="inline-flex items-center px-4 py-2 border border-daet-ink/20 rounded-xl text-sm font-medium text-daet-ink/80 bg-white hover:bg-slate-50"
+            className="inline-flex items-center px-4 py-2 border border-daet-ink/20 rounded-2xl text-sm font-medium text-daet-ink/80 bg-white hover:bg-slate-50"
           >
             Review
           </Link>

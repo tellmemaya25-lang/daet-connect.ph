@@ -136,7 +136,7 @@ export function StopsStep({
   const stopsErrors = getStopsErrors();
 
   return (
-    <div className="border rounded-xl p-6 bg-white">
+    <div className="border rounded-2xl p-6 bg-white">
       <div className="flex items-center justify-between mb-6">
         <h2 className="text-xl font-bold text-daet-ink">Tour Stops</h2>
         {canAddStops && (
@@ -153,7 +153,7 @@ export function StopsStep({
               });
             }}
             disabled={loading}
-            className="px-4 py-2 bg-daet-forest text-white rounded-xl text-sm font-medium hover:bg-daet-leaf transition disabled:opacity-50 disabled:cursor-not-allowed"
+            className="px-4 py-2 bg-daet-forest text-white rounded-2xl text-sm font-medium hover:bg-daet-leaf transition disabled:opacity-50 disabled:cursor-not-allowed"
           >
             + Add Stop
           </button>
@@ -229,7 +229,7 @@ export function StopsStep({
                         }
                       }}
                       disabled={loading}
-                      className="text-rose-700 hover:text-red-800 text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="text-red-700 hover:text-red-800 text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       Delete
                     </button>
@@ -262,7 +262,7 @@ export function StopsStep({
       {/* Add/Edit Form Modal */}
       {showAddForm && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl max-w-md w-full p-6 max-h-[90vh] overflow-y-auto">
+          <div className="bg-white rounded-2xl max-w-md w-full p-6 max-h-[90vh] overflow-y-auto">
             <h3 className="text-lg font-bold text-daet-ink mb-4">
               {editingId ? "Edit Stop" : "Add Stop"}
             </h3>
@@ -280,7 +280,7 @@ export function StopsStep({
                     setFormData({ ...formData, locationName: e.target.value })
                   }
                   maxLength={EDIT_LIMITS.stopLocation.max}
-                  className="w-full px-3 py-2 border border-daet-ink/20 rounded-xl focus:ring-2 focus:ring-daet-forest/30 outline-none"
+                  className="w-full px-3 py-2 border border-daet-ink/20 rounded-2xl focus:ring-2 focus:ring-daet-forest/30 outline-none"
                   placeholder="e.g., Taal Volcano"
                 />
               </div>
@@ -297,7 +297,7 @@ export function StopsStep({
                   }
                   maxLength={EDIT_LIMITS.stopDescription.max}
                   rows={3}
-                  className="w-full px-3 py-2 border border-daet-ink/20 rounded-xl focus:ring-2 focus:ring-daet-forest/30 outline-none resize-none"
+                  className="w-full px-3 py-2 border border-daet-ink/20 rounded-2xl focus:ring-2 focus:ring-daet-forest/30 outline-none resize-none"
                   placeholder="Optional description of the stop"
                 />
               </div>
@@ -316,7 +316,7 @@ export function StopsStep({
                   onChange={(e) =>
                     setFormData({ ...formData, latitude: parseFloat(e.target.value) || 0 })
                   }
-                  className="w-full px-3 py-2 border border-daet-ink/20 rounded-xl focus:ring-2 focus:ring-daet-forest/30 outline-none"
+                  className="w-full px-3 py-2 border border-daet-ink/20 rounded-2xl focus:ring-2 focus:ring-daet-forest/30 outline-none"
                   placeholder="e.g., 14.1122"
                 />
               </div>
@@ -335,7 +335,7 @@ export function StopsStep({
                   onChange={(e) =>
                     setFormData({ ...formData, longitude: parseFloat(e.target.value) || 0 })
                   }
-                  className="w-full px-3 py-2 border border-daet-ink/20 rounded-xl focus:ring-2 focus:ring-daet-forest/30 outline-none"
+                  className="w-full px-3 py-2 border border-daet-ink/20 rounded-2xl focus:ring-2 focus:ring-daet-forest/30 outline-none"
                   placeholder="e.g., 122.9553"
                 />
               </div>
@@ -356,7 +356,7 @@ export function StopsStep({
                       estimatedDurationMinutes: e.target.value ? parseInt(e.target.value) : null,
                     })
                   }
-                  className="w-full px-3 py-2 border border-daet-ink/20 rounded-xl focus:ring-2 focus:ring-daet-forest/30 outline-none"
+                  className="w-full px-3 py-2 border border-daet-ink/20 rounded-2xl focus:ring-2 focus:ring-daet-forest/30 outline-none"
                   placeholder="e.g., 60"
                 />
               </div>
@@ -369,14 +369,14 @@ export function StopsStep({
                     setShowAddForm(false);
                     setEditingId(undefined);
                   }}
-                  className="flex-1 px-4 py-2 border border-daet-ink/20 text-daet-ink/80 rounded-xl hover:bg-slate-50 transition"
+                  className="flex-1 px-4 py-2 border border-daet-ink/20 text-daet-ink/80 rounded-2xl hover:bg-slate-50 transition"
                 >
                   Cancel
                 </button>
                 <button
                   type="button"
                   onClick={handleAddStop}
-                  className="flex-1 px-4 py-2 bg-daet-forest text-white rounded-xl hover:bg-daet-leaf transition"
+                  className="flex-1 px-4 py-2 bg-daet-forest text-white rounded-2xl hover:bg-daet-leaf transition"
                 >
                   {editingId ? "Update" : "Add"}
                 </button>

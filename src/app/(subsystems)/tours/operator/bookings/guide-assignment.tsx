@@ -75,7 +75,7 @@ export function GuideAssignment({
 
   if (availableGuides.length === 0) {
     return (
-      <div className="rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800">
+      <div className="rounded-2xl border border-yellow-200 bg-yellow-50 p-3 text-sm text-yellow-800">
         No approved guides available. Guides must be approved before assignment.
       </div>
     );
@@ -84,7 +84,7 @@ export function GuideAssignment({
   return (
     <div className="space-y-3">
       {error && (
-        <div className="rounded-xl border border-rose-200 bg-rose-50 p-3 text-sm text-rose-800">
+        <div className="rounded-2xl border border-red-200 bg-red-50 p-3 text-sm text-red-800">
           {error}
         </div>
       )}
@@ -95,7 +95,7 @@ export function GuideAssignment({
           value={selectedGuideId}
           onChange={(e) => setSelectedGuideId(e.target.value)}
           disabled={isSubmitting}
-          className="flex-1 rounded-xl border border-daet-ink/20 min-h-11 px-4 py-2 text-base focus:border-daet-forest focus:outline-none focus:ring-2 focus:ring-daet-forest/20"
+          className="flex-1 rounded-2xl border border-daet-ink/20 min-h-11 px-4 py-2 text-base focus:border-daet-forest focus:outline-none focus:ring-2 focus:ring-daet-forest/20"
         >
           <option value="">Select a guide...</option>
           {[...availableGuides]
@@ -124,7 +124,7 @@ export function GuideAssignment({
           <button
             onClick={handleAssign}
             disabled={isSubmitting || !selectedGuideId}
-            className="rounded-full bg-daet-forest px-6 py-2 text-sm font-bold text-white transition hover:bg-daet-ink disabled:opacity-50"
+            className="rounded-full bg-daet-forest px-6 py-2 text-sm font-bold text-white transition hover:bg-blue-700 disabled:opacity-50"
           >
             {isSubmitting ? "Assigning..." : "Assign"}
           </button>
@@ -132,7 +132,7 @@ export function GuideAssignment({
       </div>
 
       {selectedGuideId && availability[selectedGuideId] === false && selectedGuideId !== currentGuideId ? (
-        <p className="text-sm font-bold text-amber-800">This guide marked the tour date as not available. Message them before assigning.</p>
+        <p className="text-sm font-bold text-yellow-800">This guide marked the tour date as not available. Message them before assigning.</p>
       ) : null}
 
       {currentGuideId && (

@@ -47,7 +47,7 @@ export function SwapRequest({
 
   if (latest?.status === "pending") {
     return (
-      <div className="mt-4 rounded-2xl border border-amber-200 bg-amber-50/60 p-4 text-sm">
+      <div className="mt-4 rounded-2xl border border-yellow-200 bg-yellow-50/60 p-4 text-sm">
         <p className="font-bold text-daet-ink">
           Swap requested{latest.toGuideName ? ` to ${latest.toGuideName}` : ""}: {SWAP_STATUS_LABELS.pending.toLowerCase()}.
         </p>

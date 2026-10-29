@@ -123,19 +123,19 @@ export function ChatThread({
         ) : null}
         {groups.map((group) => (
           <section key={group.day} aria-label={group.day}>
-            <p className="mb-2 text-center text-xs font-bold text-daet-ink/70">{group.day}</p>
+            <p className="mb-2 text-center text-sm font-semibold text-slate-600">{group.day}</p>
             <ul className="space-y-2">
               {group.items.map((message) => {
                 const mine = message.sender_id === viewerId;
                 const url = message.attachment_url ? urls[message.attachment_url] : null;
                 return (
                   <li key={message.id} className={`flex ${mine ? "justify-end" : "justify-start"}`}>
-                    <div className={`max-w-[80%] rounded-2xl px-3 py-2 ${mine ? "bg-daet-forest text-white" : "bg-daet-sand/60 text-daet-ink"}`}>
+                    <div className={`max-w-[80%] rounded-2xl px-3 py-2 ${mine ? "bg-daet-forest text-white" : "bg-slate-100 text-daet-ink"}`}>
                       {!mine ? <p className="text-xs font-bold opacity-75">{senderLabel(message.sender_id, viewerId, members)}</p> : null}
                       {message.attachment_url ? (
                         url ? (
                           <a href={url} target="_blank" rel="noopener noreferrer" className="mt-1 block">
-                            <img src={url} alt="Photo attachment" className="max-h-64 rounded-xl object-cover" />
+                            <img src={url} alt="Photo attachment" className="max-h-64 rounded-2xl object-cover" />
                           </a>
                         ) : (
                           <p className="mt-1 text-xs opacity-75"><LineIcon name="camera" className="inline-block h-[1.1em] w-[1.1em] align-[-0.15em]" /> Photo</p>
@@ -178,7 +178,7 @@ export function ChatThread({
               }
             }}
             placeholder="Write a message…"
-            className="block w-full resize-none rounded-xl border border-daet-ink/20 px-3 py-2 text-base focus:border-daet-forest focus:outline-none focus:ring-2 focus:ring-daet-forest/20"
+            className="block w-full resize-none rounded-2xl border border-daet-ink/20 px-3 py-2 text-base focus:border-daet-forest focus:outline-none focus:ring-2 focus:ring-daet-forest/20"
           />
           <div className="mt-2 flex items-center justify-between gap-2">
             <label className="inline-flex min-h-11 cursor-pointer items-center gap-2 rounded-full px-3 text-sm font-bold text-daet-forest hover:bg-daet-sand">

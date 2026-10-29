@@ -44,7 +44,7 @@ export default async function GuideCheckInPage() {
         <Link href="/tours/guide/my-tours" className="text-sm font-bold text-daet-ink/70 hover:text-daet-ink">
           ← My tours
         </Link>
-        <h1 className="mt-4 text-3xl font-black text-daet-ink">Check-in</h1>
+        <h1 className="mt-4 text-3xl font-bold text-daet-ink">Check-in</h1>
         <p className="mt-1 text-sm text-daet-ink/65">Scan each group&apos;s ticket when they arrive.</p>
 
         <div className="mt-6">
@@ -52,7 +52,7 @@ export default async function GuideCheckInPage() {
         </div>
 
         <section className="mt-8">
-          <h2 className="mb-3 text-lg font-black text-daet-ink">Today&apos;s groups</h2>
+          <h2 className="mb-3 text-lg font-bold text-daet-ink">Today&apos;s groups</h2>
           {tours && tours.length > 0 ? (
             <ul className="divide-y divide-daet-ink/10 rounded-2xl bg-white">
               {tours.map((tour) => {

@@ -4,7 +4,7 @@ import type { RatingSummary } from "@/lib/tours/reviews";
 export function Stars({ value, size = "text-base" }: { value: number; size?: string }) {
   const filled = Math.round(value);
   return (
-    <span className={`inline-flex ${size} leading-none text-amber-500`} aria-label={`${value.toFixed(1)} out of 5 stars`} role="img">
+    <span className={`inline-flex ${size} leading-none text-yellow-500`} aria-label={`${value.toFixed(1)} out of 5 stars`} role="img">
       {[1, 2, 3, 4, 5].map((i) => (
         <span key={i} aria-hidden="true" className={i > filled ? "text-daet-ink/20" : ""}>
           ★

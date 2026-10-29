@@ -69,10 +69,10 @@ export default async function AdminReviewsPage({ searchParams }: { searchParams:
             const operator = Array.isArray(review.tours_operators) ? review.tours_operators[0] : review.tours_operators;
             return (
               <li key={review.id}>
-                <Card className={review.is_hidden ? "border-rose-200 bg-rose-50/40" : ""}>
+                <Card className={review.is_hidden ? "border-red-200 bg-red-50/40" : ""}>
                   <div className="flex flex-wrap items-start justify-between gap-2">
                     <div>
-                      <Link href={`/tours/packages/${review.package_id}#reviews`} className="font-black text-daet-ink hover:underline">
+                      <Link href={`/tours/packages/${review.package_id}#reviews`} className="font-bold text-daet-ink hover:underline">
                         {pkg?.title ?? "Tour"}
                       </Link>
                       <p className="text-xs text-daet-ink/70">
@@ -86,11 +86,11 @@ export default async function AdminReviewsPage({ searchParams }: { searchParams:
                   </div>
                   {review.comment ? <p className="mt-3 whitespace-pre-line text-sm leading-6 text-daet-ink/80">{review.comment}</p> : <p className="mt-3 text-sm italic text-daet-ink/70">Rating only.</p>}
                   {review.operator_reply ? (
-                    <p className="mt-2 rounded-xl bg-daet-sand/50 p-3 text-sm text-daet-ink/80">
+                    <p className="mt-2 rounded-2xl bg-daet-sand/50 p-3 text-sm text-daet-ink/80">
                       <span className="font-bold">Operator reply:</span> {review.operator_reply}
                     </p>
                   ) : null}
-                  {review.is_hidden && review.hidden_reason ? <p className="mt-2 text-xs font-bold text-rose-700">Reason: {review.hidden_reason}</p> : null}
+                  {review.is_hidden && review.hidden_reason ? <p className="mt-2 text-xs font-bold text-red-700">Reason: {review.hidden_reason}</p> : null}
                   <div className="mt-3">
                     <ModerateForm reviewId={review.id} hidden={review.is_hidden} />
                   </div>

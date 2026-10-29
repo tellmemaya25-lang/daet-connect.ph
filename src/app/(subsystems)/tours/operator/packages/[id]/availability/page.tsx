@@ -73,7 +73,7 @@ export default async function PackageAvailabilityPage({ params }: PageProps) {
           <span className="text-daet-ink">Dates &amp; seats</span>
         </nav>
 
-        <h1 className="text-3xl font-black text-daet-ink">Dates &amp; seats</h1>
+        <h1 className="text-3xl font-bold text-daet-ink">Dates &amp; seats</h1>
         <p className="mt-2 text-sm leading-6 text-daet-ink/70">
           Open the dates you run this tour and how many guests you can take. Tourists can then book only those dates, and a date
           closes automatically when its seats are taken. Cancelled and declined bookings give their seats back.
@@ -85,12 +85,12 @@ export default async function PackageAvailabilityPage({ params }: PageProps) {
         ) : null}
 
         <Card className="mt-6">
-          <h2 className="mb-4 text-lg font-black text-daet-ink">Open dates</h2>
+          <h2 className="mb-4 text-lg font-bold text-daet-ink">Open dates</h2>
           <OpenDatesForm packageId={pkg.id} today={today} />
         </Card>
 
         <section className="mt-8">
-          <h2 className="mb-3 text-lg font-black text-daet-ink">Upcoming dates</h2>
+          <h2 className="mb-3 text-lg font-bold text-daet-ink">Upcoming dates</h2>
           {error ? (
             <Notice variant="error">Dates could not be loaded. Refresh to try again.</Notice>
           ) : (

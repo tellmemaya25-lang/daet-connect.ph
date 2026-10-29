@@ -1,3 +1,5 @@
+import { EmptyState } from "@/components/ui/empty-state";
+import { LineIcon } from "@/components/ui/icons";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
@@ -56,11 +58,11 @@ export default async function MessagesInboxPage({ searchParams }: PageProps) {
   return (
     <PageFrame>
       <div className="mx-auto max-w-2xl">
-        <h1 className="text-3xl font-black text-daet-ink">Messages</h1>
-        <p className="mt-1 text-sm text-daet-ink/70">Booking chats, private chats with your guide or tourists, operator–guide chats and Tourism Office support. Only the people in a chat can read it.</p>
+        <h1 className="display-2 text-daet-ink">Messages</h1>
+        <p className="mt-2 text-daet-ink">Booking chats, private chats with your guide or tourists, operator–guide chats and Tourism Office support. Only the people in a chat can read it.</p>
 
         {filters.length > 0 ? (
-          <nav aria-label="Filter conversations" className="mt-4 flex gap-2 overflow-x-auto pb-1">
+          <nav aria-label="Filter conversations" className="-mx-4 mt-5 flex gap-2 overflow-x-auto px-4 pb-1 sm:mx-0 sm:px-0">
             {filters.map((filter) => {
               const active = filter.kind === kind;
               return (
@@ -68,7 +70,7 @@ export default async function MessagesInboxPage({ searchParams }: PageProps) {
                   key={filter.label}
                   href={filter.kind ? `/tours/messages?kind=${filter.kind}` : "/tours/messages"}
                   aria-current={active ? "page" : undefined}
-                  className={`inline-flex min-h-11 shrink-0 items-center rounded-full border px-4 text-sm font-bold ${active ? "border-daet-forest bg-daet-forest text-white" : "border-daet-ink/15 bg-white text-daet-ink hover:bg-daet-sand/40"}`}
+                  className={`inline-flex min-h-11 shrink-0 items-center rounded-full px-4 text-[15px] font-bold transition active:scale-[0.98] ${active ? "bg-blue-600 text-white" : "bg-white text-daet-ink hover:bg-blue-50"}`}
                 >
                   {filter.label}
                 </Link>
@@ -100,25 +102,22 @@ export default async function MessagesInboxPage({ searchParams }: PageProps) {
         {error ? (
           <Notice variant="error" className="mt-6">Messages could not be loaded. Refresh to try again.</Notice>
         ) : rows.length === 0 ? (
-          <div className="mt-6 rounded-2xl bg-white p-8 text-center">
-            <p className="text-lg font-black text-daet-ink">No conversations yet</p>
-            <p className="mt-1 text-sm text-daet-ink/70">Open a booking, a guide or the Tourism Office and tap “Message” to start a chat.</p>
-          </div>
+          <EmptyState className="mt-6" icon={<LineIcon name="chat" />} title="No conversations yet" description="Open a booking, a guide or the Tourism Office and tap Message to start a chat." />
         ) : (
-          <ul className="mt-6 divide-y divide-daet-ink/10 overflow-hidden rounded-2xl bg-white">
+          <ul className="mt-6 space-y-2">
             {rows.map((row) => {
               const preview = row.last_message ?? (row.last_sender_id ? "Photo" : "No messages yet");
               const mine = row.last_sender_id === user.id;
               return (
                 <li key={row.conversation_id}>
-                  <Link href={`/tours/messages/${row.conversation_id}`} className="flex min-h-11 items-start gap-3 p-4 transition hover:bg-daet-sand/40">
+                  <Link href={`/tours/messages/${row.conversation_id}`} className="flex min-h-11 items-start gap-3 rounded-2xl bg-white p-4 transition hover:bg-blue-50 active:scale-[0.99]">
                     <div className="min-w-0 flex-1">
                       <div className="flex items-baseline justify-between gap-2">
-                        <p className={`truncate text-daet-ink ${row.unread > 0 ? "font-black" : "font-bold"}`}>{row.title ?? "Conversation"}</p>
-                        <span className="shrink-0 text-xs text-daet-ink/70">{dayLabel(row.last_message_at)}</span>
+                        <p className={`truncate text-daet-ink font-bold`}>{row.title ?? "Conversation"}</p>
+                        <span className="shrink-0 text-sm text-slate-600">{dayLabel(row.last_message_at)}</span>
                       </div>
-                      <p className="text-xs text-daet-ink/70">
-                        <span className="font-bold">{isConversationKind(row.kind) ? KIND_LABELS[row.kind] : "Chat"}</span>
+                      <p className="text-sm text-slate-600">
+                        <span className="font-semibold">{isConversationKind(row.kind) ? KIND_LABELS[row.kind] : "Chat"}</span>
                         {row.subtitle ? ` · ${row.subtitle}` : ""}
                       </p>
                       <p className={`mt-1 truncate text-sm ${row.unread > 0 ? "font-semibold text-daet-ink" : "text-daet-ink/70"}`}>

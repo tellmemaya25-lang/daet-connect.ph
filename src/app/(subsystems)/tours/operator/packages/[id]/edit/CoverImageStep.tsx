@@ -113,13 +113,13 @@ export function CoverImageStep({
   );
 
   return (
-    <div className="border rounded-xl p-6 bg-white">
+    <div className="border rounded-2xl p-6 bg-white">
       <h2 className="text-xl font-bold text-daet-ink mb-6">Cover Image</h2>
 
       <div className="space-y-4">
         {/* Current Image Preview */}
         {data.coverImageUrl ? (
-          <div className="relative w-full h-64 rounded-xl overflow-hidden bg-slate-100 border border-daet-ink/20">
+          <div className="relative w-full h-64 rounded-2xl overflow-hidden bg-slate-100 border border-daet-ink/20">
             <Image
               src={data.coverImageUrl}
               alt="Cover image preview"
@@ -131,7 +131,7 @@ export function CoverImageStep({
             />
           </div>
         ) : (
-          <div className="w-full h-64 rounded-xl bg-slate-100 border-2 border-dashed border-daet-ink/20 flex items-center justify-center">
+          <div className="w-full h-64 rounded-2xl bg-slate-100 border-2 border-dashed border-daet-ink/20 flex items-center justify-center">
             <div className="text-center">
               <svg className="w-12 h-12 text-daet-ink/70 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
@@ -148,7 +148,7 @@ export function CoverImageStep({
               <span className="text-daet-ink/80">Uploading...</span>
               <span className="text-daet-ink/70">{uploadProgress}%</span>
             </div>
-            <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
+            <div className="w-full h-2 bg-slate-200 rounded-full overflow-hidden">
               <div className="h-full bg-daet-forest transition-all duration-300" style={{ width: `${uploadProgress}%` }} />
             </div>
           </div>
@@ -168,7 +168,7 @@ export function CoverImageStep({
         <div className="flex gap-2">
           <label htmlFor="cover-image-input" className="cursor-pointer">
             <div
-              className={`px-4 py-2 rounded-xl font-medium transition text-center ${
+              className={`px-4 py-2 rounded-2xl font-medium transition text-center ${
                 isReadOnly || uploadLoading || loading
                   ? "bg-slate-100 text-daet-ink/70 cursor-not-allowed"
                   : "bg-daet-forest text-white hover:bg-daet-leaf"
@@ -196,7 +196,7 @@ export function CoverImageStep({
                 })
               }
               disabled={uploadLoading || loading}
-              className="px-4 py-2 border border-red-300 text-rose-700 rounded-xl font-medium hover:bg-red-50 transition disabled:opacity-50 disabled:cursor-not-allowed"
+              className="px-4 py-2 border border-red-300 text-red-700 rounded-2xl font-medium hover:bg-red-50 transition disabled:opacity-50 disabled:cursor-not-allowed"
             >
               Remove Image
             </button>

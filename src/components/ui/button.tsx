@@ -13,6 +13,9 @@ const VARIANTS = {
   ghost: "text-daet-ink hover:bg-slate-100 active:bg-slate-200",
   danger: "bg-red-600 text-white hover:bg-red-700 active:bg-red-800",
   accent: "bg-yellow-500 text-slate-950 hover:bg-yellow-400 active:bg-yellow-600",
+  // For use on a blue-600 panel.
+  inverse: "bg-white text-blue-700 hover:bg-blue-50 active:bg-blue-100",
+  onBlue: "text-white hover:bg-blue-700 active:bg-blue-800",
 } as const;
 
 const SIZES = {

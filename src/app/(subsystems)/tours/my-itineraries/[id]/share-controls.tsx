@@ -27,7 +27,7 @@ export function ShareControls({ id, initialToken, baseUrl }: { id: string; initi
         <>
           <p className="text-sm text-daet-ink/70">Anyone with this link can view the plan (not your name or account):</p>
           <div className="mt-2 flex flex-col gap-2 sm:flex-row">
-            <input readOnly value={link} aria-label="Share link" className="min-h-11 w-full rounded-xl border border-daet-ink/20 bg-daet-sand/30 px-3 text-sm" onFocus={(e) => e.currentTarget.select()} />
+            <input readOnly value={link} aria-label="Share link" className="min-h-11 w-full rounded-2xl border border-daet-ink/20 bg-daet-sand/30 px-3 text-sm" onFocus={(e) => e.currentTarget.select()} />
             <Button
               variant="secondary"
               onClick={() => {
@@ -46,7 +46,7 @@ export function ShareControls({ id, initialToken, baseUrl }: { id: string; initi
           Create share link
         </Button>
       )}
-      {error ? <p className="mt-2 text-sm font-semibold text-rose-700">{error}</p> : null}
+      {error ? <p className="mt-2 text-sm font-semibold text-red-700">{error}</p> : null}
     </div>
   );
 }

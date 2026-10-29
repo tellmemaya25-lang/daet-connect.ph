@@ -36,7 +36,7 @@ export function PackageReviewStep({
   return (
     <form onSubmit={handleSubmitForReview} className="space-y-6">
       <div>
-        <h2 className="text-2xl font-black text-daet-ink">Review & submit</h2>
+        <h2 className="text-2xl font-bold text-daet-ink">Review & submit</h2>
         <p className="mt-2 text-sm text-daet-ink/65">
           Double-check everything before submitting to the Tourism Office for approval.
         </p>
@@ -46,7 +46,7 @@ export function PackageReviewStep({
       <div className="space-y-6 rounded-2xl bg-white p-6">
         {/* Title & Location */}
         <div>
-          <h3 className="text-xl font-black text-daet-ink">{data.title}</h3>
+          <h3 className="text-xl font-bold text-daet-ink">{data.title}</h3>
           <p className="mt-1 text-sm text-daet-ink/70"><LineIcon name="pin" className="inline-block h-[1.1em] w-[1.1em] align-[-0.15em]" /> {data.locationName}</p>
           <p className="mt-1 text-sm text-daet-ink/70">
             <LineIcon name="clock" className="inline-block h-[1.1em] w-[1.1em] align-[-0.15em]" /> {data.durationValue} {data.durationType}
@@ -71,7 +71,7 @@ export function PackageReviewStep({
             </p>
             <ul className="mt-2 space-y-1">
               {data.inclusions.map((item, i) => (
-                <li key={i} className="flex items-center gap-2 text-sm text-emerald-800">
+                <li key={i} className="flex items-center gap-2 text-sm text-green-800">
                   <span className="text-xs">✓</span>
                   {item}
                 </li>
@@ -106,7 +106,7 @@ export function PackageReviewStep({
             {data.priceVariants.map((variant, i) => (
               <div
                 key={i}
-                className={`rounded-xl border p-3 ${
+                className={`rounded-2xl border p-3 ${
                   variant.isDefault
                     ? "border-daet-forest/30 bg-daet-forest/5"
                     : "border-daet-ink/10 bg-white"
@@ -125,7 +125,7 @@ export function PackageReviewStep({
                       {variant.maxPax ? `–${variant.maxPax}` : "+"} pax
                     </p>
                   </div>
-                  <p className="text-sm font-black text-daet-ink">
+                  <p className="text-sm font-bold text-daet-ink">
                     {variant.pricePerPax
                       ? `${formatPeso(variant.pricePerPax)}/pax`
                       : `${formatPeso(variant.flatPrice)}`}
@@ -155,9 +155,9 @@ export function PackageReviewStep({
       </div>
 
       {/* Warning Box */}
-      <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm">
-        <p className="font-bold text-amber-900"><LineIcon name="warning" className="inline-block h-[1.1em] w-[1.1em] align-[-0.15em]" /> Before submitting</p>
-        <ul className="mt-2 space-y-1 text-xs text-amber-800">
+      <div className="rounded-2xl border border-yellow-200 bg-yellow-50 p-4 text-sm">
+        <p className="font-bold text-yellow-900"><LineIcon name="warning" className="inline-block h-[1.1em] w-[1.1em] align-[-0.15em]" /> Before submitting</p>
+        <ul className="mt-2 space-y-1 text-xs text-yellow-800">
           <li>• All information is accurate and up-to-date</li>
           <li>• Pricing matches your actual tour costs</li>
           <li>• You have at least one price variant marked as default</li>
@@ -191,7 +191,7 @@ export function PackageReviewStep({
         <button
           type="submit"
           disabled={loading}
-          className="inline-flex min-h-12 items-center justify-center rounded-full bg-daet-forest px-8 text-sm font-black text-white transition hover:bg-daet-ink disabled:cursor-not-allowed disabled:opacity-50"
+          className="inline-flex min-h-12 items-center justify-center rounded-full bg-daet-forest px-8 text-sm font-bold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
         >
           {loading ? "Submitting..." : "Submit for review →"}
         </button>

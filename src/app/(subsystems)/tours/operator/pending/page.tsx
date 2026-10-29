@@ -69,17 +69,17 @@ export default async function OperatorPendingPage() {
   if (application.accreditation_status === "rejected") {
     return (
       <PageFrame>
-        <section className="mx-auto max-w-2xl rounded-2xl border-rose-200 bg-white p-6 sm:p-10">
-          <span className="inline-flex rounded-full bg-rose-50 px-3 py-1 text-xs font-black text-rose-700">Changes requested</span>
-          <h1 className="mt-4 text-3xl font-black text-daet-ink">Please update your application</h1>
+        <section className="mx-auto max-w-2xl rounded-2xl border-red-200 bg-white p-6 sm:p-10">
+          <span className="inline-flex rounded-full bg-red-50 px-3 py-1 text-xs font-bold text-red-700">Changes requested</span>
+          <h1 className="mt-4 text-3xl font-bold text-daet-ink">Please update your application</h1>
           <p className="mt-3 text-sm leading-6 text-daet-ink/70">The Tourism Office could not approve the documents as submitted. You can review the note and send an updated application.</p>
           {application.accreditation_notes ? (
-            <div className="mt-5 rounded-2xl bg-rose-50 p-4 text-sm leading-6 text-rose-950">
+            <div className="mt-5 rounded-2xl bg-red-50 p-4 text-sm leading-6 text-red-950">
               <p className="font-bold">Reviewer’s note</p><p className="mt-1">{application.accreditation_notes}</p>
             </div>
           ) : null}
           <div className="mt-7 flex flex-wrap items-center gap-3">
-            <Link href="/tours/operator/register" className="inline-flex min-h-12 items-center justify-center rounded-full bg-daet-forest px-6 text-sm font-bold text-white transition hover:bg-daet-ink">Update application</Link>
+            <Link href="/tours/operator/register" className="inline-flex min-h-12 items-center justify-center rounded-full bg-daet-forest px-6 text-sm font-bold text-white transition hover:bg-blue-700">Update application</Link>
             <OpenChatButton target={{ kind: "operator_admin" }} label="Ask the Tourism Office" />
           </div>
         </section>
@@ -101,21 +101,21 @@ export default async function OperatorPendingPage() {
           <span className="inline-flex items-center gap-2 rounded-full bg-white/15 px-3 py-1 text-sm font-bold">
             <span className="h-2 w-2 animate-pulse rounded-full bg-daet-sun" /> In review
           </span>
-          <h1 className="mt-4 text-3xl font-black sm:text-4xl">Pending Approval</h1>
+          <h1 className="mt-4 text-3xl font-bold sm:text-4xl">Pending Approval</h1>
           <p className="mt-3 max-w-lg text-sm leading-6 text-white">Your application is with the Daet Tourism Office. We’ll update this page once the review is complete.</p>
         </div>
         <div className="p-6 sm:p-10">
           <ol className="space-y-5">
             <li className="flex gap-4">
-              <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-emerald-100 text-sm font-black text-emerald-800">✓</span>
+              <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-green-100 text-sm font-bold text-green-800">✓</span>
               <div><p className="font-bold">Application submitted</p><p className="mt-1 text-sm text-daet-ink/70">{new Date(application.created_at).toLocaleDateString("en-PH", { year: "numeric", month: "long", day: "numeric" })}</p></div>
             </li>
             <li className="flex gap-4">
-              <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-amber-100 text-sm font-black text-amber-900">2</span>
+              <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-yellow-100 text-sm font-bold text-yellow-900">2</span>
               <div><p className="font-bold">Tourism Office review</p><p className="mt-1 text-sm leading-6 text-daet-ink/70">Your registration and business permit are checked by an authorized reviewer.</p></div>
             </li>
             <li className="flex gap-4">
-              <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-daet-sand text-sm font-black text-daet-ink/70">3</span>
+              <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-daet-sand text-sm font-bold text-daet-ink/70">3</span>
               <div><p className="font-bold text-daet-ink/70">Operator dashboard unlocked</p><p className="mt-1 text-sm leading-6 text-daet-ink/70">Package and booking tools are unavailable until accreditation is approved.</p></div>
             </li>
           </ol>

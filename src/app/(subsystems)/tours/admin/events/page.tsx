@@ -59,13 +59,13 @@ export default async function AdminEventsPage({
                   <div className="flex flex-wrap items-center gap-2">
                     <span className="rounded-full bg-daet-sand px-2 py-0.5 text-xs font-bold text-daet-forest">{EVENT_CATEGORIES[event.category]}</span>
                     {event.is_published ? (
-                      <span className="rounded-full bg-emerald-50 px-2 py-0.5 text-xs font-bold text-emerald-700">Published</span>
+                      <span className="rounded-full bg-green-50 px-2 py-0.5 text-xs font-bold text-green-700">Published</span>
                     ) : (
-                      <span className="rounded-full bg-amber-50 px-2 py-0.5 text-xs font-bold text-amber-700">Draft</span>
+                      <span className="rounded-full bg-yellow-50 px-2 py-0.5 text-xs font-bold text-yellow-800">Draft</span>
                     )}
-                    {isPast ? <span className="rounded-full bg-gray-100 px-2 py-0.5 text-xs font-bold text-gray-600">Past</span> : null}
+                    {isPast ? <span className="rounded-full bg-slate-100 px-2 py-0.5 text-xs font-bold text-slate-600">Past</span> : null}
                   </div>
-                  <p className="mt-1 truncate font-black text-daet-ink">{event.title}</p>
+                  <p className="mt-1 truncate font-bold text-daet-ink">{event.title}</p>
                   <p className="text-sm text-daet-ink/70">{formatEventRange(event.starts_at, event.ends_at)} · {event.venue}</p>
                 </div>
                 <div className="flex gap-2">
@@ -76,7 +76,7 @@ export default async function AdminEventsPage({
                     <input type="hidden" name="id" value={event.id} />
                     <ConfirmSubmitButton
                       message={`Delete "${event.title}"? This cannot be undone.`}
-                      className="inline-flex min-h-11 w-full items-center justify-center rounded-full border border-rose-200 px-5 text-sm font-bold text-rose-700 hover:bg-rose-50"
+                      className="inline-flex min-h-11 w-full items-center justify-center rounded-full border border-red-200 px-5 text-sm font-bold text-red-700 hover:bg-red-50"
                     >
                       Delete
                     </ConfirmSubmitButton>

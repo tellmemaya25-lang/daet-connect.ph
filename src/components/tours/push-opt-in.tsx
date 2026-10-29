@@ -108,9 +108,9 @@ export function PushOptIn({ variant = "settings" }: { variant?: "prompt" | "sett
     if (state !== "off" || dismissed) return null;
     return (
       <section className="mb-6 rounded-2xl border border-daet-forest/20 bg-daet-forest/5 p-5">
-        <p className="font-black text-daet-ink"><LineIcon name="bell" className="inline-block h-[1.1em] w-[1.1em] align-[-0.15em]" /> Get updates on your phone</p>
+        <p className="font-bold text-daet-ink"><LineIcon name="bell" className="inline-block h-[1.1em] w-[1.1em] align-[-0.15em]" /> Get updates on your phone</p>
         <p className="mt-1 text-sm text-daet-ink/70">We&apos;ll tell you when the operator confirms, when your guide is assigned and when you get a message.</p>
-        {error ? <p className="mt-2 text-sm font-semibold text-rose-700">{error}</p> : null}
+        {error ? <p className="mt-2 text-sm font-semibold text-red-700">{error}</p> : null}
         <div className="mt-3 flex flex-wrap gap-3">
           <Button onClick={enable} loading={pending} loadingText="Turning on…">
             Turn on notifications
@@ -137,7 +137,7 @@ export function PushOptIn({ variant = "settings" }: { variant?: "prompt" | "sett
       <div>
         <p className="font-bold text-daet-ink">Push notifications on this device</p>
         <p className="text-sm text-daet-ink/65">{description[state]}</p>
-        {error ? <p className="mt-1 text-sm font-semibold text-rose-700">{error}</p> : null}
+        {error ? <p className="mt-1 text-sm font-semibold text-red-700">{error}</p> : null}
       </div>
       {state === "off" ? (
         <Button onClick={enable} loading={pending} loadingText="Turning on…" className="shrink-0">

@@ -47,7 +47,7 @@ export function AssistantWidget({ signedIn, raised }: { signedIn: boolean; raise
         <div className="flex h-full flex-col">
           <div className="flex items-center justify-between gap-3 bg-daet-forest px-4 py-3 text-white">
             <div>
-              <h2 id="assistant-title" className="text-base font-black">
+              <h2 id="assistant-title" className="text-base font-bold">
                 Daet travel assistant
               </h2>
               <p className="text-xs text-white">Here 24/7 · answers from CONNECT-Daet&apos;s listings</p>

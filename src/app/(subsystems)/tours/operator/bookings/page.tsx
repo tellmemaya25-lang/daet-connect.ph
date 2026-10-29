@@ -220,11 +220,11 @@ export default async function OperatorBookingsPage({
   );
 
   const statusColors: Record<string, string> = {
-    pending: "bg-amber-100 text-amber-900",
-    confirmed: "bg-emerald-100 text-emerald-800",
-    cancelled: "bg-gray-100 text-gray-800",
+    pending: "bg-yellow-100 text-yellow-900",
+    confirmed: "bg-green-100 text-green-800",
+    cancelled: "bg-slate-100 text-slate-800",
     completed: "bg-blue-100 text-blue-900",
-    rejected: "bg-rose-100 text-rose-800",
+    rejected: "bg-red-100 text-red-800",
   };
 
   const statusLabels: Record<string, string> = {
@@ -252,7 +252,7 @@ export default async function OperatorBookingsPage({
       <div className="mx-auto max-w-7xl">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-4xl font-black text-daet-ink">Booking Management</h1>
+          <h1 className="text-4xl font-bold text-daet-ink">Booking Management</h1>
           <p className="mt-2 text-sm text-daet-ink/70">
             Manage bookings for {operator.business_name}
           </p>
@@ -278,30 +278,30 @@ export default async function OperatorBookingsPage({
                 : "border-daet-ink/10 bg-white"
             }`}
           >
-            <p className="text-3xl font-black text-daet-ink">{stats.total}</p>
+            <p className="text-3xl font-bold text-daet-ink">{stats.total}</p>
             <p className="text-xs text-daet-ink/70">Total</p>
           </Link>
           <Link
             href="/tours/operator/bookings?status=pending"
             className={`rounded-2xl border p-4 text-center transition hover:bg-blue-50 ${
               params.status === "pending"
-                ? "border-amber-300 bg-amber-50"
-                : "border-amber-200 bg-amber-50"
+                ? "border-yellow-300 bg-yellow-50"
+                : "border-yellow-200 bg-yellow-50"
             }`}
           >
-            <p className="text-3xl font-black text-amber-900">{stats.pending}</p>
-            <p className="text-xs text-amber-900">Pending</p>
+            <p className="text-3xl font-bold text-yellow-900">{stats.pending}</p>
+            <p className="text-xs text-yellow-900">Pending</p>
           </Link>
           <Link
             href="/tours/operator/bookings?status=confirmed"
             className={`rounded-2xl border p-4 text-center transition hover:bg-blue-50 ${
               params.status === "confirmed"
-                ? "border-emerald-300 bg-emerald-50"
-                : "border-emerald-200 bg-emerald-50"
+                ? "border-green-300 bg-green-50"
+                : "border-green-200 bg-green-50"
             }`}
           >
-            <p className="text-3xl font-black text-emerald-900">{stats.confirmed}</p>
-            <p className="text-xs text-emerald-900">Confirmed</p>
+            <p className="text-3xl font-bold text-green-900">{stats.confirmed}</p>
+            <p className="text-xs text-green-900">Confirmed</p>
           </Link>
           <Link
             href="/tours/operator/bookings?status=completed"
@@ -311,19 +311,19 @@ export default async function OperatorBookingsPage({
                 : "border-blue-200 bg-blue-50"
             }`}
           >
-            <p className="text-3xl font-black text-blue-900">{stats.completed}</p>
+            <p className="text-3xl font-bold text-blue-900">{stats.completed}</p>
             <p className="text-xs text-blue-900">Completed</p>
           </Link>
           <Link
             href="/tours/operator/bookings?status=rejected"
             className={`rounded-2xl border p-4 text-center transition hover:bg-blue-50 ${
               params.status === "rejected"
-                ? "border-gray-300 bg-gray-50"
-                : "border-gray-200 bg-gray-50"
+                ? "border-slate-300 bg-slate-50"
+                : "border-slate-200 bg-slate-50"
             }`}
           >
-            <p className="text-3xl font-black text-gray-900">{stats.rejected}</p>
-            <p className="text-xs text-gray-900/60">Rejected</p>
+            <p className="text-3xl font-bold text-slate-900">{stats.rejected}</p>
+            <p className="text-xs text-slate-900/60">Rejected</p>
           </Link>
         </div>
 
@@ -333,7 +333,7 @@ export default async function OperatorBookingsPage({
             <div className="mx-auto mb-4 grid h-20 w-20 place-items-center rounded-full bg-daet-sand text-4xl">
               <LineIcon name="calendar" className="inline-block h-[1.1em] w-[1.1em] align-[-0.15em]" />
             </div>
-            <h2 className="text-xl font-black text-daet-ink">No bookings found</h2>
+            <h2 className="text-xl font-bold text-daet-ink">No bookings found</h2>
             <p className="mt-2 text-sm text-daet-ink/70">
               {params.status && params.status !== "all"
                 ? `No ${params.status} bookings at the moment.`
@@ -368,7 +368,7 @@ export default async function OperatorBookingsPage({
                       {/* Top Row: Package + Status */}
                       <div className="mb-4 flex items-start justify-between gap-4">
                         <div>
-                          <h3 className="text-xl font-black text-daet-ink">
+                          <h3 className="text-xl font-bold text-daet-ink">
                             {pkg?.title || "Package"}
                           </h3>
                           <p className="mt-1 text-sm font-bold text-daet-forest">
@@ -376,7 +376,7 @@ export default async function OperatorBookingsPage({
                           </p>
                         </div>
                         <span
-                          className={`rounded-full px-4 py-1 text-xs font-bold ${statusColors[booking.status] || "bg-gray-100 text-gray-800"}`}
+                          className={`rounded-full px-4 py-1 text-xs font-bold ${statusColors[booking.status] || "bg-slate-100 text-slate-800"}`}
                         >
                           {statusLabels[booking.status] || booking.status}
                         </span>
@@ -405,7 +405,7 @@ export default async function OperatorBookingsPage({
                         </div>
                         <div>
                           <p className="text-daet-ink/70">Total Amount</p>
-                          <p className="text-lg font-black text-daet-forest">
+                          <p className="text-lg font-bold text-daet-forest">
                             {formatPeso(booking.total_amount)}
                           </p>
                         </div>
@@ -413,7 +413,7 @@ export default async function OperatorBookingsPage({
 
                       {/* Special Requests */}
                       {booking.special_requests && (
-                        <div className="mb-4 rounded-xl bg-daet-sand/30 p-3">
+                        <div className="mb-4 rounded-2xl bg-daet-sand/30 p-3">
                           <p className="text-xs font-bold text-daet-ink/70">Special Requests:</p>
                           <p className="mt-1 text-sm text-daet-ink">{booking.special_requests}</p>
                         </div>
@@ -422,7 +422,7 @@ export default async function OperatorBookingsPage({
                       {/* Guide Assignment - Show for confirmed bookings */}
                       {booking.status === "confirmed" && (
                         <>
-                          <div className="mb-4 rounded-xl border border-daet-forest/20 bg-daet-forest/5 p-4">
+                          <div className="mb-4 rounded-2xl border border-daet-forest/20 bg-daet-forest/5 p-4">
                             <p className="mb-3 text-xs font-bold text-daet-ink/70">
                               Guide Assignment
                             </p>
@@ -454,7 +454,7 @@ export default async function OperatorBookingsPage({
                       )}
 
                       {(booking.status === "cancelled" || booking.status === "rejected") && booking.cancellation_reason ? (
-                        <p className="mb-4 rounded-xl bg-daet-sand/40 p-3 text-sm text-daet-ink">
+                        <p className="mb-4 rounded-2xl bg-daet-sand/40 p-3 text-sm text-daet-ink">
                           <span className="font-bold">{booking.status === "cancelled" ? "Cancellation reason" : "Declined because"}:</span>{" "}
                           {booking.cancellation_reason}
                         </p>

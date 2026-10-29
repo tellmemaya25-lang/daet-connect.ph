@@ -160,7 +160,7 @@ export function AssistantChat({ signedIn, onNavigate, autoFocus = false }: { sig
         }}
       >
         {error ? (
-          <p role="alert" className="mb-2 text-sm font-semibold text-rose-700">
+          <p role="alert" className="mb-2 text-sm font-semibold text-red-700">
             {error}
           </p>
         ) : null}
@@ -182,7 +182,7 @@ export function AssistantChat({ signedIn, onNavigate, autoFocus = false }: { sig
               }
             }}
             placeholder="Ask anything about your trip…"
-            className="block min-h-11 w-full resize-none rounded-xl border border-daet-ink/20 px-3 py-2 text-base focus:border-daet-forest focus:outline-none focus:ring-2 focus:ring-daet-forest/20"
+            className="block min-h-11 w-full resize-none rounded-2xl border border-daet-ink/20 px-3 py-2 text-base focus:border-daet-forest focus:outline-none focus:ring-2 focus:ring-daet-forest/20"
           />
           <Button type="submit" loading={busy} loadingText="…" disabled={!text.trim()} aria-label="Send">
             Send
@@ -276,7 +276,7 @@ function HandoffPanel({ card, signedIn, onNavigate }: { card: HandoffCard; signe
   }
   if (state.sent) {
     return (
-      <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-900">
+      <div className="rounded-2xl border border-green-200 bg-green-50 p-3 text-sm text-green-900">
         Sent to {who}. They&apos;ll reply in Messages.{" "}
         <Link href={`/tours/messages/${state.sent}`} onClick={onNavigate} className="font-bold underline">
           Open the chat
@@ -289,9 +289,9 @@ function HandoffPanel({ card, signedIn, onNavigate }: { card: HandoffCard; signe
       <label htmlFor={id} className="text-xs font-bold text-daet-ink">
         Message to {who} (edit before sending)
       </label>
-      <textarea id={id} rows={3} maxLength={1000} value={message} onChange={(e) => setMessage(e.target.value)} className="mt-1 block w-full rounded-xl border border-daet-ink/20 px-3 py-2 text-sm" />
+      <textarea id={id} rows={3} maxLength={1000} value={message} onChange={(e) => setMessage(e.target.value)} className="mt-1 block w-full rounded-2xl border border-daet-ink/20 px-3 py-2 text-sm" />
       {state.error ? (
-        <p role="alert" className="mt-1 text-sm font-semibold text-rose-700">
+        <p role="alert" className="mt-1 text-sm font-semibold text-red-700">
           {state.error}
         </p>
       ) : null}

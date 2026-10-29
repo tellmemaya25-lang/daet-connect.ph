@@ -24,7 +24,7 @@ export default async function EditOperatorMerchPage({ params }: { params: Promis
   return (
     <PageFrame>
       <div className="mx-auto max-w-2xl">
-        <h1 className="mb-4 text-3xl font-black tracking-tight text-daet-ink">Edit product</h1>
+        <h1 className="mb-4 text-3xl font-bold tracking-tight text-daet-ink">Edit product</h1>
         {item.review_status === "rejected" && item.review_notes ? (
           <Notice variant="warning" title="Tourism Office feedback" className="mb-4">
             {item.review_notes}

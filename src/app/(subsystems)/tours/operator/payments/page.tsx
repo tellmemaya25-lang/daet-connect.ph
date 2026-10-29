@@ -52,7 +52,7 @@ export default async function OperatorPaymentsPage({
             ← Dashboard
           </Link>
           <p className="text-sm font-bold text-daet-leaf">{result.businessName}</p>
-          <h1 className="mt-1 text-3xl font-black tracking-tight text-daet-ink">Revenue &amp; payments</h1>
+          <h1 className="mt-1 text-3xl font-bold tracking-tight text-daet-ink">Revenue &amp; payments</h1>
         </div>
         <ButtonLink href={`/tours/operator/payments/export?month=${key}`} variant="secondary" prefetch={false}>
           Download CSV
@@ -63,7 +63,7 @@ export default async function OperatorPaymentsPage({
         <ButtonLink href={`/tours/operator/payments?month=${monthKey(shiftMonth(month, -1))}`} variant="ghost" size="icon" aria-label="Previous month">
           ‹
         </ButtonLink>
-        <p className="font-black text-daet-ink">{formatMonthLabel(month)}</p>
+        <p className="font-bold text-daet-ink">{formatMonthLabel(month)}</p>
         {isCurrentMonth ? (
           <span className="h-11 w-11" aria-hidden="true" />
         ) : (
@@ -76,20 +76,20 @@ export default async function OperatorPaymentsPage({
       <div className="mb-6 grid grid-cols-2 gap-3 lg:grid-cols-4">
         <Card>
           <p className="text-xs font-bold text-daet-ink/70">Received</p>
-          <p className="mt-1 text-2xl font-black text-daet-forest">{peso(summary.received)}</p>
+          <p className="mt-1 text-2xl font-bold text-daet-forest">{peso(summary.received)}</p>
           <p className="text-xs text-daet-ink/70">{summary.count} payment{summary.count === 1 ? "" : "s"}</p>
         </Card>
         <Card>
           <p className="text-xs font-bold text-daet-ink/70">Online (PayMongo)</p>
-          <p className="mt-1 text-2xl font-black text-daet-ink">{peso(summary.online)}</p>
+          <p className="mt-1 text-2xl font-bold text-daet-ink">{peso(summary.online)}</p>
         </Card>
         <Card>
           <p className="text-xs font-bold text-daet-ink/70">Manual / verified receipts</p>
-          <p className="mt-1 text-2xl font-black text-daet-ink">{peso(summary.manual)}</p>
+          <p className="mt-1 text-2xl font-bold text-daet-ink">{peso(summary.manual)}</p>
         </Card>
         <Card>
           <p className="text-xs font-bold text-daet-ink/70">Refunded</p>
-          <p className="mt-1 text-2xl font-black text-daet-ink">{peso(summary.refunded)}</p>
+          <p className="mt-1 text-2xl font-bold text-daet-ink">{peso(summary.refunded)}</p>
         </Card>
       </div>
 
@@ -147,7 +147,7 @@ export default async function OperatorPaymentsPage({
                     {row.payment_date ? <span>{dateTime.format(new Date(row.payment_date))}</span> : null}
                   </div>
                 </div>
-                <span className={`shrink-0 font-black ${row.payment_status === "completed" ? "text-emerald-700" : "text-daet-ink/70 line-through"}`}>
+                <span className={`shrink-0 font-bold ${row.payment_status === "completed" ? "text-green-700" : "text-daet-ink/70 line-through"}`}>
                   {peso(Number(row.amount))}
                 </span>
               </li>

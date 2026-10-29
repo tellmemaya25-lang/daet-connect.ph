@@ -44,7 +44,7 @@ export default async function AdminAttractionsPage({ searchParams }: { searchPar
       </div>
 
       <Card className="mb-8">
-        <h2 className="mb-3 text-lg font-black text-daet-ink">Import from a spreadsheet</h2>
+        <h2 className="mb-3 text-lg font-bold text-daet-ink">Import from a spreadsheet</h2>
         <ImportAttractionsForm />
       </Card>
 
@@ -55,7 +55,7 @@ export default async function AdminAttractionsPage({ searchParams }: { searchPar
           {attractions.map((attraction) => (
             <li key={attraction.id} className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between">
               <div className="min-w-0">
-                <p className="font-black text-daet-ink">{attraction.name}</p>
+                <p className="font-bold text-daet-ink">{attraction.name}</p>
                 <div className="mt-1 flex flex-wrap items-center gap-2 text-xs">
                   <Badge tone="brand">{ATTRACTION_CATEGORIES[attraction.category]}</Badge>
                   <span className="text-daet-ink/70">{attraction.municipality}</span>
@@ -72,7 +72,7 @@ export default async function AdminAttractionsPage({ searchParams }: { searchPar
                   <input type="hidden" name="id" value={attraction.id} />
                   <ConfirmSubmitButton
                     message={`Delete "${attraction.name}"? This cannot be undone.`}
-                    className="inline-flex min-h-11 w-full items-center justify-center rounded-full border border-rose-200 px-5 text-sm font-bold text-rose-700 hover:bg-rose-50"
+                    className="inline-flex min-h-11 w-full items-center justify-center rounded-full border border-red-200 px-5 text-sm font-bold text-red-700 hover:bg-red-50"
                   >
                     Delete
                   </ConfirmSubmitButton>
@@ -89,7 +89,7 @@ export default async function AdminAttractionsPage({ searchParams }: { searchPar
 function Stat({ label, value }: { label: string; value: number }) {
   return (
     <div className="rounded-2xl bg-white p-4">
-      <p className="text-3xl font-black text-daet-ink">{value}</p>
+      <p className="text-3xl font-bold text-daet-ink">{value}</p>
       <p className="text-xs text-daet-ink/70">{label}</p>
     </div>
   );

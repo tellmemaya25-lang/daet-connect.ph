@@ -40,7 +40,7 @@ export function OpenDatesForm({ packageId, today }: { packageId: string; today: 
 
       <fieldset>
         <legend className="text-sm font-bold text-daet-ink">
-          Days of the week <span className="text-rose-600" aria-hidden="true">*</span>
+          Days of the week <span className="text-red-600" aria-hidden="true">*</span>
         </legend>
         <div className="mt-2 flex flex-wrap gap-2">
           {WEEKDAYS.map((label, index) => (
@@ -53,7 +53,7 @@ export function OpenDatesForm({ packageId, today }: { packageId: string; today: 
             </label>
           ))}
         </div>
-        {state.errors.weekday ? <p className="mt-1 text-sm font-semibold text-rose-700">{state.errors.weekday}</p> : null}
+        {state.errors.weekday ? <p className="mt-1 text-sm font-semibold text-red-700">{state.errors.weekday}</p> : null}
         <p className="mt-1 text-xs text-daet-ink/70">Up to {MAX_DATES_PER_BATCH} dates at a time. Dates already open are left unchanged.</p>
       </fieldset>
 

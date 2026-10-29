@@ -86,7 +86,7 @@ export default async function CreatePackagePage() {
           <p className="text-sm font-bold text-daet-leaf">
             Create package
           </p>
-          <h1 className="mt-2 text-3xl font-black text-daet-ink">New Tour Package</h1>
+          <h1 className="mt-2 text-3xl font-bold text-daet-ink">New Tour Package</h1>
           <p className="mt-2 text-sm leading-6 text-daet-ink/65">
             Fill out the form below to create a new tour package. After submission, it will be
             reviewed by the Tourism Office.

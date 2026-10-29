@@ -215,7 +215,7 @@ function Stepper({ id, label, value, min, max, unit, error, onChange }: { id: st
     <div>
       <label htmlFor={id} className="block text-sm font-bold text-daet-ink">
         {label}
-        <span className="text-rose-600" aria-hidden="true">
+        <span className="text-red-600" aria-hidden="true">
           {" "}*
         </span>
       </label>
@@ -240,7 +240,7 @@ function Stepper({ id, label, value, min, max, unit, error, onChange }: { id: st
         </button>
       </div>
       {error ? (
-        <p id={`${id}-error`} role="alert" className="mt-1 text-sm font-semibold text-rose-700">
+        <p id={`${id}-error`} role="alert" className="mt-1 text-sm font-semibold text-red-700">
           {error}
         </p>
       ) : null}

@@ -40,25 +40,25 @@ export default async function ItineraryPage({ params }: { params: Promise<{ id: 
   return (
     <PageFrame>
       <div className="mx-auto max-w-3xl">
-        <Link href="/tours/my-itineraries" className="inline-flex min-h-11 items-center text-sm font-bold text-daet-forest hover:underline">
+        <Link href="/tours/my-itineraries" className="inline-flex min-h-11 items-center font-bold text-blue-700 hover:underline">
           ← My itineraries
         </Link>
-        <h1 className="mt-1 text-3xl font-black text-daet-ink">{itinerary.title}</h1>
-        {itinerary.summary ? <p className="mt-3 rounded-2xl bg-daet-forest/5 p-4 text-sm leading-6 text-daet-ink">{itinerary.summary}</p> : null}
-        <p className="mt-2 text-xs text-daet-ink/70">Opening hours can change; check each place before you go.</p>
+        <h1 className="display-2 mt-1 text-daet-ink">{itinerary.title}</h1>
+        {itinerary.summary ? <p className="mt-3 rounded-2xl bg-white p-4 text-base leading-7 text-daet-ink">{itinerary.summary}</p> : null}
+        <p className="mt-2 text-sm text-slate-600">Opening hours can change; check each place before you go.</p>
 
         <div className="mt-6">
           <SavedItinerary days={rowsToDays(rows, itinerary.start_date)} />
         </div>
 
         <Card className="mt-6">
-          <h2 className="mb-3 text-lg font-black text-daet-ink">Share</h2>
+          <h2 className="mb-3 text-lg font-bold text-daet-ink">Share</h2>
           <ShareControls id={itinerary.id} initialToken={itinerary.share_token} baseUrl={appBaseUrl()} />
         </Card>
 
         <form action={deleteItinerary} className="mt-6">
           <input type="hidden" name="id" value={itinerary.id} />
-          <ConfirmSubmitButton message="Delete this plan? This cannot be undone." className="inline-flex min-h-11 items-center rounded-full border border-rose-200 px-5 text-sm font-bold text-rose-700 hover:bg-rose-50">
+          <ConfirmSubmitButton message="Delete this plan? This cannot be undone." className="inline-flex min-h-11 items-center rounded-full bg-white px-5 font-bold text-red-600 hover:bg-red-50">
             Delete plan
           </ConfirmSubmitButton>
         </form>

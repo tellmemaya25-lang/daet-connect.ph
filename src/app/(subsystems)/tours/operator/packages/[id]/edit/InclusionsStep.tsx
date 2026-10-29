@@ -137,7 +137,7 @@ export function InclusionsStep({
   const inclusionErrors = getInclusionErrors();
 
   return (
-    <div className="border rounded-xl p-6 bg-white">
+    <div className="border rounded-2xl p-6 bg-white">
       <div className="flex items-center justify-between mb-6">
         <h2 className="text-xl font-bold text-daet-ink">Inclusions & Exclusions</h2>
         {canAddItems && (
@@ -148,7 +148,7 @@ export function InclusionsStep({
               setFormData({ text: "", isIncluded: true });
             }}
             disabled={loading}
-            className="px-4 py-2 bg-daet-forest text-white rounded-xl text-sm font-medium hover:bg-daet-leaf transition disabled:opacity-50 disabled:cursor-not-allowed"
+            className="px-4 py-2 bg-daet-forest text-white rounded-2xl text-sm font-medium hover:bg-daet-leaf transition disabled:opacity-50 disabled:cursor-not-allowed"
           >
             + Add Item
           </button>
@@ -167,7 +167,7 @@ export function InclusionsStep({
             {inclusions.map((item, index) => (
               <div
                 key={item.id}
-                className="flex items-center gap-2 p-3 bg-green-50 border border-green-200 rounded-xl hover:bg-green-100 transition"
+                className="flex items-center gap-2 p-3 bg-green-50 border border-green-200 rounded-2xl hover:bg-green-100 transition"
               >
                 <span className="text-sm font-medium text-green-700 min-w-4">{index + 1}.</span>
                 {canEditItems && editingId !== item.id ? (
@@ -227,7 +227,7 @@ export function InclusionsStep({
                         }
                       }}
                       disabled={loading}
-                      className="text-rose-700 hover:text-red-800 text-xs font-medium disabled:opacity-50"
+                      className="text-red-700 hover:text-red-800 text-xs font-medium disabled:opacity-50"
                     >
                       Delete
                     </button>
@@ -244,7 +244,7 @@ export function InclusionsStep({
       {/* Exclusions Section */}
       <div className="mb-6">
         <h3 className="text-sm font-bold text-daet-ink/80 mb-3 flex items-center gap-2">
-          <span className="w-4 h-4 rounded-full bg-red-100 border-2 border-red-500 flex items-center justify-center text-xs text-rose-700 font-bold">✕</span>
+          <span className="w-4 h-4 rounded-full bg-red-100 border-2 border-red-500 flex items-center justify-center text-xs text-red-700 font-bold">✕</span>
           Excluded ({exclusions.length})
         </h3>
 
@@ -253,7 +253,7 @@ export function InclusionsStep({
             {exclusions.map((item, index) => (
               <div
                 key={item.id}
-                className="flex items-center gap-2 p-3 bg-red-50 border border-red-200 rounded-xl hover:bg-red-100 transition"
+                className="flex items-center gap-2 p-3 bg-red-50 border border-red-200 rounded-2xl hover:bg-red-100 transition"
               >
                 <span className="text-sm font-medium text-red-700 min-w-4">{index + 1}.</span>
                 <span className="flex-1 text-daet-ink line-through">{item.text}</span>
@@ -277,7 +277,7 @@ export function InclusionsStep({
                         }
                       }}
                       disabled={loading}
-                      className="text-rose-700 hover:text-red-800 text-xs font-medium disabled:opacity-50"
+                      className="text-red-700 hover:text-red-800 text-xs font-medium disabled:opacity-50"
                     >
                       Delete
                     </button>
@@ -306,7 +306,7 @@ export function InclusionsStep({
       {/* Add/Edit Form Modal */}
       {showAddForm && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl max-w-md w-full p-6">
+          <div className="bg-white rounded-2xl max-w-md w-full p-6">
             <h3 className="text-lg font-bold text-daet-ink mb-4">
               {editingId ? "Edit Item" : "Add Item"}
             </h3>
@@ -322,7 +322,7 @@ export function InclusionsStep({
                   onChange={(e) => setFormData({ ...formData, text: e.target.value })}
                   maxLength={EDIT_LIMITS.inclusionText.max}
                   rows={3}
-                  className="w-full px-3 py-2 border border-daet-ink/20 rounded-xl focus:ring-2 focus:ring-daet-forest/30 outline-none resize-none"
+                  className="w-full px-3 py-2 border border-daet-ink/20 rounded-2xl focus:ring-2 focus:ring-daet-forest/30 outline-none resize-none"
                   placeholder="e.g., Hotel accommodation"
                 />
                 <p className="text-xs text-daet-ink/70 mt-1">
@@ -363,14 +363,14 @@ export function InclusionsStep({
                     setShowAddForm(false);
                     setEditingId(undefined);
                   }}
-                  className="flex-1 px-4 py-2 border border-daet-ink/20 text-daet-ink/80 rounded-xl hover:bg-slate-50 transition"
+                  className="flex-1 px-4 py-2 border border-daet-ink/20 text-daet-ink/80 rounded-2xl hover:bg-slate-50 transition"
                 >
                   Cancel
                 </button>
                 <button
                   type="button"
                   onClick={handleAddItem}
-                  className="flex-1 px-4 py-2 bg-daet-forest text-white rounded-xl hover:bg-daet-leaf transition"
+                  className="flex-1 px-4 py-2 bg-daet-forest text-white rounded-2xl hover:bg-daet-leaf transition"
                 >
                   {editingId ? "Update" : "Add"}
                 </button>

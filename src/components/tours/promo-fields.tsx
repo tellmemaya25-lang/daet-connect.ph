@@ -32,9 +32,9 @@ export function PromoImageField({ currentUrl, error }: { currentUrl: string | nu
     <PromoField id="image" label="Image" hint="JPG, PNG, or WebP up to 5 MB." error={error}>
       {currentUrl ? (
         <div className="mt-2 flex items-center gap-3">
-          <img src={currentUrl} alt="Current image" className="h-20 w-20 rounded-xl object-cover" />
+          <img src={currentUrl} alt="Current image" className="h-20 w-20 rounded-2xl object-cover" />
           <label className="flex min-h-11 items-center gap-2 text-sm text-daet-ink/70">
-            <input type="checkbox" name="removeImage" className="h-5 w-5 accent-rose-600" />
+            <input type="checkbox" name="removeImage" className="h-5 w-5 accent-red-600" />
             Remove current image
           </label>
         </div>

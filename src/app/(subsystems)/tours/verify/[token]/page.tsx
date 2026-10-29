@@ -92,7 +92,7 @@ export default async function VerifyQrPage({ params }: PageProps) {
               className="mx-auto mb-3 h-28 w-28 rounded-full border-4 border-white object-cover"
             />
           ) : null}
-          <p className="text-xl font-black text-daet-ink">{badge.full_name}</p>
+          <p className="text-xl font-bold text-daet-ink">{badge.full_name}</p>
           <p className="mt-1">Accredited by the Daet Tourism Office through CONNECT-Daet.</p>
           <p className="mt-3 text-xs text-daet-ink/70">Badge valid until {longDate(claims.exp * 1000)}</p>
         </ResultCard>
@@ -143,7 +143,7 @@ export default async function VerifyQrPage({ params }: PageProps) {
   return (
     <PageFrame>
       <ResultCard tone={rule.ok || partyCheckIn ? "valid" : "neutral"} title={partyCheckIn ? "Guests checked in" : "Valid booking ticket"}>
-        <p className="text-lg font-black text-daet-ink">{(pkg as { title?: string } | null)?.title ?? "Tour booking"}</p>
+        <p className="text-lg font-bold text-daet-ink">{(pkg as { title?: string } | null)?.title ?? "Tour booking"}</p>
         <dl className="mx-auto mt-3 grid max-w-xs grid-cols-2 gap-2 text-left">
           <dt className="text-daet-ink/70">Reference</dt>
           <dd className="font-bold text-daet-ink">{booking.booking_reference}</dd>
@@ -155,7 +155,7 @@ export default async function VerifyQrPage({ params }: PageProps) {
           </dd>
         </dl>
         {partyCheckIn ? (
-          <p className="mt-3 font-semibold text-emerald-800">
+          <p className="mt-3 font-semibold text-green-800">
             Checked in at {new Date(partyCheckIn.scanned_at).toLocaleTimeString("en-PH", { timeStyle: "short", timeZone: "Asia/Manila" })}
           </p>
         ) : isTourist ? (
