@@ -18,7 +18,21 @@ Print this for each session. Each role's walkthrough takes 10–15 minutes on a 
    DEMO_PASSWORD='<a long password>' DEMO_GROUPS=<number of groups> npm run seed:demo
    ```
    This creates, per group, `tourist<N>@demo.connect-daet.test`, `operator<N>@…`, `guide<N>@…` and `admin<N>@…`. Each group also gets an approved operator and guide, a published demo package and open weekend dates for the next month. Copy the printed list into the sheet below.
-4. Run `psql "$STAGING_DB_URL" -f supabase/tests/integration.sql`. It must report `fail=0` (it rolls itself back).
+
+   **Or the realistic set (R4)** for a fuller demo, with the same variables plus `DEMO_PROFILE=realistic`:
+   ```bash
+   DEMO_PROFILE=realistic NEXT_PUBLIC_SUPABASE_URL=… SUPABASE_SERVICE_ROLE_KEY=… DEMO_PASSWORD='…' npm run seed:demo
+   ```
+   - It creates 24 accounts:
+     - 5 operators (Calaguas, Mercedes island hopping, Bagasbas surf, Daet heritage walk, Vinzons) with 6 published packages and 60 days of open dates;
+     - 8 approved guides, each with a 60-day schedule;
+     - 10 tourists;
+     - 1 admin.
+   - It also creates about 14 upcoming bookings: pending, confirmed with an assigned guide (paid in full or in part), and one cancelled.
+   - Some guide days are deliberately unavailable or not set, so the schedule rules (R6) can be shown.
+   - Past completed tours and reviews are **not** seeded: the booking rules don't allow past dates. Use the walkthroughs to create them.
+   - Add `--dry-run` to print the plan without touching the project.
+4. Run `psql "$STAGING_DB_URL" -f supabase/tests/integration.sql` and `supabase/tests/guide_swaps.sql`. Both must report `fail=0` (they roll themselves back).
 5. Charge the phones, connect to Wi-Fi, and open the staging URL once on each phone.
 
 ---

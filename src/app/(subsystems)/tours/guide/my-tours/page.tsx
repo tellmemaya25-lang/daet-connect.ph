@@ -5,6 +5,8 @@ import { Notice } from "@/components/ui/notice";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { toManilaDateKey } from "@/lib/tours/events-calendar";
+import { isBusyReason } from "@/lib/tours/guide-swap";
+import { SwapRequest, type MySwap } from "./swap-request";
 
 export const dynamic = "force-dynamic";
 
@@ -112,6 +114,33 @@ export default async function GuideMyToursPage() {
     assignedTours?.filter((t) => t.status === "confirmed" && t.tour_date >= today) || [];
   const completedTours =
     assignedTours?.filter((t) => t.status === "completed" || t.tour_date < today) || [];
+
+  // R6: other guides free on each upcoming date, and this guide's latest swap request per tour.
+  const pickers = new Map(
+    await Promise.all(
+      [...new Set(upcomingTours.map((t) => t.tour_date))].map(async (date) => {
+        const { data } = await supabase.rpc("tours_guides_free_on", { p_date: date });
+        const rows = ((data ?? []) as Array<{ guide_id: string; full_name: string; reason: string | null }>)
+          .filter((r) => r.guide_id !== guide.id)
+          .map((r) => ({ id: r.guide_id, full_name: r.full_name, reason: isBusyReason(r.reason) ? r.reason : null }));
+        return [date, rows] as const;
+      }),
+    ),
+  );
+  const { data: swapRows } = upcomingTours.length
+    ? await supabase
+        .from("tours_guide_swap_requests")
+        .select("id, booking_id, status, to_guide_id, reason, decision_note, created_at")
+        .eq("from_guide_id", guide.id)
+        .in("booking_id", upcomingTours.map((t) => t.id))
+        .order("created_at", { ascending: false })
+    : { data: [] as Array<{ id: string; booking_id: string; status: string; to_guide_id: string | null; reason: string; decision_note: string | null; created_at: string }> };
+  const latestSwap = new Map<string, MySwap>();
+  for (const row of swapRows ?? []) {
+    if (latestSwap.has(row.booking_id)) continue;
+    const toName = row.to_guide_id ? [...pickers.values()].flat().find((g) => g.id === row.to_guide_id)?.full_name ?? null : null;
+    latestSwap.set(row.booking_id, { id: row.id, status: row.status, toGuideName: toName, reason: row.reason, decisionNote: row.decision_note });
+  }
 
   return (
     <PageFrame>
@@ -247,6 +276,12 @@ export default async function GuideMyToursPage() {
                         >
                           {booking.tour_date === today ? "Guest list & check-in" : "Guest list"}
                         </Link>
+                        <SwapRequest
+                          bookingId={booking.id}
+                          reference={booking.booking_reference}
+                          guides={pickers.get(booking.tour_date) ?? []}
+                          latest={latestSwap.get(booking.id) ?? null}
+                        />
                       </div>
                     </div>
                   </div>

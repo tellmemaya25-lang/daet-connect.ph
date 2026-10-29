@@ -1,5 +1,6 @@
 "use client";
 
+import { formatPeso } from "@/lib/money";
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
@@ -15,7 +16,7 @@ export type CancellationRequest = {
   status: string;
 };
 
-const peso = (value: number) => `₱${Number(value).toLocaleString("en-PH", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+const peso = formatPeso;
 
 function useAction() {
   const router = useRouter();

@@ -17,6 +17,7 @@ type Generated = Extract<GenerateResult, { ok: true }>;
 
 const PACE_LABELS = { relaxed: "Relaxed", normal: "Normal", packed: "Packed" } as const;
 const PACE_STOPS = { relaxed: "about 3 stops a day", normal: "about 4 stops a day", packed: "about 5 stops a day" } as const;
+const ALL_CATEGORIES = Object.keys(ATTRACTION_CATEGORIES) as AttractionCategory[];
 
 export function PlannerApp({
   defaultDate,
@@ -63,6 +64,7 @@ export function PlannerApp({
   lastDay.setUTCDate(lastDay.getUTCDate() + Math.max(0, input.days - 1));
   const dates = input.startDate ? (input.days > 1 ? `${shortDate(input.startDate)} to ${shortDate(lastDay.toISOString().slice(0, 10))}` : shortDate(input.startDate)) : "Pick a first day";
   const pace = input.pace in PACE_LABELS ? (input.pace as keyof typeof PACE_LABELS) : "normal";
+  const allInterests = ALL_CATEGORIES.every((c) => input.interests.includes(c));
   const likes = input.interests.filter(isAttractionCategory).map((i) => ATTRACTION_CATEGORIES[i].toLowerCase()).join(", ");
 
   return (
@@ -99,6 +101,14 @@ export function PlannerApp({
             <fieldset>
               <legend className="text-base font-bold text-daet-ink">What do you enjoy?</legend>
               <div className="mt-3 flex flex-wrap gap-2">
+                <button
+                  type="button"
+                  aria-pressed={allInterests}
+                  onClick={() => set("interests", allInterests ? [] : ALL_CATEGORIES)}
+                  className={`inline-flex min-h-11 items-center gap-2 rounded-full border px-4 text-sm font-bold transition-colors ${allInterests ? "border-daet-leaf bg-daet-sand text-daet-leaf" : "border-daet-ink/25 bg-white text-daet-ink hover:bg-daet-sand"}`}
+                >
+                  All
+                </button>
                 {(Object.entries(ATTRACTION_CATEGORIES) as Array<[AttractionCategory, string]>).map(([value, label]) => {
                   const on = input.interests.includes(value);
                   return (
@@ -115,6 +125,7 @@ export function PlannerApp({
                   );
                 })}
               </div>
+              {input.interests.length === 0 ? <p className="mt-2 text-sm text-daet-ink/70">No preference: we&apos;ll mix everything.</p> : null}
             </fieldset>
 
             <div className="space-y-4">

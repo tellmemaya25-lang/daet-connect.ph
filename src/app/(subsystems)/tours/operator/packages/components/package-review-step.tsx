@@ -1,5 +1,6 @@
 "use client";
 
+import { formatPeso } from "@/lib/money";
 import type { PackageDraft } from "../package-types";
 
 interface PackageReviewStepProps {
@@ -27,8 +28,8 @@ export function PackageReviewStep({
   const defaultVariant = data.priceVariants.find((v) => v.isDefault);
   const priceDisplay = defaultVariant
     ? defaultVariant.pricePerPax
-      ? `₱${defaultVariant.pricePerPax.toLocaleString()}/pax`
-      : `₱${defaultVariant.flatPrice?.toLocaleString()} flat`
+      ? `${formatPeso(defaultVariant.pricePerPax)}/pax`
+      : `${formatPeso(defaultVariant.flatPrice)} flat`
     : "Price not set";
 
   return (
@@ -125,8 +126,8 @@ export function PackageReviewStep({
                   </div>
                   <p className="text-sm font-black text-daet-ink">
                     {variant.pricePerPax
-                      ? `₱${variant.pricePerPax.toLocaleString()}/pax`
-                      : `₱${variant.flatPrice?.toLocaleString()}`}
+                      ? `${formatPeso(variant.pricePerPax)}/pax`
+                      : `${formatPeso(variant.flatPrice)}`}
                   </p>
                 </div>
               </div>

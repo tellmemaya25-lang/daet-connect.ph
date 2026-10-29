@@ -1,5 +1,6 @@
 "use server";
 
+import { formatPeso } from "@/lib/money";
 import { revalidatePath } from "next/cache";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { isUuid } from "@/lib/tours/operator-access";
@@ -79,7 +80,7 @@ export async function recordPayment(input: RecordPaymentInput) {
     if (input.amount > remaining) {
       return {
         success: false,
-        error: `Amount exceeds remaining balance of ₱${remaining.toFixed(2)}`,
+        error: `Amount exceeds remaining balance of ${formatPeso(remaining)}`,
       };
     }
 
@@ -108,7 +109,7 @@ export async function recordPayment(input: RecordPaymentInput) {
     const statusMessage =
       newTotalPaid >= booking.total_amount
         ? "Booking is now fully paid!"
-        : `Remaining balance: ₱${(booking.total_amount - newTotalPaid).toFixed(2)}`;
+        : `Remaining balance: ${formatPeso((booking.total_amount - newTotalPaid))}`;
 
     return {
       success: true,
@@ -176,7 +177,7 @@ export async function reviewPaymentProof(formData: FormData): Promise<{ success:
   const remaining = remainingBalance(booking ?? { total_amount: 0, total_paid: 0 });
   const amount = Number(proof.amount);
   if (amount > remaining + 0.001) {
-    return { success: false, error: `This receipt (₱${amount.toFixed(2)}) is more than the remaining balance (₱${remaining.toFixed(2)}). Reject it or record the correct amount manually.` };
+    return { success: false, error: `This receipt (${formatPeso(amount)}) is more than the remaining balance (${formatPeso(remaining)}). Reject it or record the correct amount manually.` };
   }
 
   const { data: claimed, error: claimError } = await supabase

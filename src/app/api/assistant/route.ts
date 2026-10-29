@@ -1,5 +1,6 @@
 import { headers } from "next/headers";
 import { aiCallerKey, allowAiCall } from "@/lib/ai/limits";
+import { planRoute } from "@/lib/maps/routes";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { isAssistantLlmEnabled, runAssistant } from "@/lib/tours/assistant/claude";
@@ -30,6 +31,7 @@ export async function POST(request: Request) {
     userId: user?.id ?? null,
     today: toManilaDateKey(new Date()),
     aiAllowed,
+    route: async (from, to) => (await planRoute([from, to])).legs[0],
     runAi: (ctx, history, onText) => runAssistant(ctx, history, onText),
   });
   const encoder = new TextEncoder();

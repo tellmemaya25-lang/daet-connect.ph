@@ -739,6 +739,74 @@ export type Database = {
           },
         ]
       }
+      tours_guide_swap_requests: {
+        Row: {
+          booking_id: string
+          created_at: string
+          decided_at: string | null
+          decided_by: string | null
+          decision_note: string | null
+          from_guide_id: string
+          id: string
+          reason: string
+          status: string
+          to_guide_id: string | null
+        }
+        Insert: {
+          booking_id: string
+          created_at?: string
+          decided_at?: string | null
+          decided_by?: string | null
+          decision_note?: string | null
+          from_guide_id: string
+          id?: string
+          reason: string
+          status?: string
+          to_guide_id?: string | null
+        }
+        Update: {
+          booking_id?: string
+          created_at?: string
+          decided_at?: string | null
+          decided_by?: string | null
+          decision_note?: string | null
+          from_guide_id?: string
+          id?: string
+          reason?: string
+          status?: string
+          to_guide_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tours_guide_swap_requests_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: false
+            referencedRelation: "tours_bookings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tours_guide_swap_requests_decided_by_fkey"
+            columns: ["decided_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tours_guide_swap_requests_from_guide_id_fkey"
+            columns: ["from_guide_id"]
+            isOneToOne: false
+            referencedRelation: "tours_guides"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tours_guide_swap_requests_to_guide_id_fkey"
+            columns: ["to_guide_id"]
+            isOneToOne: false
+            referencedRelation: "tours_guides"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       tours_guides: {
         Row: {
           accreditation_notes: string | null
@@ -1976,6 +2044,10 @@ export type Database = {
           tourist: string
         }[]
       }
+      tours_cancel_guide_swap: {
+        Args: { p_request: string }
+        Returns: undefined
+      }
       tours_chat_inbox: {
         Args: never
         Returns: {
@@ -2005,6 +2077,31 @@ export type Database = {
       tours_count_booked_seats: {
         Args: { p_date: string; p_package_id: string }
         Returns: number
+      }
+      tours_decide_guide_swap: {
+        Args: {
+          p_approve: boolean
+          p_guide?: string
+          p_note?: string
+          p_request: string
+        }
+        Returns: undefined
+      }
+      tours_guide_busy_reason: {
+        Args: { p_date: string; p_exclude_booking?: string; p_guide: string }
+        Returns: string
+      }
+      tours_guide_is_free: {
+        Args: { p_date: string; p_exclude_booking?: string; p_guide: string }
+        Returns: boolean
+      }
+      tours_guides_free_on: {
+        Args: { p_date: string; p_exclude_booking?: string }
+        Returns: {
+          full_name: string
+          guide_id: string
+          reason: string
+        }[]
       }
       tours_inbox: {
         Args: never
@@ -2096,6 +2193,10 @@ export type Database = {
       }
       tours_request_cancellation: {
         Args: { p_booking_id: string; p_reason: string }
+        Returns: string
+      }
+      tours_request_guide_swap: {
+        Args: { p_booking: string; p_reason: string; p_to_guide: string }
         Returns: string
       }
       tours_resolve_cancellation: {

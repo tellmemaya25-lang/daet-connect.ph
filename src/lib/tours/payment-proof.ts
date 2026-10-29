@@ -1,3 +1,4 @@
+import { formatPeso } from "@/lib/money";
 /**
  * Manual payment proofs: a tourist pays the operator's GCash/bank account
  * directly, then uploads the receipt; the operator verifies it, which writes
@@ -53,7 +54,7 @@ export function parseProofForm(formData: FormData, remainingBalance: number): Pr
     amount = Number(amountText);
     if (amount <= 0) errors.amount = "Amount must be greater than zero.";
     else if (amount > remainingBalance + 0.001) {
-      errors.amount = `Amount is more than the remaining balance of ₱${remainingBalance.toLocaleString("en-PH", { maximumFractionDigits: 2 })}.`;
+      errors.amount = `Amount is more than the remaining balance of ${formatPeso(remainingBalance)}.`;
     }
   }
 

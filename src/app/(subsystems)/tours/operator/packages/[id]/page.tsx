@@ -1,3 +1,4 @@
+import { formatPeso } from "@/lib/money";
 import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
 import { PageFrame } from "@/components/ui/page-frame";
@@ -332,12 +333,7 @@ export default async function OperatorPackageDetailPage({ params }: PageProps) {
                       </div>
                       <div className="text-right">
                         <p className="text-xl font-black text-daet-ink">
-                          ₱
-                          {(
-                            variant.price_per_pax ||
-                            variant.flat_price ||
-                            0
-                          ).toLocaleString()}
+                          {formatPeso(variant.price_per_pax || variant.flat_price || 0)}
                         </p>
                         <p className="text-xs text-daet-ink/70">
                           {variant.price_per_pax ? "per person" : "flat rate"}
@@ -450,7 +446,7 @@ export default async function OperatorPackageDetailPage({ params }: PageProps) {
                 <div>
                   <p className="text-xs text-daet-ink/70">Base price</p>
                   <p className="mt-1 text-2xl font-black text-daet-ink">
-                    ₱{displayPrice.toLocaleString()}
+                    {formatPeso(displayPrice)}
                   </p>
                   <p className="text-xs text-daet-ink/70">{priceLabel}</p>
                 </div>

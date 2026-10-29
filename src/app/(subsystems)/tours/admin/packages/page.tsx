@@ -1,3 +1,4 @@
+import { formatPeso } from "@/lib/money";
 import { createSupabaseServerClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
@@ -212,7 +213,7 @@ function PackageCard({ package: pkg }: { package: any }) {
           <div className="space-y-1 text-sm text-daet-ink/80">
             <p><span className="font-medium">Operator:</span> {operatorName}</p>
             <p><span className="font-medium">Contact:</span> {contactName}</p>
-            <p><span className="font-medium">Base Price:</span> ₱{pkg.base_price?.toLocaleString() || 'N/A'}</p>
+            <p><span className="font-medium">Base Price:</span> {pkg.base_price == null ? 'N/A' : formatPeso(pkg.base_price)}</p>
             <p><span className="font-medium">Submitted:</span> {new Date(pkg.created_at).toLocaleDateString()}</p>
           </div>
         </div>

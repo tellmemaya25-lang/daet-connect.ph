@@ -1,3 +1,4 @@
+import { formatPeso } from "@/lib/money";
 import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
 import { PageFrame } from "@/components/ui/page-frame";
@@ -271,7 +272,7 @@ export default async function BookingDetailPage({ params, searchParams }: PagePr
               <div className="flex justify-between border-b border-daet-ink/10 pb-3">
                 <span className="text-sm text-daet-ink/70">Price per Person</span>
                 <span className="font-bold text-daet-ink">
-                  ₱{booking.price_per_pax.toLocaleString()}
+                  {formatPeso(booking.price_per_pax)}
                 </span>
               </div>
             )}
@@ -279,7 +280,7 @@ export default async function BookingDetailPage({ params, searchParams }: PagePr
             <div className="flex justify-between pt-2">
               <span className="text-lg font-bold text-daet-ink">Total Amount</span>
               <span className="text-2xl font-black text-daet-forest">
-                ₱{booking.total_amount.toLocaleString()}
+                {formatPeso(booking.total_amount)}
               </span>
             </div>
           </div>

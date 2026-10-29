@@ -1,3 +1,4 @@
+import { formatPeso } from "@/lib/money";
 import { Badge, type BadgeTone } from "@/components/ui/badge";
 import { Card, CardHeader } from "@/components/ui/card";
 import { Notice } from "@/components/ui/notice";
@@ -48,7 +49,7 @@ export type PanelProof = {
   submitted_at: string;
 };
 
-const peso = (value: number) => `₱${value.toLocaleString("en-PH", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+const peso = formatPeso;
 const date = (value: string | null) =>
   value ? new Intl.DateTimeFormat("en-PH", { dateStyle: "medium", timeZone: "Asia/Manila" }).format(new Date(value)) : "—";
 

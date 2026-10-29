@@ -1,3 +1,4 @@
+import { formatPeso } from "@/lib/money";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { Badge, type BadgeTone } from "@/components/ui/badge";
@@ -23,7 +24,7 @@ const PAYMENT: Record<string, { label: string; tone: BadgeTone }> = {
   paid: { label: "Paid", tone: "success" },
   refunded: { label: "Refunded", tone: "neutral" },
 };
-const peso = (value: number) => `₱${value.toLocaleString("en-PH", { maximumFractionDigits: 2 })}`;
+const peso = formatPeso;
 const longDate = (key: string) => new Date(`${key}T00:00:00+08:00`).toLocaleDateString("en-PH", { weekday: "short", month: "short", day: "numeric", timeZone: "Asia/Manila" });
 
 type BookingRow = {

@@ -87,7 +87,7 @@ describe("tools", () => {
   it("works out the next step and the right buttons", () => {
     const card = bookingCard({ id: "b1", booking_reference: "BK-1", tour_date: "2026-11-01", status: "confirmed", payment_status: "partial", total_amount: 3000, total_paid: 1000, number_of_pax: 2, tours_packages: { title: "X" } }, TODAY);
     expect(card.amountDue).toBe(2000);
-    expect(card.nextStep).toMatch(/₱2,000 left to pay/);
+    expect(card.nextStep).toMatch(/₱2,000.00 left to pay/);
     expect(card.links.map((l) => l.label)).toEqual(["Pay now", "Show ticket QR", "View booking"]);
     const pending = bookingCard({ id: "b2", booking_reference: "BK-2", tour_date: "2026-11-01", status: "pending", payment_status: "unpaid", total_amount: 800, total_paid: 0, number_of_pax: 1, tours_packages: null }, TODAY);
     expect(pending.links.map((l) => l.label)).toEqual(["View booking"]);

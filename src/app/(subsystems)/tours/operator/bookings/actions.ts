@@ -1,5 +1,6 @@
 "use server";
 
+import { scheduleErrorMessage } from "@/lib/tours/guide-swap";
 import { revalidatePath } from "next/cache";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { checkTransition, isBookingStatus, type BookingStatus } from "@/lib/tours/booking-lifecycle";
@@ -92,6 +93,9 @@ export async function assignGuideToBooking(
       .eq("id", bookingId);
 
     if (updateError) {
+      // R6: the schedule rule (available that day, not double-booked) is enforced in the database.
+      const scheduleError = scheduleErrorMessage(updateError);
+      if (scheduleError) return { success: false, error: scheduleError };
       console.error("Guide assignment error:", updateError);
       return { success: false, error: "Failed to assign guide" };
     }
