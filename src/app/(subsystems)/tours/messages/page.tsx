@@ -1,3 +1,5 @@
+import { AiAvatar } from "@/components/chat/ai-avatar";
+import { ASSISTANT_NAME } from "@/lib/tours/assistant/name";
 import { EmptyState } from "@/components/ui/empty-state";
 import { LineIcon } from "@/components/ui/icons";
 import { redirect } from "next/navigation";
@@ -98,6 +100,20 @@ export default async function MessagesInboxPage({ searchParams }: PageProps) {
             )}
           </details>
         ) : null}
+
+        <Link
+          href="/tours/messages/ai"
+          className="mt-6 flex min-h-11 items-center gap-3 rounded-2xl bg-white p-3 transition hover:bg-blue-50 active:scale-[0.99]"
+        >
+          <AiAvatar />
+          <span className="min-w-0 flex-1">
+            <span className="flex items-center gap-2">
+              <span className="truncate font-bold text-daet-ink">{ASSISTANT_NAME}</span>
+              <Badge tone="info">Pinned</Badge>
+            </span>
+            <span className="block truncate text-sm text-slate-600">Food, stays, directions and trip costs in Daet. Ask anything.</span>
+          </span>
+        </Link>
 
         {error ? (
           <Notice variant="error" className="mt-6">Messages could not be loaded. Refresh to try again.</Notice>

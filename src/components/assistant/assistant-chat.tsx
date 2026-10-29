@@ -10,13 +10,13 @@ import { LineIcon } from "@/components/ui/icons";
 import type { AssistantEvent } from "@/lib/tours/assistant/respond";
 import type { AssistantCard, HandoffCard } from "@/lib/tours/assistant/tools";
 import type { CostCard, PlaceCard, TransportCard } from "@/lib/tours/assistant/guide-tools";
+import { ASSISTANT_NAME } from "@/lib/tours/assistant/name";
 
 type Turn = { role: "user" | "assistant"; content: string; cards?: AssistantCard[]; mode?: "ai" | "basic" };
 type Point = { lat: number; lng: number };
 
 const STORAGE_KEY = "daet-assistant-v1";
 const MESSAGE_MAX = 1000;
-export const ASSISTANT_NAME = "Daet AI assistant";
 export const ASSISTANT_EXAMPLES = [
   "Budget for 2 days in Calaguas?",
   "Where to eat near Bagasbas?",
@@ -65,7 +65,29 @@ export function AssistantChat({ signedIn, onNavigate, autoFocus = false }: { sig
   const logRef = useRef<HTMLOListElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
-  useEffect(() => setTurns(load()), []);
+  const [confirmClear, setConfirmClear] = useState(false);
+  // Signed-in travellers keep their chat on their account; visitors keep it in this tab only.
+  useEffect(() => {
+    if (!signedIn) {
+      setTurns(load());
+      return;
+    }
+    let cancelled = false;
+    fetch("/api/assistant", { cache: "no-store" })
+      .then((r) => (r.ok ? r.json() : Promise.reject(new Error(String(r.status)))))
+      .then((body: { turns?: Turn[] }) => {
+        if (!cancelled) setTurns(Array.isArray(body.turns) ? body.turns : []);
+      })
+      .catch(() => {
+        if (!cancelled) setError("Your saved chat could not be loaded. New messages still work.");
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [signedIn]);
+  const remember = (next: Turn[]) => {
+    if (!signedIn) save(next);
+  };
   useEffect(() => {
     logRef.current?.lastElementChild?.scrollIntoView({ block: "end" });
   }, [turns]);
@@ -126,10 +148,10 @@ export function AssistantChat({ signedIn, onNavigate, autoFocus = false }: { sig
       if (!reply.content.trim()) reply = { ...reply, content: "Sorry, I couldn't answer that. Please try again." };
       const final = [...history, reply];
       setTurns(final);
-      save(final);
+      remember(final);
     } catch {
       setTurns(history);
-      save(history);
+      remember(history);
       setText(question);
       setError("The assistant couldn't be reached. Check your connection and try again.");
     } finally {
@@ -150,7 +172,7 @@ export function AssistantChat({ signedIn, onNavigate, autoFocus = false }: { sig
     <div className="flex min-h-0 flex-1 flex-col">
       <div className="flex items-center justify-between gap-2 bg-slate-50 px-4 py-1 text-sm text-slate-600">
         <span>{lastMode === "basic" ? <Badge tone="neutral">Basic mode</Badge> : lastMode === "ai" ? <Badge tone="info">AI</Badge> : "Answers come from CONNECT-Daet's own listings."}</span>
-        {turns.length ? (
+        {turns.length && !signedIn ? (
           <button
             type="button"
             onClick={() => {
@@ -162,6 +184,33 @@ export function AssistantChat({ signedIn, onNavigate, autoFocus = false }: { sig
           >
             New chat
           </button>
+        ) : null}
+        {turns.length && signedIn ? (
+          confirmClear ? (
+            <span className="flex items-center gap-1">
+              <button
+                type="button"
+                onClick={async () => {
+                  const response = await fetch("/api/assistant", { method: "DELETE" }).catch(() => null);
+                  setConfirmClear(false);
+                  if (response?.ok) {
+                    setTurns([]);
+                    inputRef.current?.focus();
+                  } else setError("Your chat could not be deleted. Please try again.");
+                }}
+                className="min-h-11 rounded-full bg-red-600 px-3 font-bold text-white"
+              >
+                Delete chat
+              </button>
+              <button type="button" onClick={() => setConfirmClear(false)} className="min-h-11 px-2 font-bold text-daet-ink">
+                Keep
+              </button>
+            </span>
+          ) : (
+            <button type="button" onClick={() => setConfirmClear(true)} className="min-h-11 font-bold text-blue-700 underline">
+              Delete chat history
+            </button>
+          )
         ) : null}
       </div>
 
@@ -245,7 +294,8 @@ export function AssistantChat({ signedIn, onNavigate, autoFocus = false }: { sig
           </Button>
         </div>
         <p className="mt-2 text-xs leading-4 text-slate-600">
-          {here ? "Your location is sent only with your next questions, never saved. " : ""}Chats aren&apos;t saved on our servers. Never share passwords or card numbers.
+          {here ? "Your location is sent only with your next questions, never saved. " : ""}
+          {signedIn ? "Saved to your account. Delete it anytime." : "Chats aren't saved on our servers."} Never share passwords or card numbers.
         </p>
       </form>
     </div>
