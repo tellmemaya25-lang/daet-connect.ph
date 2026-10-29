@@ -1,3 +1,4 @@
+import { AuthShell } from "@/components/ui/auth-shell";
 import { redirect } from "next/navigation";
 import { PageFrame } from "@/components/ui/page-frame";
 import { Notice } from "@/components/ui/notice";
@@ -30,16 +31,10 @@ export default async function SignupPage({ searchParams }: { searchParams: Promi
   }
 
   return (
-    <PageFrame>
-      <div className="mx-auto max-w-md">
-        <section className="rounded-2xl bg-white p-6 sm:p-10">
-          <h1 className="text-3xl font-black text-daet-ink">Create account</h1>
-          <p className="mt-2 text-sm leading-6 text-daet-ink/65">
-            Create an account to book trips, message your guide and keep your tickets in one place.
-          </p>
-          <SignupForm nextUrl={nextUrl} />
-        </section>
-      </div>
+    <PageFrame credits={["bagasbas"]}>
+      <AuthShell title="Create account" description="Create an account to book trips, message your guide and keep your tickets in one place.">
+        <SignupForm nextUrl={nextUrl} />
+      </AuthShell>
     </PageFrame>
   );
 }

@@ -1,3 +1,4 @@
+import { AuthShell } from "@/components/ui/auth-shell";
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { PageFrame } from "@/components/ui/page-frame";
@@ -19,14 +20,10 @@ export default async function ResetPasswordPage() {
   }
 
   return (
-    <PageFrame>
-      <div className="mx-auto max-w-md">
-        <section className="rounded-2xl bg-white p-6 sm:p-10">
-          <h1 className="text-3xl font-black text-daet-ink">Choose a new password</h1>
-          <p className="mt-2 text-sm leading-6 text-daet-ink/80">You will stay signed in once it is saved.</p>
-          <ResetPasswordForm />
-        </section>
-      </div>
+    <PageFrame credits={["bagasbas"]}>
+      <AuthShell title="Choose a new password" description="You will stay signed in once it is saved.">
+        <ResetPasswordForm />
+      </AuthShell>
     </PageFrame>
   );
 }

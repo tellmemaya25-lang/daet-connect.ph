@@ -41,6 +41,8 @@ for (const [role, path, name] of pages.filter((p) => p[2].includes(filter))) {
       }
       window.scrollTo(0, document.body.scrollHeight);
     });
+    // Wait for lazy images to finish loading.
+    await page.waitForFunction(() => Array.from(document.images).every((img) => img.complete), null, { timeout: 15000 }).catch(() => {});
     await page.waitForTimeout(600);
     await page.screenshot({ path: `${out}/${name}-${width}.png`, fullPage: true });
     await ctx.close();

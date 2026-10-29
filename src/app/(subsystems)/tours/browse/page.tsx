@@ -1,5 +1,6 @@
 import { LineIcon } from "@/components/ui/icons";
-import Link from "next/link";
+import { ButtonLink } from "@/components/ui/button";
+import { EmptyState } from "@/components/ui/empty-state";
 import { PageFrame } from "@/components/ui/page-frame";
 import { Notice } from "@/components/ui/notice";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
@@ -7,6 +8,7 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { PackageCard } from "./package-card";
 import { toSummary, type RatingSummary } from "@/lib/tours/reviews";
 import { PackageFilters } from "./package-filters";
+import { placePhoto } from "@/lib/tours/trip-board";
 
 export const dynamic = "force-dynamic";
 
@@ -70,7 +72,7 @@ export default async function BrowsePackagesPage({
   // limited to the 50 newest packages before the price rules run.
   const sortBy = params.sort || "created_at";
   const needsPriceWork = sortBy === "price" || Boolean(params.minPrice || params.maxPrice);
-  query = query.order(sortBy === "price" ? "created_at" : sortBy, { ascending: false });
+  query = query.order(sortBy === "price" ? "created_at" : sortBy, { ascending: sortBy === "title" });
 
   const { data: packages, error } = await query.limit(needsPriceWork ? 200 : 50);
 
@@ -130,57 +132,51 @@ export default async function BrowsePackagesPage({
   }
   filteredPackages = filteredPackages.slice(0, 50);
 
+  const place = params.location?.trim();
+  // Trips without their own cover show a credited place photo; credit each one used.
+  const credits = [...new Set(filteredPackages.filter((pkg: any) => !pkg.cover_image_url).map((pkg: any) => placePhoto(pkg.title, pkg.location_name)))];
   return (
-    <PageFrame>
-      <div className="mx-auto max-w-7xl">
-        {/* Header */}
-        <div className="mb-8 flex items-start justify-between gap-4">
-          <div>
-            <h1 className="text-4xl font-black text-daet-ink sm:text-5xl">Find a trip</h1>
-            <p className="mt-2 text-sm leading-6 text-daet-ink/80">
-              Discover authentic experiences with local operators and certified guides.
-            </p>
-          </div>
-          {user && (
-            <Link
-              href="/tours/my-bookings"
-              className="inline-flex min-h-11 shrink-0 items-center whitespace-nowrap rounded-full bg-daet-forest px-6 text-sm font-bold text-white transition hover:bg-daet-leaf"
-            >
-              My bookings
-            </Link>
-          )}
+    <PageFrame credits={credits}>
+      <div className="flex flex-wrap items-end justify-between gap-4">
+        <div>
+          <h1 className="display-2 text-daet-ink">{place ? `Trips in ${place}` : "Find a trip"}</h1>
+          <p className="mt-2 max-w-2xl text-lg text-daet-ink">
+            Small trips run by local operators, each confirmed by them and led by an accredited guide.
+          </p>
         </div>
-
-        {/* Filters */}
-        <PackageFilters currentParams={params} />
-
-        {/* Results */}
-        {filteredPackages.length === 0 ? (
-          <section className="mt-8 rounded-2xl bg-white px-6 py-14 text-center">
-            <span
-              className="mx-auto grid h-14 w-14 place-items-center rounded-2xl bg-daet-sand text-2xl"
-              aria-hidden="true"
-            >
-              <LineIcon name="search" className="inline-block h-[1.1em] w-[1.1em] align-[-0.15em]" />
-            </span>
-            <h2 className="mt-4 text-xl font-black text-daet-ink">No packages found</h2>
-            <p className="mt-2 text-sm text-daet-ink/70">
-              Try adjusting your filters or check back later for new tours.
-            </p>
-          </section>
-        ) : (
-          <>
-            <p className="mt-6 text-sm text-daet-ink/70">
-              {filteredPackages.length} package{filteredPackages.length !== 1 ? "s" : ""} available
-            </p>
-            <div className="mt-4 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-              {filteredPackages.map((pkg: any) => (
-                <PackageCard key={pkg.id} package={pkg} rating={ratingsById.get(pkg.id) ?? null} />
-              ))}
-            </div>
-          </>
-        )}
+        {user ? (
+          <ButtonLink href="/tours/my-bookings" variant="secondary">
+            My bookings
+          </ButtonLink>
+        ) : null}
       </div>
+
+      <div className="mt-6">
+        <PackageFilters currentParams={params} />
+      </div>
+
+      {filteredPackages.length === 0 ? (
+        <EmptyState
+          className="mt-8"
+          icon={<LineIcon name="search" />}
+          title={place ? `No trips in ${place} yet` : "No trips match these filters"}
+          description="Try another place or clear the filters. New trips are added as operators are approved."
+          action={<ButtonLink href="/tours/browse">Show all trips</ButtonLink>}
+        />
+      ) : (
+        <>
+          <p className="mt-6 font-semibold text-daet-ink/80" aria-live="polite">
+            {filteredPackages.length} trip{filteredPackages.length !== 1 ? "s" : ""}
+          </p>
+          <ul className="mt-3 grid gap-4 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3">
+            {filteredPackages.map((pkg: any) => (
+              <li key={pkg.id} data-reveal>
+                <PackageCard package={pkg} rating={ratingsById.get(pkg.id) ?? null} />
+              </li>
+            ))}
+          </ul>
+        </>
+      )}
     </PageFrame>
   );
 }

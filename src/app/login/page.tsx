@@ -1,3 +1,4 @@
+import { AuthShell } from "@/components/ui/auth-shell";
 import { redirect } from "next/navigation";
 import { PageFrame } from "@/components/ui/page-frame";
 import { Notice } from "@/components/ui/notice";
@@ -37,21 +38,20 @@ export default async function LoginPage({ searchParams }: { searchParams: Search
   const livePayments = getPaymongoConfig()?.mode === "live";
 
   return (
-    <PageFrame>
-      <div className="mx-auto max-w-md">
-        <section className="rounded-2xl bg-white p-6 sm:p-10">
-          <h1 className="text-3xl font-black text-daet-ink">Sign in</h1>
-          <p className="mt-2 text-sm leading-6 text-daet-ink/65">
-            Sign in to see your bookings and message your guide.
-          </p>
-          <LoginForm nextUrl={nextUrl} notice={params.message?.slice(0, 160)} />
-        </section>
-        {livePayments ? null : (
-          <Notice variant="info" title="Test environment: no real money" className="mt-4">
-            Online payments here use the PayMongo test sandbox (use its test cards and e-wallets), and receipt uploads are for practice. Nothing is charged.
-          </Notice>
-        )}
-      </div>
+    <PageFrame credits={["bagasbas"]}>
+      <AuthShell
+        title="Sign in"
+        description="Sign in to see your bookings and message your guide."
+        after={
+          livePayments ? null : (
+            <Notice variant="info" title="Test environment: no real money" className="mt-4">
+              Online payments here use the PayMongo test sandbox (use its test cards and e-wallets), and receipt uploads are for practice. Nothing is charged.
+            </Notice>
+          )
+        }
+      >
+        <LoginForm nextUrl={nextUrl} notice={params.message?.slice(0, 160)} />
+      </AuthShell>
     </PageFrame>
   );
 }

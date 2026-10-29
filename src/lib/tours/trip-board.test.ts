@@ -1,4 +1,4 @@
-import { durationLabel, fromPrice, nextOpenDate, placePhoto, shortDay, tripLength } from "@/lib/tours/trip-board";
+import { durationLabel, fromPrice, matchPlacePhoto, nextOpenDate, placePhoto, shortDay, tripLength } from "@/lib/tours/trip-board";
 
 describe("trip board", () => {
   it("groups tours by the time they take", () => {
@@ -35,5 +35,10 @@ describe("trip board", () => {
     expect(placePhoto(null, "Mercedes")).toBe("apuao");
     expect(placePhoto("Daet Heritage Walk")).toBe("rizal");
     expect(placePhoto("Somewhere")).toBe("bagasbas");
+    expect(matchPlacePhoto("Somewhere")).toBeNull();
+    // A place never gets a photo of somewhere else.
+    expect(matchPlacePhoto("Daet Heritage Center and Museum")).toBeNull();
+    expect(matchPlacePhoto("Canimog Island")).toBeNull();
+    expect(matchPlacePhoto("First José Rizal Monument")).toBe("rizal");
   });
 });

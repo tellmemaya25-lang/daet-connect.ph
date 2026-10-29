@@ -1,4 +1,9 @@
-import { CategoryIcon } from "@/components/ui/icons";
+import Image from "next/image";
+import { CategoryIcon, LineIcon } from "@/components/ui/icons";
+import { ButtonLink } from "@/components/ui/button";
+import { EmptyState } from "@/components/ui/empty-state";
+import { PHOTOS, type PhotoKey } from "@/lib/photo-credits";
+import { matchPlacePhoto } from "@/lib/tours/trip-board";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { RouteMap } from "@/components/maps/route-map";
@@ -55,75 +60,93 @@ export default async function AttractionsPage({ searchParams }: PageProps) {
     .filter((a) => a.latitude !== null && a.longitude !== null)
     .map((a) => ({ lat: a.latitude!, lng: a.longitude!, label: a.name, href: `/tours/attractions/${a.slug}` }));
 
+  const credits = [...new Set(attractions.filter((a) => !a.photo_url).map((a) => matchPlacePhoto(a.name)).filter((key): key is PhotoKey => key !== null))];
+
   return (
-    <PageFrame>
-      <div className="mx-auto max-w-6xl">
-        <p className="text-sm font-bold text-daet-leaf">Explore Camarines Norte</p>
-        <h1 className="mt-1 text-4xl font-black text-daet-ink">Attractions</h1>
-        <p className="mt-2 max-w-2xl text-sm leading-6 text-daet-ink/70">
-          Beaches, heritage sites and islands around Daet. Details come from the sources shown on each place; check hours before you go.
-        </p>
+    <PageFrame credits={credits}>
+      <h1 className="display-2 text-daet-ink">Places to visit</h1>
+      <p className="mt-2 max-w-2xl text-lg text-daet-ink">
+        Beaches, heritage sites and islands around Daet, with opening hours and entrance fees. Check hours before you go.
+      </p>
 
-        <nav className="mt-6 flex flex-wrap gap-2" aria-label="Filter attractions">
-          <Link href={filterHref(null, openNow)} className={chip(!category)}>
-            All
+      <nav className="-mx-4 mt-6 flex gap-2 overflow-x-auto px-4 pb-1 sm:mx-0 sm:flex-wrap sm:px-0" aria-label="Filter places">
+        <Link href={filterHref(null, openNow)} aria-current={!category ? "page" : undefined} className={chip(!category)}>
+          All
+        </Link>
+        {Object.entries(ATTRACTION_CATEGORIES).map(([value, label]) => (
+          <Link key={value} href={filterHref(value, openNow)} aria-current={category === value ? "page" : undefined} className={chip(category === value)}>
+            <CategoryIcon category={value} className="h-5 w-5" />
+            {label}
           </Link>
-          {Object.entries(ATTRACTION_CATEGORIES).map(([value, label]) => (
-            <Link key={value} href={filterHref(value, openNow)} className={chip(category === value)}>
-              {label}
-            </Link>
-          ))}
-          <Link href={filterHref(category, !openNow)} className={chip(openNow)}>
-            {openNow ? "✓ " : ""}Open now
-          {openNow ? <span className="sr-only"> (on)</span> : null}
-          </Link>
-        </nav>
+        ))}
+        <Link href={filterHref(category, !openNow)} aria-current={openNow ? "true" : undefined} className={chip(openNow)}>
+          <LineIcon name="clock" className="h-5 w-5" />
+          Open now
+        </Link>
+      </nav>
 
-        {error ? <Notice variant="error" className="mt-6">Attractions could not be loaded. Refresh to try again.</Notice> : null}
+      {error ? <Notice variant="error" className="mt-6">Places could not be loaded. Refresh to try again.</Notice> : null}
 
-        {pins.length > 0 ? (
-          <div className="mt-6">
-            <RouteMap points={pins} title="Map of the listed attractions" />
-          </div>
-        ) : null}
-
-        {attractions.length === 0 && !error ? (
-          <p className="mt-8 rounded-2xl bg-white p-8 text-center text-sm text-daet-ink/70">
-            {openNow ? "Nothing listed is open right now. Try again later or clear the filter." : "No attractions listed in this category yet."}
-          </p>
-        ) : (
-          <ul className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {attractions.map((attraction) => (
-              <li key={attraction.id}>
-                <Link href={`/tours/attractions/${attraction.slug}`} className="flex h-full flex-col overflow-hidden rounded-2xl bg-white transition">
-                  {attraction.photo_url ? (
-                    <img src={attraction.photo_url} alt="" className="h-40 w-full object-cover" />
-                  ) : (
-                    <div className="grid h-24 place-items-center bg-daet-sand/60 text-3xl" aria-hidden="true">
-                      <CategoryIcon category={attraction.category} className="h-6 w-6" />
-                    </div>
-                  )}
-                  <div className="flex flex-1 flex-col p-5">
-                    <div className="flex flex-wrap items-center gap-2">
-                      <Badge tone="brand">{ATTRACTION_CATEGORIES[attraction.category]}</Badge>
+      {attractions.length === 0 && !error ? (
+        <EmptyState
+          className="mt-8"
+          icon={<LineIcon name="pin" />}
+          title={openNow ? "Nothing listed is open right now" : "No places listed here yet"}
+          description={openNow ? "Try again later or clear the filter." : "Try another kind of place."}
+          action={<ButtonLink href="/tours/attractions">Show all places</ButtonLink>}
+        />
+      ) : (
+        <ul className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {attractions.map((attraction) => {
+            const photoKey = attraction.photo_url ? null : matchPlacePhoto(attraction.name);
+            return (
+              <li key={attraction.id} data-reveal>
+                <Link href={`/tours/attractions/${attraction.slug}`} className="group flex h-full flex-col overflow-hidden rounded-2xl bg-white transition hover:bg-blue-50 active:scale-[0.99]">
+                  <div className="relative aspect-[16/10] overflow-hidden bg-blue-50">
+                    {attraction.photo_url ? (
+                      <img src={attraction.photo_url} alt="" loading="lazy" className="h-full w-full object-cover" />
+                    ) : photoKey ? (
+                      <Image src={PHOTOS[photoKey].src} alt="" fill sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw" className="object-cover" />
+                    ) : (
+                      <div className="grid h-full place-items-center text-blue-600" aria-hidden="true">
+                        <CategoryIcon category={attraction.category} className="h-14 w-14" />
+                      </div>
+                    )}
+                  </div>
+                  <div className="flex flex-1 flex-col p-4 sm:p-5">
+                    <h2 className="font-sans text-xl font-bold leading-snug tracking-normal text-daet-ink group-hover:text-blue-700">{attraction.name}</h2>
+                    <p className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-daet-ink/80">
+                      <span className="inline-flex items-center gap-1">
+                        <CategoryIcon category={attraction.category} className="h-4 w-4" /> {ATTRACTION_CATEGORIES[attraction.category]}
+                      </span>
+                      <span>{attraction.municipality}</span>
+                    </p>
+                    {attraction.description ? <p className="mt-2 line-clamp-3 text-daet-ink">{attraction.description}</p> : null}
+                    <p className="mt-auto pt-4">
                       <Badge tone={STATUS_TONE[attraction.status.state]}>{attraction.status.label}</Badge>
-                    </div>
-                    <h2 className="mt-3 text-lg font-black text-daet-ink">{attraction.name}</h2>
-                    <p className="text-xs font-semibold text-daet-ink/70">{attraction.municipality}</p>
-                    {attraction.description ? <p className="mt-2 line-clamp-3 text-sm text-daet-ink/70">{attraction.description}</p> : null}
+                    </p>
                   </div>
                 </Link>
               </li>
-            ))}
-          </ul>
-        )}
-      </div>
+            );
+          })}
+        </ul>
+      )}
+
+      {pins.length > 0 ? (
+        <section aria-labelledby="places-map" className="mt-16">
+          <h2 id="places-map" className="text-2xl font-semibold text-daet-ink sm:text-3xl">Where they are</h2>
+          <div className="mt-4 overflow-hidden rounded-2xl bg-white">
+            <RouteMap points={pins} title="Map of the listed places" />
+          </div>
+        </section>
+      ) : null}
     </PageFrame>
   );
 }
 
 function chip(active: boolean) {
-  return `inline-flex min-h-11 items-center rounded-full border px-4 text-sm font-bold transition ${
-    active ? "border-daet-forest bg-daet-forest text-white" : "border-daet-ink/15 bg-white text-daet-ink hover:bg-daet-sand"
+  return `inline-flex min-h-11 shrink-0 items-center gap-2 rounded-full px-4 text-[15px] font-bold transition active:scale-[0.98] ${
+    active ? "bg-blue-600 text-white" : "bg-white text-daet-ink hover:bg-blue-50"
   }`;
 }

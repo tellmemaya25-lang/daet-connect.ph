@@ -19,9 +19,8 @@ export default async function HelpPage() {
   return (
     <PageFrame>
       <div className="mx-auto max-w-2xl">
-        <p className="text-xs font-black text-daet-leaf">Help · 24/7</p>
-        <h1 className="mt-1 text-3xl font-black text-daet-ink">Daet travel assistant</h1>
-        <p className="mt-2 text-sm leading-6 text-daet-ink/70">
+        <h1 className="display-2 text-daet-ink">Daet travel assistant</h1>
+        <p className="mt-3 text-lg leading-relaxed text-daet-ink">
           Ask about tours, open dates and prices, places and events, how to pay or cancel, or your own bookings. The assistant only reads; you make bookings and payments yourself. For anything it can&apos;t answer, it passes you to the operator or the Daet Tourism Office.
         </p>
         <div className="mt-6 flex h-[70dvh] min-h-[28rem] flex-col overflow-hidden rounded-2xl bg-white">

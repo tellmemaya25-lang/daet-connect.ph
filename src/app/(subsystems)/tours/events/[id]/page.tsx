@@ -61,28 +61,36 @@ export default async function EventDetailPage({ params }: { params: Promise<{ id
   return (
     <PageFrame>
       <div className="mx-auto max-w-3xl">
-        <Link href={`/tours/events?month=${dayKey.slice(0, 7)}&day=${dayKey}`} className="inline-flex min-h-11 items-center text-sm font-bold text-daet-forest hover:underline">
-          ← Back to calendar
+        <Link href={`/tours/events?month=${dayKey.slice(0, 7)}&day=${dayKey}`} className="inline-flex min-h-11 items-center gap-1 font-semibold text-blue-700 hover:underline">
+          <LineIcon name="arrowRight" className="h-4 w-4 rotate-180" /> Back to the calendar
         </Link>
 
         <article className="overflow-hidden rounded-2xl bg-white">
-          <div className="aspect-video bg-gradient-to-br from-daet-forest to-daet-leaf">
-            {event.image_url ? (
+          {event.image_url ? (
+            <div className="aspect-video bg-blue-50">
               <img src={event.image_url} alt={event.title} className="h-full w-full object-cover" />
-            ) : (
-              <div className="grid h-full place-items-center text-6xl" aria-hidden="true"><LineIcon name="calendar" className="inline-block h-[1.1em] w-[1.1em] align-[-0.15em]" /></div>
-            )}
-          </div>
+            </div>
+          ) : (
+            // No picture: the date itself, set large on the brand blue.
+            <div className="flex items-end gap-4 bg-blue-600 px-5 pb-6 pt-10 text-white sm:px-8" aria-hidden="true">
+              <span className="font-[family-name:var(--font-display)] text-8xl font-semibold leading-none">
+                {new Date(event.starts_at).toLocaleDateString("en-PH", { timeZone: "Asia/Manila", day: "numeric" })}
+              </span>
+              <span className="pb-2 text-2xl font-semibold">
+                {new Date(event.starts_at).toLocaleDateString("en-PH", { timeZone: "Asia/Manila", month: "long", year: "numeric" })}
+              </span>
+            </div>
+          )}
           <div className="p-5 sm:p-8">
             <div className="flex flex-wrap gap-2">
               <span className={`rounded-full px-3 py-1 text-xs font-bold ${EVENT_CATEGORY_STYLES[event.category].chip}`}>
                 {EVENT_CATEGORIES[event.category]}
               </span>
-              {isPast ? <span className="rounded-full bg-gray-100 px-3 py-1 text-xs font-bold text-gray-600">This event has ended</span> : null}
+              {isPast ? <span className="rounded-full bg-slate-200 px-3 py-1 text-xs font-bold text-slate-900">This event has ended</span> : null}
             </div>
-            <h1 className="mt-3 text-3xl font-black tracking-tight text-daet-ink">{event.title}</h1>
+            <h1 className="display-2 mt-3 text-daet-ink">{event.title}</h1>
 
-            <dl className="mt-5 space-y-3 text-sm">
+            <dl className="mt-5 space-y-3 text-lg">
               <div className="flex gap-3">
                 <dt className="w-6 shrink-0" aria-label="When"><LineIcon name="calendar" className="inline-block h-[1.1em] w-[1.1em] align-[-0.15em]" /></dt>
                 <dd className="font-semibold text-daet-ink">{formatEventRange(event.starts_at, event.ends_at)}</dd>
@@ -94,39 +102,39 @@ export default async function EventDetailPage({ params }: { params: Promise<{ id
               {event.organizer ? (
                 <div className="flex gap-3">
                   <dt className="w-6 shrink-0" aria-label="Organizer"><LineIcon name="building" className="inline-block h-[1.1em] w-[1.1em] align-[-0.15em]" /></dt>
-                  <dd className="text-daet-ink/75">{event.organizer}</dd>
+                  <dd className="text-daet-ink">{event.organizer}</dd>
                 </div>
               ) : null}
             </dl>
 
             {event.description ? (
-              <p className="mt-6 whitespace-pre-line text-base leading-7 text-daet-ink/80">{event.description}</p>
+              <p className="mt-6 whitespace-pre-line text-lg leading-relaxed text-daet-ink">{event.description}</p>
             ) : null}
 
             {attraction ? (
-              <Link href={`/tours/attractions/${attraction.slug}`} className="mt-6 flex items-center gap-3 rounded-2xl border border-daet-ink/10 bg-daet-sand/40 p-4 hover:bg-daet-sand">
-                <span className="text-2xl" aria-hidden="true">
+              <Link href={`/tours/attractions/${attraction.slug}`} className="mt-6 flex min-h-11 items-center gap-3 rounded-2xl bg-blue-50 p-4 hover:bg-blue-100">
+                <span className="text-blue-600" aria-hidden="true">
                   <CategoryIcon category={attraction.category} className="h-6 w-6" />
                 </span>
                 <span className="min-w-0">
-                  <span className="block text-xs font-bold text-daet-ink/70">
+                  <span className="block text-sm font-semibold text-daet-ink/75">
                     {isAttractionCategory(attraction.category) ? ATTRACTION_CATEGORIES[attraction.category] : "Attraction"}
                   </span>
-                  <span className="block font-black text-daet-ink">{attraction.name} →</span>
+                  <span className="block text-lg font-bold text-daet-ink">{attraction.name}</span>
                 </span>
               </Link>
             ) : null}
 
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
               {!isPast ? (
-                <a href={`/tours/events/${event.id}/calendar.ics`} className="inline-flex min-h-11 items-center justify-center rounded-full bg-daet-forest px-6 text-sm font-bold text-white hover:bg-daet-ink">
+                <a href={`/tours/events/${event.id}/calendar.ics`} className="inline-flex min-h-11 items-center justify-center rounded-full bg-blue-600 px-6 font-bold text-white hover:bg-blue-700">
                   Add to my calendar
                 </a>
               ) : null}
-              <a href={mapsUrl} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-11 items-center justify-center rounded-full border border-daet-forest/30 px-6 text-sm font-bold text-daet-leaf hover:bg-daet-forest/5">
+              <a href={mapsUrl} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-11 items-center justify-center rounded-full bg-blue-50 px-6 font-bold text-blue-700 hover:bg-blue-100">
                 Open in Google Maps
               </a>
-              <Link href="/tours/browse" className="inline-flex min-h-11 items-center justify-center rounded-full border border-daet-ink/15 px-6 text-sm font-bold text-daet-ink hover:bg-daet-sand">
+              <Link href="/tours/browse" className="inline-flex min-h-11 items-center justify-center rounded-full px-6 font-bold text-daet-ink hover:bg-slate-100">
                 Find a tour nearby
               </Link>
             </div>

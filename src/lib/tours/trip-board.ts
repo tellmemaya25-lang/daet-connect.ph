@@ -51,18 +51,35 @@ export function nextOpenDate(slots: Slot[] | null | undefined, today: string): s
   return open[0] ?? null;
 }
 
-const PLACE_PHOTOS: Array<[RegExp, PhotoKey]> = [
-  [/calaguas|tinaga|paracale|vinzons/i, "calaguasBeach"],
-  [/apuao|mercedes|canimog|parola/i, "apuao"],
-  [/bagasbas|surf/i, "bagasbas"],
-  [/rizal|heritage|poblacion/i, "rizal"],
-  [/church|cathedral/i, "church"],
+/** Photos by what they actually show; used for a named place, never for a different one. */
+const EXACT_PHOTOS: Array<[RegExp, PhotoKey]> = [
+  [/calaguas|tinaga/i, "calaguasBeach"],
+  [/apuao/i, "apuao"],
+  [/bagasbas/i, "bagasbas"],
+  [/rizal/i, "rizal"],
+  [/st\.? john|cathedral/i, "church"],
+  [/mercedes port/i, "mercedesPort"],
 ];
 
-/** A photo of the place a tour visits, for tours without their own cover photo. */
+/** For tours, a photo of the area they visit is enough (the trip starts or ends there). */
+const AREA_PHOTOS: Array<[RegExp, PhotoKey]> = [
+  ...EXACT_PHOTOS,
+  [/paracale|vinzons/i, "calaguasBeach"],
+  [/mercedes|canimog|parola/i, "apuao"],
+  [/surf/i, "bagasbas"],
+  [/heritage|poblacion/i, "rizal"],
+];
+
+/** The photo that shows this very place, or null. Places are never shown with another place's photo. */
+export function matchPlacePhoto(...texts: Array<string | null | undefined>): PhotoKey | null {
+  const text = texts.filter(Boolean).join(" ");
+  return EXACT_PHOTOS.find(([pattern]) => pattern.test(text))?.[1] ?? null;
+}
+
+/** A photo of the area a tour visits, for tours without their own cover photo (the Daet shore by default). */
 export function placePhoto(...texts: Array<string | null | undefined>): PhotoKey {
   const text = texts.filter(Boolean).join(" ");
-  return PLACE_PHOTOS.find(([pattern]) => pattern.test(text))?.[1] ?? "bagasbas";
+  return AREA_PHOTOS.find(([pattern]) => pattern.test(text))?.[1] ?? "bagasbas";
 }
 
 /** "Sat, Nov 7" in Manila terms for a YYYY-MM-DD date. */

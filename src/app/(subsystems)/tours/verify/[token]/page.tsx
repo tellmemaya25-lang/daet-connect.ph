@@ -20,17 +20,17 @@ const tourDate = (dateKey: string) =>
 
 function ResultCard({ tone, title, children }: { tone: "valid" | "invalid" | "neutral"; title: string; children?: React.ReactNode }) {
   const styles = {
-    valid: { box: "border-emerald-300 bg-emerald-50", icon: "bg-emerald-600 text-white", mark: "✓", title: "text-emerald-900" },
-    invalid: { box: "border-rose-300 bg-rose-50", icon: "bg-rose-600 text-white", mark: "✕", title: "text-rose-900" },
-    neutral: { box: "border-daet-ink/15 bg-white", icon: "bg-daet-sand text-daet-ink", mark: "i", title: "text-daet-ink" },
+    valid: { box: "bg-green-50", icon: "bg-green-500 text-slate-950", mark: "✓", title: "text-green-950" },
+    invalid: { box: "bg-red-50", icon: "bg-red-600 text-white", mark: "✕", title: "text-red-950" },
+    neutral: { box: "bg-white", icon: "bg-blue-50 text-blue-700", mark: "i", title: "text-daet-ink" },
   }[tone];
   return (
-    <section className={`mx-auto max-w-md rounded-2xl border-2 p-6 text-center ${styles.box}`} aria-live="polite">
-      <div className={`mx-auto grid h-16 w-16 place-items-center rounded-full text-3xl font-black ${styles.icon}`} aria-hidden="true">
+    <section className={`mx-auto max-w-md rounded-2xl p-6 text-center sm:p-8 ${styles.box}`} aria-live="polite">
+      <div className={`mx-auto grid h-20 w-20 place-items-center rounded-full text-4xl font-bold ${styles.icon}`} aria-hidden="true">
         {styles.mark}
       </div>
-      <h1 className={`mt-4 text-2xl font-black ${styles.title}`}>{title}</h1>
-      {children ? <div className="mt-3 text-sm leading-6 text-daet-ink/75">{children}</div> : null}
+      <h1 className={`display-2 mt-4 ${styles.title}`}>{title}</h1>
+      {children ? <div className="mt-3 text-lg leading-relaxed text-daet-ink">{children}</div> : null}
     </section>
   );
 }
