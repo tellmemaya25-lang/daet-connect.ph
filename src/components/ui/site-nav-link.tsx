@@ -6,7 +6,7 @@ import type { ReactNode } from "react";
 import { cn } from "@/components/ui/cn";
 
 const BASE =
-  "inline-flex min-h-11 shrink-0 items-center whitespace-nowrap rounded-full px-3 text-sm font-semibold transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-daet-forest sm:px-4";
+  "inline-flex min-h-11 shrink-0 items-center whitespace-nowrap rounded-full px-3 text-[15px] font-semibold transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 lg:px-4";
 
 /** Header link that marks the current page for assistive tech and sighted users. */
 export function SiteNavLink({
@@ -24,7 +24,7 @@ export function SiteNavLink({
     <Link
       href={href}
       aria-current={current ? "page" : undefined}
-      className={cn(BASE, current ? "bg-daet-sand text-daet-forest" : "text-daet-ink hover:bg-daet-sand", className)}
+      className={cn(BASE, current ? "bg-blue-50 text-blue-700" : "text-daet-ink hover:bg-slate-100", className)}
     >
       {children}
     </Link>

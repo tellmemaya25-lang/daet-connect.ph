@@ -1,3 +1,7 @@
+import Image from "next/image";
+import { PHOTOS } from "@/lib/photo-credits";
+import { matchPlacePhoto } from "@/lib/tours/trip-board";
+import { CategoryIcon, LineIcon } from "@/components/ui/icons";
 import { formatPeso } from "@/lib/money";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
@@ -9,7 +13,7 @@ import { PageFrame } from "@/components/ui/page-frame";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { directionsUrl } from "@/lib/maps/geo";
-import { ATTRACTION_CATEGORIES, ATTRACTION_COLUMNS, CATEGORY_ICONS, toAttraction } from "@/lib/tours/attractions";
+import { ATTRACTION_CATEGORIES, ATTRACTION_COLUMNS, toAttraction } from "@/lib/tours/attractions";
 import { describeHours, openStatus } from "@/lib/tours/opening-hours";
 
 export const dynamic = "force-dynamic";
@@ -37,28 +41,38 @@ export default async function AttractionPage({ params }: PageProps) {
   const pin = attraction.latitude !== null && attraction.longitude !== null ? { lat: attraction.latitude, lng: attraction.longitude } : null;
   const directions = pin ? directionsUrl([pin]) : null;
 
+  const photoKey = attraction.photo_url ? null : matchPlacePhoto(attraction.name);
+
   return (
-    <PageFrame>
-      <div className="mx-auto max-w-3xl">
-        <Link href="/tours/attractions" className="inline-flex min-h-11 items-center text-sm font-bold text-daet-forest hover:underline">
-          ← All attractions
+    <PageFrame credits={photoKey ? [photoKey] : []}>
+      <div className="mx-auto max-w-4xl">
+        <Link href="/tours/attractions" className="inline-flex min-h-11 items-center gap-1 font-semibold text-blue-700 hover:underline">
+          <LineIcon name="arrowRight" className="h-4 w-4 rotate-180" /> All places
         </Link>
 
-        {attraction.photo_url ? <img src={attraction.photo_url} alt={attraction.name} className="mt-2 h-64 w-full rounded-3xl object-cover" /> : null}
+        {attraction.photo_url || photoKey ? (
+          <figure className="relative -mx-4 mt-2 aspect-[4/3] overflow-hidden bg-blue-50 sm:mx-0 sm:aspect-[16/9] sm:rounded-2xl">
+            {attraction.photo_url ? (
+              <img src={attraction.photo_url} alt={attraction.name} className="h-full w-full object-cover" />
+            ) : photoKey ? (
+              <Image src={PHOTOS[photoKey].src} alt={PHOTOS[photoKey].alt} fill priority sizes="(min-width: 896px) 896px, 100vw" className="object-cover" />
+            ) : null}
+          </figure>
+        ) : null}
 
-        <div className="mt-4 flex flex-wrap items-center gap-2">
-          <Badge tone="brand">
-            {CATEGORY_ICONS[attraction.category]} {ATTRACTION_CATEGORIES[attraction.category]}
+        <div className="mt-6 flex flex-wrap items-center gap-2">
+          <Badge tone="info">
+            <CategoryIcon category={attraction.category} className="h-4 w-4" /> {ATTRACTION_CATEGORIES[attraction.category]}
           </Badge>
           <Badge tone={status.state === "open" ? "success" : "neutral"}>{status.label}</Badge>
         </div>
-        <h1 className="mt-2 text-4xl font-black text-daet-ink">{attraction.name}</h1>
-        <p className="mt-1 text-sm font-semibold text-daet-ink/70">
+        <h1 className="display-2 mt-3 text-daet-ink">{attraction.name}</h1>
+        <p className="mt-2 text-lg text-daet-ink/80">
           {attraction.address ?? attraction.municipality}
           {attraction.address && !attraction.address.includes(attraction.municipality) ? ` · ${attraction.municipality}` : ""}
         </p>
 
-        {attraction.description ? <p className="mt-4 text-base leading-7 text-daet-ink/80">{attraction.description}</p> : null}
+        {attraction.description ? <p className="mt-4 text-lg leading-relaxed text-daet-ink">{attraction.description}</p> : null}
 
         <dl className="mt-6 grid gap-3 sm:grid-cols-3">
           <Fact label="Entrance fee" value={attraction.entrance_fee === null ? "Not listed" : attraction.entrance_fee === 0 ? "Free" : `${formatPeso(attraction.entrance_fee)}`} />
@@ -66,36 +80,36 @@ export default async function AttractionPage({ params }: PageProps) {
           <Fact label="Municipality" value={attraction.municipality} />
         </dl>
 
-        <section className="mt-6 rounded-3xl border border-daet-ink/10 bg-white p-5 shadow-sm">
-          <h2 className="text-lg font-black text-daet-ink">Opening hours</h2>
+        <section className="mt-10 rounded-2xl bg-white p-5 sm:p-6">
+          <h2 className="text-2xl font-semibold text-daet-ink">Opening hours</h2>
           {hours.length ? (
-            <table className="mt-3 w-full text-sm">
+            <table className="mt-3 w-full">
               <tbody>
                 {hours.map((line) => (
-                  <tr key={line.day} className="border-b border-daet-ink/5 last:border-0">
-                    <th scope="row" className="py-1.5 pr-4 text-left font-bold text-daet-ink">{line.day}</th>
-                    <td className="py-1.5 text-daet-ink/75">{line.text}</td>
+                  <tr key={line.day} className="even:bg-slate-50">
+                    <th scope="row" className="rounded-l-xl px-3 py-2 text-left font-bold text-daet-ink">{line.day}</th>
+                    <td className="rounded-r-xl px-3 py-2 text-daet-ink">{line.text}</td>
                   </tr>
                 ))}
               </tbody>
             </table>
           ) : (
-            <p className="mt-2 text-sm text-daet-ink/65">Hours are not listed yet.</p>
+            <p className="mt-2 text-daet-ink/80">Hours are not listed yet.</p>
           )}
-          {attraction.hours_note ? <p className="mt-2 text-xs text-daet-ink/70">{attraction.hours_note}</p> : null}
-          <p className="mt-1 text-xs text-daet-ink/70">Times are Philippine time.</p>
+          {attraction.hours_note ? <p className="mt-3 text-daet-ink">{attraction.hours_note}</p> : null}
+          <p className="mt-1 text-sm text-daet-ink/75">Times are Philippine time.</p>
         </section>
 
-        <section className="mt-6">
-          <h2 className="mb-3 text-lg font-black text-daet-ink">Location</h2>
+        <section className="mt-10">
+          <h2 className="mb-3 text-2xl font-semibold text-daet-ink">Location</h2>
           {pin ? (
             <>
               <RouteMap points={[{ ...pin, label: attraction.name }]} title={`Map showing ${attraction.name}`} />
               {!attraction.location_verified ? (
-                <p className="mt-2 text-xs text-daet-ink/70">Approximate pin from public sources, not yet confirmed by the Tourism Office.</p>
+                <p className="mt-2 text-sm text-daet-ink/75">Approximate pin from public sources, not yet confirmed by the Tourism Office.</p>
               ) : null}
               {directions ? (
-                <a href={directions} target="_blank" rel="noopener noreferrer" className="mt-3 inline-flex min-h-11 items-center justify-center rounded-full bg-daet-forest px-6 text-sm font-bold text-white hover:bg-daet-ink">
+                <a href={directions} target="_blank" rel="noopener noreferrer" className="mt-3 inline-flex min-h-11 items-center justify-center rounded-full bg-blue-600 px-6 font-bold text-white hover:bg-blue-700">
                   Open in Google Maps
                 </a>
               ) : null}
@@ -105,7 +119,7 @@ export default async function AttractionPage({ params }: PageProps) {
           )}
         </section>
 
-        <p className="mt-8 border-t border-daet-ink/10 pt-4 text-xs leading-5 text-daet-ink/70">
+        <p className="mt-10 text-sm leading-6 text-daet-ink/75">
           <span className="font-bold">Source:</span> {attraction.source}
         </p>
       </div>
@@ -115,9 +129,9 @@ export default async function AttractionPage({ params }: PageProps) {
 
 function Fact({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-2xl bg-daet-sand/50 p-4">
-      <dt className="text-xs font-bold uppercase tracking-wide text-daet-ink/70">{label}</dt>
-      <dd className="mt-1 font-black text-daet-ink">{value}</dd>
+    <div className="rounded-2xl bg-white p-4">
+      <dt className="text-sm font-semibold text-daet-ink/75">{label}</dt>
+      <dd className="mt-1 text-lg font-bold text-daet-ink">{value}</dd>
     </div>
   );
 }

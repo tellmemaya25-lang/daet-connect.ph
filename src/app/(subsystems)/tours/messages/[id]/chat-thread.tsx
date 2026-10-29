@@ -1,5 +1,6 @@
 "use client";
 
+import { LineIcon } from "@/components/ui/icons";
 import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { Button } from "@/components/ui/button";
 import { Notice } from "@/components/ui/notice";
@@ -112,32 +113,32 @@ export function ChatThread({
 
   return (
     <div className="mt-4 flex flex-col">
-      <p className="mb-2 text-right text-xs text-daet-ink/70" aria-live="polite">
+      <p className="mb-2 text-right text-sm text-slate-600" aria-live="polite">
         {live === "live" ? "● Live" : live === "connecting" ? "Connecting…" : "Offline: refresh to see new messages"}
       </p>
 
-      <div className="min-h-[40vh] space-y-4 rounded-3xl border border-daet-ink/10 bg-white p-4 shadow-sm" role="log" aria-label="Messages">
+      <div className="min-h-[40vh] space-y-4 rounded-2xl bg-white p-4" role="log" aria-label="Messages">
         {messages.length === 0 ? (
           <p className="py-10 text-center text-sm text-daet-ink/70">{emptyText}</p>
         ) : null}
         {groups.map((group) => (
           <section key={group.day} aria-label={group.day}>
-            <p className="mb-2 text-center text-xs font-bold uppercase tracking-wide text-daet-ink/70">{group.day}</p>
+            <p className="mb-2 text-center text-sm font-semibold text-slate-600">{group.day}</p>
             <ul className="space-y-2">
               {group.items.map((message) => {
                 const mine = message.sender_id === viewerId;
                 const url = message.attachment_url ? urls[message.attachment_url] : null;
                 return (
                   <li key={message.id} className={`flex ${mine ? "justify-end" : "justify-start"}`}>
-                    <div className={`max-w-[80%] rounded-2xl px-3 py-2 ${mine ? "bg-daet-forest text-white" : "bg-daet-sand/60 text-daet-ink"}`}>
+                    <div className={`max-w-[80%] rounded-2xl px-3 py-2 ${mine ? "bg-daet-forest text-white" : "bg-slate-100 text-daet-ink"}`}>
                       {!mine ? <p className="text-xs font-bold opacity-75">{senderLabel(message.sender_id, viewerId, members)}</p> : null}
                       {message.attachment_url ? (
                         url ? (
                           <a href={url} target="_blank" rel="noopener noreferrer" className="mt-1 block">
-                            <img src={url} alt="Photo attachment" className="max-h-64 rounded-xl object-cover" />
+                            <img src={url} alt="Photo attachment" className="max-h-64 rounded-2xl object-cover" />
                           </a>
                         ) : (
-                          <p className="mt-1 text-xs opacity-75">📷 Photo</p>
+                          <p className="mt-1 text-xs opacity-75"><LineIcon name="camera" className="inline-block h-[1.1em] w-[1.1em] align-[-0.15em]" /> Photo</p>
                         )
                       ) : null}
                       {message.message_text ? <p className="whitespace-pre-wrap break-words text-sm">{message.message_text}</p> : null}
@@ -154,7 +155,7 @@ export function ChatThread({
 
       {canSend ? (
         <form
-          className="sticky bottom-0 mt-3 rounded-3xl border border-daet-ink/10 bg-white p-3 shadow-card"
+          className="sticky bottom-0 mt-3 rounded-2xl bg-white p-3 shadow-[var(--shadow-float)]"
           onSubmit={(event) => {
             event.preventDefault();
             submit();
@@ -177,7 +178,7 @@ export function ChatThread({
               }
             }}
             placeholder="Write a message…"
-            className="block w-full resize-none rounded-xl border border-daet-ink/20 px-3 py-2 text-base focus:border-daet-forest focus:outline-none focus:ring-2 focus:ring-daet-forest/20"
+            className="block w-full resize-none rounded-2xl border border-daet-ink/20 px-3 py-2 text-base focus:border-daet-forest focus:outline-none focus:ring-2 focus:ring-daet-forest/20"
           />
           <div className="mt-2 flex items-center justify-between gap-2">
             <label className="inline-flex min-h-11 cursor-pointer items-center gap-2 rounded-full px-3 text-sm font-bold text-daet-forest hover:bg-daet-sand">
@@ -188,9 +189,9 @@ export function ChatThread({
                 className="sr-only"
                 onChange={(event) => setFile(event.target.files?.[0] ?? null)}
               />
-              📷 {file ? <span className="max-w-[9rem] truncate">{file.name}</span> : "Photo"}
+              <LineIcon name="camera" className="inline-block h-[1.1em] w-[1.1em] align-[-0.15em]" /> {file ? <span className="max-w-[9rem] truncate">{file.name}</span> : "Photo"}
             </label>
-            <span className="text-xs text-daet-ink/70">
+            <span className="text-sm text-slate-600">
               {text.length}/{MESSAGE_MAX_LENGTH}
             </span>
             <Button type="submit" loading={pending} loadingText="Sending…" disabled={!text.trim() && !file}>

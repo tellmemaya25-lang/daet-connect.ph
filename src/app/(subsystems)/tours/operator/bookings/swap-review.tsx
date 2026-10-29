@@ -49,7 +49,7 @@ export function SwapReview({
   const choices = guides.filter((g) => g.id !== swap.fromGuideId);
 
   return (
-    <section aria-label="Guide swap request" className="mb-4 rounded-2xl border border-amber-200 bg-amber-50/60 p-4">
+    <section aria-label="Guide swap request" className="mb-4 rounded-2xl bg-yellow-50/60 p-4">
       <p className="text-sm font-bold text-daet-ink">
         {swap.fromGuideName} asks to hand this tour to {swap.toGuideName ?? "another guide"}
       </p>

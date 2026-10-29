@@ -49,12 +49,12 @@ export function PackageReviewForm({ packageId, currentStatus }: PackageReviewFor
   };
 
   return (
-    <form onSubmit={handleSubmit} className="bg-white rounded-xl shadow-sm border border-daet-ink/20 p-6">
+    <form onSubmit={handleSubmit} className="bg-white rounded-2xl border border-daet-ink/20 p-6">
       <h2 className="text-xl font-bold text-daet-ink mb-4">Review & Update Status</h2>
 
       {message && (
-        <div className={`mb-4 p-4 rounded-xl ${
-          message.type === 'success' ? 'bg-green-50 text-green-800 border border-green-200' : 'bg-red-50 text-red-800 border border-red-200'
+        <div className={`mb-4 p-4 rounded-2xl ${
+          message.type === 'success' ? 'bg-green-50 text-green-800' : 'bg-red-50 text-red-800'
         }`}>
           {message.text}
         </div>
@@ -69,7 +69,7 @@ export function PackageReviewForm({ packageId, currentStatus }: PackageReviewFor
             id="status"
             value={status}
             onChange={(e) => setStatus(e.target.value)}
-            className="w-full px-3 py-2 border border-daet-ink/20 rounded-xl focus:outline-none focus:ring-2 focus:ring-daet-forest/30"
+            className="w-full px-3 py-2 border border-daet-ink/20 rounded-2xl focus:outline-none focus:ring-2 focus:ring-daet-forest/30"
             disabled={isSubmitting}
           >
             <option value="draft">Draft</option>
@@ -94,7 +94,7 @@ export function PackageReviewForm({ packageId, currentStatus }: PackageReviewFor
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
             rows={4}
-            className="w-full px-3 py-2 border border-daet-ink/20 rounded-xl focus:outline-none focus:ring-2 focus:ring-daet-forest/30"
+            className="w-full px-3 py-2 border border-daet-ink/20 rounded-2xl focus:outline-none focus:ring-2 focus:ring-daet-forest/30"
             placeholder="Add notes about this review decision..."
             disabled={isSubmitting}
           />
@@ -104,7 +104,7 @@ export function PackageReviewForm({ packageId, currentStatus }: PackageReviewFor
           <button
             type="submit"
             disabled={isSubmitting || status === getValidStatus(currentStatus)}
-            className="flex-1 bg-daet-forest text-white px-4 py-2 rounded-xl hover:bg-daet-leaf disabled:bg-gray-300 disabled:cursor-not-allowed font-medium"
+            className="min-h-11 flex-1 bg-daet-forest text-white px-4 py-2 rounded-2xl hover:bg-daet-leaf disabled:bg-slate-300 disabled:cursor-not-allowed font-medium"
           >
             {isSubmitting ? 'Updating...' : 'Update Status'}
           </button>
@@ -123,7 +123,7 @@ export function PackageReviewForm({ packageId, currentStatus }: PackageReviewFor
                 }, 100);
               }}
               disabled={isSubmitting}
-              className="px-6 py-2 bg-green-600 text-white rounded-xl hover:bg-green-700 disabled:bg-gray-300 disabled:cursor-not-allowed font-medium"
+              className="px-6 py-2 bg-green-600 text-white rounded-2xl hover:bg-green-700 disabled:bg-slate-300 disabled:cursor-not-allowed font-medium"
             >
               Quick Approve
             </button>

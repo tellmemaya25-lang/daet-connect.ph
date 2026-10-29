@@ -1,3 +1,4 @@
+import { LineIcon } from "@/components/ui/icons";
 import { formatPeso } from "@/lib/money";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
@@ -86,8 +87,7 @@ export async function OperatorHome({ operatorId, searchParams }: { operatorId: s
     <PageFrame>
       <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <p className="text-sm font-bold text-daet-leaf">Operator dashboard</p>
-          <h1 className="mt-1 text-3xl font-black tracking-tight text-daet-ink">{operator?.business_name ?? "Your business"}</h1>
+          <h1 className="display-2 text-daet-ink">{operator?.business_name ?? "Your business"}</h1>
         </div>
         <div className="flex flex-wrap gap-2">
           <ButtonLink href="/tours/operator/bookings">Bookings{pendingCount ? ` (${pendingCount} to confirm)` : ""}</ButtonLink>
@@ -100,28 +100,28 @@ export async function OperatorHome({ operatorId, searchParams }: { operatorId: s
 
       <div className="mb-6 grid grid-cols-2 gap-3 lg:grid-cols-4">
         <Card>
-          <p className="text-xs font-bold text-daet-ink/70">Waiting for you</p>
-          <p className="mt-1 text-2xl font-black text-amber-800">{pendingCount ?? 0}</p>
-          <p className="text-xs text-daet-ink/70">booking request{pendingCount === 1 ? "" : "s"}</p>
+          <p className="text-sm text-slate-600">Waiting for you</p>
+          <p className="mt-1 text-2xl font-bold text-yellow-800">{pendingCount ?? 0}</p>
+          <p className="text-sm text-slate-600">booking request{pendingCount === 1 ? "" : "s"}</p>
         </Card>
         <Card>
-          <p className="text-xs font-bold text-daet-ink/70">Received in {key === monthKey(thisMonth) ? "this month" : key}</p>
-          <p className="mt-1 text-2xl font-black text-daet-forest">{revenue ? peso(revenue.received) : "—"}</p>
-          <Link href={`/tours/operator/payments?month=${key}`} className="text-xs font-bold text-daet-forest hover:underline">
+          <p className="text-sm text-slate-600">Received in {key === monthKey(thisMonth) ? "this month" : key}</p>
+          <p className="mt-1 text-2xl font-bold text-daet-forest">{revenue ? peso(revenue.received) : "—"}</p>
+          <Link href={`/tours/operator/payments?month=${key}`} className="inline-flex min-h-11 items-center font-bold text-daet-forest hover:underline">
             Revenue report →
           </Link>
         </Card>
         <Card>
-          <p className="text-xs font-bold text-daet-ink/70">Occupancy</p>
-          <p className="mt-1 text-2xl font-black text-daet-ink">{occ.percent === null ? "—" : `${occ.percent}%`}</p>
-          <p className="text-xs text-daet-ink/70">{occ.seats ? `${occ.booked} of ${occ.seats} seats · ${occ.openDays} open days` : "No open dates this month"}</p>
+          <p className="text-sm text-slate-600">Occupancy</p>
+          <p className="mt-1 text-2xl font-bold text-daet-ink">{occ.percent === null ? "—" : `${occ.percent}%`}</p>
+          <p className="text-sm text-slate-600">{occ.seats ? `${occ.booked} of ${occ.seats} seats · ${occ.openDays} open days` : "No open dates this month"}</p>
         </Card>
         <Card>
-          <p className="text-xs font-bold text-daet-ink/70">Rating</p>
+          <p className="text-sm text-slate-600">Rating</p>
           <div className="mt-1">
             <RatingBadge summary={rating} />
           </div>
-          <Link href="/tours/operator/reviews" className="text-xs font-bold text-daet-forest hover:underline">
+          <Link href="/tours/operator/reviews" className="inline-flex min-h-11 items-center font-bold text-daet-forest hover:underline">
             {unreplied ? `${unreplied} to reply →` : "Reviews →"}
           </Link>
         </Card>
@@ -129,7 +129,7 @@ export async function OperatorHome({ operatorId, searchParams }: { operatorId: s
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
         <Card>
-          <CardHeader eyebrow="Booking calendar" title="Tours by date" />
+          <CardHeader title="Tours by date" />
           <MonthCalendar
             month={month}
             today={today}
@@ -143,7 +143,7 @@ export async function OperatorHome({ operatorId, searchParams }: { operatorId: s
                   href={`/tours/operator/dashboard?month=${key}&day=${cell.dateKey}`}
                   scroll={false}
                   aria-current={selected ? "date" : undefined}
-                  className={`flex h-12 flex-col items-center justify-center rounded-xl text-sm transition ${selected ? "bg-daet-forest text-white" : day ? "bg-daet-sand font-bold text-daet-ink hover:bg-daet-sand/70" : "text-daet-ink/70 hover:bg-daet-sand/50"} ${isToday && !selected ? "ring-2 ring-daet-forest/40" : ""}`}
+                  className={`flex h-12 flex-col items-center justify-center rounded-2xl text-sm transition ${selected ? "bg-daet-forest text-white" : day ? "bg-daet-sand font-bold text-daet-ink hover:bg-daet-sand/70" : "text-daet-ink/70 hover:bg-daet-sand/50"} ${isToday && !selected ? "ring-2 ring-daet-forest/40" : ""}`}
                 >
                   <span>{cell.day}</span>
                   {day ? <span className={`text-[10px] leading-none ${selected ? "text-white" : "text-daet-forest"}`}>{day.pax} pax</span> : null}
@@ -156,7 +156,7 @@ export async function OperatorHome({ operatorId, searchParams }: { operatorId: s
           />
           {selectedDay ? (
             <div className="mt-4 border-t border-daet-ink/10 pt-4">
-              <p className="mb-2 text-sm font-black text-daet-ink">{formatDayHeading(selectedDay)}</p>
+              <p className="mb-2 text-sm font-bold text-daet-ink">{formatDayHeading(selectedDay)}</p>
               {dayList.length === 0 ? (
                 <p className="text-sm text-daet-ink/70">No bookings on this day.</p>
               ) : (
@@ -168,9 +168,9 @@ export async function OperatorHome({ operatorId, searchParams }: { operatorId: s
 
         <div className="space-y-6">
           <Card>
-            <CardHeader eyebrow={formatDayHeading(today)} title="Today's tours" />
+            <CardHeader description={formatDayHeading(today)} title="Today's tours" />
             {todayList.length === 0 ? (
-              <EmptyState icon="🌤️" title="No tours today" className="p-5" />
+              <EmptyState icon={<LineIcon name="calendar" />} title="No tours today" className="p-5" />
             ) : (
               <BookingLines bookings={todayList} title={title} />
             )}
@@ -178,7 +178,7 @@ export async function OperatorHome({ operatorId, searchParams }: { operatorId: s
 
           {revenue && revenue.byPackage.length > 0 ? (
             <Card>
-              <CardHeader title="Revenue by package" action={<Link href={`/tours/operator/payments/export?month=${key}`} prefetch={false} className="text-sm font-bold text-daet-forest hover:underline">CSV</Link>} />
+              <CardHeader title="Revenue by package" action={<Link href={`/tours/operator/payments/export?month=${key}`} prefetch={false} className="inline-flex min-h-11 items-center font-bold text-daet-forest hover:underline">Download CSV</Link>} />
               <ul className="space-y-2">
                 {revenue.byPackage.slice(0, 5).map((entry) => (
                   <li key={entry.title}>
@@ -197,17 +197,17 @@ export async function OperatorHome({ operatorId, searchParams }: { operatorId: s
 
           <Card>
             <CardHeader title="Manage" />
-            <div className="grid grid-cols-2 gap-2 text-sm">
+            <div className="grid grid-cols-2 gap-2">
               {[
-                ["/tours/operator/packages", "🧭 Packages"],
-                ["/tours/operator/bookings", "📋 Bookings"],
-                ["/tours/operator/payments", "₱ Payments"],
-                ["/tours/operator/reviews", "⭐ Reviews"],
-                ["/tours/messages", "💬 Messages"],
-                ["/tours/operator/merch", "🛍️ Merchandise"],
-                ["/tours/operator/settings", "⚙️ Payment settings"],
+                ["/tours/operator/packages", "Packages"],
+                ["/tours/operator/bookings", "Bookings"],
+                ["/tours/operator/payments", "Payments"],
+                ["/tours/operator/reviews", "Reviews"],
+                ["/tours/messages", "Messages"],
+                ["/tours/operator/merch", "Merchandise"],
+                ["/tours/operator/settings", "Payment settings"],
               ].map(([href, label]) => (
-                <Link key={href} href={href} className="flex min-h-11 items-center rounded-xl border border-daet-ink/10 px-3 font-bold text-daet-ink hover:bg-daet-sand/50">
+                <Link key={href} href={href} className="flex min-h-12 items-center justify-between rounded-2xl bg-slate-50 px-4 font-bold text-daet-ink transition hover:bg-blue-50 active:scale-[0.98]">
                   {label}
                 </Link>
               ))}
@@ -225,10 +225,10 @@ function BookingLines({ bookings, title }: { bookings: DayBooking[]; title: (b: 
       {bookings.map((b) => (
         <li key={b.id} className="flex items-start justify-between gap-2 py-2">
           <div className="min-w-0">
-            <Link href={`/tours/operator/bookings?status=${b.status}#booking-${b.id}`} className="block truncate font-bold text-daet-ink hover:underline">
+            <Link href={`/tours/operator/bookings?status=${b.status}#booking-${b.id}`} className="flex min-h-11 items-center truncate font-bold text-daet-ink hover:underline">
               {title(b)}
             </Link>
-            <p className="truncate text-xs text-daet-ink/70">
+            <p className="truncate text-sm text-slate-600">
               {b.booking_reference} · {b.contact_name} · {b.number_of_pax} pax{b.assigned_guide_id ? "" : " · no guide yet"}
             </p>
           </div>

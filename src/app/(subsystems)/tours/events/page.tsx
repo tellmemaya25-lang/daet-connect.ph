@@ -1,3 +1,6 @@
+import { ButtonLink } from "@/components/ui/button";
+import { EmptyState } from "@/components/ui/empty-state";
+import { LineIcon } from "@/components/ui/icons";
 import Link from "next/link";
 import { PageFrame } from "@/components/ui/page-frame";
 import { Notice } from "@/components/ui/notice";
@@ -78,9 +81,8 @@ export default async function EventsCalendarPage({ searchParams }: { searchParam
   return (
     <PageFrame>
       <header className="mb-6">
-        <p className="text-sm font-bold text-daet-leaf">What&apos;s on in Daet</p>
-        <h1 className="mt-2 text-3xl font-black tracking-tight text-daet-ink sm:text-4xl">Events calendar</h1>
-        <p className="mt-2 max-w-2xl text-sm leading-6 text-daet-ink/65">
+        <h1 className="display-2 text-daet-ink">What&apos;s on in Daet</h1>
+        <p className="mt-2 max-w-2xl text-lg text-daet-ink">
           Festivals, cultural shows, sports and weekend markets around Daet and Camarines Norte. Times are Philippine time.
         </p>
       </header>
@@ -91,7 +93,7 @@ export default async function EventsCalendarPage({ searchParams }: { searchParam
             <Link
               href={calendarHref({ month: currentMonthKey, day: selectedDay })}
               aria-current={category === null ? "page" : undefined}
-              className={`inline-flex min-h-11 items-center rounded-full px-4 text-sm font-bold transition ${category === null ? "bg-daet-forest text-white" : "border border-daet-ink/15 bg-white text-daet-ink hover:bg-daet-sand"}`}
+              className={`inline-flex min-h-11 items-center rounded-full px-4 text-[15px] font-bold transition active:scale-[0.98] ${category === null ? "bg-blue-600 text-white" : "bg-white text-daet-ink hover:bg-blue-50"}`}
             >
               All
             </Link>
@@ -101,7 +103,7 @@ export default async function EventsCalendarPage({ searchParams }: { searchParam
               <Link
                 href={calendarHref({ month: currentMonthKey, day: selectedDay, category: value })}
                 aria-current={category === value ? "page" : undefined}
-                className={`inline-flex min-h-11 items-center gap-2 rounded-full px-4 text-sm font-bold transition ${category === value ? "bg-daet-forest text-white" : "border border-daet-ink/15 bg-white text-daet-ink hover:bg-daet-sand"}`}
+                className={`inline-flex min-h-11 items-center gap-2 rounded-full px-4 text-[15px] font-bold transition active:scale-[0.98] ${category === value ? "bg-blue-600 text-white" : "bg-white text-daet-ink hover:bg-blue-50"}`}
               >
                 <span className={`h-2.5 w-2.5 rounded-full ${EVENT_CATEGORY_STYLES[value as TourEvent["category"]].dot}`} aria-hidden="true" />
                 {label}
@@ -116,26 +118,26 @@ export default async function EventsCalendarPage({ searchParams }: { searchParam
       ) : null}
 
       <div className="grid gap-6 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
-        <section aria-labelledby="calendar-month" className="rounded-2xl border border-daet-ink/10 bg-white p-3 shadow-sm sm:p-5">
+        <section aria-labelledby="calendar-month" className="order-2 -mx-2 rounded-2xl bg-white p-2 sm:mx-0 sm:p-5 lg:order-1">
           <div className="mb-3 flex items-center justify-between gap-2">
-            <Link href={calendarHref({ month: prev, category })} aria-label="Previous month" className="grid h-11 w-11 place-items-center rounded-full border border-daet-ink/15 text-lg font-black hover:bg-daet-sand">
+            <Link href={calendarHref({ month: prev, category })} aria-label="Previous month" className="grid h-11 w-11 place-items-center rounded-full bg-slate-100 text-lg font-bold hover:bg-blue-50">
               ‹
             </Link>
             <div className="text-center">
-              <h2 id="calendar-month" className="text-lg font-black text-daet-ink sm:text-xl">{formatMonthLabel(month)}</h2>
+              <h2 id="calendar-month" className="text-xl font-semibold text-daet-ink sm:text-2xl">{formatMonthLabel(month)}</h2>
               {currentMonthKey !== thisMonth ? (
-                <Link href={calendarHref({ month: thisMonth, day: todayKey, category })} className="text-xs font-bold text-daet-forest underline underline-offset-2">
+                <Link href={calendarHref({ month: thisMonth, day: todayKey, category })} className="inline-flex min-h-11 items-center text-sm font-bold text-blue-700 underline underline-offset-2">
                   Jump to today
                 </Link>
               ) : null}
             </div>
-            <Link href={calendarHref({ month: next, category })} aria-label="Next month" className="grid h-11 w-11 place-items-center rounded-full border border-daet-ink/15 text-lg font-black hover:bg-daet-sand">
+            <Link href={calendarHref({ month: next, category })} aria-label="Next month" className="grid h-11 w-11 place-items-center rounded-full bg-slate-100 text-lg font-bold hover:bg-blue-50">
               ›
             </Link>
           </div>
 
           <div role="grid" aria-labelledby="calendar-month">
-            <div role="row" className="grid grid-cols-7 text-center text-[11px] font-black uppercase tracking-wide text-daet-ink/70">
+            <div role="row" className="grid grid-cols-7 text-center text-xs font-bold text-daet-ink/75">
               {WEEKDAYS.map((day) => (
                 <div role="columnheader" key={day} className="py-2">
                   <abbr title={day} className="no-underline">{day.slice(0, 1)}<span className="hidden sm:inline">{day.slice(1)}</span></abbr>
@@ -143,23 +145,23 @@ export default async function EventsCalendarPage({ searchParams }: { searchParam
               ))}
             </div>
             {grid.map((week) => (
-              <div role="row" key={week[0].dateKey} className="grid grid-cols-7 gap-1">
+              <div role="row" key={week[0].dateKey} className="grid grid-cols-7 gap-0.5 sm:gap-1">
                 {week.map((cell) => {
                   const dayEvents = byDay.get(cell.dateKey) ?? [];
                   const isSelected = cell.dateKey === selectedDay;
                   const isToday = cell.dateKey === todayKey;
                   const label = `${formatDayHeading(cell.dateKey)}${dayEvents.length ? `, ${dayEvents.length} event${dayEvents.length > 1 ? "s" : ""}` : ""}`;
-                  const cellClass = `flex min-h-12 flex-col items-center rounded-xl p-1 text-sm transition sm:min-h-24 sm:items-stretch sm:p-1.5 ${
+                  const cellClass = `flex min-h-12 flex-col items-center rounded-2xl p-1 text-sm transition sm:min-h-24 sm:items-stretch sm:p-1.5 ${
                     isSelected
-                      ? "bg-daet-forest text-white"
+                      ? "bg-blue-600 text-white"
                       : cell.inMonth
-                        ? "bg-daet-sand/40 text-daet-ink hover:bg-daet-sand"
-                        : "text-daet-ink/70"
-                  } ${isToday && !isSelected ? "ring-2 ring-daet-sun" : ""}`;
+                        ? "bg-slate-50 text-daet-ink hover:bg-blue-50"
+                        : "text-slate-500"
+                  } ${isToday && !isSelected ? "ring-2 ring-yellow-500" : ""}`;
 
                   const content = (
                     <>
-                      <span className={`text-xs font-black sm:text-sm ${isToday && !isSelected ? "text-daet-forest" : ""}`}>{cell.day}</span>
+                      <span className={`text-sm font-bold ${isToday && !isSelected ? "text-blue-700" : ""}`}>{cell.day}</span>
                       {dayEvents.length > 0 ? (
                         <>
                           <span className="mt-1 flex gap-0.5 sm:hidden" aria-hidden="true">
@@ -206,13 +208,13 @@ export default async function EventsCalendarPage({ searchParams }: { searchParam
           </div>
         </section>
 
-        <section aria-labelledby="event-list-heading">
+        <section aria-labelledby="event-list-heading" className="order-1 lg:order-2">
           <div className="mb-3 flex items-baseline justify-between gap-3">
-            <h2 id="event-list-heading" className="text-xl font-black text-daet-ink">
+            <h2 id="event-list-heading" className="text-2xl font-semibold text-daet-ink">
               {selectedDay ? formatDayHeading(selectedDay) : `All events in ${formatMonthLabel(month)}`}
             </h2>
             {selectedDay ? (
-              <Link href={calendarHref({ month: currentMonthKey, category })} scroll={false} className="inline-flex min-h-11 shrink-0 items-center text-sm font-bold text-daet-forest underline underline-offset-2">
+              <Link href={calendarHref({ month: currentMonthKey, category })} scroll={false} className="inline-flex min-h-11 shrink-0 items-center font-bold text-blue-700 underline underline-offset-2">
                 Show month
               </Link>
             ) : null}
@@ -227,16 +229,12 @@ export default async function EventsCalendarPage({ searchParams }: { searchParam
               ))}
             </ul>
           ) : (
-            <div className="rounded-2xl border border-dashed border-daet-ink/20 bg-white p-6 text-center">
-              <p className="text-3xl" aria-hidden="true">🗓️</p>
-              <p className="mt-2 font-bold text-daet-ink">
-                {selectedDay ? "No events on this day" : "No events this month yet"}
-              </p>
-              <p className="text-sm text-daet-ink/70">Check another date, or browse tour packages in the meantime.</p>
-              <Link href="/tours/browse" className="mt-4 inline-flex min-h-11 items-center justify-center rounded-full bg-daet-forest px-6 text-sm font-bold text-white hover:bg-daet-ink">
-                Browse tours
-              </Link>
-            </div>
+            <EmptyState
+              icon={<LineIcon name="calendar" />}
+              title={selectedDay ? "No events on this day" : "No events this month yet"}
+              description="Check another date, or find a trip in the meantime."
+              action={<ButtonLink href="/tours/browse">Find a trip</ButtonLink>}
+            />
           )}
         </section>
       </div>

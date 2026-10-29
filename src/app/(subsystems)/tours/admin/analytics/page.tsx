@@ -1,3 +1,4 @@
+import { LineIcon } from "@/components/ui/icons";
 import { formatPeso } from "@/lib/money";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
@@ -35,7 +36,7 @@ export default async function AdminAnalyticsPage({ searchParams }: { searchParam
 
   return (
     <PageFrame adminNav>
-      <AdminPageHeading eyebrow="Municipal tourism KPIs" title="Analytics" backHref="/tours/admin" backLabel="Admin dashboard" />
+      <AdminPageHeading title="Analytics" backHref="/tours/admin" backLabel="Admin dashboard" />
 
       <nav aria-label="Date range" className="mb-6 flex flex-wrap items-center gap-2">
         {RANGE_PRESETS.map((p) => (
@@ -104,7 +105,7 @@ export default async function AdminAnalyticsPage({ searchParams }: { searchParam
           />
         </Card>
         <Card>
-          <CardHeader title="Rating distribution" action={<Link href="/tours/admin/reviews" className="text-sm font-bold text-daet-forest hover:underline">Moderate</Link>} />
+          <CardHeader title="Rating distribution" action={<Link href="/tours/admin/reviews" className="inline-flex min-h-11 items-center font-bold text-daet-forest hover:underline">Moderate</Link>} />
           <BarList
             items={ratingTotal ? a.ratings.map((r) => ({ key: String(r.stars), label: `${r.stars} ★`, value: r.count })) : []}
             empty="No reviews in this range."
@@ -113,18 +114,18 @@ export default async function AdminAnalyticsPage({ searchParams }: { searchParam
       </div>
 
       <Card>
-        <CardHeader title="Accreditation queue" action={<Link href="/tours/admin/operators" className="text-sm font-bold text-daet-forest hover:underline">Review applications</Link>} />
+        <CardHeader title="Accreditation queue" action={<Link href="/tours/admin/operators" className="inline-flex min-h-11 items-center font-bold text-daet-forest hover:underline">Review applications</Link>} />
         <p className="mb-3 text-sm text-daet-ink/65">
           {a.queue.length === 0 ? "No applications are waiting." : `${a.queue.length} waiting now. Oldest: ${oldest.name} (${oldest.kind}), ${oldest.waiting_days} day${oldest.waiting_days === 1 ? "" : "s"}.`}
         </p>
         <div className="grid grid-cols-3 gap-3">
           {buckets.map((b, i) => (
-            <div key={b.label} className="rounded-2xl border border-daet-ink/10 p-3 text-center">
-              <p className="text-2xl font-black text-daet-ink">{b.count}</p>
-              <p className="text-xs text-daet-ink/70">{b.label}</p>
+            <div key={b.label} className="bg-slate-50 rounded-2xl p-3 text-center">
+              <p className="text-2xl font-bold text-daet-ink">{b.count}</p>
+              <p className="text-sm text-slate-600">{b.label}</p>
               {i === 2 && b.count > 0 ? (
                 <Badge tone="warning" className="mt-1">
-                  ⚠ Overdue
+                  <LineIcon name="warning" className="inline-block h-[1.1em] w-[1.1em] align-[-0.15em]" /> Overdue
                 </Badge>
               ) : null}
             </div>
@@ -138,9 +139,9 @@ export default async function AdminAnalyticsPage({ searchParams }: { searchParam
 function Stat({ label, value, note }: { label: string; value: string; note: string }) {
   return (
     <Card>
-      <p className="text-xs font-bold text-daet-ink/70">{label}</p>
-      <p className="mt-1 text-2xl font-black text-daet-ink">{value}</p>
-      <p className="text-xs text-daet-ink/70">{note}</p>
+      <p className="text-sm text-slate-600">{label}</p>
+      <p className="mt-1 text-2xl font-bold text-daet-ink">{value}</p>
+      <p className="text-sm text-slate-600">{note}</p>
     </Card>
   );
 }

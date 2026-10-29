@@ -1,5 +1,6 @@
 "use client";
 
+import { LineIcon } from "@/components/ui/icons";
 import { useRef, useState } from "react";
 import { usePathname } from "next/navigation";
 import { AssistantChat } from "@/components/assistant/assistant-chat";
@@ -29,9 +30,9 @@ export function AssistantWidget({ signedIn, raised }: { signedIn: boolean; raise
           setOpen(true);
         }}
         aria-haspopup="dialog"
-        className={`fixed right-4 z-40 inline-flex h-12 min-w-12 items-center justify-center gap-2 rounded-full bg-daet-forest px-3 text-sm font-bold text-white shadow-card transition hover:bg-daet-ink sm:bottom-6 sm:right-6 sm:px-4 print:hidden ${raised ? "bottom-20" : "bottom-4"}`}
+        className={`fixed right-4 z-40 inline-flex h-12 min-w-12 items-center justify-center gap-2 rounded-full bg-blue-600 px-3 text-sm font-bold text-white shadow-[var(--shadow-float)] transition hover:bg-blue-700 active:scale-95 sm:bottom-6 sm:right-6 sm:px-4 print:hidden ${raised ? "bottom-20" : "bottom-4"}`}
       >
-        <span aria-hidden="true" className="text-lg sm:text-sm">💬</span>
+        <LineIcon name="chat" className="h-6 w-6 sm:h-5 sm:w-5" />
         <span className="sr-only sm:not-sr-only">Ask the assistant</span>
       </button>
       <dialog
@@ -41,12 +42,12 @@ export function AssistantWidget({ signedIn, raised }: { signedIn: boolean; raise
         onClick={(event) => {
           if (event.target === dialogRef.current) close();
         }}
-        className="m-0 h-dvh max-h-dvh w-full max-w-full bg-white p-0 text-daet-ink backdrop:bg-daet-ink/40 sm:ml-auto sm:h-dvh sm:w-[26rem] sm:max-w-[26rem] sm:rounded-l-3xl sm:shadow-card"
+        className="m-0 h-dvh max-h-dvh w-full max-w-full bg-white p-0 text-daet-ink backdrop:bg-daet-ink/40 sm:ml-auto sm:h-dvh sm:w-[26rem] sm:max-w-[26rem] sm:rounded-l-3xl"
       >
         <div className="flex h-full flex-col">
           <div className="flex items-center justify-between gap-3 bg-daet-forest px-4 py-3 text-white">
             <div>
-              <h2 id="assistant-title" className="text-base font-black">
+              <h2 id="assistant-title" className="text-base font-bold">
                 Daet travel assistant
               </h2>
               <p className="text-xs text-white">Here 24/7 · answers from CONNECT-Daet&apos;s listings</p>

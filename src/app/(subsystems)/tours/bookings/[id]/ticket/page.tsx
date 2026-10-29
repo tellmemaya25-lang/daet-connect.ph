@@ -70,31 +70,50 @@ export default async function BookingTicketPage({ params }: PageProps) {
     <PageFrame>
       <div className="mx-auto max-w-md">
         {back}
-        <section className="mt-4 rounded-3xl border border-daet-ink/10 bg-white p-6 text-center shadow-card print:border-black print:shadow-none">
-          <p className="text-sm font-bold text-daet-leaf print:text-black">CONNECT-DAET tour ticket</p>
-          <h1 className="mt-2 text-2xl font-black text-daet-ink">{pkg?.title ?? "Tour booking"}</h1>
-          <p className="mt-1 text-sm text-daet-ink/65">{tourDate(booking.tour_date)}</p>
-          {ticket ? (
-            <img
-              src={ticket.pngDataUrl}
-              alt={`Ticket QR code for booking ${booking.booking_reference}`}
-              width={720}
-              height={720}
-              className="mx-auto mt-5 h-64 w-64 print:h-[2.6in] print:w-[2.6in]"
-            />
-          ) : (
-            <Notice variant="warning" className="mt-5 text-left">
-              The ticket QR is not set up on this site yet. Show your booking reference to the guide instead.
-            </Notice>
-          )}
-          <p className="mt-4 text-2xl font-black tracking-wide text-daet-forest">{booking.booking_reference}</p>
-          <p className="mt-1 text-sm text-daet-ink/70">
-            {booking.number_of_pax} guest{booking.number_of_pax === 1 ? "" : "s"} · {booking.contact_name}
-          </p>
-          {pkg?.location_name ? <p className="mt-1 inline-flex items-center gap-1 text-xs text-daet-ink/70"><MapPinIcon className="h-3.5 w-3.5" /> {pkg.location_name}</p> : null}
-          <p className="mt-4 text-xs leading-5 text-daet-ink/70">
-            Show this QR to your guide on the tour day. Valid until the end of the tour day.
-          </p>
+        {/* A boarding pass: the trip and date on the blue band, the QR in the middle, the details below. */}
+        <section className="mt-4 overflow-hidden rounded-2xl bg-white print:border print:border-black">
+          <div className="bg-blue-600 px-5 py-5 text-white print:bg-white print:text-black">
+            <p className="font-semibold">CONNECT-Daet tour ticket</p>
+            <h1 className="mt-1 font-[family-name:var(--font-display)] text-3xl font-semibold leading-tight">{pkg?.title ?? "Tour booking"}</h1>
+            <p className="mt-1 text-lg">{tourDate(booking.tour_date)}</p>
+          </div>
+          <div className="px-5 py-6 text-center">
+            {ticket ? (
+              <img
+                src={ticket.pngDataUrl}
+                alt={`Ticket QR code for booking ${booking.booking_reference}`}
+                width={720}
+                height={720}
+                className="mx-auto h-64 w-64 print:h-[2.6in] print:w-[2.6in]"
+              />
+            ) : (
+              <Notice variant="warning" className="text-left">
+                The ticket QR is not set up on this site yet. Show your booking reference to the guide instead.
+              </Notice>
+            )}
+            <p className="mt-4 font-[family-name:var(--font-display)] text-3xl font-semibold text-daet-ink">{booking.booking_reference}</p>
+            {ticket ? <p className="mt-2 text-daet-ink/80">Show this QR to your guide on the tour day. Valid until the end of the tour day.</p> : null}
+          </div>
+          <dl className="grid grid-cols-2 gap-px bg-slate-100 text-left">
+            <div className="bg-white px-5 py-3">
+              <dt className="text-sm text-daet-ink/75">Guests</dt>
+              <dd className="font-bold text-daet-ink">
+                {booking.number_of_pax} guest{booking.number_of_pax === 1 ? "" : "s"}
+              </dd>
+            </div>
+            <div className="bg-white px-5 py-3">
+              <dt className="text-sm text-daet-ink/75">Booked by</dt>
+              <dd className="truncate font-bold text-daet-ink">{booking.contact_name}</dd>
+            </div>
+            {pkg?.location_name ? (
+              <div className="col-span-2 bg-white px-5 py-3">
+                <dt className="text-sm text-daet-ink/75">Where</dt>
+                <dd className="flex items-center gap-1 font-bold text-daet-ink">
+                  <MapPinIcon className="h-4 w-4" /> {pkg.location_name}
+                </dd>
+              </div>
+            ) : null}
+          </dl>
         </section>
         {ticket ? <PrintTicketButton /> : null}
         {ticket ? <SaveTicketOffline /> : null}

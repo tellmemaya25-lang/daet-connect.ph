@@ -8,11 +8,14 @@ import { cn } from "@/components/ui/cn";
  * apply to <a>.
  */
 const VARIANTS = {
-  primary: "bg-daet-forest text-white hover:bg-daet-ink",
-  secondary: "border border-daet-forest/30 bg-white text-daet-forest hover:bg-daet-forest/5",
-  ghost: "text-daet-ink hover:bg-daet-sand",
-  danger: "border border-rose-200 bg-white text-rose-700 hover:bg-rose-50",
-  accent: "bg-daet-sun text-daet-ink hover:bg-amber-300",
+  primary: "bg-blue-600 text-white hover:bg-blue-700 active:bg-blue-800",
+  secondary: "bg-blue-50 text-blue-700 hover:bg-blue-100 active:bg-blue-200",
+  ghost: "text-daet-ink hover:bg-slate-100 active:bg-slate-200",
+  danger: "bg-red-600 text-white hover:bg-red-700 active:bg-red-800",
+  accent: "bg-yellow-500 text-slate-950 hover:bg-yellow-400 active:bg-yellow-600",
+  // For use on a blue-600 panel.
+  inverse: "bg-white text-blue-700 hover:bg-blue-50 active:bg-blue-100",
+  onBlue: "text-white hover:bg-blue-700 active:bg-blue-800",
 } as const;
 
 const SIZES = {
@@ -28,8 +31,8 @@ type StyleProps = { variant?: ButtonVariant; size?: ButtonSize; fullWidth?: bool
 
 export function buttonClasses({ variant = "primary", size = "md", fullWidth = false }: StyleProps = {}): string {
   return cn(
-    "inline-flex items-center justify-center gap-2 rounded-full font-bold transition-colors",
-    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-daet-forest/40 focus-visible:ring-offset-2",
+    "inline-flex items-center justify-center gap-2 rounded-full font-bold transition-[background-color,transform] active:scale-[0.98]",
+    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600/50 focus-visible:ring-offset-2",
     "disabled:cursor-not-allowed disabled:opacity-60",
     VARIANTS[variant],
     SIZES[size],

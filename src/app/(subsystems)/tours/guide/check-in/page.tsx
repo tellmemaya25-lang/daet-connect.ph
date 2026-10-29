@@ -44,7 +44,7 @@ export default async function GuideCheckInPage() {
         <Link href="/tours/guide/my-tours" className="text-sm font-bold text-daet-ink/70 hover:text-daet-ink">
           ← My tours
         </Link>
-        <h1 className="mt-4 text-3xl font-black text-daet-ink">Check-in</h1>
+        <h1 className="display-2 mt-4 text-daet-ink">Check-in</h1>
         <p className="mt-1 text-sm text-daet-ink/65">Scan each group&apos;s ticket when they arrive.</p>
 
         <div className="mt-6">
@@ -52,9 +52,9 @@ export default async function GuideCheckInPage() {
         </div>
 
         <section className="mt-8">
-          <h2 className="mb-3 text-lg font-black text-daet-ink">Today&apos;s groups</h2>
+          <h2 className="mb-3 text-lg font-bold text-daet-ink">Today&apos;s groups</h2>
           {tours && tours.length > 0 ? (
-            <ul className="divide-y divide-daet-ink/10 rounded-2xl border border-daet-ink/10 bg-white">
+            <ul className="divide-y divide-daet-ink/10 rounded-2xl bg-white">
               {tours.map((tour) => {
                 const pkg = Array.isArray(tour.tours_packages) ? tour.tours_packages[0] : tour.tours_packages;
                 const arrived = (tour.tours_checkins ?? []).some((row: { participant_id: string | null }) => row.participant_id === null);
@@ -63,7 +63,7 @@ export default async function GuideCheckInPage() {
                     <Link href={`/tours/guide/tours/${tour.id}/roster`} className="flex min-h-11 items-center justify-between gap-3 p-4 hover:bg-daet-sand/40">
                       <span>
                         <span className="block font-bold text-daet-ink">{tour.contact_name}</span>
-                        <span className="block text-xs text-daet-ink/70">
+                        <span className="block text-sm text-slate-600">
                           {pkg?.title ?? "Tour"} · {tour.number_of_pax} pax · {tour.booking_reference}
                         </span>
                       </span>

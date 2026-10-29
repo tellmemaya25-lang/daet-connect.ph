@@ -38,7 +38,7 @@ export function LoginForm({ nextUrl, notice }: LoginFormProps) {
         <Input type="password" name="password" required autoComplete="current-password" />
       </Field>
       <p className="-mt-2 text-sm">
-        <Link href="/forgot-password" className="font-bold text-daet-forest underline underline-offset-4">
+        <Link href="/forgot-password" className="inline-flex min-h-11 items-center font-bold text-daet-forest underline underline-offset-4">
           Forgot your password?
         </Link>
       </p>
@@ -53,7 +53,7 @@ export function LoginForm({ nextUrl, notice }: LoginFormProps) {
 
       <p className="text-center text-sm text-daet-ink/80">
         New here?{" "}
-        <Link href={signupHref} className="font-bold text-daet-forest underline underline-offset-4">
+        <Link href={signupHref} className="inline-flex min-h-11 items-center font-bold text-daet-forest underline underline-offset-4">
           Create an account
         </Link>
       </p>

@@ -11,8 +11,8 @@ import { markWeekendsAvailable, setGuideAvailability } from "./availability-acti
 
 const STYLE: Record<AvailabilityState, string> = {
   unset: "text-daet-ink/70 hover:bg-daet-sand/50",
-  available: "bg-emerald-100 font-bold text-emerald-900 hover:bg-emerald-200",
-  unavailable: "bg-rose-50 text-rose-800 line-through hover:bg-rose-100",
+  available: "bg-green-100 font-bold text-green-900 hover:bg-green-200",
+  unavailable: "bg-red-50 text-red-800 line-through hover:bg-red-100",
 };
 const LABEL: Record<AvailabilityState, string> = { unset: "not set", available: "available", unavailable: "not available" };
 
@@ -84,7 +84,7 @@ export function AvailabilityCalendar({
               disabled={past}
               onClick={() => toggle(cell.dateKey)}
               aria-label={`${formatDayHeading(cell.dateKey)}: ${tourCount ? `on a tour (${tourCount}), ` : ""}${LABEL[state]}`}
-              className={`relative flex h-12 w-full flex-col items-center justify-center rounded-xl text-sm transition disabled:cursor-default disabled:opacity-40 ${STYLE[state]} ${tourCount ? "ring-2 ring-daet-forest" : isToday ? "ring-2 ring-daet-forest/40" : ""}`}
+              className={`relative flex h-12 w-full flex-col items-center justify-center rounded-2xl text-sm transition disabled:cursor-default disabled:opacity-40 ${STYLE[state]} ${tourCount ? "ring-2 ring-daet-forest" : isToday ? "ring-2 ring-daet-forest/40" : ""}`}
             >
               {cell.day}
               {tourCount ? <span className="absolute bottom-1.5 h-1.5 w-1.5 rounded-full bg-daet-forest" aria-hidden="true" /> : null}
@@ -94,10 +94,10 @@ export function AvailabilityCalendar({
       />
       <ul className="mt-3 flex flex-wrap gap-3 text-xs text-daet-ink/65">
         <li className="flex items-center gap-1.5">
-          <span className="h-3 w-3 rounded bg-emerald-100" aria-hidden="true" /> Available
+          <span className="h-3 w-3 rounded bg-green-100" aria-hidden="true" /> Available
         </li>
         <li className="flex items-center gap-1.5">
-          <span className="h-3 w-3 rounded bg-rose-50 ring-1 ring-rose-200" aria-hidden="true" /> Not available
+          <span className="h-3 w-3 rounded bg-red-50 ring-1 ring-red-200" aria-hidden="true" /> Not available
         </li>
         <li className="flex items-center gap-1.5">
           <span className="h-3 w-3 rounded ring-2 ring-daet-forest" aria-hidden="true" /> On a tour

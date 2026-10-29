@@ -15,14 +15,14 @@ export function EmptyState({
   className?: string;
 }) {
   return (
-    <div className={cn("rounded-2xl border border-dashed border-daet-ink/20 bg-white p-8 text-center", className)}>
+    <div className={cn("rounded-2xl bg-white px-6 py-10 text-center", className)}>
       {icon ? (
-        <p className="text-4xl" aria-hidden="true">
+        <div className="mx-auto mb-3 flex justify-center text-blue-600 [&_svg]:h-8 [&_svg]:w-8" aria-hidden="true">
           {icon}
-        </p>
+        </div>
       ) : null}
-      <p className="mt-2 font-bold text-daet-ink">{title}</p>
-      {description ? <p className="mt-1 text-sm text-daet-ink/70">{description}</p> : null}
+      <p className="text-lg font-bold text-daet-ink">{title}</p>
+      {description ? <p className="mx-auto mt-1 max-w-md text-daet-ink/80">{description}</p> : null}
       {action ? <div className="mt-4 flex justify-center">{action}</div> : null}
     </div>
   );

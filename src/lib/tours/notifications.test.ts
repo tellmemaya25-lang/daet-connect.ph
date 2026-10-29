@@ -41,8 +41,8 @@ describe("buildPushPayload", () => {
 describe("helpers", () => {
   it("counts unread and picks icons", () => {
     expect(unreadCount([{ read_at: null }, { read_at: "2026-10-23T00:00:00Z" }, { read_at: null }])).toBe(2);
-    expect(notificationIcon("message")).toBe("💬");
-    expect(notificationIcon("unknown")).toBe("🔔");
+    expect(notificationIcon("message")).toBe("message");
+    expect(notificationIcon("unknown")).toBe("bell");
   });
 
   it("formats relative time", () => {

@@ -30,8 +30,8 @@ export default async function PlanPage({ searchParams }: { searchParams: Promise
   return (
     <PageFrame>
       <div className="mx-auto max-w-6xl">
-        <h1 className="font-display text-4xl font-semibold text-daet-ink sm:text-5xl">Plan your Daet trip</h1>
-        <p className="mt-2 max-w-2xl text-daet-ink/70">
+        <h1 className="display-2 text-daet-ink">Plan your Daet trip</h1>
+        <p className="mt-2 max-w-2xl text-lg text-daet-ink">
           Tell us about your days. We build a schedule that fits opening hours, travel time and your budget.
         </p>
         <div className="mt-8">

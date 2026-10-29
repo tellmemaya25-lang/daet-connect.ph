@@ -107,12 +107,12 @@ export function QrScanner() {
       ) : null}
 
       {supported ? (
-        <div className="overflow-hidden rounded-3xl border border-daet-ink/10 bg-daet-ink">
+        <div className="overflow-hidden rounded-2xl bg-daet-ink">
           <video ref={videoRef} playsInline muted className={scanning ? "aspect-square w-full object-cover" : "hidden"} aria-label="Camera preview" />
           {!scanning ? (
             <div className="grid aspect-[4/3] place-items-center p-6 text-center text-white">
               <div>
-                <p className="text-lg font-black">Scan a ticket</p>
+                <p className="text-lg font-bold">Scan a ticket</p>
                 <p className="mt-1 text-sm text-white/70">Point the camera at the tourist&apos;s ticket QR.</p>
                 <Button variant="accent" size="lg" className="mt-4" onClick={start} loading={pending} loadingText="Checking…">
                   Start camera

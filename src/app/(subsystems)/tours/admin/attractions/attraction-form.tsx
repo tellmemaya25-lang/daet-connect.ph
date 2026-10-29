@@ -46,9 +46,9 @@ export function AttractionForm({ attraction }: { attraction?: Attraction }) {
         </PromoField>
       </div>
 
-      <fieldset className="rounded-2xl border border-daet-ink/10 p-4">
+      <fieldset className="bg-slate-50 rounded-2xl p-4">
         <legend className="px-1 text-sm font-bold text-daet-ink">Map pin</legend>
-        <p className="text-xs text-daet-ink/70">In Google Maps, long-press the spot and copy the two numbers. Leave both empty if unknown.</p>
+        <p className="text-sm text-slate-600">In Google Maps, long-press the spot and copy the two numbers. Leave both empty if unknown.</p>
         <div className="mt-3 grid gap-5 sm:grid-cols-2">
           <PromoField id="latitude" label="Latitude" error={errors.latitude}>
             <input id="latitude" name="latitude" inputMode="decimal" defaultValue={attraction?.latitude ?? ""} aria-invalid={invalid("latitude")} className={promoInputClass} placeholder="14.1131" />
@@ -94,7 +94,7 @@ export function AttractionForm({ attraction }: { attraction?: Attraction }) {
         <Link href="/tours/admin/attractions" className="inline-flex min-h-11 items-center justify-center rounded-full border border-daet-ink/20 px-6 text-sm font-bold text-daet-ink hover:bg-daet-sand">
           Cancel
         </Link>
-        <button type="submit" disabled={pending} className="inline-flex min-h-11 items-center justify-center rounded-full bg-daet-forest px-6 text-sm font-bold text-white hover:bg-daet-ink disabled:opacity-60">
+        <button type="submit" disabled={pending} className="inline-flex min-h-11 items-center justify-center rounded-full bg-daet-forest px-6 text-sm font-bold text-white hover:bg-blue-700 disabled:opacity-60">
           {pending ? "Saving…" : attraction ? "Save changes" : "Add attraction"}
         </button>
       </div>

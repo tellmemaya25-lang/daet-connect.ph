@@ -1,3 +1,4 @@
+import { LineIcon } from "@/components/ui/icons";
 import { createSupabaseServerClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
@@ -77,24 +78,10 @@ export default async function AdminDashboardPage() {
       <div className="mb-8">
         <div className="flex items-center justify-between">
           <div>
-            <p className="text-sm font-bold text-daet-leaf">Tourism Office</p>
-            <h1 className="mt-2 text-3xl font-black tracking-tight text-daet-ink sm:text-4xl">
-              Admin Dashboard
-            </h1>
-            <p className="mt-2 text-sm text-daet-ink/65">
+            <h1 className="display-2 text-daet-ink">Tourism Office</h1>
+            <p className="mt-2 text-lg text-daet-ink">
               Welcome back, {profile.full_name || 'Admin'}
             </p>
-          </div>
-          <div className="flex gap-3">
-            <Link
-              href="/"
-              className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
-            >
-              <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-              </svg>
-              Home
-            </Link>
           </div>
         </div>
       </div>
@@ -104,108 +91,108 @@ export default async function AdminDashboardPage() {
         {/* Pending Operators */}
         <Link
           href="/tours/admin/operators"
-          className="block rounded-3xl border border-daet-ink/10 bg-white p-6 shadow-sm hover:shadow-md transition"
+          className="block rounded-2xl bg-white p-6 transition hover:bg-blue-50 active:scale-[0.99]"
         >
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-bold text-daet-ink/70">Pending Operators</p>
-              <p className="mt-2 text-4xl font-black text-daet-ink">{pendingOperators || 0}</p>
+              <p className="font-bold text-daet-ink">Pending Operators</p>
+              <p className="mt-2 text-4xl font-bold text-daet-ink">{pendingOperators || 0}</p>
             </div>
-            <div className="grid h-14 w-14 place-items-center rounded-2xl bg-amber-50 text-2xl">
-              🏢
+            <div className="grid h-14 w-14 place-items-center rounded-2xl bg-yellow-50 text-2xl">
+              <LineIcon name="building" className="inline-block h-[1.1em] w-[1.1em] align-[-0.15em]" />
             </div>
           </div>
-          <p className="mt-4 text-sm text-daet-ink/70">Applications awaiting review</p>
+          <p className="mt-4 text-slate-600">Applications awaiting review</p>
         </Link>
 
         {/* Pending Guides */}
         <Link
           href="/tours/admin/guides"
-          className="block rounded-3xl border border-daet-ink/10 bg-white p-6 shadow-sm hover:shadow-md transition"
+          className="block rounded-2xl bg-white p-6 transition hover:bg-blue-50 active:scale-[0.99]"
         >
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-bold text-daet-ink/70">Pending Guides</p>
-              <p className="mt-2 text-4xl font-black text-daet-ink">{pendingGuides || 0}</p>
+              <p className="font-bold text-daet-ink">Pending Guides</p>
+              <p className="mt-2 text-4xl font-bold text-daet-ink">{pendingGuides || 0}</p>
             </div>
-            <div className="grid h-14 w-14 place-items-center rounded-2xl bg-amber-50 text-2xl">
-              👤
+            <div className="grid h-14 w-14 place-items-center rounded-2xl bg-yellow-50 text-2xl">
+              <LineIcon name="user" className="inline-block h-[1.1em] w-[1.1em] align-[-0.15em]" />
             </div>
           </div>
-          <p className="mt-4 text-sm text-daet-ink/70">Guide applications to verify</p>
+          <p className="mt-4 text-slate-600">Guide applications to verify</p>
         </Link>
 
         {/* Pending Packages */}
         <Link
           href="/tours/admin/packages"
-          className="block rounded-3xl border border-daet-ink/10 bg-white p-6 shadow-sm hover:shadow-md transition"
+          className="block rounded-2xl bg-white p-6 transition hover:bg-blue-50 active:scale-[0.99]"
         >
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-bold text-daet-ink/70">Pending Packages</p>
-              <p className="mt-2 text-4xl font-black text-daet-ink">{pendingPackages || 0}</p>
+              <p className="font-bold text-daet-ink">Pending Packages</p>
+              <p className="mt-2 text-4xl font-bold text-daet-ink">{pendingPackages || 0}</p>
             </div>
-            <div className="grid h-14 w-14 place-items-center rounded-2xl bg-amber-50 text-2xl">
-              📦
+            <div className="grid h-14 w-14 place-items-center rounded-2xl bg-yellow-50 text-2xl">
+              <LineIcon name="box" className="inline-block h-[1.1em] w-[1.1em] align-[-0.15em]" />
             </div>
           </div>
-          <p className="mt-4 text-sm text-daet-ink/70">Tour packages awaiting approval</p>
+          <p className="mt-4 text-slate-600">Tour packages awaiting approval</p>
         </Link>
 
         {/* Published Packages */}
-        <div className="rounded-3xl border border-daet-ink/10 bg-white p-6 shadow-sm">
+        <div className="rounded-2xl bg-white p-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-bold text-daet-ink/70">Published Packages</p>
-              <p className="mt-2 text-4xl font-black text-daet-ink">{publishedPackages || 0}</p>
+              <p className="font-bold text-daet-ink">Published Packages</p>
+              <p className="mt-2 text-4xl font-bold text-daet-ink">{publishedPackages || 0}</p>
             </div>
             <div className="grid h-14 w-14 place-items-center rounded-2xl bg-green-50 text-2xl">
               ✓
             </div>
           </div>
-          <p className="mt-4 text-sm text-daet-ink/70">Active tour offerings</p>
+          <p className="mt-4 text-slate-600">Active tour offerings</p>
         </div>
 
         {/* Total Bookings */}
-        <div className="rounded-3xl border border-daet-ink/10 bg-white p-6 shadow-sm">
+        <div className="rounded-2xl bg-white p-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-bold text-daet-ink/70">Total Bookings</p>
-              <p className="mt-2 text-4xl font-black text-daet-ink">{totalBookings || 0}</p>
+              <p className="font-bold text-daet-ink">Total Bookings</p>
+              <p className="mt-2 text-4xl font-bold text-daet-ink">{totalBookings || 0}</p>
             </div>
             <div className="grid h-14 w-14 place-items-center rounded-2xl bg-blue-50 text-2xl">
-              📅
+              <LineIcon name="calendar" className="inline-block h-[1.1em] w-[1.1em] align-[-0.15em]" />
             </div>
           </div>
-          <p className="mt-4 text-sm text-daet-ink/70">All-time reservations</p>
+          <p className="mt-4 text-slate-600">All-time reservations</p>
         </div>
       </div>
 
       {/* Quick Actions */}
-      <div className="rounded-3xl border border-daet-ink/10 bg-white p-6 shadow-sm mb-8">
-        <h2 className="text-xl font-black text-daet-ink mb-4">Quick Actions</h2>
+      <div className="rounded-2xl bg-white p-6 mb-8">
+        <h2 className="text-xl font-bold text-daet-ink mb-4">Quick Actions</h2>
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           <Link
             href="/tours/admin/analytics"
             className="inline-flex min-h-11 items-center justify-center rounded-full bg-daet-ink px-6 text-sm font-bold text-white hover:bg-daet-forest transition"
           >
-            📊 Tourism Analytics
+            <LineIcon name="chart" className="inline-block h-[1.1em] w-[1.1em] align-[-0.15em]" /> Tourism Analytics
           </Link>
           <Link
             href="/tours/admin/operators"
-            className="inline-flex min-h-11 items-center justify-center rounded-full bg-daet-forest px-6 text-sm font-bold text-white hover:bg-daet-ink transition"
+            className="inline-flex min-h-11 items-center justify-center rounded-full bg-daet-forest px-6 text-sm font-bold text-white hover:bg-blue-700 transition"
           >
             Review Operators
           </Link>
           <Link
             href="/tours/admin/guides"
-            className="inline-flex min-h-11 items-center justify-center rounded-full bg-daet-forest px-6 text-sm font-bold text-white hover:bg-daet-ink transition"
+            className="inline-flex min-h-11 items-center justify-center rounded-full bg-daet-forest px-6 text-sm font-bold text-white hover:bg-blue-700 transition"
           >
             Review Guides
           </Link>
           <Link
             href="/tours/admin/packages"
-            className="inline-flex min-h-11 items-center justify-center rounded-full bg-daet-forest px-6 text-sm font-bold text-white hover:bg-daet-ink transition"
+            className="inline-flex min-h-11 items-center justify-center rounded-full bg-daet-forest px-6 text-sm font-bold text-white hover:bg-blue-700 transition"
           >
             Review Packages
           </Link>
@@ -244,8 +231,8 @@ export default async function AdminDashboardPage() {
 
       {/* Recent Activity */}
       {recentActivities && recentActivities.length > 0 && (
-        <div className="rounded-3xl border border-daet-ink/10 bg-white p-6 shadow-sm">
-          <h2 className="text-xl font-black text-daet-ink mb-4">Recent Activity</h2>
+        <div className="rounded-2xl bg-white p-6">
+          <h2 className="text-xl font-bold text-daet-ink mb-4">Recent Activity</h2>
           <div className="space-y-3">
             {recentActivities.map((activity: any) => (
               <div key={activity.id} className="flex items-start gap-3 text-sm">
@@ -259,11 +246,11 @@ export default async function AdminDashboardPage() {
                       {getActivityDescription(activity)}
                     </span>
                   </p>
-                  <p className="text-xs text-daet-ink/70 mt-1">
+                  <p className="text-sm text-slate-600 mt-1">
                     {new Date(activity.created_at).toLocaleString()}
                   </p>
                   {activity.notes && (
-                    <p className="text-xs text-daet-ink/70 mt-1 italic">"{activity.notes}"</p>
+                    <p className="text-sm text-slate-600 mt-1 italic">"{activity.notes}"</p>
                   )}
                 </div>
               </div>
@@ -284,11 +271,11 @@ function getActivityIcon(action: string): string {
     case 'reject_guide':
       return '✗';
     case 'update_package_status':
-      return '📦';
+      return '•';
     case 'delete_package':
-      return '🗑';
+      return '−';
     case 'ban_user':
-      return '🚫';
+      return '×';
     case 'unban_user':
       return '✓';
     default:

@@ -1,13 +1,18 @@
 import type { ReactNode } from "react";
 import { cn } from "@/components/ui/cn";
 
+/**
+ * Status colours from the team standard: success green-500, warning
+ * yellow-500, error red-600, primary blue-600. Green and yellow carry dark
+ * text, because white on them fails contrast.
+ */
 const TONES = {
-  neutral: "bg-slate-100 text-slate-700",
-  brand: "bg-daet-sand text-daet-forest",
-  success: "bg-emerald-50 text-emerald-700",
-  warning: "bg-amber-50 text-amber-800",
-  danger: "bg-rose-50 text-rose-700",
-  info: "bg-sky-50 text-sky-800",
+  neutral: "bg-slate-200 text-slate-900",
+  brand: "bg-blue-600 text-white",
+  success: "bg-green-500 text-slate-950",
+  warning: "bg-yellow-500 text-slate-950",
+  danger: "bg-red-600 text-white",
+  info: "bg-blue-100 text-blue-900",
 } as const;
 
 export type BadgeTone = keyof typeof TONES;

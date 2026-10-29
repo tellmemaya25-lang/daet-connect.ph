@@ -1,8 +1,11 @@
-import { formatPeso } from "@/lib/money";
+import Image from "next/image";
 import Link from "next/link";
 import { RatingBadge } from "@/components/tours/star-rating";
-import { ClockIcon, MapPinIcon } from "@/components/ui/icons";
+import { LineIcon } from "@/components/ui/icons";
+import { formatPeso } from "@/lib/money";
+import { PHOTOS } from "@/lib/photo-credits";
 import type { RatingSummary } from "@/lib/tours/reviews";
+import { durationLabel, fromPrice, placePhoto } from "@/lib/tours/trip-board";
 
 interface PackageCardProps {
   package: {
@@ -21,59 +24,55 @@ interface PackageCardProps {
   rating?: RatingSummary | null;
 }
 
+/**
+ * A trip, photo first. Tours without their own cover show a credited photo
+ * of the place they visit, so there is never an empty block.
+ */
 export function PackageCard({ package: pkg, rating = null }: PackageCardProps) {
-  const defaultVariant = pkg.tours_package_price_variants?.find((v) => v.is_default);
-  const price = defaultVariant?.price_per_pax || defaultVariant?.flat_price || 0;
-  const priceLabel = defaultVariant?.price_per_pax ? "per person" : "per group";
+  const price = fromPrice(pkg.tours_package_price_variants);
+  const fallback = PHOTOS[placePhoto(pkg.title, pkg.location_name)];
 
   return (
-    <article className="group overflow-hidden rounded-2xl bg-white transition hover:shadow-card">
-      <Link href={`/tours/packages/${pkg.id}`}>
-        {/* Cover Image */}
-        <div className="relative aspect-video overflow-hidden bg-daet-leaf">
+    <article className="group h-full overflow-hidden rounded-2xl bg-white transition active:scale-[0.99]">
+      <Link href={`/tours/packages/${pkg.id}`} className="flex h-full flex-col">
+        <div className="relative aspect-[4/3] overflow-hidden bg-blue-100">
           {pkg.cover_image_url ? (
             <img
               src={pkg.cover_image_url}
               alt={pkg.title}
               loading="lazy"
               decoding="async"
-              className="h-full w-full object-cover transition duration-300 group-hover:scale-105"
+              className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
             />
           ) : (
-            <div className="flex h-full items-end p-4 font-display text-2xl text-white">{pkg.location_name}</div>
+            <Image
+              src={fallback.src}
+              alt={`${pkg.location_name}: ${fallback.alt}`}
+              fill
+              sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
+              className="object-cover transition duration-500 group-hover:scale-105"
+            />
           )}
-          {/* Price Badge */}
-          <div className="absolute bottom-3 right-3 rounded-full bg-white px-4 py-2 shadow-lg">
-            <p className="text-xs font-bold text-daet-ink/70">From</p>
-            <p className="text-lg font-black text-daet-forest">
-              {formatPeso(price)}
-            </p>
-            <p className="text-[10px] font-bold text-daet-ink/70">{priceLabel}</p>
-          </div>
         </div>
-
-        {/* Content */}
-        <div className="p-5">
-          <h2 className="line-clamp-2 min-h-[3rem] font-black text-daet-ink group-hover:text-daet-forest">
-            {pkg.title}
-          </h2>
-
-          <div className="mt-3 flex items-center gap-4 text-sm text-daet-ink/70">
-            <span className="flex items-center gap-1">
-              <MapPinIcon />
-              {pkg.location_name}
+        <div className="flex flex-1 flex-col p-4 sm:p-5">
+          <h2 className="font-sans text-xl font-bold leading-snug tracking-normal text-daet-ink group-hover:text-blue-700">{pkg.title}</h2>
+          <p className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-daet-ink/80">
+            <span className="inline-flex items-center gap-1">
+              <LineIcon name="pin" className="h-4 w-4" /> {pkg.location_name}
             </span>
-            <span className="flex items-center gap-1">
-              <ClockIcon />
-              {pkg.duration_value} {pkg.duration_type}
+            <span className="inline-flex items-center gap-1">
+              <LineIcon name="clock" className="h-4 w-4" /> {durationLabel(pkg.duration_value, pkg.duration_type)}
             </span>
-          </div>
-
-          <div className="mt-4 flex items-center justify-between gap-2 border-t border-daet-ink/10 pt-4">
-            {rating ? <RatingBadge summary={rating} compact /> : <span className="text-xs font-bold text-daet-ink/70">New · no reviews yet</span>}
-            <span className="text-sm font-bold text-daet-forest group-hover:underline">
-              View details →
-            </span>
+          </p>
+          <div className="mt-auto flex items-end justify-between gap-3 pt-5">
+            {rating ? <RatingBadge summary={rating} compact /> : <span className="text-sm text-daet-ink/75">New, no reviews yet</span>}
+            {price ? (
+              <p className="text-right">
+                <span className="block text-sm text-daet-ink/75">From</span>
+                <span className="text-xl font-bold text-daet-ink">{formatPeso(price.amount)}</span>
+                <span className="text-sm text-daet-ink/75"> {price.perPerson ? "/ person" : "/ group"}</span>
+              </p>
+            ) : null}
           </div>
         </div>
       </Link>

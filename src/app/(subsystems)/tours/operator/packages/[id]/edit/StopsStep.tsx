@@ -1,5 +1,6 @@
 "use client";
 
+import { LineIcon } from "@/components/ui/icons";
 import React, { useCallback, useState } from "react";
 import { useFeedback } from "@/components/ui/feedback";
 import type { EditStop, EditPackageStatus, ValidationErrors, StepProps } from "./edit-types";
@@ -135,7 +136,7 @@ export function StopsStep({
   const stopsErrors = getStopsErrors();
 
   return (
-    <div className="border rounded-xl p-6 bg-white">
+    <div className="border rounded-2xl p-6 bg-white">
       <div className="flex items-center justify-between mb-6">
         <h2 className="text-xl font-bold text-daet-ink">Tour Stops</h2>
         {canAddStops && (
@@ -152,7 +153,7 @@ export function StopsStep({
               });
             }}
             disabled={loading}
-            className="px-4 py-2 bg-daet-forest text-white rounded-xl text-sm font-medium hover:bg-daet-leaf transition disabled:opacity-50 disabled:cursor-not-allowed"
+            className="px-4 py-2 bg-daet-forest text-white rounded-2xl text-sm font-medium hover:bg-daet-leaf transition disabled:opacity-50 disabled:cursor-not-allowed"
           >
             + Add Stop
           </button>
@@ -228,7 +229,7 @@ export function StopsStep({
                         }
                       }}
                       disabled={loading}
-                      className="text-rose-700 hover:text-red-800 text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="text-red-700 hover:text-red-800 text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       Delete
                     </button>
@@ -248,7 +249,7 @@ export function StopsStep({
 
       {/* Validation Errors */}
       {Object.keys(stopsErrors).length > 0 && (
-        <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded text-sm text-red-800">
+        <div className="mt-4 p-3 bg-red-50 rounded-2xl text-sm text-red-800">
           <p className="font-medium">Stop errors:</p>
           <ul className="mt-1 space-y-1">
             {Object.entries(stopsErrors).map(([key, message]) => (
@@ -261,7 +262,7 @@ export function StopsStep({
       {/* Add/Edit Form Modal */}
       {showAddForm && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl shadow-lg max-w-md w-full p-6 max-h-[90vh] overflow-y-auto">
+          <div className="bg-white rounded-2xl max-w-md w-full p-6 max-h-[90vh] overflow-y-auto">
             <h3 className="text-lg font-bold text-daet-ink mb-4">
               {editingId ? "Edit Stop" : "Add Stop"}
             </h3>
@@ -279,7 +280,7 @@ export function StopsStep({
                     setFormData({ ...formData, locationName: e.target.value })
                   }
                   maxLength={EDIT_LIMITS.stopLocation.max}
-                  className="w-full px-3 py-2 border border-daet-ink/20 rounded-xl focus:ring-2 focus:ring-daet-forest/30 outline-none"
+                  className="w-full px-3 py-2 border border-daet-ink/20 rounded-2xl focus:ring-2 focus:ring-daet-forest/30 outline-none"
                   placeholder="e.g., Taal Volcano"
                 />
               </div>
@@ -296,7 +297,7 @@ export function StopsStep({
                   }
                   maxLength={EDIT_LIMITS.stopDescription.max}
                   rows={3}
-                  className="w-full px-3 py-2 border border-daet-ink/20 rounded-xl focus:ring-2 focus:ring-daet-forest/30 outline-none resize-none"
+                  className="w-full px-3 py-2 border border-daet-ink/20 rounded-2xl focus:ring-2 focus:ring-daet-forest/30 outline-none resize-none"
                   placeholder="Optional description of the stop"
                 />
               </div>
@@ -315,7 +316,7 @@ export function StopsStep({
                   onChange={(e) =>
                     setFormData({ ...formData, latitude: parseFloat(e.target.value) || 0 })
                   }
-                  className="w-full px-3 py-2 border border-daet-ink/20 rounded-xl focus:ring-2 focus:ring-daet-forest/30 outline-none"
+                  className="w-full px-3 py-2 border border-daet-ink/20 rounded-2xl focus:ring-2 focus:ring-daet-forest/30 outline-none"
                   placeholder="e.g., 14.1122"
                 />
               </div>
@@ -334,7 +335,7 @@ export function StopsStep({
                   onChange={(e) =>
                     setFormData({ ...formData, longitude: parseFloat(e.target.value) || 0 })
                   }
-                  className="w-full px-3 py-2 border border-daet-ink/20 rounded-xl focus:ring-2 focus:ring-daet-forest/30 outline-none"
+                  className="w-full px-3 py-2 border border-daet-ink/20 rounded-2xl focus:ring-2 focus:ring-daet-forest/30 outline-none"
                   placeholder="e.g., 122.9553"
                 />
               </div>
@@ -355,7 +356,7 @@ export function StopsStep({
                       estimatedDurationMinutes: e.target.value ? parseInt(e.target.value) : null,
                     })
                   }
-                  className="w-full px-3 py-2 border border-daet-ink/20 rounded-xl focus:ring-2 focus:ring-daet-forest/30 outline-none"
+                  className="w-full px-3 py-2 border border-daet-ink/20 rounded-2xl focus:ring-2 focus:ring-daet-forest/30 outline-none"
                   placeholder="e.g., 60"
                 />
               </div>
@@ -368,14 +369,14 @@ export function StopsStep({
                     setShowAddForm(false);
                     setEditingId(undefined);
                   }}
-                  className="flex-1 px-4 py-2 border border-daet-ink/20 text-daet-ink/80 rounded-xl hover:bg-slate-50 transition"
+                  className="flex-1 px-4 py-2 border border-daet-ink/20 text-daet-ink/80 rounded-2xl hover:bg-slate-50 transition"
                 >
                   Cancel
                 </button>
                 <button
                   type="button"
                   onClick={handleAddStop}
-                  className="flex-1 px-4 py-2 bg-daet-forest text-white rounded-xl hover:bg-daet-leaf transition"
+                  className="min-h-11 flex-1 px-4 py-2 bg-daet-forest text-white rounded-2xl hover:bg-daet-leaf transition"
                 >
                   {editingId ? "Update" : "Add"}
                 </button>
@@ -387,8 +388,8 @@ export function StopsStep({
 
       {/* Help text */}
       {data.length === 0 && (
-        <div className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded text-sm text-yellow-800">
-          ⚠️ At least one stop is required before submitting for review.
+        <div className="mt-4 p-3 bg-yellow-50 rounded-2xl text-sm text-yellow-800">
+          <LineIcon name="warning" className="inline-block h-[1.1em] w-[1.1em] align-[-0.15em]" /> At least one stop is required before submitting for review.
         </div>
       )}
     </div>

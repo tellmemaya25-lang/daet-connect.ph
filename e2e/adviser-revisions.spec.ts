@@ -4,12 +4,16 @@ import { checkA11y, signInAs, type Role } from "./fixtures";
 /** Adviser revisions (docs/ADVISER_REVISIONS.md). */
 test.use({ viewport: { width: 375, height: 812 }, isMobile: true });
 
-const mainNav = (page: import("@playwright/test").Page) => page.getByRole("navigation", { name: "Main navigation" });
+/** At phone width the links live in the Menu sheet; open it and return its nav. */
+const mainNav = async (page: import("@playwright/test").Page) => {
+  await page.getByRole("banner").getByText("Menu", { exact: true }).click();
+  return page.getByRole("navigation", { name: "Menu" });
+};
 
 test.describe("R1: the exploration menu is only for visitors and tourists", () => {
   test("visitors see it", async ({ page }) => {
     await page.goto("/", { waitUntil: "networkidle" });
-    await expect(mainNav(page).getByRole("link", { name: "Souvenirs" })).toHaveCount(1);
+    await expect((await mainNav(page)).getByRole("link", { name: "Souvenirs" })).toHaveCount(1);
   });
 
   const homes: Record<Role, string> = { tourist: "/tours/me", operator: "/tours/operator/dashboard", guide: "/tours/guide/dashboard", admin: "/tours/admin" };
@@ -17,8 +21,9 @@ test.describe("R1: the exploration menu is only for visitors and tourists", () =
     test(`${role} dashboard`, async ({ context, page }) => {
       await signInAs(context, role);
       await page.goto(homes[role], { waitUntil: "networkidle" });
-      await expect(mainNav(page).getByRole("link", { name: "Souvenirs" })).toHaveCount(role === "tourist" ? 1 : 0);
-      await expect(mainNav(page).getByRole("link", { name: "Plan a trip" })).toHaveCount(role === "tourist" ? 1 : 0);
+      const nav = await mainNav(page);
+      await expect(nav.getByRole("link", { name: "Souvenirs" })).toHaveCount(role === "tourist" ? 1 : 0);
+      await expect(nav.getByRole("link", { name: "Plan a trip" })).toHaveCount(role === "tourist" ? 1 : 0);
     });
   }
 });

@@ -132,7 +132,7 @@ export function BasicDetailsStep({
   const durationError = getDurationError();
 
   return (
-    <div className="border rounded-xl p-6 bg-white">
+    <div className="border rounded-2xl p-6 bg-white">
       <h2 className="text-xl font-bold text-daet-ink mb-6">Basic Details</h2>
 
       <div className="space-y-6">
@@ -149,16 +149,16 @@ export function BasicDetailsStep({
               onChange={(e) => handleTitleChange(e.target.value)}
               disabled={isReadOnly || !permissions.basic.title || loading}
               maxLength={EDIT_LIMITS.title.max}
-              className={`w-full px-4 py-2 border rounded-xl focus:ring-2 focus:ring-daet-forest/30 focus:border-transparent outline-none transition ${
+              className={`w-full px-4 py-2 border rounded-2xl focus:ring-2 focus:ring-daet-forest/30 focus:border-transparent outline-none transition ${
                 titleError ? "border-red-300 bg-red-50" : "border-daet-ink/20"
               } disabled:bg-slate-100 disabled:text-daet-ink/70 disabled:cursor-not-allowed`}
               placeholder="Enter package title"
             />
-            <div className="absolute right-3 top-2.5 text-xs text-daet-ink/70">
+            <div className="absolute right-3 top-2.5 text-sm text-slate-600">
               {data.title.length}/{EDIT_LIMITS.title.max}
             </div>
           </div>
-          {titleError && <p className="text-rose-700 text-sm mt-1">{titleError}</p>}
+          {titleError && <p className="text-red-700 text-sm mt-1">{titleError}</p>}
         </div>
 
         {/* Location Field */}
@@ -174,16 +174,16 @@ export function BasicDetailsStep({
               onChange={(e) => handleLocationChange(e.target.value)}
               disabled={isReadOnly || !permissions.basic.locationName || loading}
               maxLength={EDIT_LIMITS.locationName.max}
-              className={`w-full px-4 py-2 border rounded-xl focus:ring-2 focus:ring-daet-forest/30 focus:border-transparent outline-none transition ${
+              className={`w-full px-4 py-2 border rounded-2xl focus:ring-2 focus:ring-daet-forest/30 focus:border-transparent outline-none transition ${
                 locationError ? "border-red-300 bg-red-50" : "border-daet-ink/20"
               } disabled:bg-slate-100 disabled:text-daet-ink/70 disabled:cursor-not-allowed`}
               placeholder="Enter location"
             />
-            <div className="absolute right-3 top-2.5 text-xs text-daet-ink/70">
+            <div className="absolute right-3 top-2.5 text-sm text-slate-600">
               {data.locationName.length}/{EDIT_LIMITS.locationName.max}
             </div>
           </div>
-          {locationError && <p className="text-rose-700 text-sm mt-1">{locationError}</p>}
+          {locationError && <p className="text-red-700 text-sm mt-1">{locationError}</p>}
         </div>
 
         {/* Description Field */}
@@ -199,16 +199,16 @@ export function BasicDetailsStep({
               disabled={isReadOnly || !permissions.basic.description || loading}
               maxLength={EDIT_LIMITS.description.max}
               rows={5}
-              className={`w-full px-4 py-2 border rounded-xl focus:ring-2 focus:ring-daet-forest/30 focus:border-transparent outline-none transition resize-none ${
+              className={`w-full px-4 py-2 border rounded-2xl focus:ring-2 focus:ring-daet-forest/30 focus:border-transparent outline-none transition resize-none ${
                 descriptionError ? "border-red-300 bg-red-50" : "border-daet-ink/20"
               } disabled:bg-slate-100 disabled:text-daet-ink/70 disabled:cursor-not-allowed`}
               placeholder="Enter package description (optional)"
             />
-            <div className="absolute right-3 bottom-2.5 text-xs text-daet-ink/70">
+            <div className="absolute right-3 bottom-2.5 text-sm text-slate-600">
               {(data.description ?? "").length}/{EDIT_LIMITS.description.max}
             </div>
           </div>
-          {descriptionError && <p className="text-rose-700 text-sm mt-1">{descriptionError}</p>}
+          {descriptionError && <p className="text-red-700 text-sm mt-1">{descriptionError}</p>}
         </div>
 
         {/* Duration Fields */}
@@ -226,12 +226,12 @@ export function BasicDetailsStep({
               value={data.durationValue}
               onChange={(e) => handleDurationValueChange(parseFloat(e.target.value) || 0)}
               disabled={isReadOnly || !permissions.basic.durationValue || loading}
-              className={`w-full px-4 py-2 border rounded-xl focus:ring-2 focus:ring-daet-forest/30 focus:border-transparent outline-none transition ${
+              className={`w-full px-4 py-2 border rounded-2xl focus:ring-2 focus:ring-daet-forest/30 focus:border-transparent outline-none transition ${
                 durationError ? "border-red-300 bg-red-50" : "border-daet-ink/20"
               } disabled:bg-slate-100 disabled:text-daet-ink/70 disabled:cursor-not-allowed`}
               placeholder="e.g., 2.5"
             />
-            {durationError && <p className="text-rose-700 text-sm mt-1">{durationError}</p>}
+            {durationError && <p className="text-red-700 text-sm mt-1">{durationError}</p>}
           </div>
 
           <div>
@@ -243,7 +243,7 @@ export function BasicDetailsStep({
               value={data.durationType}
               onChange={(e) => handleDurationTypeChange(e.target.value as "hours" | "days")}
               disabled={isReadOnly || !permissions.basic.durationType || loading}
-              className="w-full px-4 py-2 border border-daet-ink/20 rounded-xl focus:ring-2 focus:ring-daet-forest/30 focus:border-transparent outline-none transition disabled:bg-slate-100 disabled:text-daet-ink/70 disabled:cursor-not-allowed"
+              className="w-full px-4 py-2 border border-daet-ink/20 rounded-2xl focus:ring-2 focus:ring-daet-forest/30 focus:border-transparent outline-none transition disabled:bg-slate-100 disabled:text-daet-ink/70 disabled:cursor-not-allowed"
             >
               <option value="hours">Hours</option>
               <option value="days">Days</option>
@@ -253,7 +253,7 @@ export function BasicDetailsStep({
 
         {/* Read-only indicator */}
         {!permissions.canEdit && (
-          <div className="p-3 bg-daet-sand border border-blue-200 rounded text-sm text-daet-leaf">
+          <div className="p-3 rounded-2xl bg-blue-50 text-sm text-blue-900">
             ℹ️ This package is {packageStatus} and cannot be edited.
           </div>
         )}

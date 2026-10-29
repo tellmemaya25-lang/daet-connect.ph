@@ -45,7 +45,7 @@ export function LogoutButton({ className, compact = false }: { className?: strin
         <span className={compact ? "sr-only sm:not-sr-only" : undefined}>{pending ? "Signing out…" : "Sign out"}</span>
       </button>
       {failed ? (
-        <span role="alert" className="absolute right-0 top-full z-50 mt-1 w-max max-w-[14rem] rounded-xl bg-rose-50 px-3 py-2 text-xs font-semibold text-rose-800 shadow-card">
+        <span role="alert" className="absolute right-0 top-full z-50 mt-1 w-max max-w-[14rem] rounded-2xl bg-red-50 px-3 py-2 text-xs font-semibold text-red-800 shadow-[var(--shadow-float)]">
           Sign-out failed. Check your connection and try again.
         </span>
       ) : null}

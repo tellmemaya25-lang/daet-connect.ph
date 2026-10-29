@@ -24,13 +24,12 @@ export default async function SharedItineraryPage({ params }: { params: Promise<
   return (
     <PageFrame>
       <div className="mx-auto max-w-3xl">
-        <p className="text-sm font-bold text-daet-leaf">Shared trip plan</p>
-        <h1 className="mt-1 text-3xl font-black text-daet-ink">{shared.title}</h1>
-        {shared.summary ? <p className="mt-3 rounded-2xl bg-daet-forest/5 p-4 text-sm leading-6 text-daet-ink">{shared.summary}</p> : null}
+        <h1 className="display-2 mt-1 text-daet-ink">{shared.title}</h1>
+        {shared.summary ? <p className="mt-3 rounded-2xl bg-white p-4 text-base leading-7 text-daet-ink">{shared.summary}</p> : null}
         <div className="mt-6">
           <SavedItinerary days={rowsToDays(shared.items ?? [], shared.start_date)} />
         </div>
-        <Link href="/tours/plan" className="mt-8 inline-flex min-h-11 items-center rounded-full bg-daet-forest px-6 text-sm font-bold text-white hover:bg-daet-ink">
+        <Link href="/tours/plan" className="mt-8 inline-flex min-h-11 items-center rounded-full bg-daet-forest px-6 text-sm font-bold text-white hover:bg-blue-700">
           Plan your own trip
         </Link>
       </div>

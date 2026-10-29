@@ -40,7 +40,7 @@ export function OpenDatesForm({ packageId, today }: { packageId: string; today: 
 
       <fieldset>
         <legend className="text-sm font-bold text-daet-ink">
-          Days of the week <span className="text-rose-600" aria-hidden="true">*</span>
+          Days of the week <span className="text-red-600" aria-hidden="true">*</span>
         </legend>
         <div className="mt-2 flex flex-wrap gap-2">
           {WEEKDAYS.map((label, index) => (
@@ -53,8 +53,8 @@ export function OpenDatesForm({ packageId, today }: { packageId: string; today: 
             </label>
           ))}
         </div>
-        {state.errors.weekday ? <p className="mt-1 text-sm font-semibold text-rose-700">{state.errors.weekday}</p> : null}
-        <p className="mt-1 text-xs text-daet-ink/70">Up to {MAX_DATES_PER_BATCH} dates at a time. Dates already open are left unchanged.</p>
+        {state.errors.weekday ? <p className="mt-1 text-sm font-semibold text-red-700">{state.errors.weekday}</p> : null}
+        <p className="mt-1 text-sm text-slate-600">Up to {MAX_DATES_PER_BATCH} dates at a time. Dates already open are left unchanged.</p>
       </fieldset>
 
       <Button type="submit" loading={pending} loadingText="Opening dates…">
@@ -93,7 +93,7 @@ export function AvailabilityList({ packageId, rows }: { packageId: string; rows:
   return (
     <div>
       {result ? <Notice variant={result.tone} className="mb-3">{result.text}</Notice> : null}
-      <ul className="divide-y divide-daet-ink/10 rounded-2xl border border-daet-ink/10 bg-white">
+      <ul className="divide-y divide-daet-ink/10 rounded-2xl bg-white">
         {rows.map((row) => {
           const left = seatsLeft(row);
           return (
@@ -113,7 +113,7 @@ export function AvailabilityList({ packageId, rows }: { packageId: string; rows:
                 }}
               >
                 <input type="hidden" name="availabilityId" value={row.id} />
-                <label className="text-xs font-bold text-daet-ink/70">
+                <label className="text-sm text-slate-600">
                   Seats
                   <Input
                     name="capacity"

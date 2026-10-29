@@ -51,13 +51,13 @@ export function CancellationReview({ bookingId, request, late }: { bookingId: st
   }
 
   return (
-    <div className="mb-4 rounded-2xl border border-rose-200 bg-rose-50/60 p-4">
-      <p className="mb-2 flex flex-wrap items-center gap-2 text-xs font-bold uppercase tracking-wide text-rose-900">
+    <div className="mb-4 rounded-2xl bg-red-50/60 p-4">
+      <p className="mb-2 flex flex-wrap items-center gap-2 text-xs font-bold text-red-900">
         Cancellation requested
         {late ? <Badge tone="warning">Within 48 hours of the tour</Badge> : null}
       </p>
       <p className="text-sm text-daet-ink">“{request.reason}”</p>
-      <p className="mt-1 text-xs text-daet-ink/70">
+      <p className="mt-1 text-sm text-slate-600">
         Asked on {new Date(request.requested_at).toLocaleString("en-PH", { dateStyle: "medium", timeStyle: "short", timeZone: "Asia/Manila" })}
       </p>
       {result ? <Notice variant={result.tone} className="mt-3">{result.text}</Notice> : null}
@@ -89,8 +89,8 @@ export function RefundPanel({ bookingId, refundable }: { bookingId: string; refu
   const [formKey, setFormKey] = useState(0);
 
   return (
-    <div className="mb-4 rounded-2xl border border-sky-200 bg-sky-50/60 p-4">
-      <p className="text-xs font-bold uppercase tracking-wide text-sky-900">Refund due</p>
+    <div className="mb-4 rounded-2xl bg-blue-50/60 p-4">
+      <p className="text-xs font-bold text-blue-900">Refund due</p>
       <p className="mt-1 text-sm text-daet-ink">
         The tourist paid <strong>{peso(refundable)}</strong> that has not been refunded yet. Send the refund, then record it here.
       </p>

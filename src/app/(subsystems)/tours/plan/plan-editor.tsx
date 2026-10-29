@@ -137,7 +137,7 @@ export function PlanEditor({
                             </div>
                             <div className={`min-w-0 flex-1 rounded-2xl p-4 ${block.kind === "lunch" ? "bg-daet-sand" : "bg-white"}`}>
                               <div className="flex items-start gap-3">
-                                <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-daet-sand text-daet-leaf">
+                                <span className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl bg-daet-sand text-daet-leaf">
                                   <CategoryIcon category={block.kind === "lunch" ? "lunch" : (byId.get(block.attractionId)?.category ?? "park")} className="h-5 w-5" />
                                 </span>
                                 <div className="min-w-0 flex-1">
@@ -232,12 +232,12 @@ export function PlanEditor({
                 <ul className="mt-4 space-y-3">
                   {matches.map((match) => (
                     <li key={match.id} className="flex flex-wrap items-center gap-3 rounded-2xl bg-daet-sand/60 p-3">
-                      {match.coverImageUrl ? <img src={match.coverImageUrl} alt="" className="h-14 w-20 rounded-xl object-cover" /> : null}
+                      {match.coverImageUrl ? <img src={match.coverImageUrl} alt="" className="h-14 w-20 rounded-2xl object-cover" /> : null}
                       <div className="min-w-0 flex-1">
                         <p className="font-bold text-daet-ink">{match.title}</p>
                         <p className="text-sm text-daet-ink/70">Visits {match.matched.join(", ")}</p>
                       </div>
-                      <Link href={`/tours/packages/${match.id}`} className="inline-flex min-h-11 shrink-0 items-center rounded-full bg-daet-forest px-5 text-sm font-bold text-white transition-colors hover:bg-daet-ink">
+                      <Link href={`/tours/packages/${match.id}`} className="inline-flex min-h-11 shrink-0 items-center rounded-full bg-daet-forest px-5 text-sm font-bold text-white transition-colors hover:bg-blue-700">
                         View tour
                       </Link>
                     </li>
@@ -323,7 +323,7 @@ export function PlanEditor({
           ) : (
             <div className="flex flex-wrap items-center justify-between gap-3">
               <p className="text-sm text-daet-ink/80">Sign in to save plans and share them.</p>
-              <Link href={`/login?next=${encodeURIComponent("/tours/plan")}`} className="inline-flex min-h-11 items-center rounded-full bg-daet-forest px-6 text-sm font-bold text-white transition-colors hover:bg-daet-ink">
+              <Link href={`/login?next=${encodeURIComponent("/tours/plan")}`} className="inline-flex min-h-11 items-center rounded-full bg-daet-forest px-6 text-sm font-bold text-white transition-colors hover:bg-blue-700">
                 Sign in
               </Link>
             </div>

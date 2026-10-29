@@ -1,3 +1,4 @@
+import { LineIcon } from "@/components/ui/icons";
 import { formatPeso } from "@/lib/money";
 import Link from "next/link";
 import { redirect } from "next/navigation";
@@ -50,19 +51,18 @@ export default async function OperatorPaymentsPage({
           <Link href="/tours/operator/dashboard" className="inline-flex min-h-11 items-center text-sm font-bold text-daet-forest hover:underline">
             ← Dashboard
           </Link>
-          <p className="text-sm font-bold text-daet-leaf">{result.businessName}</p>
-          <h1 className="mt-1 text-3xl font-black tracking-tight text-daet-ink">Revenue &amp; payments</h1>
+          <h1 className="display-2 text-daet-ink">Revenue &amp; payments</h1>
         </div>
         <ButtonLink href={`/tours/operator/payments/export?month=${key}`} variant="secondary" prefetch={false}>
           Download CSV
         </ButtonLink>
       </div>
 
-      <nav aria-label="Month" className="mb-6 flex items-center justify-between gap-3 rounded-2xl border border-daet-ink/10 bg-white p-2 shadow-sm">
+      <nav aria-label="Month" className="mb-6 flex items-center justify-between gap-3 rounded-2xl bg-white p-2">
         <ButtonLink href={`/tours/operator/payments?month=${monthKey(shiftMonth(month, -1))}`} variant="ghost" size="icon" aria-label="Previous month">
           ‹
         </ButtonLink>
-        <p className="font-black text-daet-ink">{formatMonthLabel(month)}</p>
+        <p className="font-bold text-daet-ink">{formatMonthLabel(month)}</p>
         {isCurrentMonth ? (
           <span className="h-11 w-11" aria-hidden="true" />
         ) : (
@@ -74,21 +74,21 @@ export default async function OperatorPaymentsPage({
 
       <div className="mb-6 grid grid-cols-2 gap-3 lg:grid-cols-4">
         <Card>
-          <p className="text-xs font-bold text-daet-ink/70">Received</p>
-          <p className="mt-1 text-2xl font-black text-daet-forest">{peso(summary.received)}</p>
-          <p className="text-xs text-daet-ink/70">{summary.count} payment{summary.count === 1 ? "" : "s"}</p>
+          <p className="text-sm text-slate-600">Received</p>
+          <p className="mt-1 text-2xl font-bold text-daet-forest">{peso(summary.received)}</p>
+          <p className="text-sm text-slate-600">{summary.count} payment{summary.count === 1 ? "" : "s"}</p>
         </Card>
         <Card>
-          <p className="text-xs font-bold text-daet-ink/70">Online (PayMongo)</p>
-          <p className="mt-1 text-2xl font-black text-daet-ink">{peso(summary.online)}</p>
+          <p className="text-sm text-slate-600">Online (PayMongo)</p>
+          <p className="mt-1 text-2xl font-bold text-daet-ink">{peso(summary.online)}</p>
         </Card>
         <Card>
-          <p className="text-xs font-bold text-daet-ink/70">Manual / verified receipts</p>
-          <p className="mt-1 text-2xl font-black text-daet-ink">{peso(summary.manual)}</p>
+          <p className="text-sm text-slate-600">Manual / verified receipts</p>
+          <p className="mt-1 text-2xl font-bold text-daet-ink">{peso(summary.manual)}</p>
         </Card>
         <Card>
-          <p className="text-xs font-bold text-daet-ink/70">Refunded</p>
-          <p className="mt-1 text-2xl font-black text-daet-ink">{peso(summary.refunded)}</p>
+          <p className="text-sm text-slate-600">Refunded</p>
+          <p className="mt-1 text-2xl font-bold text-daet-ink">{peso(summary.refunded)}</p>
         </Card>
       </div>
 
@@ -128,7 +128,7 @@ export default async function OperatorPaymentsPage({
       ) : null}
 
       {result.rows.length === 0 ? (
-        <EmptyState icon="🧾" title={`No payments in ${formatMonthLabel(month)}`} description="Online payments and verified receipts will appear here." />
+        <EmptyState icon={<LineIcon name="receipt" />} title={`No payments in ${formatMonthLabel(month)}`} description="Online payments and verified receipts will appear here." />
       ) : (
         <Card padded={false}>
           <ul className="divide-y divide-daet-ink/10">
@@ -139,14 +139,14 @@ export default async function OperatorPaymentsPage({
                     {row.booking_reference} · {row.tourist_name}
                   </p>
                   <p className="truncate text-sm text-daet-ink/70">{row.package_title}</p>
-                  <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-daet-ink/70">
+                  <div className="mt-1 flex flex-wrap items-center gap-2 text-sm text-slate-600">
                     <Badge tone={row.provider === "paymongo" ? "info" : "brand"}>{row.provider === "paymongo" ? "PayMongo" : "Manual"}</Badge>
                     <span>{ledgerMethodLabel(row)}</span>
                     {row.reference_number ? <span>Ref {row.reference_number}</span> : null}
                     {row.payment_date ? <span>{dateTime.format(new Date(row.payment_date))}</span> : null}
                   </div>
                 </div>
-                <span className={`shrink-0 font-black ${row.payment_status === "completed" ? "text-emerald-700" : "text-daet-ink/70 line-through"}`}>
+                <span className={`shrink-0 font-bold ${row.payment_status === "completed" ? "text-green-700" : "text-daet-ink/70 line-through"}`}>
                   {peso(Number(row.amount))}
                 </span>
               </li>

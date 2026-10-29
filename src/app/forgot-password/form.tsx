@@ -22,7 +22,7 @@ export function ForgotPasswordForm({ notice }: { notice?: string }) {
         Send reset link
       </Button>
       <p className="text-center text-sm text-daet-ink/80">
-        <Link href="/login" className="font-bold text-daet-forest underline underline-offset-4">
+        <Link href="/login" className="inline-flex min-h-11 items-center font-bold text-daet-forest underline underline-offset-4">
           Back to sign in
         </Link>
       </p>
