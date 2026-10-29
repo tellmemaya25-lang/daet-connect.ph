@@ -5,16 +5,16 @@ test.use({ viewport: { width: 375, height: 812 }, isMobile: true });
 
 async function openAssistant(page: Page, path = "/tours/browse") {
   await page.goto(path, { waitUntil: "networkidle" });
-  await page.getByRole("button", { name: "Ask the assistant" }).click();
-  const dialog = page.getByRole("dialog", { name: "Daet travel assistant" });
+  await page.getByRole("button", { name: "Daet AI assistant" }).click();
+  const dialog = page.getByRole("dialog", { name: "Daet AI assistant" });
   await expect(dialog).toBeVisible();
   return dialog;
 }
 
 test("visitors get policy answers in basic mode, and the dialog is accessible", async ({ page }) => {
   const dialog = await openAssistant(page);
-  await expect(dialog.getByLabel("Ask the travel assistant")).toBeFocused();
-  await dialog.getByLabel("Ask the travel assistant").fill("How do I cancel and get a refund?");
+  await expect(dialog.getByLabel("Ask the Daet AI assistant")).toBeFocused();
+  await dialog.getByLabel("Ask the Daet AI assistant").fill("How do I cancel and get a refund?");
   await dialog.getByRole("button", { name: "Send" }).click();
   await expect(dialog.getByText(/48 hours/)).toBeVisible();
   await expect(dialog.getByText("Basic mode")).toBeVisible();
@@ -46,7 +46,7 @@ test("a signed-in tourist sees their booking with ticket and booking links", asy
 test("asking for a person offers an editable message to send", async ({ context, page }) => {
   await signInAs(context, "tourist");
   const dialog = await openAssistant(page, "/tours/me");
-  await dialog.getByLabel("Ask the travel assistant").fill("I want to talk to a person about my booking BK-20261023-7F3K2Q");
+  await dialog.getByLabel("Ask the Daet AI assistant").fill("I want to talk to a person about my booking BK-20261023-7F3K2Q");
   await dialog.getByRole("button", { name: "Send" }).click();
   const message = dialog.getByLabel(/Message to/);
   await expect(message).toHaveValue(/talk to a person/);
@@ -56,9 +56,9 @@ test("asking for a person offers an editable message to send", async ({ context,
 
 test("the help page hosts the same chat", async ({ page }) => {
   await page.goto("/tours/help", { waitUntil: "networkidle" });
-  await expect(page.getByRole("heading", { level: 1, name: "Daet travel assistant" })).toBeVisible();
-  await expect(page.getByRole("button", { name: "Ask the assistant" })).toHaveCount(0);
-  await page.getByLabel("Ask the travel assistant").fill("Can I pay with GCash?");
+  await expect(page.getByRole("heading", { level: 1, name: "Daet AI assistant" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Daet AI assistant" })).toHaveCount(0);
+  await page.getByLabel("Ask the Daet AI assistant").fill("Can I pay with GCash?");
   await page.getByRole("button", { name: "Send" }).click();
   await expect(page.getByText(/PayMongo/)).toBeVisible();
   await checkA11y(page, "help page");
@@ -67,4 +67,38 @@ test("the help page hosts the same chat", async ({ page }) => {
 test("the planner opens with the assistant's trip description filled in", async ({ page }) => {
   await page.goto(`/tours/plan?describe=${encodeURIComponent("2 days with my kids, beaches and food")}`, { waitUntil: "networkidle" });
   await expect(page.getByRole("textbox", { name: "Describe your trip" })).toHaveValue("2 days with my kids, beaches and food");
+});
+
+test("the Daet AI assistant recommends food stops with Google Maps directions", async ({ page }) => {
+  const dialog = await openAssistant(page);
+  await dialog.getByRole("button", { name: "Where to eat near Bagasbas?" }).click();
+  await expect(dialog.getByText(/^Food near bagasbas: Bagasbas Beach eateries/)).toBeVisible();
+  const directions = dialog.getByRole("link", { name: /Get directions to Bagasbas Beach eateries/ });
+  await expect(directions).toHaveAttribute("href", "https://www.google.com/maps/dir/?api=1&destination=14.131600%2C122.985100&travelmode=driving");
+  await expect(directions).toHaveAttribute("target", "_blank");
+  await expect(dialog.getByText("Verify locally").first()).toBeVisible();
+  await checkA11y(page, "assistant place cards");
+});
+
+test("the Daet AI assistant estimates a trip from listed prices", async ({ page }) => {
+  const dialog = await openAssistant(page);
+  await dialog.getByLabel("Ask the Daet AI assistant").fill("Budget for 2 days in Bagasbas from Manila, 2 people?");
+  await dialog.getByRole("button", { name: "Send" }).click();
+  await expect(dialog.getByText("Trip estimate")).toBeVisible();
+  await expect(dialog.getByText("Bus: Manila (PITX) to Daet")).toBeVisible();
+  await expect(dialog.getByText(/per person$/).first()).toBeVisible();
+  await expect(dialog.getByText(/Estimates from listed prices, not quotes/)).toBeVisible();
+  await checkA11y(page, "assistant cost card");
+});
+
+test("near me asks for the location, which the traveller shares with one tap", async ({ context, page }) => {
+  await context.grantPermissions(["geolocation"]);
+  await context.setGeolocation({ latitude: 14.1316, longitude: 122.9851 });
+  const dialog = await openAssistant(page);
+  await dialog.getByLabel("Ask the Daet AI assistant").fill("Saan pwede kumain malapit dito?");
+  await dialog.getByRole("button", { name: "Send" }).click();
+  await expect(dialog.getByText(/Tap Use my location/)).toBeVisible();
+  await dialog.getByRole("listitem").getByRole("button", { name: "Use my location" }).click();
+  await expect(dialog.getByRole("button", { name: /Using your location/ })).toBeVisible();
+  await expect(dialog.getByText(/Food near your location: Bagasbas Beach eateries/)).toBeVisible();
 });

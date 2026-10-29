@@ -148,6 +148,20 @@ const BID = "e9466de5-4877-47c1-ac14-d86deeb38b9e";
     { id: "m2", name: "Pineapple Jam", description: null, category: "pasalubong", price: 120, seller_name: "Bagasbas Coast Tours", where_to_buy: null, contact_info: null, image_url: null, is_featured: false, is_active: true, review_status: "rejected", review_notes: "Please add a photo of the jar and its label.", reviewed_at: "2026-10-22T03:00:00Z", submitted_by_operator_id: "op-1", tours_operators: { business_name: "Bagasbas Coast Tours" } },
     { id: "m3", name: "I Love Daet Mug", description: null, category: "mug", price: 250, seller_name: "Daet Tourism Office", where_to_buy: "Municipal Hall", contact_info: null, image_url: null, is_featured: true, is_active: true, review_status: "approved", review_notes: null, reviewed_at: null, submitted_by_operator_id: null, tours_operators: null },
   ];
+  // The local guide directory (a slice of supabase/seed/guide_directory.sql).
+  const gp = (over) => ({ municipality: "Daet", address: null, latitude: null, longitude: null, price_min: null, price_max: null, price_unit: null, specialties: [], tags: [], opening_hours: null, phone: null, description: null, source: "seed", checked_on: "2026-10-29", verified: false, location_verified: false, is_active: true, ...over });
+  const guidePlaces = [
+    gp({ id: "gp1", kind: "eatery", name: "Bagasbas Beach eateries", slug: "bagasbas-beach-eateries", latitude: "14.131600", longitude: "122.985100", specialties: ["sinantolan", "Bicol express"], description: "A strip of restaurants and bars along the beach." }),
+    gp({ id: "gp2", kind: "eatery", name: "Leo's Cuisine", slug: "leos-cuisine", address: "Bagasbas Boulevard, Bagasbas, Daet" }),
+    gp({ id: "gp3", kind: "lodging", name: "Dolor Hotel", slug: "dolor-hotel", price_min: "650.00", price_unit: "night" }),
+    gp({ id: "gp4", kind: "lodging", name: "Hotel Formosa", slug: "hotel-formosa", price_min: "2900.00", price_unit: "night" }),
+  ];
+  const fr = (over) => ({ board_place_id: null, fare_min: null, fare_max: null, fare_per: "person", minutes_min: null, minutes_max: null, schedule_note: null, source: "seed", checked_on: "2026-10-29", verified: false, is_active: true, ...over });
+  const fares = [
+    fr({ id: "fr1", mode: "bus", from_name: "Manila (PITX)", to_name: "Daet", fare_min: "801.00", fare_max: "801.00", minutes_min: 540, minutes_max: 720 }),
+    fr({ id: "fr2", mode: "tricycle", from_name: "Daet town center", to_name: "Bagasbas", fare_min: "30.00", fare_max: "30.00", minutes_min: 10, minutes_max: 15, schedule_note: "Agree on the fare before you ride." }),
+    fr({ id: "fr3", mode: "boat", from_name: "Paracale port", to_name: "Calaguas", fare_min: "3000.00", fare_max: "7000.00", fare_per: "boat", minutes_min: 120, minutes_max: 150 }),
+  ];
   const user0 = "9b7e5a5e-0000-4000-8000-000000000001";
   const tables = {
     rewards_balances: [{ profile_id: user0, balance: 115, earned: 165 }],
@@ -161,6 +175,8 @@ const BID = "e9466de5-4877-47c1-ac14-d86deeb38b9e";
     tours_guide_availability: guideAvailability, tours_guide_ratings: [{ guide_id: guides[0].id, review_count: 9, average_rating: "4.78" }], tours_itineraries: itineraries,
     tours_reviews: reviews, tours_package_ratings: [ratingRow], tours_operator_ratings: [ratingRow],
     tours_attractions: attractions,
+    tours_guide_places: guidePlaces,
+    tours_fares: fares,
     tours_notifications: notifications,
     tours_conversations: [conversation], tours_messages: messages,
     tours_booking_participants: participants, tours_checkins: checkins,
@@ -207,6 +223,10 @@ http.createServer((req, res) => {
     let rows = (wantsEventJoin ? tables._event_availability : tables[table]) || [];
     for (const [k, v] of url.searchParams) {
       if (v.startsWith("eq.") && !k.includes(".")) rows = rows.filter((r) => !(k in r) || String(r[k]) === v.slice(3));
+      if (v.startsWith("in.(") && !k.includes(".")) {
+        const list = v.slice(4, -1).split(",").map((x) => x.replace(/^"|"$/g, ""));
+        rows = rows.filter((r) => !(k in r) || list.includes(String(r[k])));
+      }
     }
     const prefer = req.headers.prefer || "";
     if (req.method === "HEAD" || prefer.includes("count=exact")) {

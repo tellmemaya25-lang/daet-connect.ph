@@ -16,7 +16,7 @@ const COLUMNS = [
   {
     label: "Help",
     links: [
-      { href: "/tours/help", label: "24/7 travel assistant" },
+      { href: "/tours/help", label: "Daet AI assistant" },
       { href: "/tours/my-bookings", label: "My bookings" },
       { href: "/login", label: "Sign in" },
     ],

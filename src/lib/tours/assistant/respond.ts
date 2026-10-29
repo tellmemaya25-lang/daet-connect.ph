@@ -17,7 +17,12 @@ export const AssistantRequestSchema = z.object({
     .array(z.object({ role: z.enum(["user", "assistant"]), content: z.string().min(1).max(4000) }))
     .min(1)
     .max(40),
+  /** Only when the traveller tapped "Use my location" for this message; used for "near me", never stored. */
+  location: z.object({ lat: z.number().min(-90).max(90), lng: z.number().min(-180).max(180) }).nullable().optional(),
 });
+
+/** About 100 m: enough for "nearest eatery", without an exact position. */
+export const roundLocation = (p: { lat: number; lng: number }) => ({ lat: Math.round(p.lat * 1000) / 1000, lng: Math.round(p.lng * 1000) / 1000 });
 
 export type AssistantEvent =
   | { t: "mode"; mode: "ai" | "basic" }
@@ -40,7 +45,7 @@ export type RespondDeps = {
 };
 
 /** Validates and trims the conversation; null when it isn't usable. */
-export function cleanHistory(raw: unknown): { history: ChatTurn[] } | { error: string } {
+export function cleanHistory(raw: unknown): { history: ChatTurn[]; here: { lat: number; lng: number } | null } | { error: string } {
   const parsed = AssistantRequestSchema.safeParse(raw);
   if (!parsed.success) return { error: "Send a message to the assistant." };
   const turns = parsed.data.messages.map((m) => ({ role: m.role, content: m.content.replace(/\s+$/g, "").trim() })).filter((m) => m.content);
@@ -50,7 +55,7 @@ export function cleanHistory(raw: unknown): { history: ChatTurn[] } | { error: s
   let history = turns.slice(-ASSISTANT_HISTORY_MAX).map((m) => ({ ...m, content: m.content.slice(0, m.role === "user" ? ASSISTANT_MESSAGE_MAX : 2000) }));
   // The API needs the conversation to start with the tourist.
   while (history.length && history[0].role !== "user") history = history.slice(1);
-  return { history };
+  return { history, here: parsed.data.location ? roundLocation(parsed.data.location) : null };
 }
 
 export async function* respond(raw: unknown, deps: RespondDeps): AsyncGenerator<AssistantEvent> {
@@ -59,8 +64,8 @@ export async function* respond(raw: unknown, deps: RespondDeps): AsyncGenerator<
     yield { t: "error", message: cleaned.error };
     return;
   }
-  const { history } = cleaned;
-  const ctx: ToolContext = { supabase: deps.supabase, userId: deps.userId, today: deps.today, cards: [], route: deps.route };
+  const { history, here } = cleaned;
+  const ctx: ToolContext = { supabase: deps.supabase, userId: deps.userId, today: deps.today, cards: [], route: deps.route, here };
 
   if (deps.aiAllowed) {
     const queue: string[] = [];
