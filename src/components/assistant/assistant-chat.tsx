@@ -104,7 +104,7 @@ export function AssistantChat({ signedIn, onNavigate, autoFocus = false }: { sig
 
   return (
     <div className="flex min-h-0 flex-1 flex-col">
-      <div className="flex items-center justify-between gap-2 border-b border-daet-ink/10 px-4 py-2 text-xs text-daet-ink/70">
+      <div className="flex items-center justify-between gap-2 border-b border-daet-ink/10 px-4 py-2 text-sm text-slate-600">
         <span>{lastMode === "basic" ? <Badge tone="neutral">Basic mode</Badge> : lastMode === "ai" ? <Badge tone="info">AI</Badge> : "Answers come from CONNECT-Daet's own listings."}</span>
         {turns.length ? (
           <button
@@ -160,7 +160,7 @@ export function AssistantChat({ signedIn, onNavigate, autoFocus = false }: { sig
         }}
       >
         {error ? (
-          <p role="alert" className="mb-2 text-sm font-semibold text-rose-700">
+          <p role="alert" className="mb-2 text-sm font-semibold text-red-700">
             {error}
           </p>
         ) : null}
@@ -182,7 +182,7 @@ export function AssistantChat({ signedIn, onNavigate, autoFocus = false }: { sig
               }
             }}
             placeholder="Ask anything about your trip…"
-            className="block min-h-11 w-full resize-none rounded-xl border border-daet-ink/20 px-3 py-2 text-base focus:border-daet-forest focus:outline-none focus:ring-2 focus:ring-daet-forest/20"
+            className="block min-h-11 w-full resize-none rounded-2xl border border-daet-ink/20 px-3 py-2 text-base focus:border-daet-forest focus:outline-none focus:ring-2 focus:ring-daet-forest/20"
           />
           <Button type="submit" loading={busy} loadingText="…" disabled={!text.trim()} aria-label="Send">
             Send
@@ -202,9 +202,9 @@ function AssistantCards({ cards, signedIn, onNavigate }: { cards: AssistantCard[
       {cards.map((card, i) => {
         if (card.type === "tour") {
           return (
-            <div key={i} className="rounded-2xl border border-daet-ink/10 bg-white p-3">
+            <div key={i} className="rounded-2xl bg-white p-3">
               <p className="font-bold text-daet-ink">{card.title}</p>
-              <p className="text-xs text-daet-ink/70">{[card.location, card.duration, card.priceFrom ? `from ${peso(card.priceFrom)} per person` : null].filter(Boolean).join(" · ")}</p>
+              <p className="text-sm text-slate-600">{[card.location, card.duration, card.priceFrom ? `from ${peso(card.priceFrom)} per person` : null].filter(Boolean).join(" · ")}</p>
               <Link href={card.href} onClick={onNavigate} className={`${linkClass} mt-2`}>
                 View tour
               </Link>
@@ -213,11 +213,11 @@ function AssistantCards({ cards, signedIn, onNavigate }: { cards: AssistantCard[
         }
         if (card.type === "booking") {
           return (
-            <div key={i} className="rounded-2xl border border-daet-ink/10 bg-white p-3">
+            <div key={i} className="rounded-2xl bg-white p-3">
               <p className="font-bold text-daet-ink">
                 {card.title} <span className="font-normal text-daet-ink/70">· {card.reference}</span>
               </p>
-              <p className="text-xs text-daet-ink/70">
+              <p className="text-sm text-slate-600">
                 {card.date} · {card.statusLabel}
               </p>
               <p className="mt-1 text-sm text-daet-ink">{card.nextStep}</p>
@@ -266,7 +266,7 @@ function HandoffPanel({ card, signedIn, onNavigate }: { card: HandoffCard; signe
 
   if (!signedIn || !card.signedIn) {
     return (
-      <div className="rounded-2xl border border-daet-forest/20 bg-white p-3 text-sm">
+      <div className="rounded-2xl border-daet-forest/20 bg-white p-3 text-sm">
         <p className="text-daet-ink">Sign in so {who} can reply to you.</p>
         <Link href="/login" onClick={onNavigate} className="mt-2 inline-flex min-h-11 items-center rounded-full bg-daet-forest px-4 text-xs font-bold text-white">
           Sign in to message
@@ -276,7 +276,7 @@ function HandoffPanel({ card, signedIn, onNavigate }: { card: HandoffCard; signe
   }
   if (state.sent) {
     return (
-      <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-900">
+      <div className="rounded-2xl bg-green-50 p-3 text-sm text-green-900">
         Sent to {who}. They&apos;ll reply in Messages.{" "}
         <Link href={`/tours/messages/${state.sent}`} onClick={onNavigate} className="font-bold underline">
           Open the chat
@@ -285,13 +285,13 @@ function HandoffPanel({ card, signedIn, onNavigate }: { card: HandoffCard; signe
     );
   }
   return (
-    <div className="rounded-2xl border border-daet-forest/20 bg-white p-3">
+    <div className="rounded-2xl border-daet-forest/20 bg-white p-3">
       <label htmlFor={id} className="text-xs font-bold text-daet-ink">
         Message to {who} (edit before sending)
       </label>
-      <textarea id={id} rows={3} maxLength={1000} value={message} onChange={(e) => setMessage(e.target.value)} className="mt-1 block w-full rounded-xl border border-daet-ink/20 px-3 py-2 text-sm" />
+      <textarea id={id} rows={3} maxLength={1000} value={message} onChange={(e) => setMessage(e.target.value)} className="mt-1 block w-full rounded-2xl border border-daet-ink/20 px-3 py-2 text-sm" />
       {state.error ? (
-        <p role="alert" className="mt-1 text-sm font-semibold text-rose-700">
+        <p role="alert" className="mt-1 text-sm font-semibold text-red-700">
           {state.error}
         </p>
       ) : null}

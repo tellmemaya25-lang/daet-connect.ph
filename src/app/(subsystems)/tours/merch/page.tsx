@@ -1,3 +1,5 @@
+import { EmptyState } from "@/components/ui/empty-state";
+import { LineIcon } from "@/components/ui/icons";
 import Link from "next/link";
 import { PageFrame } from "@/components/ui/page-frame";
 import { Notice } from "@/components/ui/notice";
@@ -32,14 +34,13 @@ export default async function MerchPage({
   const items = (data ?? []) as MerchItem[];
 
   const chipClass = (active: boolean) =>
-    `inline-flex min-h-11 items-center rounded-full px-4 text-sm font-bold transition ${active ? "bg-daet-forest text-white" : "border border-daet-ink/15 bg-white text-daet-ink hover:bg-daet-sand"}`;
+    `inline-flex min-h-11 items-center rounded-full px-4 text-[15px] font-bold transition active:scale-[0.98] ${active ? "bg-blue-600 text-white" : "bg-white text-daet-ink hover:bg-blue-50"}`;
 
   return (
     <PageFrame>
-      <header className="mb-6 overflow-hidden rounded-2xl bg-daet-forest px-5 py-8 text-white sm:px-8">
-        <p className="text-sm font-bold text-white">Take a piece of Daet home</p>
-        <h1 className="mt-2 text-3xl font-black tracking-tight sm:text-4xl">Daet merchandise</h1>
-        <p className="mt-2 max-w-2xl text-sm leading-6 text-white">
+      <header className="mb-6">
+        <h1 className="display-2 text-daet-ink">Take Daet home</h1>
+        <p className="mt-2 max-w-2xl text-lg text-daet-ink">
           T-shirts, mugs, souvenirs and pasalubong from local sellers. Contact the seller directly or visit their shop to buy.
         </p>
       </header>
@@ -66,20 +67,16 @@ export default async function MerchPage({
       {items.length > 0 ? (
         <ul className="grid grid-cols-1 gap-4 min-[420px]:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {items.map((item) => (
-            <li key={item.id} className="flex">
+            <li key={item.id} data-reveal className="flex">
               <MerchCard item={item} />
             </li>
           ))}
         </ul>
       ) : !error ? (
-        <div className="rounded-2xl border border-dashed border-daet-ink/20 bg-white p-8 text-center">
-          <p className="text-4xl" aria-hidden="true">🛍️</p>
-          <p className="mt-2 font-bold text-daet-ink">No products in this category yet</p>
-          <p className="text-sm text-daet-ink/70">Check back soon for new Daet souvenirs.</p>
-        </div>
+        <EmptyState icon={<LineIcon name="bag" />} title="No products in this category yet" description="Check back soon for new Daet souvenirs." />
       ) : null}
 
-      <p className="mt-8 text-center text-xs text-daet-ink/70">
+      <p className="mt-8 text-sm text-daet-ink/75">
         Listings are advertisements. Prices and availability are set by each seller.
       </p>
     </PageFrame>

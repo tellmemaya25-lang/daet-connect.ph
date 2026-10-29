@@ -1,5 +1,9 @@
+import { LineIcon } from "@/components/ui/icons";
 import { formatPeso } from "@/lib/money";
+import Image from "next/image";
 import Link from "next/link";
+import { PHOTOS } from "@/lib/photo-credits";
+import { placePhoto } from "@/lib/tours/trip-board";
 import { redirect } from "next/navigation";
 import { Badge, type BadgeTone } from "@/components/ui/badge";
 import { ButtonLink } from "@/components/ui/button";
@@ -92,12 +96,16 @@ export default async function TouristDashboardPage() {
   const firstName = profile?.full_name?.split(" ")[0];
   const pkgOf = (b: BookingRow) => (Array.isArray(b.tours_packages) ? b.tours_packages[0] : b.tours_packages);
 
+  const [next, ...rest] = upcoming;
+
   return (
-    <PageFrame>
+    <PageFrame credits={next ? [placePhoto(pkgOf(next)?.title, pkgOf(next)?.location_name)] : []}>
       <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <p className="text-sm font-bold text-daet-leaf">My trips</p>
-          <h1 className="mt-1 text-3xl font-black tracking-tight text-daet-ink">{firstName ? `Mabuhay, ${firstName}!` : "Mabuhay!"}</h1>
+          <h1 className="display-2 text-daet-ink">{firstName ? `Mabuhay, ${firstName}!` : "Mabuhay!"}</h1>
+          <p className="mt-1 text-lg text-daet-ink">
+            {upcoming.length ? `You have ${upcoming.length} upcoming trip${upcoming.length === 1 ? "" : "s"}.` : "Your trips, tickets and points, in one place."}
+          </p>
         </div>
         <div className="flex flex-wrap gap-2">
           <ButtonLink href="/tours/browse">Find a tour</ButtonLink>
@@ -105,28 +113,64 @@ export default async function TouristDashboardPage() {
         </div>
       </div>
 
+      {next ? (
+        <section aria-labelledby="next-trip" className="mb-6 grid overflow-hidden rounded-2xl bg-white md:grid-cols-[1.2fr_1fr]">
+          <div className="bg-blue-600 p-5 text-white sm:p-8">
+            <p className="font-semibold">{next.tour_date === today ? "Today" : "Your next trip"}</p>
+            <h2 id="next-trip" className="mt-1 font-[family-name:var(--font-display)] text-3xl font-semibold leading-tight sm:text-4xl">
+              {pkgOf(next)?.title ?? "Tour"}
+            </h2>
+            <p className="mt-2 text-lg">{longDate(next.tour_date)}</p>
+            <p className="text-blue-50">
+              {next.number_of_pax} guest{next.number_of_pax === 1 ? "" : "s"}
+              {pkgOf(next)?.location_name ? ` · ${pkgOf(next)?.location_name}` : ""}
+            </p>
+            <div className="mt-5 flex flex-wrap gap-2">
+              {next.status === "confirmed" ? (
+                <ButtonLink href={`/tours/bookings/${next.id}/ticket`} variant="inverse">
+                  Show ticket QR
+                </ButtonLink>
+              ) : null}
+              {checkPayable(next).ok && remainingBalance(next) > 0 ? (
+                <ButtonLink href={`/tours/bookings/${next.id}#payment`} variant="accent">
+                  Pay {peso(remainingBalance(next))}
+                </ButtonLink>
+              ) : null}
+              <ButtonLink href={`/tours/bookings/${next.id}`} variant="onBlue">
+                Details
+              </ButtonLink>
+            </div>
+          </div>
+          <div className="relative min-h-48">
+            <Image src={PHOTOS[placePhoto(pkgOf(next)?.title, pkgOf(next)?.location_name)].src} alt="" fill sizes="(min-width: 768px) 40vw, 100vw" className="object-cover" priority />
+          </div>
+        </section>
+      ) : null}
+
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         <div className="space-y-6 lg:col-span-2">
           <Card>
-            <CardHeader eyebrow="Coming up" title="Upcoming tours" action={<Link href="/tours/my-bookings" className="text-sm font-bold text-daet-forest hover:underline">All bookings</Link>} />
+            <CardHeader title={next ? "Also coming up" : "Upcoming trips"} action={<Link href="/tours/my-bookings" className="inline-flex min-h-11 items-center font-bold text-blue-700 hover:underline">All bookings</Link>} />
             {upcoming.length === 0 ? (
-              <EmptyState icon="🏝️" title="No upcoming tours" description="Book a tour and it will show up here with your ticket." action={<ButtonLink href="/tours/browse">Browse tours</ButtonLink>} />
+              <EmptyState className="px-0 py-4" icon={<LineIcon name="boat" />} title="No upcoming trips" description="Book a trip and it will show up here with your ticket." action={<ButtonLink href="/tours/browse">Find a trip</ButtonLink>} />
+            ) : rest.length === 0 ? (
+              <p className="text-daet-ink/80">Nothing else booked yet. <Link href="/tours/browse" className="font-bold text-blue-700 underline">Find another trip</Link></p>
             ) : (
-              <ul className="divide-y divide-daet-ink/10">
-                {upcoming.map((b) => {
+              <ul className="space-y-2">
+                {rest.map((b) => {
                   const pkg = pkgOf(b);
                   const pay = PAYMENT[b.payment_status ?? "unpaid"] ?? PAYMENT.unpaid;
                   const balance = remainingBalance(b);
                   const payable = checkPayable(b).ok;
                   return (
-                    <li key={b.id} className="py-4 first:pt-0 last:pb-0">
+                    <li key={b.id} className="rounded-2xl bg-slate-50 p-4">
                       <div className="flex flex-wrap items-start justify-between gap-2">
                         <div className="min-w-0">
-                          <Link href={`/tours/bookings/${b.id}`} className="font-black text-daet-ink hover:underline">
+                          <Link href={`/tours/bookings/${b.id}`} className="text-lg font-bold text-daet-ink hover:underline">
                             {pkg?.title ?? "Tour"}
                           </Link>
-                          <p className="text-sm text-daet-ink/70">
-                            {b.tour_date === today ? <strong className="text-daet-forest">Today</strong> : longDate(b.tour_date)} · {b.number_of_pax} pax · {pkg?.location_name}
+                          <p className="text-daet-ink/80">
+                            {b.tour_date === today ? <strong className="text-blue-700">Today</strong> : longDate(b.tour_date)} · {b.number_of_pax} pax · {pkg?.location_name}
                           </p>
                         </div>
                         <div className="flex flex-wrap gap-1.5">
@@ -158,16 +202,16 @@ export default async function TouristDashboardPage() {
 
           {toReview.length > 0 ? (
             <Card>
-              <CardHeader eyebrow="Your feedback helps" title="Rate your recent tours" />
+              <CardHeader title="Rate your recent tours" />
               <ul className="space-y-3">
                 {toReview.map((b) => (
-                  <li key={b.id} className="flex flex-wrap items-center justify-between gap-2 rounded-2xl bg-daet-sand/40 p-3">
+                  <li key={b.id} className="flex flex-wrap items-center justify-between gap-2 rounded-2xl bg-slate-50 p-4">
                     <span className="min-w-0">
                       <span className="block font-bold text-daet-ink">{pkgOf(b)?.title ?? "Tour"}</span>
-                      <span className="text-xs text-daet-ink/70">{longDate(b.tour_date)}</span>
+                      <span className="text-sm text-daet-ink/80">{longDate(b.tour_date)}</span>
                     </span>
                     <ButtonLink href={`/tours/bookings/${b.id}#review`} variant="secondary">
-                      ★ Write a review
+                      Write a review
                     </ButtonLink>
                   </li>
                 ))}
@@ -178,10 +222,10 @@ export default async function TouristDashboardPage() {
 
         <div className="space-y-6">
           <Card id="rewards" className="scroll-mt-6">
-            <CardHeader eyebrow="CONNECT-Daet rewards" title="Your points" />
-            <p className="text-4xl font-black text-daet-forest">
+            <CardHeader title="Your points" />
+            <p className="font-[family-name:var(--font-display)] text-5xl font-semibold text-daet-ink">
               {points.toLocaleString("en-PH")}
-              <span className="ml-1 text-sm font-bold text-daet-ink/70">pts</span>
+              <span className="ml-2 font-sans text-base font-bold text-daet-ink/75">points</span>
             </p>
             {recentPoints.length > 0 ? (
               <ul className="mt-3 space-y-1.5 text-sm">
@@ -190,7 +234,7 @@ export default async function TouristDashboardPage() {
                     <span className="min-w-0 truncate text-daet-ink/75" title={entry.description ?? undefined}>
                       {sourceLabel(entry.source)}
                     </span>
-                    <span className={`shrink-0 font-bold ${entry.points > 0 ? "text-daet-forest" : "text-rose-700"}`}>
+                    <span className={`shrink-0 font-bold ${entry.points > 0 ? "text-daet-forest" : "text-red-700"}`}>
                       {entry.points > 0 ? "+" : "−"}
                       {Math.abs(entry.points)}
                     </span>
@@ -199,7 +243,7 @@ export default async function TouristDashboardPage() {
               </ul>
             ) : null}
             <details className="mt-3 text-sm">
-              <summary className="cursor-pointer text-xs font-bold text-daet-forest">How to earn points</summary>
+              <summary className="inline-flex min-h-11 cursor-pointer items-center font-bold text-blue-700">How to earn points</summary>
               <ul className="mt-2 space-y-1 text-daet-ink/70">
                 {TOURS_REWARD_RULES.map((rule) => (
                   <li key={rule.source} className="flex justify-between gap-2">
@@ -208,13 +252,13 @@ export default async function TouristDashboardPage() {
                   </li>
                 ))}
               </ul>
-              <p className="mt-2 text-xs text-daet-ink/70">Points for a payment are removed if it is refunded.</p>
+              <p className="mt-2 text-sm text-slate-600">Points for a payment are removed if it is refunded.</p>
             </details>
           </Card>
 
           <Card>
             <CardHeader title="Messages" />
-            <p className="text-sm text-daet-ink/70">
+            <p className="text-daet-ink">
               {unreadChats > 0 ? (
                 <>
                   You have <strong className="text-daet-ink">{unreadChats} unread</strong> message{unreadChats === 1 ? "" : "s"} from operators and guides.
@@ -229,18 +273,18 @@ export default async function TouristDashboardPage() {
           </Card>
 
           <Card>
-            <CardHeader title="Saved trip plans" action={<Link href="/tours/my-itineraries" className="text-sm font-bold text-daet-forest hover:underline">All</Link>} />
+            <CardHeader title="Saved trip plans" action={<Link href="/tours/my-itineraries" className="inline-flex min-h-11 items-center font-bold text-blue-700 hover:underline">All plans</Link>} />
             {(itineraries ?? []).length === 0 ? (
               <p className="text-sm text-daet-ink/70">
-                Plan a trip around Daet and save it here. <Link href="/tours/plan" className="font-bold text-daet-forest underline">Start planning</Link>
+                Plan a trip around Daet and save it here. <Link href="/tours/plan" className="inline-flex min-h-11 items-center font-bold text-daet-forest underline">Start planning</Link>
               </p>
             ) : (
               <ul className="space-y-2">
                 {(itineraries ?? []).map((it) => (
                   <li key={it.id}>
-                    <Link href={`/tours/my-itineraries/${it.id}`} className="block rounded-xl p-2 hover:bg-daet-sand/50">
+                    <Link href={`/tours/my-itineraries/${it.id}`} className="block rounded-2xl p-3 hover:bg-blue-50">
                       <span className="block font-bold text-daet-ink">{it.title}</span>
-                      <span className="text-xs text-daet-ink/70">
+                      <span className="text-sm text-slate-600">
                         {it.start_date ? longDate(it.start_date) : "No date"} · {it.tours_itinerary_items?.length ?? 0} stops
                       </span>
                     </Link>

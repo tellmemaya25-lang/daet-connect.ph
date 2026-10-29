@@ -29,7 +29,7 @@ export function ColumnChart({ points, unit, title }: { points: ColumnPoint[]; un
     <figure>
       <div className="mb-2 flex items-baseline justify-between gap-2">
         <figcaption className="text-sm font-bold text-daet-ink">{title}</figcaption>
-        <p className="text-xs text-daet-ink/70" aria-live="polite">
+        <p className="text-sm text-slate-600" aria-live="polite">
           {shown !== null ? (
             <>
               <span className="font-bold text-daet-ink">{points[shown].label}</span> · {points[shown].value} {unit}

@@ -15,8 +15,8 @@ export default async function NewEventPage() {
   return (
     <PageFrame adminNav>
       <div className="mx-auto max-w-2xl">
-        <AdminPageHeading eyebrow="Events calendar" title="New event" backHref="/tours/admin/events" backLabel="All events" />
-        <div className="rounded-2xl border border-daet-ink/10 bg-white p-5 shadow-sm sm:p-8">
+        <AdminPageHeading title="New event" backHref="/tours/admin/events" backLabel="All events" />
+        <div className="rounded-2xl bg-white p-5 sm:p-8">
           <EventForm attractions={attractions ?? []} />
         </div>
       </div>

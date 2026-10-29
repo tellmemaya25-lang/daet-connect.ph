@@ -13,8 +13,8 @@ export default async function NewAttractionPage() {
   return (
     <PageFrame adminNav>
       <div className="mx-auto max-w-2xl">
-        <AdminPageHeading eyebrow="Tourism dataset" title="New attraction" backHref="/tours/admin/attractions" backLabel="All attractions" />
-        <div className="rounded-2xl border border-daet-ink/10 bg-white p-5 shadow-sm sm:p-8">
+        <AdminPageHeading title="New attraction" backHref="/tours/admin/attractions" backLabel="All attractions" />
+        <div className="rounded-2xl bg-white p-5 sm:p-8">
           <AttractionForm />
         </div>
       </div>

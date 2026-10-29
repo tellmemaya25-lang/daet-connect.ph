@@ -1,5 +1,6 @@
 "use client";
 
+import { LineIcon } from "@/components/ui/icons";
 import { useState } from "react";
 import type { PackageDraft, StopDraft } from "../package-types";
 
@@ -82,7 +83,7 @@ export function PackageStopsStep({
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       <div>
-        <h2 className="text-2xl font-black text-daet-ink">Itinerary stops</h2>
+        <h2 className="text-2xl font-bold text-daet-ink">Itinerary stops</h2>
         <p className="mt-2 text-sm text-daet-ink/65">
           Add waypoints for your tour. Google Maps integration will show these on a map for tourists.
         </p>
@@ -100,7 +101,7 @@ export function PackageStopsStep({
             value={formData.locationName || ""}
             onChange={(e) => setFormData({ ...formData, locationName: e.target.value })}
             placeholder="Location name (e.g., Bagasbas Beach)"
-            className="w-full rounded-xl border border-daet-ink/15 bg-white px-3 py-2.5 text-sm"
+            className="w-full rounded-2xl border border-daet-ink/15 bg-white px-3 py-2.5 text-sm"
           />
 
           <div className="grid grid-cols-2 gap-3">
@@ -110,7 +111,7 @@ export function PackageStopsStep({
               onChange={(e) => setFormData({ ...formData, latitude: Number(e.target.value) })}
               placeholder="Latitude"
               step="any"
-              className="w-full rounded-xl border border-daet-ink/15 bg-white px-3 py-2.5 text-sm"
+              className="w-full rounded-2xl border border-daet-ink/15 bg-white px-3 py-2.5 text-sm"
             />
             <input
               type="number"
@@ -118,7 +119,7 @@ export function PackageStopsStep({
               onChange={(e) => setFormData({ ...formData, longitude: Number(e.target.value) })}
               placeholder="Longitude"
               step="any"
-              className="w-full rounded-xl border border-daet-ink/15 bg-white px-3 py-2.5 text-sm"
+              className="w-full rounded-2xl border border-daet-ink/15 bg-white px-3 py-2.5 text-sm"
             />
           </div>
 
@@ -127,7 +128,7 @@ export function PackageStopsStep({
             onChange={(e) => setFormData({ ...formData, description: e.target.value || null })}
             placeholder="Brief description of this stop (optional)"
             rows={2}
-            className="w-full rounded-xl border border-daet-ink/15 bg-white px-3 py-2.5 text-sm"
+            className="w-full rounded-2xl border border-daet-ink/15 bg-white px-3 py-2.5 text-sm"
           />
 
           <input
@@ -141,7 +142,7 @@ export function PackageStopsStep({
             }
             placeholder="Estimated duration (minutes, optional)"
             min={0}
-            className="w-full rounded-xl border border-daet-ink/15 bg-white px-3 py-2.5 text-sm"
+            className="w-full rounded-2xl border border-daet-ink/15 bg-white px-3 py-2.5 text-sm"
           />
 
           <div className="flex gap-2">
@@ -149,7 +150,7 @@ export function PackageStopsStep({
               type="button"
               onClick={addStop}
               disabled={!formData.locationName}
-              className="inline-flex min-h-10 items-center justify-center rounded-full bg-daet-forest px-5 text-sm font-bold text-white transition hover:bg-daet-ink disabled:cursor-not-allowed disabled:opacity-50"
+              className="inline-flex min-h-10 items-center justify-center rounded-full bg-daet-forest px-5 text-sm font-bold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
             >
               {editingIndex !== null ? "Update stop" : "Add stop"}
             </button>
@@ -165,8 +166,8 @@ export function PackageStopsStep({
           </div>
         </div>
 
-        <p className="mt-3 text-xs text-daet-ink/70">
-          💡 Use Google Maps to find latitude/longitude coordinates for accurate pin placement
+        <p className="mt-3 text-sm text-slate-600">
+          <LineIcon name="tip" className="inline-block h-[1.1em] w-[1.1em] align-[-0.15em]" /> Use Google Maps to find latitude/longitude coordinates for accurate pin placement
         </p>
       </div>
 
@@ -180,23 +181,23 @@ export function PackageStopsStep({
             {stops.map((stop, index) => (
               <li
                 key={index}
-                className="flex items-start justify-between gap-3 rounded-2xl border border-daet-ink/10 bg-white p-4"
+                className="flex items-start justify-between gap-3 rounded-2xl bg-white p-4"
               >
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2">
-                    <span className="flex h-6 w-6 items-center justify-center rounded-full bg-daet-forest text-xs font-black text-white">
+                    <span className="flex h-6 w-6 items-center justify-center rounded-full bg-daet-forest text-xs font-bold text-white">
                       {index + 1}
                     </span>
                     <p className="font-bold text-daet-ink">{stop.locationName}</p>
                   </div>
-                  <p className="mt-1 text-xs text-daet-ink/70">
+                  <p className="mt-1 text-sm text-slate-600">
                     {stop.latitude.toFixed(4)}, {stop.longitude.toFixed(4)}
                   </p>
                   {stop.description && (
                     <p className="mt-1 text-sm text-daet-ink/70">{stop.description}</p>
                   )}
                   {stop.estimatedDurationMinutes && (
-                    <p className="mt-1 text-xs text-daet-ink/70">
+                    <p className="mt-1 text-sm text-slate-600">
                       ~{stop.estimatedDurationMinutes} minutes
                     </p>
                   )}
@@ -208,12 +209,12 @@ export function PackageStopsStep({
                     className="grid h-8 w-8 place-items-center rounded-full text-daet-leaf transition hover:bg-daet-forest/10"
                     aria-label="Edit stop"
                   >
-                    ✏️
+                    <LineIcon name="edit" className="inline-block h-[1.1em] w-[1.1em] align-[-0.15em]" />
                   </button>
                   <button
                     type="button"
                     onClick={() => removeStop(index)}
-                    className="grid h-8 w-8 place-items-center rounded-full text-rose-600 transition hover:bg-rose-50"
+                    className="grid h-8 w-8 place-items-center rounded-full text-red-600 transition hover:bg-red-50"
                     aria-label="Remove stop"
                   >
                     ✕
@@ -238,7 +239,7 @@ export function PackageStopsStep({
         <button
           type="submit"
           disabled={loading || stops.length === 0}
-          className="inline-flex min-h-12 items-center justify-center rounded-full bg-daet-forest px-8 text-sm font-black text-white transition hover:bg-daet-ink disabled:cursor-not-allowed disabled:opacity-50"
+          className="inline-flex min-h-12 items-center justify-center rounded-full bg-daet-forest px-8 text-sm font-bold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
         >
           {loading ? "Saving..." : "Continue →"}
         </button>

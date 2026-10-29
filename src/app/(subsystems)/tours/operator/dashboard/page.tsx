@@ -36,7 +36,7 @@ export default async function OperatorDashboardPage({ searchParams }: { searchPa
     .maybeSingle();
 
   if (error) {
-    console.error("❌ Dashboard query error:", error);
+    console.error("Dashboard query error:", error);
     return <PageFrame><Notice variant="error" title="Accreditation could not be checked">Access is paused until your accreditation status can be verified.</Notice></PageFrame>;
   }
   if (!application) redirect("/tours/operator/register");

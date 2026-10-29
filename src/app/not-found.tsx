@@ -8,7 +8,7 @@ export default function NotFound() {
   return (
     <PageFrame>
       <div className="mx-auto max-w-xl py-12 text-center">
-        <h1 className="text-4xl font-black text-daet-ink sm:text-5xl">We can't find that page.</h1>
+        <h1 className="display-2 text-daet-ink">We can't find that page.</h1>
         <p className="mt-4 text-daet-ink/80">
           The link may be old, or the trip or booking may have been removed. Start again from the trips.
         </p>

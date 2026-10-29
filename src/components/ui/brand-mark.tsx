@@ -1,15 +1,13 @@
 import Link from "next/link";
 
+/** The wordmark: the name in the display face, no badge or tagline. */
 export function BrandMark() {
   return (
-    <Link href="/" className="inline-flex min-h-11 shrink-0 items-center gap-3 rounded-full">
-      <span aria-hidden="true" className="grid h-10 w-10 place-items-center rounded-2xl bg-daet-forest text-sm font-black tracking-tight text-white shadow-sm">
-        CD
-      </span>
-      <span className="leading-tight">
-        <span className="block text-sm font-black tracking-[0.12em] text-daet-ink">CONNECT-DAET</span>
-        <span className="block text-[11px] font-semibold tracking-[0.16em] text-daet-leaf">TOURISM</span>
-      </span>
+    <Link
+      href="/"
+      className="inline-flex min-h-11 shrink-0 items-center rounded-full font-[family-name:var(--font-display)] text-xl font-semibold tracking-tight text-daet-ink sm:text-2xl"
+    >
+      CONNECT-Daet
       <span className="sr-only"> home</span>
     </Link>
   );

@@ -1,3 +1,5 @@
+import { EmptyState } from "@/components/ui/empty-state";
+import { LineIcon } from "@/components/ui/icons";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
@@ -38,10 +40,9 @@ export default async function MyItinerariesPage({ searchParams }: { searchParams
       <div className="mx-auto max-w-3xl">
         <div className="flex flex-wrap items-end justify-between gap-3">
           <div>
-            <p className="text-sm font-bold text-daet-leaf">Trip planner</p>
-            <h1 className="mt-1 text-3xl font-black text-daet-ink">My itineraries</h1>
+            <h1 className="display-2 text-daet-ink">My itineraries</h1>
           </div>
-          <Link href="/tours/plan" className="inline-flex min-h-11 items-center rounded-full bg-daet-forest px-6 text-sm font-bold text-white hover:bg-daet-ink">
+          <Link href="/tours/plan" className="inline-flex min-h-11 items-center rounded-full bg-blue-600 px-6 font-bold text-white transition hover:bg-blue-700 active:scale-[0.98]">
             + Plan a trip
           </Link>
         </div>
@@ -49,15 +50,15 @@ export default async function MyItinerariesPage({ searchParams }: { searchParams
         {params.error || error ? <Notice variant="error" className="mt-4">Something went wrong. Please try again.</Notice> : null}
 
         {(data ?? []).length === 0 ? (
-          <p className="mt-6 rounded-3xl border border-daet-ink/10 bg-white p-8 text-center text-sm text-daet-ink/70">No saved plans yet.</p>
+          <EmptyState className="mt-6" icon={<LineIcon name="calendar" />} title="No saved plans yet" description="Plan a day in Daet and save it here to share or book from." />
         ) : (
-          <ul className="mt-6 divide-y divide-daet-ink/10 overflow-hidden rounded-3xl border border-daet-ink/10 bg-white shadow-sm">
+          <ul className="mt-6 space-y-2">
             {(data ?? []).map((row) => (
               <li key={row.id}>
-                <Link href={`/tours/my-itineraries/${row.id}`} className="flex min-h-11 flex-wrap items-center justify-between gap-2 p-4 hover:bg-daet-sand/40">
+                <Link href={`/tours/my-itineraries/${row.id}`} className="flex min-h-11 flex-wrap items-center justify-between gap-2 rounded-2xl bg-white p-4 transition hover:bg-blue-50">
                   <span>
-                    <span className="block font-black text-daet-ink">{row.title}</span>
-                    <span className="block text-xs text-daet-ink/70">
+                    <span className="block font-bold text-daet-ink">{row.title}</span>
+                    <span className="block text-sm text-slate-600">
                       {shortDate(row.start_date)} – {shortDate(row.end_date)} · {(row.tours_itinerary_items ?? []).length} items
                     </span>
                   </span>

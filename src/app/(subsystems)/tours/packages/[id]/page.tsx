@@ -3,7 +3,11 @@ import { notFound } from "next/navigation";
 import { RouteMap } from "@/components/maps/route-map";
 import { directionsUrl, formatDistance, formatDuration } from "@/lib/maps/geo";
 import { planRoute, type RouteSummary } from "@/lib/maps/routes";
+import Image from "next/image";
 import Link from "next/link";
+import { ButtonLink } from "@/components/ui/button";
+import { PHOTOS } from "@/lib/photo-credits";
+import { durationLabel, placePhoto } from "@/lib/tours/trip-board";
 import { PageFrame } from "@/components/ui/page-frame";
 import { Notice } from "@/components/ui/notice";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
@@ -12,7 +16,7 @@ import { RatingBadge, Stars } from "@/components/tours/star-rating";
 import { ReviewList } from "@/components/tours/review-list";
 import { distribution, toSummary, type Review } from "@/lib/tours/reviews";
 import { FREE_CANCELLATION_HOURS } from "@/lib/tours/cancellation";
-import { CheckIcon, ClockIcon, MapPinIcon } from "@/components/ui/icons";
+import { CheckIcon, LineIcon, MapPinIcon, ShieldCheckIcon } from "@/components/ui/icons";
 
 export const dynamic = "force-dynamic";
 
@@ -124,7 +128,7 @@ export default async function PackageDetailPage({ params }: PageProps) {
     pkg.tours_package_price_variants?.[0];
   
   const displayPrice = defaultVariant?.price_per_pax || defaultVariant?.flat_price || 0;
-  const priceLabel = defaultVariant?.price_per_pax ? "per person" : "flat rate";
+  const priceLabel = defaultVariant?.price_per_pax ? "per person" : "per group";
 
   // Sort inclusions
   const included = pkg.tours_package_inclusions?.filter((i: any) => i.is_included) || [];
@@ -150,275 +154,241 @@ export default async function PackageDetailPage({ params }: PageProps) {
 
   // Sort gallery by display order
   const gallery = (pkg.tours_package_gallery || []).sort((a: any, b: any) => a.display_order - b.display_order);
+  const fallbackKey = placePhoto(pkg.title, pkg.location_name);
+  const fallback = PHOTOS[fallbackKey];
+  const meetingPoint = stops[0]?.location_name ?? pkg.location_name;
+  const operatorName = operatorRow?.business_name ?? null;
+  const facts: Array<[string, string]> = [
+    ["Meets at", meetingPoint],
+    ["Takes", durationLabel(pkg.duration_value, pkg.duration_type)],
+    ["From", `${formatPeso(displayPrice)} ${priceLabel}`],
+  ];
 
   return (
-    <PageFrame>
-      <div className="mx-auto max-w-7xl">
-        {/* Breadcrumb */}
-        <nav className="mb-6 text-sm text-daet-ink/70">
-          <Link href="/tours/browse" className="hover:text-daet-forest">
-            Browse packages
-          </Link>
-          <span className="mx-2">→</span>
-          <span className="text-daet-ink">{pkg.title}</span>
-        </nav>
+    <PageFrame credits={pkg.cover_image_url ? [] : [fallbackKey]}>
+      <Link href="/tours/browse" className="inline-flex min-h-11 items-center gap-1 font-semibold text-blue-700 hover:underline">
+        <LineIcon name="arrowRight" className="h-4 w-4 rotate-180" /> All trips
+      </Link>
 
-        <div className="grid gap-8 lg:grid-cols-3">
-          {/* Main content */}
-          <div className="lg:col-span-2">
-            {/* Cover image */}
-            {pkg.cover_image_url ? (
-              <div className="aspect-video overflow-hidden rounded-3xl bg-daet-sand">
-                <img
-                  src={pkg.cover_image_url}
-                  alt={pkg.title}
-                  fetchPriority="high"
-                  className="h-full w-full object-cover"
-                />
-              </div>
-            ) : (
-              <div className="aspect-video rounded-3xl bg-daet-sand" />
-            )}
+      {/* The trip itself, as big as the screen allows. */}
+      <figure className="relative -mx-4 mt-2 aspect-[4/3] overflow-hidden bg-blue-100 sm:mx-0 sm:aspect-[16/9] sm:rounded-2xl lg:aspect-[21/9]">
+        {pkg.cover_image_url ? (
+          <img src={pkg.cover_image_url} alt={pkg.title} fetchPriority="high" className="h-full w-full object-cover" />
+        ) : (
+          <Image src={fallback.src} alt={`${pkg.location_name}: ${fallback.alt}`} fill priority sizes="100vw" className="object-cover" />
+        )}
+      </figure>
 
-            {/* Title and description */}
-            <h1 className="mt-6 text-4xl font-black text-daet-ink">{pkg.title}</h1>
-            <a href="#reviews" className="mt-2 inline-flex hover:underline">
+      <div className="mt-6 grid gap-10 lg:grid-cols-[1fr_22rem] lg:gap-14">
+        <div className="min-w-0">
+          <h1 className="display-2 text-daet-ink">{pkg.title}</h1>
+          <p className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-lg text-daet-ink">
+            <span className="inline-flex items-center gap-1.5">
+              <MapPinIcon className="h-5 w-5" /> {pkg.location_name}
+            </span>
+            <a href="#reviews" className="inline-flex min-h-11 items-center hover:underline">
               <RatingBadge summary={rating} />
             </a>
-            <p className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-daet-ink/80">
-              <span className="inline-flex items-center gap-1.5">
-                <MapPinIcon /> {pkg.location_name}
-              </span>
-              <span className="inline-flex items-center gap-1.5">
-                <ClockIcon /> {pkg.duration_value} {pkg.duration_type === "hours" ? "hours" : "days"}
-              </span>
-            </p>
+          </p>
 
-            <div className="mt-6 rounded-2xl border border-daet-ink/10 bg-white p-6">
-              <h2 className="font-black text-daet-ink">About this experience</h2>
-              <p className="mt-3 leading-7 text-daet-ink/80">
-                {pkg.description || "No description available."}
-              </p>
-            </div>
+          {/* The departure line: where to be, how long it takes, what it costs. */}
+          <dl className="mt-6 grid gap-2 sm:grid-cols-3">
+            {facts.map(([label, value]) => (
+              <div key={label} className="rounded-2xl bg-white p-4">
+                <dt className="text-sm font-semibold text-daet-ink/75">{label}</dt>
+                <dd className="mt-1 text-lg font-bold leading-snug text-daet-ink">{value}</dd>
+              </div>
+            ))}
+          </dl>
 
-            {/* Inclusions */}
-            {(included.length > 0 || excluded.length > 0) && (
-              <div className="mt-6 rounded-2xl border border-daet-ink/10 bg-white p-6">
-                <h2 className="font-black text-daet-ink">What's included</h2>
+          <section aria-labelledby="about-trip" className="mt-12">
+            <h2 id="about-trip" className="text-2xl font-semibold text-daet-ink sm:text-3xl">About this trip</h2>
+            <p className="mt-3 max-w-2xl text-lg leading-relaxed text-daet-ink">{pkg.description || "The operator hasn't added a description yet."}</p>
+          </section>
 
-                {included.length > 0 && (
-                  <ul className="mt-4 space-y-2">
+          {included.length > 0 || excluded.length > 0 ? (
+            <section aria-labelledby="included" className="mt-12">
+              <h2 id="included" className="text-2xl font-semibold text-daet-ink sm:text-3xl">What&apos;s included</h2>
+              <div className="mt-4 grid gap-6 sm:grid-cols-2">
+                {included.length > 0 ? (
+                  <ul className="space-y-3">
                     {included.map((item: any) => (
-                      <li key={item.id} className="flex items-start gap-2 text-sm text-daet-ink/80">
-                        <span className="text-green-600">✓</span>
-                        <span>{item.item_text}</span>
+                      <li key={item.id} className="flex items-start gap-3 text-lg text-daet-ink">
+                        <span className="mt-0.5 grid h-6 w-6 shrink-0 place-items-center rounded-full bg-green-500 text-slate-950">
+                          <CheckIcon className="h-4 w-4" />
+                        </span>
+                        {item.item_text}
                       </li>
                     ))}
                   </ul>
-                )}
-
-                {excluded.length > 0 && (
-                  <>
-                    <h3 className="mt-6 text-sm font-bold text-daet-ink/70">Not included</h3>
-                    <ul className="mt-3 space-y-2">
+                ) : null}
+                {excluded.length > 0 ? (
+                  <div>
+                    <h3 className="font-bold text-daet-ink">Not included</h3>
+                    <ul className="mt-3 space-y-3">
                       {excluded.map((item: any) => (
-                        <li key={item.id} className="flex items-start gap-2 text-sm text-daet-ink/80">
-                          <span className="text-red-600">✗</span>
-                          <span>{item.item_text}</span>
+                        <li key={item.id} className="flex items-start gap-3 text-daet-ink">
+                          <span className="mt-0.5 grid h-6 w-6 shrink-0 place-items-center rounded-full bg-slate-200 text-slate-800">
+                            <LineIcon name="cancel" className="h-4 w-4" />
+                          </span>
+                          {item.item_text}
                         </li>
                       ))}
                     </ul>
-                  </>
-                )}
+                  </div>
+                ) : null}
               </div>
-            )}
+            </section>
+          ) : null}
 
-            {/* Itinerary stops */}
-            {stops.length > 0 && (
-              <div className="mt-6 rounded-2xl border border-daet-ink/10 bg-white p-6">
-                <h2 className="font-black text-daet-ink">Itinerary</h2>
-                <div className="mt-4 space-y-4">
-                  {stops.map((stop: any, idx: number) => (
-                    <div key={stop.id} className="flex gap-4">
-                      <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-daet-leaf text-sm font-black text-white">
-                        {idx + 1}
-                      </div>
-                      <div className="flex-1">
-                        <h3 className="font-bold text-daet-ink">{stop.location_name}</h3>
-                        {stop.description && (
-                          <p className="mt-1 text-sm text-daet-ink/70">{stop.description}</p>
-                        )}
-                      </div>
+          {stops.length > 0 ? (
+            <section aria-labelledby="itinerary" className="mt-12">
+              <h2 id="itinerary" className="text-2xl font-semibold text-daet-ink sm:text-3xl">The route, stop by stop</h2>
+              <ol className="mt-4 space-y-2">
+                {stops.map((stop: any, idx: number) => (
+                  <li key={stop.id} className="flex gap-4 rounded-2xl bg-white p-4">
+                    <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-blue-600 font-bold text-white">{idx + 1}</span>
+                    <div>
+                      <h3 className="text-lg font-bold text-daet-ink">{stop.location_name}</h3>
+                      {stop.description ? <p className="mt-0.5 text-daet-ink/80">{stop.description}</p> : null}
                     </div>
-                  ))}
-                </div>
-              </div>
-            )}
+                  </li>
+                ))}
+              </ol>
+            </section>
+          ) : null}
 
-            {/* Route map */}
-            {mapPoints.length > 0 && (
-              <div className="mt-6 rounded-2xl border border-daet-ink/10 bg-white p-6">
-                <div className="flex flex-wrap items-baseline justify-between gap-2">
-                  <h2 className="font-black text-daet-ink">Route</h2>
-                  {route ? (
-                    <p className="text-sm font-bold text-daet-forest">
-                      {route.estimated ? "About " : ""}
-                      {formatDistance(route.distanceM)} · {formatDuration(route.durationS)} of travel
-                    </p>
-                  ) : null}
-                </div>
-                <div className="mt-4">
-                  <RouteMap points={mapPoints} polylines={route?.legs.map((leg) => leg.polyline) ?? []} connect title={`Route map for ${pkg.title}`} />
-                </div>
-                {route && route.legs.length > 0 ? (
-                  <ol className="mt-4 space-y-1 text-sm text-daet-ink/75">
-                    {route.legs.map((leg, i) => (
-                      <li key={i}>
-                        <span className="font-bold text-daet-ink">{mapPoints[i].label}</span> → <span className="font-bold text-daet-ink">{mapPoints[i + 1].label}</span>:{" "}
-                        {leg.estimated ? "about " : ""}
-                        {formatDistance(leg.distanceM)}, {formatDuration(leg.durationS)}
-                      </li>
-                    ))}
-                  </ol>
-                ) : null}
-                {route?.estimated ? (
-                  <p className="mt-2 text-xs text-daet-ink/70">Some distances are estimated from straight-line distance; actual roads and boat crossings may differ.</p>
-                ) : null}
-                {routeLink ? (
-                  <a href={routeLink} target="_blank" rel="noopener noreferrer" className="mt-4 inline-flex min-h-11 items-center justify-center rounded-full border border-daet-forest/30 px-5 text-sm font-bold text-daet-leaf hover:bg-daet-forest/5">
-                    Open route in Google Maps
-                  </a>
-                ) : null}
-              </div>
-            )}
-
-            {/* Gallery */}
-            {gallery.length > 0 && (
-              <div className="mt-6 rounded-2xl border border-daet-ink/10 bg-white p-6">
-                <h2 className="font-black text-daet-ink">Photo gallery</h2>
-                <div className="mt-4 grid gap-4 sm:grid-cols-2">
-                  {gallery.map((img: any) => (
-                    <div key={img.id} className="overflow-hidden rounded-2xl bg-daet-sand">
-                      <img
-                        src={img.image_url}
-                        alt={img.caption || "Package photo"}
-                        className="aspect-video w-full object-cover"
-                      />
-                      {img.caption && (
-                        <p className="p-3 text-xs text-daet-ink/70">{img.caption}</p>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Operator info */}
-            {pkg.tours_operators && Array.isArray(pkg.tours_operators) && pkg.tours_operators[0] && (
-              <div className="mt-6 rounded-2xl border border-daet-ink/10 bg-white p-6">
-                <h2 className="font-black text-daet-ink">Operated by</h2>
-                <p className="mt-2 text-sm font-bold text-daet-forest">
-                  {pkg.tours_operators[0].business_name}
-                </p>
-                {operatorSummary ? (
-                  <p className="mt-1 text-xs text-daet-ink/70">
-                    <RatingBadge summary={operatorSummary} compact /> across all their tours
+          {mapPoints.length > 0 ? (
+            <section aria-labelledby="route" className="mt-12">
+              <div className="flex flex-wrap items-baseline justify-between gap-2">
+                <h2 id="route" className="text-2xl font-semibold text-daet-ink sm:text-3xl">Map</h2>
+                {route ? (
+                  <p className="font-semibold text-daet-ink">
+                    {route.estimated ? "About " : ""}
+                    {formatDistance(route.distanceM)} · {formatDuration(route.durationS)} of travel
                   </p>
                 ) : null}
               </div>
-            )}
-
-            {/* Reviews */}
-            <section id="reviews" className="mt-6 rounded-2xl border border-daet-ink/10 bg-white p-6">
-              <div className="flex flex-wrap items-end justify-between gap-3">
-                <h2 className="font-black text-daet-ink">Traveller reviews</h2>
-                <p className="text-xs text-daet-ink/70">Only travellers who completed this tour can review it.</p>
+              <div className="mt-4 overflow-hidden rounded-2xl bg-white">
+                <RouteMap points={mapPoints} polylines={route?.legs.map((leg) => leg.polyline) ?? []} connect title={`Route map for ${pkg.title}`} />
               </div>
-              {rating ? (
-                <div className="mt-4 grid gap-4 sm:grid-cols-[auto_1fr] sm:items-center">
-                  <div className="text-center sm:pr-6">
-                    <p className="text-4xl font-black text-daet-ink">{rating.average.toFixed(1)}</p>
-                    <Stars value={rating.average} />
-                    <p className="mt-1 text-xs text-daet-ink/70">
-                      {rating.count} review{rating.count === 1 ? "" : "s"}
-                    </p>
-                  </div>
-                  <ul className="space-y-1 text-xs text-daet-ink/70" aria-label="Rating breakdown (latest reviews)">
-                    {distribution(reviews.map((r) => r.rating)).map((row) => (
-                      <li key={row.stars} className="flex items-center gap-2">
-                        <span className="w-8">{row.stars} ★</span>
-                        <span className="h-2 flex-1 overflow-hidden rounded-full bg-daet-sand">
-                          <span className="block h-full bg-amber-400" style={{ width: `${reviews.length ? (row.count / reviews.length) * 100 : 0}%` }} />
-                        </span>
-                        <span className="w-6 text-right">{row.count}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
+              {route && route.legs.length > 0 ? (
+                <ol className="mt-4 space-y-1 text-daet-ink/90">
+                  {route.legs.map((leg, i) => (
+                    <li key={i}>
+                      <span className="font-bold text-daet-ink">{mapPoints[i].label}</span> to <span className="font-bold text-daet-ink">{mapPoints[i + 1].label}</span>:{" "}
+                      {leg.estimated ? "about " : ""}
+                      {formatDistance(leg.distanceM)}, {formatDuration(leg.durationS)}
+                    </li>
+                  ))}
+                </ol>
               ) : null}
-              <div className="mt-5">
-                <ReviewList reviews={reviews} operatorName={operatorRow?.business_name ?? "the operator"} emptyText="No reviews yet. Be the first after your tour!" />
-              </div>
+              {route?.estimated ? <p className="mt-2 text-sm text-daet-ink/75">Some distances are estimated in a straight line; roads and boat crossings may differ.</p> : null}
+              {routeLink ? (
+                <a href={routeLink} target="_blank" rel="noopener noreferrer" className="mt-4 inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-blue-50 px-5 font-bold text-blue-700 hover:bg-blue-100">
+                  Open in Google Maps <LineIcon name="arrowRight" className="h-4 w-4" />
+                </a>
+              ) : null}
             </section>
-          </div>
+          ) : null}
 
-          {/* Sidebar - Booking card */}
-          <div className="lg:col-span-1">
-            <div className="sticky top-6 rounded-3xl border border-daet-ink/10 bg-white p-6 shadow-lg">
-              <div className="text-3xl font-black text-daet-ink">
-                {formatPeso(displayPrice)}
-                <span className="ml-2 text-sm font-normal text-daet-ink/70">{priceLabel}</span>
-              </div>
+          {gallery.length > 0 ? (
+            <section aria-labelledby="gallery" className="mt-12">
+              <h2 id="gallery" className="text-2xl font-semibold text-daet-ink sm:text-3xl">Photos</h2>
+              <ul className="-mx-4 mt-4 flex snap-x gap-3 overflow-x-auto px-4 pb-2 sm:mx-0 sm:grid sm:grid-cols-2 sm:overflow-visible sm:px-0">
+                {gallery.map((img: any) => (
+                  <li key={img.id} className="w-[80%] shrink-0 snap-start sm:w-auto">
+                    <img src={img.image_url} alt={img.caption || `Photo of ${pkg.title}`} loading="lazy" className="aspect-[4/3] w-full rounded-2xl object-cover" />
+                    {img.caption ? <p className="mt-2 text-sm text-daet-ink/80">{img.caption}</p> : null}
+                  </li>
+                ))}
+              </ul>
+            </section>
+          ) : null}
 
-              {pkg.tours_package_price_variants && pkg.tours_package_price_variants.length > 1 && (
-                <p className="mt-2 text-xs text-daet-ink/70">
-                  {pkg.tours_package_price_variants.length} pricing options available
+          {operatorName ? (
+            <section aria-labelledby="operator" className="mt-12 rounded-2xl bg-white p-5 sm:p-6">
+              <h2 id="operator" className="text-2xl font-semibold text-daet-ink">Run by {operatorName}</h2>
+              <p className="mt-2 flex flex-wrap items-center gap-2 text-daet-ink/80">
+                <ShieldCheckIcon className="h-5 w-5 text-blue-600" /> Accredited by the Daet Tourism Office
+              </p>
+              {operatorSummary ? (
+                <p className="mt-1 text-daet-ink/80">
+                  <RatingBadge summary={operatorSummary} compact /> across all their trips
                 </p>
-              )}
+              ) : null}
+            </section>
+          ) : null}
 
-              <Link
-                href={`/tours/packages/${pkg.id}/book`}
-                className="mt-6 flex min-h-12 w-full items-center justify-center rounded-full bg-daet-forest text-sm font-black text-white transition hover:bg-daet-ink"
-              >
-                Book this experience
-              </Link>
-
-              <div className="mt-6 space-y-3 border-t border-daet-ink/10 pt-6 text-sm text-daet-ink/70">
-                <div className="flex items-center gap-2">
-                  <CheckIcon className="h-5 w-5 text-daet-leaf" />
-                  <span>Confirmed by the local operator</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <CheckIcon className="h-5 w-5 text-daet-leaf" />
-                  <span>Cancel up to {FREE_CANCELLATION_HOURS} hours before the tour</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <CheckIcon className="h-5 w-5 text-daet-leaf" />
-                  <span>Certified local guides</span>
-                </div>
-              </div>
+          <section id="reviews" aria-labelledby="reviews-title" className="mt-12">
+            <div className="flex flex-wrap items-end justify-between gap-3">
+              <h2 id="reviews-title" className="text-2xl font-semibold text-daet-ink sm:text-3xl">Traveller reviews</h2>
+              <p className="text-sm text-daet-ink/75">Only travellers who finished this trip can review it.</p>
             </div>
-          </div>
+            {rating ? (
+              <div className="mt-4 grid gap-6 rounded-2xl bg-white p-5 sm:grid-cols-[auto_1fr] sm:items-center sm:p-6">
+                <div className="sm:pr-4">
+                  <p className="font-[family-name:var(--font-display)] text-6xl font-semibold leading-none text-daet-ink">{rating.average.toFixed(1)}</p>
+                  <Stars value={rating.average} />
+                  <p className="mt-1 text-sm text-daet-ink/80">
+                    {rating.count} review{rating.count === 1 ? "" : "s"}
+                  </p>
+                </div>
+                <ul className="space-y-1.5 text-sm text-daet-ink/80" aria-label="Rating breakdown (latest reviews)">
+                  {distribution(reviews.map((r) => r.rating)).map((row) => (
+                    <li key={row.stars} className="flex items-center gap-3">
+                      <span className="w-10">{row.stars} star</span>
+                      <span className="h-3 flex-1 overflow-hidden rounded-full bg-slate-100">
+                        <span className="block h-full rounded-full bg-yellow-500" style={{ width: `${reviews.length ? (row.count / reviews.length) * 100 : 0}%` }} />
+                      </span>
+                      <span className="w-6 text-right">{row.count}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ) : null}
+            <div className="mt-4">
+              <ReviewList reviews={reviews} operatorName={operatorName ?? "the operator"} emptyText="No reviews yet. Be the first after your trip." />
+            </div>
+          </section>
         </div>
 
-        {/* On phones the booking card is at the end of the page, so keep the price and action in reach. */}
-        <div className="fixed inset-x-0 bottom-0 z-50 border-t border-daet-ink/10 bg-white px-4 pb-[calc(0.75rem+env(safe-area-inset-bottom))] pt-3 lg:hidden print:hidden">
-          <div className="mx-auto flex max-w-7xl items-center justify-between gap-4">
-            <p className="leading-tight">
-              <span className="block text-xs text-daet-ink/70">From</span>
-              <span className="text-xl font-black text-daet-ink">{formatPeso(displayPrice)}</span>{" "}
-              <span className="text-xs text-daet-ink/70">{priceLabel}</span>
-            </p>
-            <Link
-              href={`/tours/packages/${pkg.id}/book`}
-              className="inline-flex min-h-12 shrink-0 items-center justify-center rounded-full bg-daet-forest px-6 text-sm font-bold text-white transition hover:bg-daet-leaf focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-daet-forest"
-            >
+        {/* Booking panel: beside the content on wide screens, a bar at the bottom on phones. */}
+        <aside aria-label="Book this trip" className="hidden lg:block">
+          <div className="sticky top-6 rounded-2xl bg-white p-6">
+            <p className="text-sm font-semibold text-daet-ink/75">From</p>
+            <p className="text-4xl font-bold text-daet-ink">{formatPeso(displayPrice)}</p>
+            <p className="text-daet-ink/80">{priceLabel}</p>
+            {pkg.tours_package_price_variants && pkg.tours_package_price_variants.length > 1 ? (
+              <p className="mt-2 text-sm text-daet-ink/80">{pkg.tours_package_price_variants.length} price options</p>
+            ) : null}
+            <ButtonLink href={`/tours/packages/${pkg.id}/book`} size="lg" fullWidth className="mt-5">
               Book this trip
-            </Link>
+            </ButtonLink>
+            <ul className="mt-6 space-y-3 text-daet-ink">
+              {["Confirmed by the local operator", `Free cancellation up to ${FREE_CANCELLATION_HOURS} hours before`, "Led by an accredited local guide"].map((line) => (
+                <li key={line} className="flex items-start gap-2">
+                  <CheckIcon className="mt-0.5 h-5 w-5 text-blue-600" />
+                  {line}
+                </li>
+              ))}
+            </ul>
           </div>
-        </div>
-        <div className="h-20 lg:hidden" aria-hidden="true" />
+        </aside>
       </div>
+
+      <div className="fixed inset-x-0 bottom-0 z-50 bg-white px-4 pb-[calc(0.75rem+env(safe-area-inset-bottom))] pt-3 shadow-[var(--shadow-float)] lg:hidden print:hidden">
+        <div className="mx-auto flex max-w-7xl items-center justify-between gap-4">
+          <p className="leading-tight">
+            <span className="block text-sm text-daet-ink/75">From</span>
+            <span className="text-xl font-bold text-daet-ink">{formatPeso(displayPrice)}</span> <span className="text-sm text-daet-ink/75">{priceLabel}</span>
+          </p>
+          <ButtonLink href={`/tours/packages/${pkg.id}/book`} size="lg" className="shrink-0">
+            Book this trip
+          </ButtonLink>
+        </div>
+      </div>
+      <div className="h-20 lg:hidden" aria-hidden="true" />
     </PageFrame>
   );
 }

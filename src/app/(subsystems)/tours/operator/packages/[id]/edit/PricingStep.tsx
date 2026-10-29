@@ -129,7 +129,7 @@ export function PricingStep({
   const pricingErrors = getPricingErrors();
 
   return (
-    <div className="border rounded-xl p-6 bg-white">
+    <div className="border rounded-2xl p-6 bg-white">
       <div className="flex items-center justify-between mb-6">
         <h2 className="text-xl font-bold text-daet-ink">Price Variants</h2>
         {canAddVariants && (
@@ -147,7 +147,7 @@ export function PricingStep({
               });
             }}
             disabled={loading}
-            className="px-4 py-2 bg-daet-forest text-white rounded-xl text-sm font-medium hover:bg-daet-leaf transition disabled:opacity-50 disabled:cursor-not-allowed"
+            className="px-4 py-2 bg-daet-forest text-white rounded-2xl text-sm font-medium hover:bg-daet-leaf transition disabled:opacity-50 disabled:cursor-not-allowed"
           >
             + Add Variant
           </button>
@@ -182,7 +182,7 @@ export function PricingStep({
                     checked={variant.isDefault}
                     onChange={() => handleSetDefault(variant.id)}
                     disabled={!canEditVariants || loading}
-                    className="w-4 h-4 rounded border-daet-ink/20 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="w-4 h-4 rounded-2xl border-daet-ink/20 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                   />
                 </td>
                 <td className="px-4 py-3 space-x-2">
@@ -205,7 +205,7 @@ export function PricingStep({
                         }
                       }}
                       disabled={loading}
-                      className="text-rose-700 hover:text-red-800 text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="text-red-700 hover:text-red-800 text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       Delete
                     </button>
@@ -225,7 +225,7 @@ export function PricingStep({
 
       {/* Validation Errors */}
       {Object.keys(pricingErrors).length > 0 && (
-        <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded text-sm text-red-800">
+        <div className="mt-4 p-3 bg-red-50 rounded-2xl text-sm text-red-800">
           <p className="font-medium">Pricing errors:</p>
           <ul className="mt-1 space-y-1">
             {Object.entries(pricingErrors).map(([key, message]) => (
@@ -238,7 +238,7 @@ export function PricingStep({
       {/* Add/Edit Form Modal */}
       {showAddForm && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl shadow-lg max-w-md w-full p-6 max-h-[90vh] overflow-y-auto">
+          <div className="bg-white rounded-2xl max-w-md w-full p-6 max-h-[90vh] overflow-y-auto">
             <h3 className="text-lg font-bold text-daet-ink mb-4">
               {editingId ? "Edit Variant" : "Add Variant"}
             </h3>
@@ -256,7 +256,7 @@ export function PricingStep({
                     setFormData({ ...formData, variantName: e.target.value })
                   }
                   maxLength={EDIT_LIMITS.variantName.max}
-                  className="w-full px-3 py-2 border border-daet-ink/20 rounded-xl focus:ring-2 focus:ring-daet-forest/30 outline-none"
+                  className="w-full px-3 py-2 border border-daet-ink/20 rounded-2xl focus:ring-2 focus:ring-daet-forest/30 outline-none"
                   placeholder="e.g., Early Bird"
                 />
               </div>
@@ -274,7 +274,7 @@ export function PricingStep({
                   onChange={(e) =>
                     setFormData({ ...formData, minPax: parseInt(e.target.value) || 1 })
                   }
-                  className="w-full px-3 py-2 border border-daet-ink/20 rounded-xl focus:ring-2 focus:ring-daet-forest/30 outline-none"
+                  className="w-full px-3 py-2 border border-daet-ink/20 rounded-2xl focus:ring-2 focus:ring-daet-forest/30 outline-none"
                 />
               </div>
 
@@ -291,7 +291,7 @@ export function PricingStep({
                   onChange={(e) =>
                     setFormData({ ...formData, maxPax: e.target.value ? parseInt(e.target.value) : null })
                   }
-                  className="w-full px-3 py-2 border border-daet-ink/20 rounded-xl focus:ring-2 focus:ring-daet-forest/30 outline-none"
+                  className="w-full px-3 py-2 border border-daet-ink/20 rounded-2xl focus:ring-2 focus:ring-daet-forest/30 outline-none"
                   placeholder="Leave blank for unlimited"
                 />
               </div>
@@ -310,7 +310,7 @@ export function PricingStep({
                   onChange={(e) =>
                     setFormData({ ...formData, pricePerPax: e.target.value ? parseFloat(e.target.value) : null })
                   }
-                  className="w-full px-3 py-2 border border-daet-ink/20 rounded-xl focus:ring-2 focus:ring-daet-forest/30 outline-none"
+                  className="w-full px-3 py-2 border border-daet-ink/20 rounded-2xl focus:ring-2 focus:ring-daet-forest/30 outline-none"
                   placeholder="e.g., 1500"
                 />
               </div>
@@ -329,7 +329,7 @@ export function PricingStep({
                   onChange={(e) =>
                     setFormData({ ...formData, flatPrice: e.target.value ? parseFloat(e.target.value) : null })
                   }
-                  className="w-full px-3 py-2 border border-daet-ink/20 rounded-xl focus:ring-2 focus:ring-daet-forest/30 outline-none"
+                  className="w-full px-3 py-2 border border-daet-ink/20 rounded-2xl focus:ring-2 focus:ring-daet-forest/30 outline-none"
                   placeholder="e.g., 5000"
                 />
               </div>
@@ -342,14 +342,14 @@ export function PricingStep({
                     setShowAddForm(false);
                     setEditingId(undefined);
                   }}
-                  className="flex-1 px-4 py-2 border border-daet-ink/20 text-daet-ink/80 rounded-xl hover:bg-slate-50 transition"
+                  className="flex-1 px-4 py-2 border border-daet-ink/20 text-daet-ink/80 rounded-2xl hover:bg-slate-50 transition"
                 >
                   Cancel
                 </button>
                 <button
                   type="button"
                   onClick={handleAddVariant}
-                  className="flex-1 px-4 py-2 bg-daet-forest text-white rounded-xl hover:bg-daet-leaf transition"
+                  className="min-h-11 flex-1 px-4 py-2 bg-daet-forest text-white rounded-2xl hover:bg-daet-leaf transition"
                 >
                   {editingId ? "Update" : "Add"}
                 </button>
@@ -361,7 +361,7 @@ export function PricingStep({
 
       {/* Help text */}
       {!canAddVariants && (
-        <div className="mt-4 p-3 bg-daet-sand border border-blue-200 rounded text-sm text-daet-leaf">
+        <div className="mt-4 p-3 rounded-2xl bg-blue-50 text-sm text-blue-900">
           ℹ️ Price variants cannot be modified for this package status.
         </div>
       )}

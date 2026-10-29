@@ -20,7 +20,7 @@ test("tourist → guide → admin walkthrough screens", async ({ browser }) => {
 
   // 2. Open a package and reach the booking form with open dates.
   await page.goto("/tours/packages/aa000000-0000-4000-8000-000000000001", { waitUntil: "networkidle" });
-  await page.getByRole("link", { name: /book this experience/i }).click();
+  await page.getByRole("link", { name: /book this trip/i }).click();
   await expect(page).toHaveURL(/\/book$/);
   await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
   await checkA11y(page, "booking form");

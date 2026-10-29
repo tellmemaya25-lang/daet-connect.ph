@@ -1,3 +1,4 @@
+import { LineIcon } from "@/components/ui/icons";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
@@ -38,7 +39,7 @@ export default async function AdminReviewsPage({ searchParams }: { searchParams:
 
   return (
     <PageFrame adminNav>
-      <AdminPageHeading eyebrow="Content moderation" title="Reviews" backHref="/tours/admin" backLabel="Admin dashboard" />
+      <AdminPageHeading title="Reviews" backHref="/tours/admin" backLabel="Admin dashboard" />
 
       <p className="mb-4 max-w-2xl text-sm text-daet-ink/65">
         Hidden reviews disappear from the public pages and no longer count toward ratings. The traveller and the operator still see them, with your reason.
@@ -60,7 +61,7 @@ export default async function AdminReviewsPage({ searchParams }: { searchParams:
       {error ? <Notice variant="error" className="mb-4">Reviews could not be loaded.</Notice> : null}
 
       {reviews.length === 0 ? (
-        <EmptyState icon="⭐" title="No reviews here" />
+        <EmptyState icon={<LineIcon name="star" />} title="No reviews here" />
       ) : (
         <ul className="space-y-4">
           {reviews.map((review) => {
@@ -68,13 +69,13 @@ export default async function AdminReviewsPage({ searchParams }: { searchParams:
             const operator = Array.isArray(review.tours_operators) ? review.tours_operators[0] : review.tours_operators;
             return (
               <li key={review.id}>
-                <Card className={review.is_hidden ? "border-rose-200 bg-rose-50/40" : ""}>
+                <Card className={review.is_hidden ? "border-red-200 bg-red-50/40" : ""}>
                   <div className="flex flex-wrap items-start justify-between gap-2">
                     <div>
-                      <Link href={`/tours/packages/${review.package_id}#reviews`} className="font-black text-daet-ink hover:underline">
+                      <Link href={`/tours/packages/${review.package_id}#reviews`} className="font-bold text-daet-ink hover:underline">
                         {pkg?.title ?? "Tour"}
                       </Link>
-                      <p className="text-xs text-daet-ink/70">
+                      <p className="text-sm text-slate-600">
                         {operator?.business_name} · {date(review.created_at)}
                       </p>
                     </div>
@@ -85,11 +86,11 @@ export default async function AdminReviewsPage({ searchParams }: { searchParams:
                   </div>
                   {review.comment ? <p className="mt-3 whitespace-pre-line text-sm leading-6 text-daet-ink/80">{review.comment}</p> : <p className="mt-3 text-sm italic text-daet-ink/70">Rating only.</p>}
                   {review.operator_reply ? (
-                    <p className="mt-2 rounded-xl bg-daet-sand/50 p-3 text-sm text-daet-ink/80">
+                    <p className="mt-2 rounded-2xl bg-daet-sand/50 p-3 text-sm text-daet-ink/80">
                       <span className="font-bold">Operator reply:</span> {review.operator_reply}
                     </p>
                   ) : null}
-                  {review.is_hidden && review.hidden_reason ? <p className="mt-2 text-xs font-bold text-rose-700">Reason: {review.hidden_reason}</p> : null}
+                  {review.is_hidden && review.hidden_reason ? <p className="mt-2 text-xs font-bold text-red-700">Reason: {review.hidden_reason}</p> : null}
                   <div className="mt-3">
                     <ModerateForm reviewId={review.id} hidden={review.is_hidden} />
                   </div>

@@ -174,7 +174,7 @@ export function GalleryStep({
   const galleryErrors = getGalleryErrors();
 
   return (
-    <div className="border rounded-xl p-6 bg-white">
+    <div className="border rounded-2xl p-6 bg-white">
       <div className="flex items-center justify-between mb-6">
         <div>
           <h2 className="text-xl font-bold text-daet-ink">Gallery Images</h2>
@@ -185,7 +185,7 @@ export function GalleryStep({
         {canAddImages && data.length < EDIT_LIMITS.maxGalleryImages && (
           <label htmlFor="gallery-upload" className="cursor-pointer">
             <div
-              className={`px-4 py-2 rounded-xl font-medium transition text-center ${
+              className={`px-4 py-2 rounded-2xl font-medium transition text-center ${
                 uploadLoading || loading
                   ? "bg-slate-100 text-daet-ink/70 cursor-not-allowed"
                   : "bg-daet-forest text-white hover:bg-daet-leaf"
@@ -207,7 +207,7 @@ export function GalleryStep({
 
       {/* Upload Error */}
       {uploadError && (
-        <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded text-sm text-red-800 flex items-start gap-2">
+        <div className="mb-4 p-3 bg-red-50 rounded-2xl text-sm text-red-800 flex items-start gap-2">
           <svg className="w-5 h-5 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
             <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
           </svg>
@@ -221,7 +221,7 @@ export function GalleryStep({
           {sortedImages.map((image, index) => (
             <div
               key={image.id}
-              className="border rounded-xl overflow-hidden bg-slate-50 hover:shadow-lg transition"
+              className="border rounded-2xl overflow-hidden bg-slate-50 transition"
             >
               {/* Image Thumbnail */}
               <div className="relative h-40 w-full bg-slate-100">
@@ -234,7 +234,7 @@ export function GalleryStep({
                     setUploadError("Failed to load image preview");
                   }}
                 />
-                <div className="absolute top-2 right-2 bg-gray-800 text-white px-2 py-1 rounded text-xs font-medium">
+                <div className="absolute top-2 right-2 bg-slate-800 text-white px-2 py-1 rounded-2xl text-xs font-medium">
                   {index + 1}
                 </div>
               </div>
@@ -253,13 +253,13 @@ export function GalleryStep({
                       }}
                       maxLength={EDIT_LIMITS.caption.max}
                       rows={2}
-                      className="w-full px-2 py-1 border border-daet-ink/20 rounded text-sm resize-none focus:ring-2 focus:ring-daet-forest/30 outline-none"
+                      className="w-full px-2 py-1 border border-daet-ink/20 rounded-2xl text-sm resize-none focus:ring-2 focus:ring-daet-forest/30 outline-none"
                       placeholder="Add caption (optional)"
                     />
                     <button
                       type="button"
                       onClick={() => handleUpdateCaption(image.id, image.caption || "")}
-                      className="w-full px-2 py-1 bg-daet-forest text-white text-xs rounded hover:bg-daet-leaf transition"
+                      className="w-full px-2 py-1 bg-daet-forest text-white text-xs rounded-2xl hover:bg-daet-leaf transition"
                     >
                       Save
                     </button>
@@ -280,7 +280,7 @@ export function GalleryStep({
                             type="button"
                             onClick={() => handleReorder("up", index)}
                             disabled={index === 0 || loading}
-                            className="flex-1 px-2 py-1 text-xs bg-gray-200 text-daet-ink/80 rounded hover:bg-gray-300 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="flex-1 px-2 py-1 text-xs bg-slate-200 text-daet-ink/80 rounded-2xl hover:bg-slate-300 transition disabled:opacity-50 disabled:cursor-not-allowed"
                             title="Move up"
                           >
                             ↑
@@ -289,7 +289,7 @@ export function GalleryStep({
                             type="button"
                             onClick={() => handleReorder("down", index)}
                             disabled={index === sortedImages.length - 1 || loading}
-                            className="flex-1 px-2 py-1 text-xs bg-gray-200 text-daet-ink/80 rounded hover:bg-gray-300 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="flex-1 px-2 py-1 text-xs bg-slate-200 text-daet-ink/80 rounded-2xl hover:bg-slate-300 transition disabled:opacity-50 disabled:cursor-not-allowed"
                             title="Move down"
                           >
                             ↓
@@ -301,7 +301,7 @@ export function GalleryStep({
                           type="button"
                           onClick={() => setEditingCaption(image.id)}
                           disabled={loading}
-                          className="flex-1 px-2 py-1 text-xs bg-blue-200 text-daet-leaf rounded hover:bg-blue-300 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                          className="flex-1 px-2 py-1 text-xs bg-blue-200 text-daet-leaf rounded-2xl hover:bg-blue-300 transition disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                           Caption
                         </button>
@@ -315,7 +315,7 @@ export function GalleryStep({
                             }
                           }}
                           disabled={loading || deletingId === image.id}
-                          className="flex-1 px-2 py-1 text-xs bg-red-200 text-red-700 rounded hover:bg-red-300 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                          className="flex-1 px-2 py-1 text-xs bg-red-200 text-red-700 rounded-2xl hover:bg-red-300 transition disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                           Delete
                         </button>
@@ -339,7 +339,7 @@ export function GalleryStep({
 
       {/* Validation Errors */}
       {Object.keys(galleryErrors).length > 0 && (
-        <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded text-sm text-red-800">
+        <div className="mt-4 p-3 bg-red-50 rounded-2xl text-sm text-red-800">
           <p className="font-medium">Gallery errors:</p>
           <ul className="mt-1 space-y-1">
             {Object.entries(galleryErrors).map(([key, message]) => (
@@ -350,14 +350,14 @@ export function GalleryStep({
       )}
 
       {/* Help text */}
-      <div className="mt-4 text-xs text-daet-ink/80 space-y-1 p-3 bg-slate-50 rounded">
+      <div className="mt-4 text-xs text-daet-ink/80 space-y-1 p-3 bg-slate-50 rounded-2xl">
         <p>Supported formats: {ALLOWED_IMAGE_EXTENSIONS.join(", ")}</p>
         <p>Maximum file size: {EDIT_LIMITS.imageBytes / (1024 * 1024)}MB</p>
         <p>Maximum {EDIT_LIMITS.maxGalleryImages} images per package</p>
       </div>
 
       {!canAddImages && (
-        <div className="mt-4 p-3 bg-daet-sand border border-blue-200 rounded text-sm text-daet-leaf">
+        <div className="mt-4 p-3 rounded-2xl bg-blue-50 text-sm text-blue-900">
           ℹ️ Gallery images cannot be modified for this package status.
         </div>
       )}

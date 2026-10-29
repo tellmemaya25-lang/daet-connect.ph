@@ -41,12 +41,12 @@ export default async function GuidePendingPage() {
   if (guide.accreditation_status === "rejected") {
     return (
       <PageFrame>
-        <section className="mx-auto max-w-2xl rounded-3xl border border-rose-200 bg-white p-6 shadow-card sm:p-10">
-          <span className="inline-flex rounded-full bg-rose-50 px-3 py-1 text-xs font-black uppercase tracking-wide text-rose-700">Changes requested</span>
-          <h1 className="mt-4 text-3xl font-black text-daet-ink">Please update your guide application</h1>
+        <section className="mx-auto max-w-2xl rounded-2xl border-red-200 bg-white p-6 sm:p-10">
+          <span className="inline-flex rounded-full bg-red-50 px-3 py-1 text-xs font-bold text-red-700">Changes requested</span>
+          <h1 className="display-2 mt-4 text-daet-ink">Please update your guide application</h1>
           <p className="mt-3 text-sm leading-6 text-daet-ink/70">The Tourism Office could not approve the application as submitted. Review the note below and send an updated profile and ID.</p>
-          {guide[GUIDE_NOTES_COLUMN] ? <div className="mt-5 rounded-2xl bg-rose-50 p-4 text-sm leading-6 text-rose-950"><p className="font-bold">Reviewer’s note</p><p className="mt-1">{guide[GUIDE_NOTES_COLUMN]}</p></div> : null}
-          <Link href="/tours/guide/register" className="mt-7 inline-flex min-h-12 items-center justify-center rounded-full bg-daet-forest px-6 text-sm font-bold text-white transition hover:bg-daet-ink">Update application</Link>
+          {guide[GUIDE_NOTES_COLUMN] ? <div className="mt-5 rounded-2xl bg-red-50 p-4 text-sm leading-6 text-red-950"><p className="font-bold">Reviewer’s note</p><p className="mt-1">{guide[GUIDE_NOTES_COLUMN]}</p></div> : null}
+          <Link href="/tours/guide/register" className="mt-7 inline-flex min-h-12 items-center justify-center rounded-full bg-daet-forest px-6 text-sm font-bold text-white transition hover:bg-blue-700">Update application</Link>
         </section>
       </PageFrame>
     );
@@ -54,17 +54,17 @@ export default async function GuidePendingPage() {
 
   return (
     <PageFrame>
-      <section className="mx-auto max-w-2xl overflow-hidden rounded-3xl border border-daet-ink/10 bg-white shadow-card">
+      <section className="mx-auto max-w-2xl overflow-hidden rounded-2xl bg-white">
         <div className="bg-daet-forest px-6 py-8 text-white sm:px-10 sm:py-10">
           <span className="inline-flex items-center gap-2 rounded-full bg-white/15 px-3 py-1 text-sm font-bold"><span className="h-2 w-2 animate-pulse rounded-full bg-daet-sun" /> In review</span>
-          <h1 className="mt-4 text-3xl font-black sm:text-4xl">Pending Approval</h1>
+          <h1 className="display-2 mt-4">Pending Approval</h1>
           <p className="mt-3 max-w-lg text-sm leading-6 text-white">Your guide profile and private ID verification are with the Daet Tourism Office.</p>
         </div>
         <div className="p-6 sm:p-10">
           <ol className="space-y-5">
-            <li className="flex gap-4"><span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-emerald-100 text-sm font-black text-emerald-800">✓</span><div><p className="font-bold">Application submitted</p><p className="mt-1 text-sm text-daet-ink/70">{new Date(guide.created_at).toLocaleDateString("en-PH", { year: "numeric", month: "long", day: "numeric", timeZone: "Asia/Manila" })}</p></div></li>
-            <li className="flex gap-4"><span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-amber-100 text-sm font-black text-amber-900">2</span><div><p className="font-bold">Tourism Office review</p><p className="mt-1 text-sm leading-6 text-daet-ink/70">Your public profile and ID document are reviewed separately and securely.</p></div></li>
-            <li className="flex gap-4"><span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-daet-sand text-sm font-black text-daet-ink/70">3</span><div><p className="font-bold text-daet-ink/70">Guide dashboard and badge QR unlocked</p><p className="mt-1 text-sm leading-6 text-daet-ink/70">No active badge QR or dashboard access is available before approval.</p></div></li>
+            <li className="flex gap-4"><span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-green-100 text-sm font-bold text-green-800">✓</span><div><p className="font-bold">Application submitted</p><p className="mt-1 text-sm text-daet-ink/70">{new Date(guide.created_at).toLocaleDateString("en-PH", { year: "numeric", month: "long", day: "numeric", timeZone: "Asia/Manila" })}</p></div></li>
+            <li className="flex gap-4"><span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-yellow-100 text-sm font-bold text-yellow-900">2</span><div><p className="font-bold">Tourism Office review</p><p className="mt-1 text-sm leading-6 text-daet-ink/70">Your public profile and ID document are reviewed separately and securely.</p></div></li>
+            <li className="flex gap-4"><span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-daet-sand text-sm font-bold text-daet-ink/70">3</span><div><p className="font-bold text-daet-ink/70">Guide dashboard and badge QR unlocked</p><p className="mt-1 text-sm leading-6 text-daet-ink/70">No active badge QR or dashboard access is available before approval.</p></div></li>
           </ol>
           <div className="mt-8 border-t border-daet-ink/10 pt-5 text-sm text-daet-ink/70">You can close this page and check back later.</div>
         </div>

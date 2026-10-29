@@ -54,7 +54,7 @@ export function ImagePreview({
           onDragOver={(e) => handleDragOver(e, index)}
           onDragEnd={handleDragEnd}
           className={`
-            relative aspect-video rounded-xl overflow-hidden border-2 
+            relative aspect-video rounded-2xl overflow-hidden border-2 
             ${draggedIndex === index ? 'opacity-50 border-daet-forest' : 'border-daet-ink/20'}
             ${editable ? 'cursor-move' : ''}
           `}
@@ -68,7 +68,7 @@ export function ImagePreview({
           {editable && onDelete && (
             <button
               onClick={() => onDelete(index)}
-              className="absolute top-2 right-2 bg-red-600 text-white rounded-full p-1.5 hover:bg-red-700 transition-colors shadow-lg"
+              className="absolute top-2 right-2 bg-red-600 text-white rounded-full p-1.5 hover:bg-red-700 transition-colors shadow-[var(--shadow-float)]"
               title="Delete image"
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

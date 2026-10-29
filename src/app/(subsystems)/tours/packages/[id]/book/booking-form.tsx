@@ -125,7 +125,7 @@ export function BookingForm({ packageId, priceVariants, dateOptions, userProfile
 
   if (priceVariants.length === 0) {
     return (
-      <div className="rounded-3xl border border-daet-ink/10 bg-white p-6 text-center shadow-sm">
+      <div className="rounded-2xl bg-white p-6 text-center">
         <p className="text-daet-ink/70">
           This package does not have pricing configured yet.
         </p>
@@ -141,14 +141,14 @@ export function BookingForm({ packageId, priceVariants, dateOptions, userProfile
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       {error && (
-        <div role="alert" className="rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-800">
+        <div role="alert" className="rounded-2xl bg-red-50 p-4 text-sm text-red-800">
           {error}
         </div>
       )}
 
       {/* Tour Date */}
-      <section className="rounded-3xl border border-daet-ink/10 bg-white p-6 shadow-sm">
-        <h2 className="text-xl font-black text-daet-ink">Select Date</h2>
+      <section className="rounded-2xl bg-white p-6">
+        <h2 className="text-xl font-bold text-daet-ink">Select Date</h2>
         <p className="mt-1 text-sm text-daet-ink/70">Choose your preferred tour date</p>
 
         <div className="mt-4">
@@ -164,12 +164,12 @@ export function BookingForm({ packageId, priceVariants, dateOptions, userProfile
                 onChange={(e) => setTourDate(e.target.value)}
                 min={getMinDate()}
                 required
-                className="mt-1 min-h-11 w-full rounded-xl border border-daet-ink/20 px-4 py-2.5 text-base focus:border-daet-forest focus:outline-none focus:ring-2 focus:ring-daet-forest/20"
+                className="mt-1 min-h-11 w-full rounded-2xl border border-daet-ink/20 px-4 py-2.5 text-base focus:border-daet-forest focus:outline-none focus:ring-2 focus:ring-daet-forest/20"
               />
-              <p className="mt-1 text-xs text-daet-ink/70">Earliest available: Tomorrow</p>
+              <p className="mt-1 text-sm text-slate-600">Earliest available: Tomorrow</p>
             </>
           ) : noOpenDates ? (
-            <p className="mt-2 rounded-2xl bg-amber-50 p-4 text-sm text-amber-900">
+            <p className="mt-2 rounded-2xl bg-yellow-50 p-4 text-sm text-yellow-900">
               There are no open dates with seats right now. Please check again later or contact the operator.
             </p>
           ) : (
@@ -179,7 +179,7 @@ export function BookingForm({ packageId, priceVariants, dateOptions, userProfile
                 value={tourDate}
                 onChange={(e) => setTourDate(e.target.value)}
                 required
-                className="mt-1 min-h-11 w-full rounded-xl border border-daet-ink/20 bg-white px-4 py-2.5 text-base focus:border-daet-forest focus:outline-none focus:ring-2 focus:ring-daet-forest/20"
+                className="mt-1 min-h-11 w-full rounded-2xl border border-daet-ink/20 bg-white px-4 py-2.5 text-base focus:border-daet-forest focus:outline-none focus:ring-2 focus:ring-daet-forest/20"
               >
                 {dateOptions.map((option) => (
                   <option key={option.date} value={option.date} disabled={option.full}>
@@ -187,15 +187,15 @@ export function BookingForm({ packageId, priceVariants, dateOptions, userProfile
                   </option>
                 ))}
               </select>
-              <p className="mt-1 text-xs text-daet-ink/70">Only dates the operator has opened are shown.</p>
+              <p className="mt-1 text-sm text-slate-600">Only dates the operator has opened are shown.</p>
             </>
           )}
         </div>
       </section>
 
       {/* Number of Pax & Price Variant */}
-      <section className="rounded-3xl border border-daet-ink/10 bg-white p-6 shadow-sm">
-        <h2 className="text-xl font-black text-daet-ink">Group Size & Pricing</h2>
+      <section className="rounded-2xl bg-white p-6">
+        <h2 className="text-xl font-bold text-daet-ink">Group Size & Pricing</h2>
         <p className="mt-1 text-sm text-daet-ink/70">Select number of participants</p>
 
         <div className="mt-4 space-y-4">
@@ -210,7 +210,7 @@ export function BookingForm({ packageId, priceVariants, dateOptions, userProfile
                 value={selectedVariantId}
                 onChange={(e) => setSelectedVariantId(e.target.value)}
                 required
-                className="mt-1 w-full rounded-xl border border-daet-ink/20 min-h-11 px-4 py-2.5 text-base focus:border-daet-forest focus:outline-none focus:ring-2 focus:ring-daet-forest/20"
+                className="mt-1 w-full rounded-2xl border border-daet-ink/20 min-h-11 px-4 py-2.5 text-base focus:border-daet-forest focus:outline-none focus:ring-2 focus:ring-daet-forest/20"
               >
                 {priceVariants.map((variant) => (
                   <option key={variant.id} value={variant.id}>
@@ -248,7 +248,7 @@ export function BookingForm({ packageId, priceVariants, dateOptions, userProfile
                 min={minPax}
                 max={maxPax}
                 required
-                className="w-20 rounded-xl border border-daet-ink/20 min-h-11 px-4 py-2.5 text-center text-base font-bold focus:border-daet-forest focus:outline-none focus:ring-2 focus:ring-daet-forest/20"
+                className="w-20 rounded-2xl border border-daet-ink/20 min-h-11 px-4 py-2.5 text-center text-base font-bold focus:border-daet-forest focus:outline-none focus:ring-2 focus:ring-daet-forest/20"
               />
               <button
                 type="button"
@@ -264,7 +264,7 @@ export function BookingForm({ packageId, priceVariants, dateOptions, userProfile
               </span>
             </div>
             {notEnoughSeats ? (
-              <p className="mt-2 text-sm font-semibold text-rose-700">
+              <p className="mt-2 text-sm font-semibold text-red-700">
                 Only {selectedDate?.seatsLeft} seat(s) left on this date. Choose another date or a smaller group.
               </p>
             ) : null}
@@ -274,12 +274,12 @@ export function BookingForm({ packageId, priceVariants, dateOptions, userProfile
           <div className="rounded-2xl bg-daet-sand/30 p-4">
             <div className="flex items-baseline justify-between">
               <span className="text-sm font-bold text-daet-ink">Total Amount:</span>
-              <span className="text-3xl font-black text-daet-forest">
+              <span className="text-3xl font-bold text-daet-forest">
                 {formatPeso(totalAmount)}
               </span>
             </div>
             {selectedVariant?.price_per_pax && (
-              <p className="mt-1 text-xs text-daet-ink/70">
+              <p className="mt-1 text-sm text-slate-600">
                 {formatPeso(selectedVariant.price_per_pax)} × {numberOfPax} pax
               </p>
             )}
@@ -288,8 +288,8 @@ export function BookingForm({ packageId, priceVariants, dateOptions, userProfile
       </section>
 
       {/* Contact Information */}
-      <section className="rounded-3xl border border-daet-ink/10 bg-white p-6 shadow-sm">
-        <h2 className="text-xl font-black text-daet-ink">Contact Information</h2>
+      <section className="rounded-2xl bg-white p-6">
+        <h2 className="text-xl font-bold text-daet-ink">Contact Information</h2>
         <p className="mt-1 text-sm text-daet-ink/70">
           We'll use this to confirm your booking
         </p>
@@ -306,7 +306,7 @@ export function BookingForm({ packageId, priceVariants, dateOptions, userProfile
               onChange={(e) => setContactName(e.target.value)}
               required
               minLength={2}
-              className="mt-1 w-full rounded-xl border border-daet-ink/20 min-h-11 px-4 py-2.5 text-base focus:border-daet-forest focus:outline-none focus:ring-2 focus:ring-daet-forest/20"
+              className="mt-1 w-full rounded-2xl border border-daet-ink/20 min-h-11 px-4 py-2.5 text-base focus:border-daet-forest focus:outline-none focus:ring-2 focus:ring-daet-forest/20"
               placeholder="Juan Dela Cruz"
             />
           </div>
@@ -322,7 +322,7 @@ export function BookingForm({ packageId, priceVariants, dateOptions, userProfile
                 value={contactEmail}
                 onChange={(e) => setContactEmail(e.target.value)}
                 required
-                className="mt-1 w-full rounded-xl border border-daet-ink/20 min-h-11 px-4 py-2.5 text-base focus:border-daet-forest focus:outline-none focus:ring-2 focus:ring-daet-forest/20"
+                className="mt-1 w-full rounded-2xl border border-daet-ink/20 min-h-11 px-4 py-2.5 text-base focus:border-daet-forest focus:outline-none focus:ring-2 focus:ring-daet-forest/20"
                 placeholder="juan@example.com"
               />
             </div>
@@ -338,7 +338,7 @@ export function BookingForm({ packageId, priceVariants, dateOptions, userProfile
                 onChange={(e) => setContactPhone(e.target.value)}
                 required
                 minLength={10}
-                className="mt-1 w-full rounded-xl border border-daet-ink/20 min-h-11 px-4 py-2.5 text-base focus:border-daet-forest focus:outline-none focus:ring-2 focus:ring-daet-forest/20"
+                className="mt-1 w-full rounded-2xl border border-daet-ink/20 min-h-11 px-4 py-2.5 text-base focus:border-daet-forest focus:outline-none focus:ring-2 focus:ring-daet-forest/20"
                 placeholder="09123456789"
               />
             </div>
@@ -353,7 +353,7 @@ export function BookingForm({ packageId, priceVariants, dateOptions, userProfile
               value={specialRequests}
               onChange={(e) => setSpecialRequests(e.target.value)}
               rows={3}
-              className="mt-1 w-full rounded-xl border border-daet-ink/20 min-h-11 px-4 py-2.5 text-base focus:border-daet-forest focus:outline-none focus:ring-2 focus:ring-daet-forest/20"
+              className="mt-1 w-full rounded-2xl border border-daet-ink/20 min-h-11 px-4 py-2.5 text-base focus:border-daet-forest focus:outline-none focus:ring-2 focus:ring-daet-forest/20"
               placeholder="Any dietary restrictions, accessibility needs, or special occasions..."
             />
           </div>
@@ -361,17 +361,17 @@ export function BookingForm({ packageId, priceVariants, dateOptions, userProfile
       </section>
 
       {/* Submit */}
-      <div className="flex flex-col gap-4 rounded-3xl border border-daet-ink/10 bg-white p-6 shadow-sm sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex flex-col gap-4 rounded-2xl bg-white p-6 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <p className="text-sm font-bold text-daet-ink">Ready to book?</p>
-          <p className="text-xs text-daet-ink/70">
+          <p className="text-sm text-slate-600">
             Nothing is charged yet. You pay after the operator confirms.
           </p>
         </div>
         <button
           type="submit"
           disabled={isSubmitting || noOpenDates || notEnoughSeats || !tourDate}
-          className="min-h-11 shrink-0 whitespace-nowrap rounded-full bg-daet-forest px-8 py-3 text-sm font-black text-white transition hover:bg-daet-ink disabled:opacity-50"
+          className="min-h-11 shrink-0 whitespace-nowrap rounded-full bg-daet-forest px-8 py-3 text-sm font-bold text-white transition hover:bg-blue-700 disabled:opacity-50"
         >
           {isSubmitting ? "Sending request..." : `Request booking · ${formatPeso(totalAmount)}`}
         </button>

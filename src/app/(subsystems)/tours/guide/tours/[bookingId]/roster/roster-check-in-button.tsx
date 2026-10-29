@@ -33,7 +33,7 @@ export function RosterCheckInButton({ bookingId, participantId, label }: { booki
         {label}
       </Button>
       {error ? (
-        <p role="alert" className="text-sm font-semibold text-rose-700">
+        <p role="alert" className="text-sm font-semibold text-red-700">
           {error}
         </p>
       ) : null}

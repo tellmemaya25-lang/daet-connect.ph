@@ -51,7 +51,7 @@ export function PackageInclusionsStep({
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       <div>
-        <h2 className="text-2xl font-black text-daet-ink">What's included?</h2>
+        <h2 className="text-2xl font-bold text-daet-ink">What's included?</h2>
         <p className="mt-2 text-sm text-daet-ink/65">
           Help tourists know exactly what they're getting — list what's included and what's not.
         </p>
@@ -60,7 +60,7 @@ export function PackageInclusionsStep({
       {/* Inclusions */}
       <div>
         <label className="block text-sm font-bold text-daet-ink">Inclusions</label>
-        <p className="mt-1 text-xs text-daet-ink/70">
+        <p className="mt-1 text-sm text-slate-600">
           What's provided in this tour package?
         </p>
 
@@ -88,9 +88,9 @@ export function PackageInclusionsStep({
             {inclusions.map((item, index) => (
               <li
                 key={index}
-                className="flex items-center justify-between gap-3 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm"
+                className="flex items-center justify-between gap-3 rounded-2xl bg-green-50 px-4 py-3 text-sm"
               >
-                <span className="flex items-center gap-2 text-emerald-900">
+                <span className="flex items-center gap-2 text-green-900">
                   <span className="text-base" aria-hidden="true">
                     ✓
                   </span>
@@ -99,7 +99,7 @@ export function PackageInclusionsStep({
                 <button
                   type="button"
                   onClick={() => removeInclusion(index)}
-                  className="text-emerald-700 hover:text-emerald-900"
+                  className="text-green-700 hover:text-green-900"
                   aria-label="Remove inclusion"
                 >
                   ✕
@@ -113,7 +113,7 @@ export function PackageInclusionsStep({
       {/* Exclusions */}
       <div>
         <label className="block text-sm font-bold text-daet-ink">Exclusions</label>
-        <p className="mt-1 text-xs text-daet-ink/70">
+        <p className="mt-1 text-sm text-slate-600">
           What should tourists prepare or pay for separately?
         </p>
 
@@ -141,7 +141,7 @@ export function PackageInclusionsStep({
             {exclusions.map((item, index) => (
               <li
                 key={index}
-                className="flex items-center justify-between gap-3 rounded-2xl border border-daet-ink/10 bg-daet-sand px-4 py-3 text-sm"
+                className="flex items-center justify-between gap-3 rounded-2xl bg-slate-50 px-4 py-3 text-sm"
               >
                 <span className="flex items-center gap-2 text-daet-ink/70">
                   <span className="text-base" aria-hidden="true">
@@ -176,7 +176,7 @@ export function PackageInclusionsStep({
         <button
           type="submit"
           disabled={loading}
-          className="inline-flex min-h-12 items-center justify-center rounded-full bg-daet-forest px-8 text-sm font-black text-white transition hover:bg-daet-ink disabled:cursor-not-allowed disabled:opacity-50"
+          className="inline-flex min-h-12 items-center justify-center rounded-full bg-daet-forest px-8 text-sm font-bold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
         >
           {loading ? "Saving..." : "Continue →"}
         </button>

@@ -52,15 +52,15 @@ export default async function ConversationPage({ params }: PageProps) {
   return (
     <PageFrame>
       <div className="mx-auto flex max-w-2xl flex-col">
-        <Link href="/tours/messages" className="text-sm font-bold text-daet-ink/70 hover:text-daet-ink">
+        <Link href="/tours/messages" className="inline-flex min-h-11 items-center font-bold text-blue-700 hover:underline">
           ← All messages
         </Link>
-        <header className="mt-3 rounded-2xl border border-daet-ink/10 bg-white p-4 shadow-sm">
+        <header className="mt-3 rounded-2xl bg-white p-4">
           <Badge tone="neutral">{KIND_LABELS[header.kind] ?? "Chat"}</Badge>
-          <h1 className="mt-1 text-lg font-black text-daet-ink">{view.title}</h1>
-          <p className="text-xs text-daet-ink/70">{view.subtitle}</p>
+          <h1 className="display-2 text-daet-ink">{view.title}</h1>
+          <p className="text-slate-600">{view.subtitle}</p>
           {view.link ? (
-            <Link href={view.link.href} className="mt-1 inline-block text-xs font-bold text-daet-forest underline">
+            <Link href={view.link.href} className="mt-1 inline-flex min-h-11 items-center font-bold text-blue-700 underline">
               {view.link.label}
             </Link>
           ) : null}
