@@ -80,7 +80,7 @@ export function findRestrictedChanges(
   if (status !== "published") return [];
   const violations: string[] = [];
 
-  if (original.durationValue !== next.durationValue) {
+  if (original.durationValue !== next.durationValue || original.durationType !== next.durationType) {
     violations.push("Duration length cannot change on a published package.");
   }
 

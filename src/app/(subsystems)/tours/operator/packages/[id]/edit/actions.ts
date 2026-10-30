@@ -1349,6 +1349,7 @@ export async function updatePackageCore(
         p_inclusions: rpcPayload.p_inclusions,
         p_stops: rpcPayload.p_stops,
         p_gallery: rpcPayload.p_gallery,
+        p_expected_updated_at: cachedUpdatedAt,
       }
     );
 
@@ -1358,6 +1359,23 @@ export async function updatePackageCore(
       
       // Check if error message indicates validation failure from RPC
       const errorMessage = rpcError.message || "";
+      if (rpcError.code === "PT409") {
+        return {
+          success: false,
+          message: "This package was modified by another session. Please refresh and try again.",
+          status: 409,
+          error: "Concurrency conflict",
+          errors: {},
+        };
+      }
+      if (rpcError.code === "PT403" || rpcError.code === "PT400") {
+        return {
+          success: false,
+          message: errorMessage,
+          error: rpcError.code === "PT403" ? "Not allowed" : "Validation error",
+          errors: {},
+        };
+      }
       if (errorMessage.includes("validation") || errorMessage.includes("constraint")) {
         return {
           success: false,
@@ -1383,7 +1401,7 @@ export async function updatePackageCore(
         return {
           success: true,
           message: "Package updated successfully.",
-          updatedAt: result.updated_at,
+          updatedAt: result.new_updated_at,
         };
       } else {
         // RPC returned success=false
