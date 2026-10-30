@@ -6,7 +6,7 @@
  */
 type Env = Record<string, string | undefined>;
 
-const LOCAL_HOST = /^https?:\/\/(localhost|127\.0\.0\.1|0\.0\.0\.0|\[::1\])(:\d+)?(\/|$)/i;
+const LOCAL_HOST = /^(https?:\/\/)?(localhost|127\.0\.0\.1|0\.0\.0\.0|\[::1\])(:\d+)?(\/|$)/i;
 
 function withScheme(host: string): string {
   return /^https?:\/\//i.test(host) ? host : `https://${host}`;
