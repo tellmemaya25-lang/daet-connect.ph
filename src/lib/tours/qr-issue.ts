@@ -1,13 +1,11 @@
 import "server-only";
+import { resolveAppUrl } from "@/lib/app-url";
 import { createQrPngDataUrl } from "@/lib/tours/guide-qr";
 import { badgeExpiry, getQrSecret, signQrToken, ticketExpiry, verifyUrl } from "@/lib/tours/qr-token";
 
 /** Public base URL that QR codes link to (phone cameras open it). */
 export function appBaseUrl(): string {
-  return (
-    process.env.NEXT_PUBLIC_APP_URL?.trim() ||
-    (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "http://localhost:3000")
-  );
+  return resolveAppUrl();
 }
 
 export type IssuedQr = { token: string; url: string; exp: number; pngDataUrl: string };
