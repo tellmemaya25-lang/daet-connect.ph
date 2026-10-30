@@ -1,4 +1,5 @@
--- Daet local guide directory: provisional seed (checked 2026-10-29).
+-- Daet local guide directory: provisional seed (checked 2026-10-29,
+-- refreshed 2026-10-30; see guide_directory_refresh_2026_10.sql).
 -- Only entries found in public sources, each naming that source. None is
 -- verified yet: the app shows them as "verify locally" until the Tourism
 -- Office confirms them in /tours/admin/guide-places and /tours/admin/fares.
@@ -14,8 +15,8 @@ VALUES
    'Main stop for buses to and from Manila and UV Express vans from Naga.',
    'Wikivoyage, Daet (Feb 2025 edition)', '2026-10-29'),
   ('service', 'Camarines Norte Provincial Tourism Office', 'camarines-norte-tourism-office', 'Daet', 'Provincial Capitol, Daet, Camarines Norte', NULL, NULL, NULL, NULL, NULL, '{}', '{help,tourism}',
-   'Travel information and assistance for the province. Ask here to confirm fares, boat schedules and permits.',
-   'ivanhenares.com travel blog (2012), listing the office at the Provincial Capitol; phone numbers there are old, so confirm before calling', '2026-10-29'),
+   'Provincial tourism office (called the Provincial Tourism Operations Office in 2023). Ask here to confirm fares, boat schedules and permits. No current phone number was found online; ask at the Provincial Capitol.',
+   'Philippine Information Agency, Bantayog Festival article (May 2023); ivanhenares.com (2012) for the Capitol location', '2026-10-30'),
   ('eatery', 'Leo''s Cuisine', 'leos-cuisine', 'Daet', 'Bagasbas Boulevard, Bagasbas, Daet', NULL, NULL, NULL, NULL, NULL, '{}', '{beachfront}',
    'Restaurant on the Bagasbas beachfront.',
    'Wikivoyage, Daet (Feb 2025 edition)', '2026-10-29'),
@@ -43,14 +44,14 @@ ON CONFLICT (slug) DO NOTHING;
 INSERT INTO public.tours_fares
   (mode, from_name, to_name, fare_min, fare_max, fare_per, minutes_min, minutes_max, schedule_note, source, checked_on)
 VALUES
-  ('bus', 'Manila (PITX)', 'Daet', 801, 801, 'person', 540, 720, 'Daily DLTB trips from PITX, Cubao and Pasay; Superlines also runs Manila–Daet. Overnight trips are common.',
-   'bustickets.ph DLTB Manila–Bicol schedule; 12go.com and rome2rio trip times', '2026-10-29'),
+  ('bus', 'Manila (PITX)', 'Daet', 801, 1084, 'person', 540, 720, 'DLTB from PITX, Cubao and Pasay; Superlines also runs Manila–Daet. Recent listings: about ₱980 regular and ₱1,084 Greyhound from Cubao; older listings ₱801. Overnight trips are common.',
+   'pamasahe.com DLTB Manila–Camarines Norte fares (2026 listing); bustickets.ph DLTB schedule (₱801, undated); rome2rio trip times', '2026-10-30'),
   ('van', 'Naga', 'Daet', NULL, NULL, 'person', 120, 150, 'UV Express vans to Daet Central Terminal. Naga (Pili) has the nearest commercial airport.',
    'Wikivoyage, Daet (Feb 2025 edition)', '2026-10-29'),
-  ('tricycle', 'Daet town center', 'Bagasbas', 30, 30, 'person', 10, 15, 'Agree on the fare before you ride; special trips cost more.',
-   'philippinebeaches.org Bagasbas travel tips', '2026-10-29'),
-  ('boat', 'Paracale port', 'Calaguas', 3000, 7000, 'boat', 120, 150, 'Hired boat, usually for a group; prices in the source are from 2014 and vary with group size. Plus about ₱20–25 environmental fee per person.',
-   's1expeditions.com Calaguas guide (2014) and lakwatsero.com reader reports', '2026-10-29'),
+  ('tricycle', 'Daet town center', 'Bagasbas', 30, 30, 'person', 10, 15, 'About ₱30 one way in 2018; likely higher now. Agree on the fare before you ride; special trips cost more.',
+   'philippinebeaches.org Bagasbas travel tips (2018)', '2026-10-30'),
+  ('boat', 'Paracale port', 'Calaguas', 3000, 7000, 'boat', 120, 150, 'Hired boat for a group, overnight. Published rates (2014–2017 guides): about ₱3,000 for 6, ₱5,000 for 10, ₱6,500 for 15 people; expect higher now. Plus an environmental fee (₱25 per person in 2014).',
+   'lakwatsero.com Calaguas travel guide (rates updated to about 2017); s1expeditions.com guide (2014)', '2026-10-30'),
   ('boat', 'Vinzons', 'Calaguas', NULL, NULL, 'boat', 90, 120, 'Hire a banca at the Vinzons fish port; the price depends on the boat size.',
    'lakwatsero.com Calaguas DIY guide', '2026-10-29'),
   ('boat', 'Mercedes port', 'Apuao Grande', NULL, NULL, 'boat', 30, 45, 'Island-hopping boats from Mercedes port.',
