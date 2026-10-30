@@ -90,6 +90,24 @@ BEGIN
   EXCEPTION WHEN SQLSTATE 'PT403' THEN NULL; END;
   IF ok THEN pass := pass + 1; ELSE fails := fails || 'price changed on published package; '; END IF;
 
+  -- 5b. ...so is switching the duration unit, or sending no stop list.
+  ok := true;
+  BEGIN
+    PERFORM update_package_and_relations(
+      v_published,
+      (SELECT jsonb_build_object('title', title, 'duration_value', duration_value,
+         'duration_type', CASE WHEN duration_type::text = 'days' THEN 'hours' ELSE 'days' END) FROM tours_packages WHERE id = v_published),
+      v_variants, '[]', '[]', '[]');
+    ok := false;
+  EXCEPTION WHEN SQLSTATE 'PT403' THEN NULL; END;
+  IF ok THEN pass := pass + 1; ELSE fails := fails || 'duration unit changed on published package; '; END IF;
+  ok := true;
+  BEGIN
+    PERFORM update_package_and_relations(v_published, '{"title":"x"}', v_variants, '[]', NULL, '[]');
+    ok := false;
+  EXCEPTION WHEN SQLSTATE 'PT400' THEN NULL; END;
+  IF ok THEN pass := pass + 1; ELSE fails := fails || 'null stop list accepted; '; END IF;
+
   -- 6. ...but a wording change goes through and keeps the booked variants.
   SELECT * INTO v_res FROM update_package_and_relations(
     v_published,

@@ -100,13 +100,14 @@ DECLARE
   v_status TEXT;
   v_current_updated_at TIMESTAMPTZ;
   v_duration_value NUMERIC;
+  v_duration_type TEXT;
   v_result_updated_at TIMESTAMPTZ;
   v_result_status TEXT;
   v_keep UUID[];
 BEGIN
   -- Ownership + row lock (serialises concurrent saves of one package)
-  SELECT tp.status::TEXT, tp.updated_at, tp.duration_value
-    INTO v_status, v_current_updated_at, v_duration_value
+  SELECT tp.status::TEXT, tp.updated_at, tp.duration_value, tp.duration_type::TEXT
+    INTO v_status, v_current_updated_at, v_duration_value, v_duration_type
   FROM tours_packages tp
   JOIN tours_operators toper ON toper.id = tp.operator_id
   WHERE tp.id = p_package_id
@@ -127,27 +128,32 @@ BEGIN
     RAISE EXCEPTION 'Only draft or rejected packages can be submitted for review' USING ERRCODE = 'PT403';
   END IF;
 
-  -- Payload shape and limits
-  IF jsonb_typeof(p_price_variants) <> 'array' OR jsonb_array_length(p_price_variants) = 0 THEN
+  -- Payload shape and limits (IS DISTINCT FROM so a null list is refused)
+  IF jsonb_typeof(p_package_data) IS DISTINCT FROM 'object' THEN
+    RAISE EXCEPTION 'Package details are required' USING ERRCODE = 'PT400';
+  END IF;
+  IF jsonb_typeof(p_price_variants) IS DISTINCT FROM 'array' OR jsonb_array_length(p_price_variants) = 0 THEN
     RAISE EXCEPTION 'At least one price variant is required' USING ERRCODE = 'PT400';
   END IF;
   IF (SELECT COUNT(*) FROM jsonb_array_elements(p_price_variants) v
       WHERE COALESCE((v->>'is_default')::BOOLEAN, false)) <> 1 THEN
     RAISE EXCEPTION 'Exactly one default price variant is required' USING ERRCODE = 'PT400';
   END IF;
-  IF jsonb_typeof(p_inclusions) <> 'array' OR jsonb_array_length(p_inclusions) > 50 THEN
+  IF jsonb_typeof(p_inclusions) IS DISTINCT FROM 'array' OR jsonb_array_length(p_inclusions) > 50 THEN
     RAISE EXCEPTION 'A package can have at most 50 inclusion items' USING ERRCODE = 'PT400';
   END IF;
-  IF jsonb_typeof(p_stops) <> 'array' OR jsonb_array_length(p_stops) > 50 THEN
+  IF jsonb_typeof(p_stops) IS DISTINCT FROM 'array' OR jsonb_array_length(p_stops) > 50 THEN
     RAISE EXCEPTION 'A package can have at most 50 stops' USING ERRCODE = 'PT400';
   END IF;
-  IF jsonb_typeof(p_gallery) <> 'array' OR jsonb_array_length(p_gallery) > 20 THEN
+  IF jsonb_typeof(p_gallery) IS DISTINCT FROM 'array' OR jsonb_array_length(p_gallery) > 20 THEN
     RAISE EXCEPTION 'A package can have at most 20 gallery images' USING ERRCODE = 'PT400';
   END IF;
 
-  -- Published packages: only non-structural edits
+  -- Published packages: only wording, captions and pax ranges may change
+  -- (mirrors findRestrictedChanges in the edit page).
   IF v_status = 'published' THEN
     IF (p_package_data->>'duration_value')::NUMERIC IS DISTINCT FROM v_duration_value
+       OR COALESCE(p_package_data->>'duration_type', v_duration_type) IS DISTINCT FROM v_duration_type
        OR jsonb_array_length(p_price_variants) <> (SELECT COUNT(*) FROM tours_package_price_variants WHERE package_id = p_package_id)
        OR EXISTS (
          SELECT 1 FROM jsonb_array_elements(p_price_variants) v
@@ -161,6 +167,26 @@ BEGIN
        OR jsonb_array_length(p_inclusions) <> (SELECT COUNT(*) FROM tours_package_inclusions WHERE package_id = p_package_id)
        OR jsonb_array_length(p_stops) <> (SELECT COUNT(*) FROM tours_package_stops WHERE package_id = p_package_id)
        OR jsonb_array_length(p_gallery) <> (SELECT COUNT(*) FROM tours_package_gallery WHERE package_id = p_package_id)
+       -- Same items in the same order: included/excluded flags, stop
+       -- durations and photos are fixed; only their text may change.
+       OR EXISTS (
+         SELECT 1 FROM jsonb_array_elements(p_inclusions) WITH ORDINALITY AS t(v, idx)
+         JOIN (SELECT is_included, ROW_NUMBER() OVER (ORDER BY display_order, id) AS rn
+               FROM tours_package_inclusions WHERE package_id = p_package_id) cur
+           ON cur.rn = t.idx
+         WHERE cur.is_included IS DISTINCT FROM COALESCE((t.v->>'is_included')::BOOLEAN, true))
+       OR EXISTS (
+         SELECT 1 FROM jsonb_array_elements(p_stops) WITH ORDINALITY AS t(v, idx)
+         JOIN (SELECT estimated_duration_minutes, ROW_NUMBER() OVER (ORDER BY stop_order, id) AS rn
+               FROM tours_package_stops WHERE package_id = p_package_id) cur
+           ON cur.rn = t.idx
+         WHERE cur.estimated_duration_minutes IS DISTINCT FROM NULLIF(t.v->>'estimated_duration_minutes', '')::INTEGER)
+       OR EXISTS (
+         SELECT 1 FROM jsonb_array_elements(p_gallery) WITH ORDINALITY AS t(v, idx)
+         JOIN (SELECT image_url, ROW_NUMBER() OVER (ORDER BY display_order, id) AS rn
+               FROM tours_package_gallery WHERE package_id = p_package_id) cur
+           ON cur.rn = t.idx
+         WHERE cur.image_url IS DISTINCT FROM trim(t.v->>'image_url'))
     THEN
       RAISE EXCEPTION 'This change is not allowed on a published package' USING ERRCODE = 'PT403';
     END IF;
