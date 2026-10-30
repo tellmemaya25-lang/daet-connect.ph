@@ -61,6 +61,12 @@ export function PackageCreateForm({ operatorId }: Props) {
       return;
     }
 
+    // Saved, but not complete enough for review: finish it in the editor.
+    if (result.notice && result.packageId) {
+      router.push(`/tours/operator/packages/${result.packageId}/edit`);
+      return;
+    }
+
     // Success - redirect to packages list
     router.push("/tours/operator/packages?submitted=true");
   }

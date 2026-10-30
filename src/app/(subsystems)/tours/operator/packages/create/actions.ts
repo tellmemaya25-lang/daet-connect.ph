@@ -7,6 +7,8 @@ type CreatePackageResult = {
   success: boolean;
   error?: string;
   packageId?: string;
+  /** Set when the tour was saved but could not go to review yet. */
+  notice?: string;
 };
 
 export async function createPackage(formData: FormData): Promise<CreatePackageResult> {
@@ -27,7 +29,8 @@ export async function createPackage(formData: FormData): Promise<CreatePackageRe
     const stopsText = formData.get("stops") as string;
 
 
-    // Create package
+    // Created as a draft: operators may only write their own drafts, and
+    // submit_package_for_review moves it to review once everything is in.
     const { data: pkg, error: pkgError } = await supabase
       .from("tours_packages")
       .insert({
@@ -37,7 +40,7 @@ export async function createPackage(formData: FormData): Promise<CreatePackageRe
         location_name: location,
         duration_value: durationValue,
         duration_type: durationType,
-        status: "pending_review",
+        status: "draft",
       })
       .select("id")
       .single();
@@ -186,6 +189,11 @@ export async function createPackage(formData: FormData): Promise<CreatePackageRe
           // Continue with remaining images
         }
       }
+    }
+
+    const { error: submitError } = await supabase.rpc("submit_package_for_review", { p_package_id: packageId });
+    if (submitError) {
+      return { success: true, packageId, notice: `Saved as a draft: ${submitError.message}` };
     }
 
     return { success: true, packageId };

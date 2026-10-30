@@ -223,7 +223,9 @@ export function toRpcPayload(data: EditPackageFormData) {
       duration_type: data.durationType,
       cover_image_url: trimOrNull(data.coverImageUrl),
     },
+    // Variant ids are kept so bookings that point at a variant stay valid.
     p_price_variants: data.priceVariants.map((variant) => ({
+      ...(variant.id ? { id: variant.id } : {}),
       variant_name: variant.variantName.trim(),
       min_pax: variant.minPax,
       max_pax: variant.maxPax,
