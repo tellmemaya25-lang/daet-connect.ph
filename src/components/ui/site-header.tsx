@@ -2,6 +2,7 @@ import { BrandMark } from "@/components/ui/brand-mark";
 import { ButtonLink } from "@/components/ui/button";
 import { LogoutButton } from "@/components/ui/logout-button";
 import { MobileMenu, type MenuLink } from "@/components/ui/mobile-menu";
+import { UnreadMessagesBadge } from "@/components/chat/unread-badge";
 import { SiteNavLink } from "@/components/ui/site-nav-link";
 import { NotificationBell } from "@/components/tours/notification-bell";
 import type { DashboardRole, Tab } from "@/lib/tours/dashboards";
@@ -66,6 +67,7 @@ export function SiteHeader({
             ? roleLinks.map((link) => (
                 <SiteNavLink key={link.href} href={link.href}>
                   {link.label}
+                  {link.href === "/tours/messages" ? <UnreadMessagesBadge className="ml-1.5" /> : null}
                 </SiteNavLink>
               ))
             : null}

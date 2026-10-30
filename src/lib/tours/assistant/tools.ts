@@ -7,6 +7,7 @@ import { faqById, FAQS, type FaqLink } from "@/lib/tours/assistant/knowledge";
 import { hoursToText } from "@/lib/tours/opening-hours";
 import { directionsUrl, estimateLeg, formatDistance, formatDuration, type LatLng, type Leg } from "@/lib/maps/geo";
 import { boatOptionsTo, findBoatLeg, findTransportPlace, TRANSPORT_CHECKED } from "@/lib/tours/assistant/transport";
+import type { CostCard, PlaceCard, TransportCard } from "@/lib/tours/assistant/guide-tools";
 
 /**
  * Read-only tools for the travel assistant (F13). They run with the
@@ -22,7 +23,7 @@ export type BookingCard = { type: "booking"; id: string; reference: string; titl
 /** `external` links (Google Maps directions) open in a new tab. */
 export type LinkCard = { type: "link"; href: string; label: string; external?: boolean };
 export type HandoffCard = { type: "handoff"; target: "operator" | "tourism_office"; bookingId: string | null; operatorName: string | null; summary: string; signedIn: boolean };
-export type AssistantCard = TourCard | BookingCard | LinkCard | HandoffCard;
+export type AssistantCard = TourCard | BookingCard | LinkCard | HandoffCard | PlaceCard | CostCard | TransportCard;
 
 export type ToolContext = {
   supabase: SupabaseClient;
@@ -31,6 +32,8 @@ export type ToolContext = {
   cards: AssistantCard[];
   /** Road leg between two points (the cached Routes API on the server); an estimate when missing. */
   route?: (from: LatLng, to: LatLng) => Promise<Leg>;
+  /** The traveller's location, rounded, when they chose to share it for this message. Never stored. */
+  here?: LatLng | null;
 };
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -40,9 +43,12 @@ const peso = (n: number) => Math.round(n * 100) / 100;
 const cleanTerm = (value: string) => value.replace(/[^\p{L}\p{N} '-]/gu, " ").replace(/\s+/g, " ").trim().slice(0, 60);
 const one = <T,>(value: T | T[] | null | undefined): T | null => (Array.isArray(value) ? (value[0] ?? null) : (value ?? null));
 
-function addCard(ctx: ToolContext, card: AssistantCard) {
-  const key = card.type === "handoff" ? "handoff" : "href" in card ? card.href : card.type === "booking" ? card.id : JSON.stringify(card);
-  const exists = ctx.cards.some((c) => (c.type === "handoff" ? "handoff" : "href" in c ? c.href : c.type === "booking" ? c.id : JSON.stringify(c)) === key);
+const cardKey = (c: AssistantCard) =>
+  c.type === "handoff" ? "handoff" : "href" in c ? c.href : c.type === "booking" ? c.id : c.type === "place" ? `place:${c.name}` : JSON.stringify(c);
+
+export function addCard(ctx: ToolContext, card: AssistantCard) {
+  const key = cardKey(card);
+  const exists = ctx.cards.some((c) => cardKey(c) === key);
   if (!exists && ctx.cards.length < MAX_CARDS) ctx.cards.push(card);
 }
 
@@ -296,7 +302,7 @@ export async function handoff(ctx: ToolContext, input: { summary: string; bookin
 }
 
 /** A listed attraction or a known town/port, with coordinates. */
-async function resolvePlace(ctx: ToolContext, name: string): Promise<{ name: string; point: LatLng } | null> {
+export async function resolvePlace(ctx: ToolContext, name: string): Promise<{ name: string; point: LatLng } | null> {
   const term = cleanTerm(name ?? "");
   if (term.length < 3) return null;
   // A bare town or port name ("Daet", "Mercedes") means the town, not a place named after it.

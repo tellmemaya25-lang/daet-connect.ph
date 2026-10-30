@@ -1,5 +1,3 @@
-import { EmptyState } from "@/components/ui/empty-state";
-import { LineIcon } from "@/components/ui/icons";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
@@ -9,20 +7,12 @@ import { isSupabaseConfigured } from "@/lib/supabase/env";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { getAuthenticatedSession } from "@/lib/tours/server-auth";
 import { OpenChatButton } from "./open-chat-button";
-import { dayLabel, inboxFilters, isConversationKind, KIND_LABELS } from "@/lib/tours/messaging";
+import { inboxFilters, isConversationKind, type InboxRow } from "@/lib/tours/messaging";
+import { InboxList } from "./inbox-list";
+import { LiveInbox } from "./live-inbox";
 
 export const dynamic = "force-dynamic";
 
-type InboxRow = {
-  conversation_id: string;
-  kind: string;
-  title: string | null;
-  subtitle: string | null;
-  last_message_at: string;
-  last_message: string | null;
-  last_sender_id: string | null;
-  unread: number;
-};
 
 type PageProps = { searchParams: Promise<{ kind?: string }> };
 
@@ -99,39 +89,12 @@ export default async function MessagesInboxPage({ searchParams }: PageProps) {
           </details>
         ) : null}
 
-        {error ? (
-          <Notice variant="error" className="mt-6">Messages could not be loaded. Refresh to try again.</Notice>
-        ) : rows.length === 0 ? (
-          <EmptyState className="mt-6" icon={<LineIcon name="chat" />} title="No conversations yet" description="Open a booking, a guide or the Tourism Office and tap Message to start a chat." />
-        ) : (
-          <ul className="mt-6 space-y-2">
-            {rows.map((row) => {
-              const preview = row.last_message ?? (row.last_sender_id ? "Photo" : "No messages yet");
-              const mine = row.last_sender_id === user.id;
-              return (
-                <li key={row.conversation_id}>
-                  <Link href={`/tours/messages/${row.conversation_id}`} className="flex min-h-11 items-start gap-3 rounded-2xl bg-white p-4 transition hover:bg-blue-50 active:scale-[0.99]">
-                    <div className="min-w-0 flex-1">
-                      <div className="flex items-baseline justify-between gap-2">
-                        <p className={`truncate text-daet-ink font-bold`}>{row.title ?? "Conversation"}</p>
-                        <span className="shrink-0 text-sm text-slate-600">{dayLabel(row.last_message_at)}</span>
-                      </div>
-                      <p className="text-sm text-slate-600">
-                        <span className="font-semibold">{isConversationKind(row.kind) ? KIND_LABELS[row.kind] : "Chat"}</span>
-                        {row.subtitle ? ` · ${row.subtitle}` : ""}
-                      </p>
-                      <p className={`mt-1 truncate text-sm ${row.unread > 0 ? "font-semibold text-daet-ink" : "text-daet-ink/70"}`}>
-                        {mine ? "You: " : ""}
-                        {preview}
-                      </p>
-                    </div>
-                    {row.unread > 0 ? <Badge tone="brand">{row.unread > 99 ? "99+" : row.unread}</Badge> : null}
-                  </Link>
-                </li>
-              );
-            })}
-          </ul>
-        )}
+        {error ? <Notice variant="error" className="mt-6">Messages could not be loaded. Refresh to try again.</Notice> : null}
+        <div className="mt-6">
+          <LiveInbox viewerId={user.id}>
+            <InboxList rows={rows} viewerId={user.id} />
+          </LiveInbox>
+        </div>
       </div>
     </PageFrame>
   );

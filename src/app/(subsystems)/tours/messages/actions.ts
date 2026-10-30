@@ -3,7 +3,9 @@
 import { revalidatePath } from "next/cache";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { userFacingDbError } from "@/lib/tours/db-errors";
-import { attachmentPath, chatRpc, MESSAGE_ATTACHMENT_BUCKET, parseMessageForm, type ChatMessage, type ChatTarget } from "@/lib/tours/messaging";
+import { attachmentPath, chatRpc, describeThread, KIND_LABELS, MESSAGE_ATTACHMENT_BUCKET, MESSAGE_COLUMNS, MESSAGE_PAGE_SIZE, parseMessageForm, type ChatMembers, type ChatMessage, type ChatTarget, type ConversationHeader } from "@/lib/tours/messaging";
+import { getAuthenticatedSession } from "@/lib/tours/server-auth";
+import { isReactionKey, type Reaction, type ReadMark } from "@/lib/tours/messenger";
 import { isUuid } from "@/lib/tours/operator-access";
 
 const SIGNED_URL_SECONDS = 60 * 60;
@@ -48,10 +50,12 @@ export async function sendMessage(formData: FormData): Promise<SendMessageResult
     }
   }
 
+  const replyValue = formData.get("replyToId");
+  const replyToId = typeof replyValue === "string" && isUuid(replyValue) ? replyValue : null;
   const { data, error } = await supabase
     .from("tours_messages")
-    .insert({ conversation_id: conversationId, sender_id: user.id, message_text: parsed.data.text, attachment_url: path })
-    .select("id, sender_id, message_text, attachment_url, created_at")
+    .insert({ conversation_id: conversationId, sender_id: user.id, message_text: parsed.data.text, attachment_url: path, reply_to_id: replyToId })
+    .select(MESSAGE_COLUMNS)
     .single();
   if (error || !data) {
     console.error("Send message error:", error);
@@ -63,11 +67,88 @@ export async function sendMessage(formData: FormData): Promise<SendMessageResult
   return { message: data as ChatMessage, attachmentUrl };
 }
 
+/** Marks the chat read, and the bell's message notifications for it, so both counts agree. */
 export async function markConversationRead(conversationId: string): Promise<void> {
   if (!isUuid(conversationId)) return;
   const supabase = await createSupabaseServerClient();
   const { error } = await supabase.rpc("tours_mark_conversation_read", { p_conversation_id: conversationId });
   if (error) console.error("Mark read error:", error);
+  const { error: notifyError } = await supabase
+    .from("tours_notifications")
+    .update({ read_at: new Date().toISOString() })
+    .eq("type", "message")
+    .eq("link", `/tours/messages/${conversationId}`)
+    .is("read_at", null);
+  if (notifyError) console.error("Mark message notifications read error:", notifyError);
+}
+
+/** When the other people in the chat last read it (for "Seen"). */
+export async function readMarks(conversationId: string): Promise<ReadMark[]> {
+  if (!isUuid(conversationId)) return [];
+  const supabase = await createSupabaseServerClient();
+  const { data, error } = await supabase.rpc("tours_conversation_read_marks", { p_conversation_id: conversationId });
+  if (error) {
+    console.error("Read marks error:", error);
+    return [];
+  }
+  return (data ?? []) as ReadMark[];
+}
+
+/** Adds, changes or removes (null) the viewer's reaction to a message. RLS limits it to members. */
+export async function reactToMessage(messageId: string, reaction: string | null): Promise<{ ok: boolean; error?: string }> {
+  if (!isUuid(messageId) || (reaction !== null && !isReactionKey(reaction))) return { ok: false, error: "That reaction isn't available." };
+  const supabase = await createSupabaseServerClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { ok: false, error: "Please sign in again." };
+  const { error } = reaction
+    ? await supabase.from("tours_message_reactions").upsert({ message_id: messageId, reaction }, { onConflict: "message_id,profile_id" })
+    : await supabase.from("tours_message_reactions").delete().eq("message_id", messageId).eq("profile_id", user.id);
+  if (error) {
+    console.error("Reaction error:", error);
+    return { ok: false, error: "The reaction could not be saved." };
+  }
+  return { ok: true };
+}
+
+export type OlderPage = { messages: ChatMessage[]; reactions: Reaction[]; quoted: ChatMessage[]; attachmentUrls: Record<string, string>; hasMore: boolean };
+
+/** The page of messages before the oldest one on screen. */
+export async function loadOlderMessages(conversationId: string, before: string): Promise<OlderPage> {
+  const empty: OlderPage = { messages: [], reactions: [], quoted: [], attachmentUrls: {}, hasMore: false };
+  if (!isUuid(conversationId) || Number.isNaN(Date.parse(before))) return empty;
+  const supabase = await createSupabaseServerClient();
+  const { data, error } = await supabase
+    .from("tours_messages")
+    .select(MESSAGE_COLUMNS)
+    .eq("conversation_id", conversationId)
+    .lt("created_at", before)
+    .order("created_at", { ascending: false })
+    .limit(MESSAGE_PAGE_SIZE);
+  if (error) {
+    console.error("Older messages error:", error);
+    return empty;
+  }
+  const messages = ((data ?? []) as ChatMessage[]).reverse();
+  const extras = await threadExtras(conversationId, messages);
+  return { messages, ...extras, hasMore: messages.length === MESSAGE_PAGE_SIZE };
+}
+
+/** Reactions, quoted messages and photo links for a page of messages. */
+export async function threadExtras(conversationId: string, messages: ChatMessage[]): Promise<{ reactions: Reaction[]; quoted: ChatMessage[]; attachmentUrls: Record<string, string> }> {
+  if (!isUuid(conversationId) || messages.length === 0) return { reactions: [], quoted: [], attachmentUrls: {} };
+  const supabase = await createSupabaseServerClient();
+  const ids = messages.map((m) => m.id).filter(isUuid);
+  const have = new Set(ids);
+  const replyIds = [...new Set(messages.map((m) => m.reply_to_id).filter((id): id is string => Boolean(id) && isUuid(id as string) && !have.has(id as string)))];
+  const [{ data: reactionRows }, { data: quotedRows }] = await Promise.all([
+    supabase.from("tours_message_reactions").select("message_id, profile_id, reaction").in("message_id", ids),
+    replyIds.length ? supabase.from("tours_messages").select(MESSAGE_COLUMNS).eq("conversation_id", conversationId).in("id", replyIds) : Promise.resolve({ data: [] }),
+  ]);
+  const quoted = (quotedRows ?? []) as ChatMessage[];
+  const attachmentUrls = await signAttachments([...messages, ...quoted].map((m) => m.attachment_url).filter((p): p is string => Boolean(p)));
+  return { reactions: ((reactionRows ?? []) as Reaction[]).filter((r) => isReactionKey(r.reaction)), quoted, attachmentUrls };
 }
 
 /** Short-lived links for photo attachments; storage RLS limits them to members. */
@@ -80,4 +161,55 @@ export async function signAttachments(paths: string[]): Promise<Record<string, s
   const urls: Record<string, string> = {};
   for (const item of data) if (item.path && item.signedUrl) urls[item.path] = item.signedUrl;
   return urls;
+}
+
+export type DockThread = {
+  conversationId: string;
+  viewerId: string;
+  title: string;
+  subtitle: string | null;
+  link: { href: string; label: string } | null;
+  members: ChatMembers;
+  canSend: boolean;
+  closedReason: string | null;
+  emptyText: string;
+  messages: ChatMessage[];
+  reactions: Reaction[];
+  quoted: ChatMessage[];
+  attachmentUrls: Record<string, string>;
+  marks: ReadMark[];
+};
+
+/** Everything a chat window in the desktop dock needs; null when the viewer may not see the chat. */
+export async function dockThread(conversationId: string): Promise<DockThread | null> {
+  if (!isUuid(conversationId)) return null;
+  const supabase = await createSupabaseServerClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return null;
+  const { data: rawHeader } = await supabase.rpc("tours_conversation_header", { p_conversation_id: conversationId });
+  const header = rawHeader as ConversationHeader | null;
+  if (!header) return null;
+  const view = describeThread(header, user.id, (await getAuthenticatedSession()).role);
+  const { data: latest } = await supabase.from("tours_messages").select(MESSAGE_COLUMNS).eq("conversation_id", header.id).order("created_at", { ascending: false }).limit(MESSAGE_PAGE_SIZE);
+  const messages = ((latest ?? []) as ChatMessage[]).reverse();
+  const [extras, marks] = await Promise.all([threadExtras(header.id, messages), header.is_member ? readMarks(header.id) : Promise.resolve([])]);
+  if (header.is_member) await markConversationRead(header.id);
+  return {
+    conversationId: header.id,
+    viewerId: user.id,
+    title: view.title,
+    subtitle: [KIND_LABELS[header.kind] ?? "Chat", view.subtitle].filter(Boolean).join(" · "),
+    link: view.link ?? null,
+    members: view.members,
+    canSend: view.canSend,
+    closedReason: view.closedReason,
+    emptyText: view.emptyText,
+    messages,
+    reactions: extras.reactions,
+    quoted: extras.quoted,
+    attachmentUrls: extras.attachmentUrls,
+    marks,
+  };
 }

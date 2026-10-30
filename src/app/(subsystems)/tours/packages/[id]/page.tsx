@@ -17,6 +17,8 @@ import { ReviewList } from "@/components/tours/review-list";
 import { distribution, toSummary, type Review } from "@/lib/tours/reviews";
 import { FREE_CANCELLATION_HOURS } from "@/lib/tours/cancellation";
 import { CheckIcon, LineIcon, MapPinIcon, ShieldCheckIcon } from "@/components/ui/icons";
+import { mapsDirectionsUrl } from "@/lib/tours/guide/maps";
+import { meetingPointOf, meetingTimeLabel } from "@/lib/tours/guide/meeting";
 
 export const dynamic = "force-dynamic";
 
@@ -47,6 +49,10 @@ export default async function PackageDetailPage({ params }: PageProps) {
       title,
       description,
       location_name,
+      meeting_point_name,
+      meeting_lat,
+      meeting_lng,
+      meeting_time,
       duration_value,
       duration_type,
       cover_image_url,
@@ -156,7 +162,13 @@ export default async function PackageDetailPage({ params }: PageProps) {
   const gallery = (pkg.tours_package_gallery || []).sort((a: any, b: any) => a.display_order - b.display_order);
   const fallbackKey = placePhoto(pkg.title, pkg.location_name);
   const fallback = PHOTOS[fallbackKey];
-  const meetingPoint = stops[0]?.location_name ?? pkg.location_name;
+  const meeting = meetingPointOf(
+    pkg,
+    stops.map((stop: any) => ({ location_name: stop.location_name, stop_order: stop.stop_order, lat: stop.latitude === null ? null : Number(stop.latitude), lng: stop.longitude === null ? null : Number(stop.longitude) })),
+  );
+  const meetingTime = meetingTimeLabel(meeting.time);
+  const meetingPoint = meetingTime ? `${meeting.name}, ${meetingTime}` : meeting.name;
+  const meetingDirections = mapsDirectionsUrl({ name: meeting.name, point: meeting.point, area: pkg.location_name });
   const operatorName = operatorRow?.business_name ?? null;
   const facts: Array<[string, string]> = [
     ["Meets at", meetingPoint],
@@ -200,6 +212,15 @@ export default async function PackageDetailPage({ params }: PageProps) {
               </div>
             ))}
           </dl>
+          <a
+            href={meetingDirections}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="mt-3 inline-flex min-h-11 items-center gap-2 rounded-full bg-blue-50 px-5 font-bold text-blue-700 transition hover:bg-blue-100 active:scale-[0.98]"
+          >
+            <LineIcon name="pin" className="h-5 w-5" /> Directions to the meeting point
+            <span className="sr-only"> (opens Google Maps)</span>
+          </a>
 
           <section aria-labelledby="about-trip" className="mt-12">
             <h2 id="about-trip" className="text-2xl font-semibold text-daet-ink sm:text-3xl">About this trip</h2>

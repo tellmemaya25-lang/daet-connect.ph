@@ -2,6 +2,8 @@ import { formatPeso } from "@/lib/money";
 import { FAQS, matchFaq } from "@/lib/tours/assistant/knowledge";
 import { attractionInfo, handoff, myBookings, planTripLink, searchTours, tourDetails, travelTime, upcomingEvents, type ToolContext } from "@/lib/tours/assistant/tools";
 import { readTravelQuestion } from "@/lib/tours/assistant/transport";
+import { estimateCost, findPlaces, howToGetThere, meetingPoint } from "@/lib/tours/assistant/guide-tools";
+import { isMeetingQuestion, readCostQuestion, readDirectionsQuestion, readPlaceQuestion } from "@/lib/tours/assistant/guide-intents";
 import { normalizeText } from "@/lib/tours/itinerary/assistant";
 
 /**
@@ -17,7 +19,7 @@ export async function basicReply(text: string, ctx: ToolContext): Promise<string
   const t = normalizeText(text);
 
   if (/^(hi|hello|hey|good (morning|afternoon|evening)|kumusta|musta|magandang (umaga|hapon|gabi))\b/.test(t) && t.split(" ").length <= 4) {
-    return "Hi! I'm the CONNECT-Daet travel assistant. Ask me about tours and open dates, prices, places and events in Daet, or about your own booking, payment or ticket.";
+    return "Hi! I'm the Daet AI assistant. Ask me where to eat or stay, how to get somewhere and what a trip costs, about tours and open dates, or about your own booking, payment or ticket.";
   }
 
   // A person, or a complaint
@@ -39,6 +41,51 @@ export async function basicReply(text: string, ctx: ToolContext): Promise<string
       return `${result.from} to ${result.to} by boat takes ${result.duration}. ${result.note}`;
     }
     if ("distance" in result) return `${result.from} to ${result.to}: about ${result.duration} (${result.distance}) by ${result.kind === "walk" ? "foot" : "road"}. ${result.note}`;
+  }
+
+  // Where a tour meets
+  if (isMeetingQuestion(text)) {
+    const ref = /\bbk-[0-9a-z-]+\b/i.exec(text)?.[0] ?? null;
+    const result = await meetingPoint(ctx, { bookingReference: ref });
+    if ("error" in result && result.error) return result.error;
+    if ("meetingPoint" in result && result.meetingPoint) {
+      return `For ${result.tour}, meet at ${result.meetingPoint}${result.time ? ` at ${result.time}` : ""}${result.date ? ` on ${result.date}` : ""}. Tap Get directions to open Google Maps.${result.fromFirstStop ? " This is the tour's first stop; confirm with the operator." : ""}`;
+    }
+    return "note" in result && result.note ? result.note : "Sign in to see where your tour meets.";
+  }
+
+  // What a trip will cost
+  const cost = readCostQuestion(text);
+  if (cost) {
+    const result = await estimateCost(ctx, { to: cost.to, from: cost.from, packageId: null, people: cost.people, nights: cost.nights, style: cost.style });
+    return `Estimated total ${result.estimate.total} (${result.estimate.perPerson} per person) for ${cost.people} ${cost.people === 1 ? "person" : "people"}, ${cost.nights ? `${cost.nights} ${cost.nights === 1 ? "night" : "nights"}` : "a day trip"}. ${result.note}`;
+  }
+
+  // How to get somewhere, and fares
+  const directions = readDirectionsQuestion(text);
+  if (directions) {
+    const result = await howToGetThere(ctx, directions);
+    if ("error" in result && result.error) return result.error;
+    if (result.routes?.length) {
+      const r = result.routes[0];
+      const steps = r.legs.map((l) => `${l.how} from ${l.from} to ${l.to} (${l.fare}${l.time ? `, ${l.time}` : ""})`).join(", then ");
+      return `${steps}.${result.routes.length > 1 ? ` There ${result.routes.length === 2 ? "is 1 other way" : `are ${result.routes.length - 1} other ways`} below.` : ""} Fares are provisional; agree on tricycle fares before you ride.`;
+    }
+    const general = matchFaq(text);
+    if (general) {
+      for (const link of general.links) ctx.cards.push({ type: "link", ...link });
+      return general.answer;
+    }
+    return `I don't have fares for that route yet. Tap the Google Maps button for directions, or ask the Tourism Office.`;
+  }
+
+  // Where to eat, stay, or catch a ride
+  const placeQ = readPlaceQuestion(text);
+  if (placeQ) {
+    const result = await findPlaces(ctx, { kind: placeQ.kind, near: placeQ.near, query: null, maxPrice: null, openNow: null, limit: 5 });
+    if (placeQ.near === "me" && !ctx.here) return "Tap Use my location below so I can find the nearest ones, or tell me the area (e.g. near Bagasbas).";
+    if (!result.places.length) return `I don't have any ${result.kind.toLowerCase()} listings${result.near ? ` near ${result.near}` : ""} yet. The Tourism Office can recommend some.`;
+    return `${result.kind}${result.near ? ` near ${result.near}` : " in Daet"}: ${result.places.slice(0, 3).map((p) => p.name + (p.price ? ` (${p.price})` : "")).join("; ")}. Tap Get directions to open Google Maps.${result.places.some((p) => !p.verified) ? " Some details aren't verified yet, so check locally." : ""}`;
   }
 
   // Their own bookings, payments and tickets

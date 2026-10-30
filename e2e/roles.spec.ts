@@ -89,7 +89,7 @@ test.describe("messaging channels", () => {
     await signInAs(context, "tourist");
     await visit(page, "/tours/messages/cc110000-0000-4000-8000-000000000001");
     await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
-    await expect(page.getByText("Maria Santos", { exact: false }).first()).toBeVisible();
+    await expect(page.getByRole("log", { name: "Messages" }).getByText("Maria Santos", { exact: false }).first()).toBeVisible();
   });
 
   test("operator can contact the Tourism Office from the dashboard", async ({ context, page }) => {

@@ -32,6 +32,14 @@ export default async function AdminAttractionsPage({ searchParams }: { searchPar
         action={{ href: "/tours/admin/attractions/new", label: "+ New attraction" }}
       />
 
+      <p className="-mt-3 mb-6 text-lg text-daet-ink">
+        Places to eat, stay and catch a ride are on the{" "}
+        <Link href="/tours/admin/guide-places" className="font-bold text-blue-700 underline">
+          local guide
+        </Link>{" "}
+        page.
+      </p>
+
       {params.saved ? <Notice variant="success" className="mb-4">Attraction saved.</Notice> : null}
       {params.deleted ? <Notice variant="success" className="mb-4">Attraction deleted.</Notice> : null}
       {params.error ? <Notice variant="error" className="mb-4">That action could not be completed.</Notice> : null}

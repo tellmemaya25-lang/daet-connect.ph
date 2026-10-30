@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { AssistantWidget } from "@/components/assistant/assistant-widget";
+import { ChatDock } from "@/components/chat-dock/chat-dock";
 import { RoleTabBar } from "@/components/ui/role-tab-bar";
 import { SiteFooter } from "@/components/ui/site-footer";
 import { SiteHeader } from "@/components/ui/site-header";
@@ -58,6 +59,7 @@ export async function PageFrame({
       <SiteFooter credits={credits} compact={staff} className={tabs.length ? "pb-24 sm:pb-10" : ""} />
       <RoleTabBar tabs={tabs} />
       <AssistantWidget signedIn={role !== undefined} raised={tabs.length > 0} />
+      {role !== undefined ? <ChatDock /> : null}
     </div>
   );
 }

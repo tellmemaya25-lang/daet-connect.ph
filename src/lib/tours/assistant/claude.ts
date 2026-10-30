@@ -17,6 +17,7 @@ import {
   upcomingEvents,
   type ToolContext,
 } from "@/lib/tours/assistant/tools";
+import { estimateCost, findPlaces, foodStops, howToGetThere, meetingPoint } from "@/lib/tours/assistant/guide-tools";
 
 /**
  * The travel assistant on Claude (F13): the SDK tool runner with streaming
@@ -97,6 +98,58 @@ export function assistantTools(ctx: ToolContext) {
         mode: z.enum(["drive", "walk"]).nullable(),
       }),
       run: (input) => guard(() => travelTime(ctx, input)),
+    }),
+    betaZodTool({
+      name: "find_places",
+      eager_input_streaming: true,
+      description:
+        "Places from the Daet Tourism Office directory: eatery (food), lodging (where to stay), terminal (bus/van terminals), pasalubong (souvenir food), meeting_point, service (Tourism Office, help). Nearest first when 'near' is given. Shows each place with a Google Maps directions button. Only recommend places this returns.",
+      inputSchema: z.object({
+        kind: z.enum(["eatery", "lodging", "terminal", "pasalubong", "meeting_point", "service"]),
+        near: z.string().max(60).nullable().describe("a place or town, or 'me' for the traveller's shared location; null for anywhere"),
+        query: z.string().max(40).nullable().describe("a dish, tag or name, e.g. 'Bicol express', 'budget', 'wifi'"),
+        maxPrice: z.number().nonnegative().nullable().describe("pesos per meal or per night"),
+        openNow: z.boolean().nullable(),
+        limit: z.number().int().min(1).max(8).nullable(),
+      }),
+      run: (input) => guard(() => findPlaces(ctx, input)),
+    }),
+    betaZodTool({
+      name: "food_stops",
+      eager_input_streaming: true,
+      description: "Listed eateries close to the way between two places, for a meal stop on the road.",
+      inputSchema: z.object({ from: z.string().max(60), to: z.string().max(60) }),
+      run: (input) => guard(() => foodStops(ctx, input)),
+    }),
+    betaZodTool({
+      name: "how_to_get_there",
+      eager_input_streaming: true,
+      description:
+        "Every listed way to travel between two places (bus, UV Express van, jeepney, tricycle, boat), with fares, travel times, where to board and tips, joining two legs through Daet when needed (e.g. Manila → Daet → Bagasbas). Adds a Google Maps button. Use for 'how do I get to…', commuting and fares.",
+      inputSchema: z.object({ from: z.string().max(60).nullable().describe("start; null to list every way in"), to: z.string().max(60) }),
+      run: (input) => guard(() => howToGetThere(ctx, input)),
+    }),
+    betaZodTool({
+      name: "estimate_cost",
+      eager_input_streaming: true,
+      description:
+        "A trip cost estimate from listed fares, tour prices, meal and room prices: transport both ways, the tour, meals, rooms and a 10% buffer, with a per-person amount. Shows an itemised card. Unknown costs are listed as 'ask locally', never guessed.",
+      inputSchema: z.object({
+        to: z.string().max(60).nullable().describe("destination, e.g. 'Calaguas', 'Bagasbas'"),
+        from: z.string().max(60).nullable().describe("where they travel from, e.g. 'Manila'; null if unknown"),
+        packageId: z.string().nullable().describe("a tour id from search_tours, to include its price instead of fares"),
+        people: z.number().int().min(1).max(50),
+        nights: z.number().int().min(0).max(30),
+        style: z.enum(["budget", "mid", "comfort"]).nullable(),
+      }),
+      run: (input) => guard(() => estimateCost(ctx, input)),
+    }),
+    betaZodTool({
+      name: "meeting_point",
+      eager_input_streaming: true,
+      description: "Where and when a tour's guests meet, with directions: for a tour id, or the signed-in tourist's next booking (optionally by reference).",
+      inputSchema: z.object({ packageId: z.string().nullable(), bookingReference: z.string().max(40).nullable() }),
+      run: (input) => guard(() => meetingPoint(ctx, input)),
     }),
     betaZodTool({
       name: "my_bookings",

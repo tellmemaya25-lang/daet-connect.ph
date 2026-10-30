@@ -24,6 +24,7 @@ const pages = [
   ["tourist", "/tours/messages/cc110000-0000-4000-8000-000000000001", "thread"],
   ["tourist", "/tours/notifications", "notifications"],
   ["tourist", "/tours/my-itineraries", "itineraries"],
+  ["tourist", "/tours/messages/ai", "ai-chat"],
   ["operator", "/tours/operator/dashboard", "operator-home"],
   ["operator", "/tours/operator/bookings", "operator-bookings"],
   ["guide", "/tours/guide/dashboard", "guide-home"],

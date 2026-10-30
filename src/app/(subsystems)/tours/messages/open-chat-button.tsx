@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Button, type ButtonVariant } from "@/components/ui/button";
 import type { ChatTarget } from "@/lib/tours/messaging";
 import { openChat } from "./actions";
+import { openInDock } from "@/components/chat-dock/dock-bus";
 
 /** "Message …" button: opens or reuses a chat (a booking's group chat by default). */
 export function OpenChatButton({
@@ -31,7 +32,10 @@ export function OpenChatButton({
         onClick={() =>
           startTransition(async () => {
             const result = await openChat(target ?? { kind: "booking", bookingId: bookingId ?? "" });
-            if (result.conversationId) router.push(`/tours/messages/${result.conversationId}`);
+            // Wide screens open the chat in the dock and stay on the page, like Messenger.
+            if (result.conversationId) {
+              if (!openInDock(result.conversationId)) router.push(`/tours/messages/${result.conversationId}`);
+            }
             else setError(result.error ?? "The chat could not be opened.");
           })
         }
