@@ -103,7 +103,7 @@ export default async function HomePage() {
               </ButtonLink>
             </div>
           </div>
-          <figure className="relative -mx-4 aspect-[4/3] overflow-hidden sm:mx-0 sm:rounded-2xl lg:aspect-[5/6] lg:max-h-[78vh]">
+          <figure className="relative -mx-4 aspect-[4/3] overflow-hidden sm:mx-0 sm:rounded-2xl lg:aspect-auto lg:h-[min(78vh,44rem)] lg:w-full">
             <Image
               src={PHOTOS.calaguasBeach.src}
               alt={PHOTOS.calaguasBeach.alt}
