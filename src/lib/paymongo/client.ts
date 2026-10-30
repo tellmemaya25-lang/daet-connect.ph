@@ -1,4 +1,5 @@
 import "server-only";
+import { resolveAppUrl } from "@/lib/app-url";
 import { parsePaymentMethods, type PaymongoMethod } from "@/lib/paymongo/checkout";
 import type { SignatureMode } from "@/lib/paymongo/signature";
 
@@ -16,9 +17,7 @@ export type PaymongoConfig = {
 export function getPaymongoConfig(): PaymongoConfig | null {
   const secretKey = process.env.PAYMONGO_SECRET_KEY?.trim();
   if (!secretKey) return null;
-  const appUrl =
-    process.env.NEXT_PUBLIC_APP_URL?.trim() ||
-    (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "http://localhost:3000");
+  const appUrl = resolveAppUrl();
   return {
     secretKey,
     webhookSecret: process.env.PAYMONGO_WEBHOOK_SECRET?.trim() || null,
