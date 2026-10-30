@@ -1,0 +1,42 @@
+/**
+ * Opening chats in the desktop dock. The dock marks itself active on wide
+ * screens; "Message …" buttons and the assistant bubble then open chats
+ * there instead of navigating away. "ai" is the Daet AI assistant.
+ */
+
+export const DOCK_OPEN_EVENT = "daet:dock-open";
+const ACTIVE_FLAG = "__daetDockActive";
+
+type DockWindow = Window & { [ACTIVE_FLAG]?: boolean };
+
+export function setDockActive(active: boolean) {
+  (window as DockWindow)[ACTIVE_FLAG] = active;
+}
+
+export function dockAvailable(): boolean {
+  return typeof window !== "undefined" && Boolean((window as DockWindow)[ACTIVE_FLAG]);
+}
+
+/** Opens a chat in the dock; false when there is no dock (phones), so the caller navigates instead. */
+export function openInDock(id: string): boolean {
+  if (!dockAvailable()) return false;
+  window.dispatchEvent(new CustomEvent(DOCK_OPEN_EVENT, { detail: { id } }));
+  return true;
+}
+
+export const DOCK_MAX_OPEN = 2;
+
+/** Opening a chat brings it to the front; older ones fold into chat heads. */
+export function dockOpen(state: { open: string[]; heads: string[] }, id: string): { open: string[]; heads: string[] } {
+  const open = [id, ...state.open.filter((x) => x !== id)];
+  const overflow = open.slice(DOCK_MAX_OPEN);
+  return { open: open.slice(0, DOCK_MAX_OPEN), heads: [...overflow, ...state.heads.filter((x) => x !== id && !overflow.includes(x))].slice(0, 6) };
+}
+
+export function dockMinimize(state: { open: string[]; heads: string[] }, id: string) {
+  return { open: state.open.filter((x) => x !== id), heads: [id, ...state.heads.filter((x) => x !== id)].slice(0, 6) };
+}
+
+export function dockClose(state: { open: string[]; heads: string[] }, id: string) {
+  return { open: state.open.filter((x) => x !== id), heads: state.heads.filter((x) => x !== id) };
+}

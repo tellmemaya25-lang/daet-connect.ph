@@ -48,3 +48,24 @@ test("react to a message and reply to it", async ({ context, page }) => {
   await expect(log.getByRole("button", { name: /Replying to Bagasbas Coast Tours/ })).toBeVisible();
   await checkA11y(page, "reactions and replies");
 });
+
+test.describe("desktop chat heads", () => {
+  test.use({ viewport: { width: 1440, height: 900 }, isMobile: false });
+
+  test("Message buttons and the assistant open chats in the dock without leaving the page", async ({ context, page }) => {
+    await signInAs(context, "tourist");
+    const booking = "/tours/bookings/e9466de5-4877-47c1-ac14-d86deeb38b9e";
+    await page.goto(booking, { waitUntil: "networkidle" });
+    await page.getByRole("button", { name: "Message the operator" }).click();
+    const dock = page.getByRole("region", { name: "Open chats" });
+    await expect(dock.getByRole("heading", { level: 2, name: "Bagasbas Sunrise Surf Lesson" })).toBeVisible();
+    await expect(page).toHaveURL(new RegExp(`${booking}$`));
+
+    await dock.getByRole("button", { name: "Minimise Bagasbas Sunrise Surf Lesson" }).click();
+    await expect(dock.getByRole("button", { name: "Open chat: Bagasbas Sunrise Surf Lesson" })).toBeVisible();
+
+    await page.getByRole("button", { name: "Daet AI assistant" }).click();
+    await expect(dock.getByRole("heading", { level: 2, name: "Daet AI assistant" })).toBeVisible();
+    await checkA11y(page, "chat dock");
+  });
+});

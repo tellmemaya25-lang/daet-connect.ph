@@ -4,6 +4,7 @@ import { LineIcon } from "@/components/ui/icons";
 import { useRef, useState } from "react";
 import { usePathname } from "next/navigation";
 import { AssistantChat } from "@/components/assistant/assistant-chat";
+import { openInDock } from "@/components/chat-dock/dock-bus";
 
 /** Pages where a floating chat button would get in the way. */
 const HIDDEN = [/^\/login/, /^\/signup/, /^\/forgot-password/, /^\/tours\/help/, /^\/tours\/messages\/[^/]+$/, /^\/tours\/guide\/check-in/, /\/ticket$/];
@@ -26,6 +27,8 @@ export function AssistantWidget({ signedIn, raised }: { signedIn: boolean; raise
       <button
         type="button"
         onClick={() => {
+          // Signed in on a wide screen: the assistant opens as a chat head in the dock.
+          if (signedIn && openInDock("ai")) return;
           dialogRef.current?.showModal();
           setOpen(true);
         }}
