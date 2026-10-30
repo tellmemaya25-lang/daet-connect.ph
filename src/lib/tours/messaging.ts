@@ -241,7 +241,11 @@ export type ChatMessage = {
   message_text: string | null;
   attachment_url: string | null;
   created_at: string;
+  /** The message this one quotes, in the same chat. */
+  reply_to_id?: string | null;
 };
+
+export const MESSAGE_COLUMNS = "id, sender_id, message_text, attachment_url, created_at, reply_to_id";
 
 /**
  * Milliseconds for a timestamp from PostgREST (ISO) or Realtime, which can
@@ -283,3 +287,15 @@ export function chatOperators(
   }
   return [...byId.values()].sort((a, b) => a.business_name.localeCompare(b.business_name));
 }
+
+/** One row of the inbox (tours_chat_inbox). */
+export type InboxRow = {
+  conversation_id: string;
+  kind: string;
+  title: string | null;
+  subtitle: string | null;
+  last_message_at: string;
+  last_message: string | null;
+  last_sender_id: string | null;
+  unread: number;
+};

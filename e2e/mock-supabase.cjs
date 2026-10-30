@@ -1,3 +1,4 @@
+const crypto = require("node:crypto");
 /**
  * Mock Supabase (Auth + PostgREST subset) for the tours E2E suite.
  *
@@ -49,10 +50,10 @@ const BID = "e9466de5-4877-47c1-ac14-d86deeb38b9e";
   const t0 = Date.now() - 3 * 3600 * 1000;
   const at = (m) => new Date(t0 + m * 60000).toISOString();
   const messages = [
-    { id: "m1", conversation_id: CONV, sender_id: booking.user_id, message_text: "Hi! Is hotel pickup included? We're staying near Bagasbas Beach.", attachment_url: null, created_at: at(0) },
-    { id: "m2", conversation_id: CONV, sender_id: OPP, message_text: "Hello Juan! Yes, pickup is free within Daet. We'll be at your hotel lobby at 5:30 AM.", attachment_url: null, created_at: at(12) },
-    { id: "m3", conversation_id: CONV, sender_id: "9b7e5a5e-0000-4000-8000-0000000000bb", message_text: "Hi, I'm your guide for the surf lesson. Bring sunscreen and a change of clothes 🏄", attachment_url: null, created_at: at(40) },
-    { id: "m4", conversation_id: CONV, sender_id: booking.user_id, message_text: "Perfect, thank you! See you tomorrow.", attachment_url: null, created_at: at(55) },
+    { id: "dd110000-0000-4000-8000-000000000001", conversation_id: CONV, sender_id: booking.user_id, message_text: "Hi! Is hotel pickup included? We're staying near Bagasbas Beach.", attachment_url: null, created_at: at(0) },
+    { id: "dd110000-0000-4000-8000-000000000002", conversation_id: CONV, sender_id: OPP, message_text: "Hello Juan! Yes, pickup is free within Daet. We'll be at your hotel lobby at 5:30 AM.", attachment_url: null, created_at: at(12) },
+    { id: "dd110000-0000-4000-8000-000000000003", conversation_id: CONV, sender_id: "9b7e5a5e-0000-4000-8000-0000000000bb", message_text: "Hi, I'm your guide for the surf lesson. Bring sunscreen and a change of clothes 🏄", attachment_url: null, created_at: at(40) },
+    { id: "dd110000-0000-4000-8000-000000000004", conversation_id: CONV, sender_id: booking.user_id, message_text: "Perfect, thank you! See you tomorrow.", attachment_url: null, created_at: at(55) },
   ];
   const inbox = [
     { conversation_id: CONV, kind: "booking", title: pkg.title, subtitle: `${booking.booking_reference} · Nov 02 · Juan Dela Cruz`, booking_id: BID, last_message_at: at(55), last_message: "Perfect, thank you! See you tomorrow.", last_sender_id: booking.user_id, unread: 0 },
@@ -179,6 +180,8 @@ const BID = "e9466de5-4877-47c1-ac14-d86deeb38b9e";
     tours_fares: fares,
     tours_notifications: notifications,
     tours_conversations: [conversation], tours_messages: messages,
+    // The operator loved their own pickup reply; the tourist can react too.
+    tours_message_reactions: [{ message_id: "dd110000-0000-4000-8000-000000000002", profile_id: OPP, conversation_id: CONV, reaction: "love" }],
     tours_booking_participants: participants, tours_checkins: checkins,
     tours_bookings: role === "operator" ? [booking, later, pendingB, cancelled] : [booking, later, pendingB, doneB], tours_packages: [pkg], tours_package_availability: availability, _event_availability: eventAvailability, tours_cancellations: cancellations, tours_payments: payments, tours_payment_proofs: proofs, tours_operators: [operator],
     tours_guides: guides, profiles: [{ id: "9b7e5a5e-0000-4000-8000-000000000001", role, full_name: "Juan Dela Cruz" }],
@@ -195,7 +198,7 @@ http.createServer((req, res) => {
   const cors = { "access-control-allow-origin": "*", "access-control-allow-headers": "*", "access-control-allow-methods": "GET,POST,PATCH,HEAD,OPTIONS", "access-control-expose-headers": "content-range" };
   const send = (code, body, headers = {}) => { res.writeHead(code, { "content-type": "application/json", ...cors, ...headers }); res.end(JSON.stringify(body)); };
   if (req.method === "OPTIONS") { res.writeHead(204, cors); return res.end(); }
-  req.on("data", () => {}); req.on("end", () => {
+  let body = ""; req.on("data", (chunk) => { body += chunk; }); req.on("end", () => {
     const token = (req.headers.authorization || "").replace(/^Bearer\s+/i, "");
     const role = /^e2e-(tourist|operator|guide|admin)$/.test(token) ? token.slice(4) : "anon";
     const { tables, analytics, inbox, header, user } = build(role);
@@ -207,6 +210,15 @@ http.createServer((req, res) => {
     if (url.pathname === "/rest/v1/rpc/tours_conversation_header") return send(200, header);
     if (/^\/rest\/v1\/rpc\/tours_open_[a-z_]+_conversation$/.test(url.pathname)) return send(200, CONV_ID);
     if (url.pathname === "/rest/v1/rpc/tours_mark_conversation_read") return send(200, null);
+    // The operator read the chat after the tourist's last message: "Seen".
+    if (url.pathname === "/rest/v1/rpc/tours_conversation_read_marks") return send(200, [{ profile_id: "0b7e5a5e-0000-4000-8000-0000000000aa", last_read_at: new Date().toISOString() }]);
+    // A sent message comes back as saved, so optimistic sends and replies resolve.
+    if (url.pathname === "/rest/v1/tours_messages" && req.method === "POST") {
+      let row = {};
+      try { const parsed = JSON.parse(body); row = Array.isArray(parsed) ? parsed[0] : parsed; } catch { row = {}; }
+      const saved = { id: crypto.randomUUID(), created_at: new Date().toISOString(), attachment_url: null, reply_to_id: null, ...row };
+      return (req.headers.accept || "").includes("vnd.pgrst.object") ? send(201, saved) : send(201, [saved]);
+    }
     // R6: guides free on a date (one free, one booked), and the swap RPCs.
     if (url.pathname === "/rest/v1/rpc/tours_guides_free_on")
       return send(200, [

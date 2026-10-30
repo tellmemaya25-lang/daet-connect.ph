@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { TabIcon } from "@/components/ui/icons";
+import { UnreadMessagesBadge } from "@/components/chat/unread-badge";
 import { activeTab, type Tab } from "@/lib/tours/dashboards";
 
 /** Bottom tab bar on phones for signed-in users; hidden from sm up, where the header has room. */
@@ -25,7 +26,10 @@ export function RoleTabBar({ tabs }: { tabs: Tab[] }) {
                 aria-current={active ? "page" : undefined}
                 className={`flex min-h-14 flex-col items-center justify-center gap-0.5 text-xs font-bold transition active:scale-95 ${active ? "text-blue-600" : "text-daet-ink/75 hover:text-daet-ink"}`}
               >
-                <TabIcon label={tab.label} className="h-6 w-6" />
+                <span className="relative">
+                  <TabIcon label={tab.label} className="h-6 w-6" />
+                  {tab.href === "/tours/messages" ? <UnreadMessagesBadge className="absolute -right-3 -top-1.5" /> : null}
+                </span>
                 {tab.label}
               </Link>
             </li>

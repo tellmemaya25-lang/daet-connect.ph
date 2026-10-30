@@ -1,15 +1,15 @@
 import { notFound, redirect } from "next/navigation";
-import Link from "next/link";
-import { Badge } from "@/components/ui/badge";
 import { Notice } from "@/components/ui/notice";
 import { PageFrame } from "@/components/ui/page-frame";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { getAuthenticatedSession } from "@/lib/tours/server-auth";
-import { describeThread, KIND_LABELS, MESSAGE_PAGE_SIZE, type ChatMessage, type ConversationHeader } from "@/lib/tours/messaging";
+import { describeThread, KIND_LABELS, MESSAGE_COLUMNS, MESSAGE_PAGE_SIZE, type ChatMessage, type ConversationHeader, type InboxRow } from "@/lib/tours/messaging";
+import { ChatWindow } from "@/components/chat/chat-window";
+import { InboxList } from "../inbox-list";
+import { LiveInbox } from "../live-inbox";
 import { isUuid } from "@/lib/tours/operator-access";
-import { markConversationRead, signAttachments } from "../actions";
-import { ChatThread } from "./chat-thread";
+import { markConversationRead, readMarks, threadExtras } from "../actions";
 
 export const dynamic = "force-dynamic";
 
@@ -39,43 +39,44 @@ export default async function ConversationPage({ params }: PageProps) {
   if (!header) notFound();
   const view = describeThread(header, user.id, (await getAuthenticatedSession()).role);
 
-  const { data: latest } = await supabase
-    .from("tours_messages")
-    .select("id, sender_id, message_text, attachment_url, created_at")
-    .eq("conversation_id", header.id)
-    .order("created_at", { ascending: false })
-    .limit(MESSAGE_PAGE_SIZE);
+  const [{ data: latest }, { data: inboxData }] = await Promise.all([
+    supabase.from("tours_messages").select(MESSAGE_COLUMNS).eq("conversation_id", header.id).order("created_at", { ascending: false }).limit(MESSAGE_PAGE_SIZE),
+    supabase.rpc("tours_chat_inbox"),
+  ]);
   const messages = ((latest ?? []) as ChatMessage[]).reverse();
-  const attachmentUrls = await signAttachments(messages.map((m) => m.attachment_url).filter((p): p is string => Boolean(p)));
+  const [extras, marks] = await Promise.all([threadExtras(header.id, messages), header.is_member ? readMarks(header.id) : Promise.resolve([])]);
   if (header.is_member) await markConversationRead(header.id);
+  const inbox = (inboxData ?? []) as InboxRow[];
 
   return (
     <PageFrame>
-      <div className="mx-auto flex max-w-2xl flex-col">
-        <Link href="/tours/messages" className="inline-flex min-h-11 items-center font-bold text-blue-700 hover:underline">
-          ← All messages
-        </Link>
-        <header className="mt-3 rounded-2xl bg-white p-4">
-          <Badge tone="neutral">{KIND_LABELS[header.kind] ?? "Chat"}</Badge>
-          <h1 className="display-2 text-daet-ink">{view.title}</h1>
-          <p className="text-slate-600">{view.subtitle}</p>
-          {view.link ? (
-            <Link href={view.link.href} className="mt-1 inline-flex min-h-11 items-center font-bold text-blue-700 underline">
-              {view.link.label}
-            </Link>
-          ) : null}
-        </header>
-
-        <ChatThread
-          conversationId={header.id}
-          viewerId={user.id}
-          members={view.members}
-          initialMessages={messages}
-          initialAttachmentUrls={attachmentUrls}
-          canSend={view.canSend}
-          closedReason={view.closedReason}
-          emptyText={view.emptyText}
-        />
+      <div className="mx-auto grid max-w-6xl gap-4 lg:grid-cols-[22rem_1fr]">
+        <aside aria-label="Your chats" className="hidden max-h-[calc(100dvh-11rem)] overflow-y-auto lg:block">
+          <LiveInbox viewerId={user.id}>
+            <InboxList rows={inbox} viewerId={user.id} activeId={header.id} />
+          </LiveInbox>
+        </aside>
+        <div className="h-[calc(100dvh-11rem)] min-h-[30rem] overflow-hidden rounded-2xl bg-white">
+          <ChatWindow
+            key={header.id}
+            conversationId={header.id}
+            viewerId={user.id}
+            members={view.members}
+            title={view.title}
+            subtitle={[KIND_LABELS[header.kind] ?? "Chat", view.subtitle].filter(Boolean).join(" · ")}
+            link={view.link}
+            initialMessages={messages}
+            initialAttachmentUrls={extras.attachmentUrls}
+            initialReactions={extras.reactions}
+            initialQuoted={extras.quoted}
+            initialReadMarks={marks}
+            canSend={view.canSend}
+            closedReason={view.closedReason}
+            emptyText={view.emptyText}
+            backHref="/tours/messages"
+            headingLevel={1}
+          />
+        </div>
       </div>
     </PageFrame>
   );
