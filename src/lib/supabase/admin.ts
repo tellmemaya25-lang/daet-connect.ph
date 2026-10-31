@@ -1,17 +1,17 @@
 import "server-only";
 import { createClient } from "@supabase/supabase-js";
-import { getSupabasePublicConfig } from "@/lib/supabase/env";
+import { getSupabasePublicConfig, supabaseSecretKey } from "@/lib/supabase/env";
 
-/** Server-only service-role client. Never import this module in a Client Component. */
+/** Server-only admin client (secret key). Never import this module in a Client Component. */
 export function createSupabaseAdminClient() {
   const { url } = getSupabasePublicConfig();
-  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  const secretKey = supabaseSecretKey();
 
-  if (!serviceRoleKey) {
-    throw new Error("SUPABASE_SERVICE_ROLE_KEY is not configured.");
+  if (!secretKey) {
+    throw new Error("SUPABASE_SECRET_KEY (or SUPABASE_SERVICE_ROLE_KEY) is not configured.");
   }
 
-  return createClient(url, serviceRoleKey, {
+  return createClient(url, secretKey, {
     auth: {
       autoRefreshToken: false,
       persistSession: false,

@@ -75,7 +75,7 @@ Nobody is notified about their own action. The header bell shows them live (Real
 
 To turn on push to phones and desktops:
 
-1. `npx web-push generate-vapid-keys`, then set `NEXT_PUBLIC_VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `VAPID_SUBJECT` and a random `NOTIFICATIONS_PUSH_SECRET` (32+ characters) in Vercel. `SUPABASE_SERVICE_ROLE_KEY` must also be set.
+1. `npx web-push generate-vapid-keys`, then set `NEXT_PUBLIC_VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `VAPID_SUBJECT` and a random `NOTIFICATIONS_PUSH_SECRET` (32+ characters) in Vercel. `SUPABASE_SECRET_KEY` (or the legacy `SUPABASE_SERVICE_ROLE_KEY`) must also be set.
 2. Tell the database where to send pushes (Supabase SQL editor; use your production URL and the same secret):
    ```sql
    select vault.create_secret('https://<your-domain>/api/notifications/push', 'tours_push_endpoint');

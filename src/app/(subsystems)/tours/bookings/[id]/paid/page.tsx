@@ -87,6 +87,11 @@ export default async function PaymentSuccessPage({ params }: PageProps) {
             <p className="mt-2 text-daet-ink/80">
               {amount > 0 ? `${formatPeso(amount)} ` : ""}received{method ? ` via ${method}` : ""}. PayMongo also emailed you a receipt.
             </p>
+            {check.status === "paid" && check.recordFailed ? (
+              <Notice variant="info" className="mt-4 text-left">
+                PayMongo confirmed your payment. It can take a few minutes to show on your booking; you don&apos;t need to pay again.
+              </Notice>
+            ) : null}
             <dl className="mt-6 grid grid-cols-2 gap-3 rounded-2xl bg-canvas p-4 text-left text-sm">
               <div className="col-span-2 min-w-0">
                 <dt className="text-daet-ink/70">Tour</dt>
