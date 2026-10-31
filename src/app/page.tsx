@@ -5,6 +5,7 @@ import { LineIcon } from "@/components/ui/icons";
 import { PageFrame } from "@/components/ui/page-frame";
 import { EventCard } from "@/components/tours/event-card";
 import { MerchCard } from "@/components/tours/merch-card";
+import { PlacePanels, type PlacePanel } from "@/components/home/place-panels";
 import { TripLengthPicker, type BoardTrip } from "@/components/tours/trip-length-picker";
 import { PHOTOS, type PhotoKey } from "@/lib/photo-credits";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
@@ -14,31 +15,61 @@ import { durationLabel, fromPrice, nextOpenDate, placePhoto, tripLength } from "
 
 const WRAP = "mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8";
 
-const PLACES: Array<{ photo: PhotoKey; name: string; text: string; detail: string; location: string }> = [
-  {
-    photo: "calaguasBeach",
-    name: "Calaguas",
-    text: "A long white-sand beach on Tinaga Island, with no roads and no hotels. Most people camp one night and swim at sunrise.",
-    detail: "Two to three hours by boat from Paracale or Vinzons",
-    location: "Calaguas",
-  },
-  {
-    photo: "apuao",
-    name: "The Mercedes islands",
-    text: "Apuao's sandbar rises out of the sea at low tide. On Parola, 107 stone steps climb to the lighthouse.",
-    detail: "About an hour by boat from Mercedes port",
-    location: "Mercedes",
-  },
-  {
-    photo: "rizal",
-    name: "Daet town and Bagasbas",
-    text: "Home of the first monument to José Rizal, raised in 1898. Walk the old town, then end the day surfing at Bagasbas.",
-    detail: "Bagasbas is ten minutes from the plaza by tricycle",
-    location: "Daet",
-  },
-];
+// One open at a time; the copy restates what this page and the place pages already say.
+const PANELS: PlacePanel[] = (
+  [
+    {
+      photo: "calaguasBeach",
+      name: "Calaguas",
+      icon: "beach",
+      text: "A long white-sand beach on Tinaga Island, with no roads and no hotels. Two to three hours by boat from Paracale or Vinzons.",
+      href: "/tours/attractions/tinaga-island-calaguas",
+      cta: "See the place",
+    },
+    {
+      photo: "apuao",
+      name: "Apuao sandbar",
+      icon: "beach",
+      text: "Apuao's sandbar rises out of the sea at low tide, about an hour by boat from Mercedes port.",
+      href: "/tours/attractions/apuao-grande-island",
+      cta: "See the place",
+    },
+    {
+      photo: "mercedesPort",
+      name: "Mercedes port",
+      icon: "boat",
+      text: "Where the outrigger boats leave for Apuao and the other Mercedes islands.",
+      href: "/tours/browse?location=Mercedes",
+      cta: "Trips from Mercedes",
+    },
+    {
+      photo: "bagasbas",
+      name: "Bagasbas Beach",
+      icon: "beach",
+      text: "Daet's wide, flat surf beach, ten minutes from the plaza by tricycle. Come for the sunrise waves.",
+      href: "/tours/attractions/bagasbas-beach",
+      cta: "See the place",
+    },
+    {
+      photo: "rizal",
+      name: "First Rizal Monument",
+      icon: "heritage",
+      text: "The first monument to José Rizal, raised in Daet in 1898. Start a walk of the old town here.",
+      href: "/tours/attractions/first-rizal-monument",
+      cta: "See the place",
+    },
+    {
+      photo: "church",
+      name: "St John the Baptist Church",
+      icon: "religious",
+      text: "Daet's red-roofed parish church. The town fiesta for its patron saint is on June 24.",
+      href: "/tours/events",
+      cta: "See what's on",
+    },
+  ] satisfies Array<Omit<PlacePanel, "photo"> & { photo: PhotoKey }>
+).map((panel) => ({ ...panel, photo: { src: PHOTOS[panel.photo].src, alt: PHOTOS[panel.photo].alt } }));
 
-const HOME_PHOTOS: PhotoKey[] = ["calaguasBeach", "calaguasCove", "apuao", "mercedesPort", "rizal", "bagasbas", "church"];
+const HOME_PHOTOS: PhotoKey[] = ["calaguasBeach", "apuao", "mercedesPort", "rizal", "bagasbas", "church"];
 
 type PackageRow = {
   id: string;
@@ -130,34 +161,15 @@ export default async function HomePage() {
         <TripLengthPicker trips={trips} />
       </section>
 
-      {/* Three places, each with its own picture, alternating sides on wide screens. */}
+      {/* Places: one panel open at a time, the rest narrow and grey. */}
       <section aria-labelledby="home-places" className={`${WRAP} pt-20 sm:pt-32`}>
         <h2 id="home-places" data-reveal className="display-2 text-daet-ink">
-          Three places to start
+          Places to start
         </h2>
-        <ul className="mt-8 space-y-14 sm:mt-12 sm:space-y-24">
-          {PLACES.map((place, index) => (
-            <li key={place.name} className="grid items-center gap-6 lg:grid-cols-2 lg:gap-14">
-              <div data-reveal className={`relative -mx-4 aspect-[4/3] overflow-hidden bg-blue-100 dark:bg-blue-900/40 sm:mx-0 sm:rounded-2xl ${index % 2 ? "lg:order-2" : ""}`}>
-                <Image src={PHOTOS[place.photo].src} alt={PHOTOS[place.photo].alt} fill sizes="(min-width: 1024px) 50vw, 100vw" className="object-cover" />
-              </div>
-              <div>
-                <h3 data-reveal className="font-[family-name:var(--font-display)] text-3xl font-semibold leading-tight tracking-tight text-daet-ink sm:text-5xl">
-                  {place.name}
-                </h3>
-                <p data-reveal style={{ "--reveal-index": 1 } as React.CSSProperties} className="mt-4 max-w-lg text-lg leading-relaxed text-daet-ink">
-                  {place.text}
-                </p>
-                <p data-reveal style={{ "--reveal-index": 2 } as React.CSSProperties} className="mt-3 flex items-center gap-2 font-semibold text-daet-ink/80">
-                  <LineIcon name="boat" className="h-5 w-5 text-blue-600 dark:text-blue-300" /> {place.detail}
-                </p>
-                <ButtonLink href={`/tours/browse?location=${encodeURIComponent(place.location)}`} variant="secondary" className="mt-6">
-                  Trips in {place.location}
-                </ButtonLink>
-              </div>
-            </li>
-          ))}
-        </ul>
+        <p data-reveal style={{ "--reveal-index": 1 } as React.CSSProperties} className="mb-6 mt-3 max-w-2xl text-lg text-daet-ink sm:mb-8">
+          Islands out by boat, the surf beach, and the old town where Rizal got his first monument.
+        </p>
+        <PlacePanels panels={PANELS} />
       </section>
 
       {/* What's on: dated rows. */}
