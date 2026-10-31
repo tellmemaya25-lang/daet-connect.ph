@@ -90,7 +90,7 @@ export function AvailabilityCalendar({
             aria-checked={mark === value}
             onClick={() => setMark(value)}
             className={`inline-flex min-h-11 items-center gap-1.5 rounded-full px-4 text-sm font-bold transition-colors ${
-              mark === value ? (value === "available" ? "bg-green-500 text-slate-950" : "bg-red-600 text-white") : "text-daet-ink hover:bg-muted-strong"
+              mark === value ? (value === "available" ? "bg-green-500 text-slate-950 dark:bg-green-500/20 dark:text-green-300" : "bg-red-600 text-white dark:bg-red-500/20 dark:text-red-200") : "text-daet-ink hover:bg-muted-strong"
             }`}
           >
             {mark === value ? <LineIcon name="check" className="h-4 w-4" /> : null}

@@ -1,3 +1,4 @@
+import { badgeTone } from "@/components/ui/badge";
 import { EmptyState } from "@/components/ui/empty-state";
 import { LineIcon } from "@/components/ui/icons";
 import { formatPeso } from "@/lib/money";
@@ -220,11 +221,11 @@ export default async function OperatorBookingsPage({
   );
 
   const statusColors: Record<string, string> = {
-    pending: "bg-yellow-500 text-slate-950",
-    confirmed: "bg-green-500 text-slate-950",
-    cancelled: "bg-muted-strong text-slate-900 dark:text-slate-100",
-    completed: "bg-blue-100 dark:bg-blue-900/40 text-blue-900 dark:text-blue-300",
-    rejected: "bg-red-600 text-white",
+    pending: badgeTone("warning"),
+    confirmed: badgeTone("success"),
+    cancelled: badgeTone("neutral"),
+    completed: badgeTone("info"),
+    rejected: badgeTone("danger"),
   };
 
   const statusLabels: Record<string, string> = {
@@ -254,8 +255,9 @@ export default async function OperatorBookingsPage({
           <p className="mt-2 text-lg text-daet-ink">Every booking for {operator.business_name}, newest first.</p>
         </header>
 
-        <nav aria-label="Filter by status" className="-mx-4 mb-6 overflow-x-auto px-4 sm:mx-0 sm:px-0">
-          <ul className="flex w-max gap-2">
+        {/* Chips wrap on phones so none is cut off at the edge. */}
+        <nav aria-label="Filter by status" className="mb-6">
+          <ul className="flex flex-wrap gap-2">
             {(
               [
                 ["all", "All", stats.total],
@@ -274,7 +276,7 @@ export default async function OperatorBookingsPage({
                     className={`inline-flex min-h-11 items-center gap-2 rounded-full px-4 text-[15px] font-bold transition active:scale-[0.98] ${active ? "bg-blue-600 text-white" : "bg-surface text-daet-ink hover:bg-blue-50 dark:hover:bg-blue-950/40"}`}
                   >
                     {label}
-                    <span className={`rounded-full px-2 text-sm ${active ? "bg-white/20" : value === "pending" && count > 0 ? "bg-yellow-500 text-slate-950" : "bg-muted"}`}>{count}</span>
+                    <span className={`rounded-full px-2 text-sm ${active ? "bg-white/20" : value === "pending" && count > 0 ? badgeTone("warning") : "bg-muted"}`}>{count}</span>
                   </Link>
                 </li>
               );
@@ -345,8 +347,8 @@ export default async function OperatorBookingsPage({
                           </p>
                         </div>
                         <div>
-                          <p className="text-daet-ink/70">Participants</p>
-                          <p className="font-bold text-daet-ink">{booking.number_of_pax} pax</p>
+                          <p className="text-daet-ink/70">Guests</p>
+                          <p className="font-bold text-daet-ink">{booking.number_of_pax} guest{booking.number_of_pax === 1 ? "" : "s"}</p>
                         </div>
                         <div>
                           <p className="text-daet-ink/70">Contact</p>
@@ -369,37 +371,59 @@ export default async function OperatorBookingsPage({
                         </div>
                       )}
 
-                      {/* Guide Assignment - Show for confirmed bookings */}
+                      {/* Guide and payment fold into one-line summaries; they open when something needs doing. */}
                       {booking.status === "confirmed" && (
                         <>
-                          <div className="mb-4 rounded-2xl bg-canvas p-4">
-                            <p className="mb-3 text-sm text-slate-600 dark:text-slate-400">
-                              Guide
-                            </p>
-                            {swapByBooking.get(booking.id) ? (
-                              <SwapReview swap={swapByBooking.get(booking.id)!} guides={pickerFor(booking.tour_date)} />
-                            ) : null}
-                            <GuideAssignment
-                              bookingId={booking.id}
-                              currentGuideId={booking.assigned_guide_id}
-                              availableGuides={availableGuides || []}
-                              availability={availabilityFor(booking.tour_date)}
-                              busy={busyFor(booking.tour_date)}
-                            />
-                          </div>
+                          <details
+                            className="group mb-3 rounded-2xl bg-canvas"
+                            open={!booking.assigned_guide_id || swapByBooking.has(booking.id)}
+                          >
+                            <summary className="flex min-h-12 cursor-pointer list-none items-center justify-between gap-3 px-4 text-sm">
+                              <span className="min-w-0">
+                                <span className="text-slate-600 dark:text-slate-400">Guide </span>
+                                <span className="font-bold text-daet-ink">
+                                  {booking.assigned_guide_id ? guideName(booking.assigned_guide_id) : "None yet"}
+                                </span>
+                                {swapByBooking.has(booking.id) ? <span className="font-bold text-yellow-800 dark:text-yellow-200"> · swap requested</span> : null}
+                              </span>
+                              <LineIcon name="chevron-down" className="h-5 w-5 shrink-0 text-daet-ink/70 transition-transform group-open:rotate-180" />
+                            </summary>
+                            <div className="px-4 pb-4">
+                              {swapByBooking.get(booking.id) ? (
+                                <SwapReview swap={swapByBooking.get(booking.id)!} guides={pickerFor(booking.tour_date)} />
+                              ) : null}
+                              <GuideAssignment
+                                bookingId={booking.id}
+                                currentGuideId={booking.assigned_guide_id}
+                                availableGuides={availableGuides || []}
+                                availability={availabilityFor(booking.tour_date)}
+                                busy={busyFor(booking.tour_date)}
+                              />
+                            </div>
+                          </details>
 
                           <ProofReview proofs={proofsByBooking.get(booking.id) ?? []} />
 
-                          {/* Payment Tracking */}
-                          <div className="mb-4">
-                            <PaymentRecorder
-                              bookingId={booking.id}
-                              bookingReference={booking.booking_reference}
-                              totalAmount={booking.total_amount}
-                              totalPaid={booking.total_paid || 0}
-                              paymentStatus={booking.payment_status || "unpaid"}
-                            />
-                          </div>
+                          <details className="group mb-4 rounded-2xl bg-canvas">
+                            <summary className="flex min-h-12 cursor-pointer list-none items-center justify-between gap-3 px-4 text-sm">
+                              <span className="min-w-0">
+                                <span className="text-slate-600 dark:text-slate-400">Payment </span>
+                                <span className="font-bold text-daet-ink">
+                                  {formatPeso(Number(booking.total_paid ?? 0))} of {formatPeso(booking.total_amount)} paid
+                                </span>
+                              </span>
+                              <LineIcon name="chevron-down" className="h-5 w-5 shrink-0 text-daet-ink/70 transition-transform group-open:rotate-180" />
+                            </summary>
+                            <div className="px-1 pb-1">
+                              <PaymentRecorder
+                                bookingId={booking.id}
+                                bookingReference={booking.booking_reference}
+                                totalAmount={booking.total_amount}
+                                totalPaid={booking.total_paid || 0}
+                                paymentStatus={booking.payment_status || "unpaid"}
+                              />
+                            </div>
+                          </details>
                         </>
                       )}
 

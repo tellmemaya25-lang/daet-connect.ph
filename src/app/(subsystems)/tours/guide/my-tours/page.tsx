@@ -208,7 +208,7 @@ export default async function GuideMyToursPage() {
                     <div className="min-w-0 flex-1">
                       <p className="font-bold text-daet-ink">{pkg?.title || "Tour"}</p>
                       <p className="break-words text-sm text-daet-ink/70">
-                        {shortDate(booking.tour_date, true)} · {booking.number_of_pax} pax · {booking.booking_reference}
+                        {shortDate(booking.tour_date, true)} · {booking.number_of_pax} guest{booking.number_of_pax === 1 ? "" : "s"} · {booking.booking_reference}
                       </p>
                     </div>
                     <Badge tone="info" className="shrink-0">Completed</Badge>
@@ -271,7 +271,7 @@ function TourCard({ booking, today, swap }: { booking: AssignedBooking; today: s
         <dl className="mt-3 grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
           {[
             ["Date", shortDate(booking.tour_date)],
-            ["Guests", `${booking.number_of_pax} pax`],
+            ["Guests", `${booking.number_of_pax} guest{booking.number_of_pax === 1 ? "" : "s"}`],
             ["Operator", operator?.business_name || "—"],
             ["Reference", booking.booking_reference],
           ].map(([label, value]) => (

@@ -220,15 +220,16 @@ function BookingLines({ bookings, title }: { bookings: DayBooking[]; title: (b: 
     <ul className="divide-y divide-daet-ink/10">
       {bookings.map((b) => (
         <li key={b.id} className="flex items-start justify-between gap-2 py-2">
-          <div className="min-w-0">
-            <Link href={`/tours/operator/bookings?status=${b.status}#booking-${b.id}`} className="flex min-h-11 items-center truncate font-bold text-daet-ink hover:underline">
+          <div className="min-w-0 flex-1">
+            {/* Names wrap rather than being cut mid-word. */}
+            <Link href={`/tours/operator/bookings?status=${b.status}#booking-${b.id}`} className="flex min-h-11 items-center font-bold leading-snug text-daet-ink hover:underline">
               {title(b)}
             </Link>
             <p className="truncate text-sm text-slate-600 dark:text-slate-400">
-              {b.booking_reference} · {b.contact_name} · {b.number_of_pax} pax{b.assigned_guide_id ? "" : " · no guide yet"}
+              {b.booking_reference} · {b.contact_name} · {b.number_of_pax} guest{b.number_of_pax === 1 ? "" : "s"}{b.assigned_guide_id ? "" : " · no guide yet"}
             </p>
           </div>
-          <Badge tone={STATUS_TONE[b.status] ?? "neutral"}>{STATUS_LABEL[b.status] ?? b.status}</Badge>
+          <Badge tone={STATUS_TONE[b.status] ?? "neutral"} className="mt-3 shrink-0">{STATUS_LABEL[b.status] ?? b.status}</Badge>
         </li>
       ))}
     </ul>

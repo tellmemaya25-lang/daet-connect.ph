@@ -79,7 +79,7 @@ export default async function PaymentSuccessPage({ params }: PageProps) {
       <div className="mx-auto max-w-xl">
         {paid ? (
           <section aria-labelledby="paid-title" className="rounded-2xl bg-surface p-6 text-center sm:p-8">
-            <div className="mx-auto grid h-16 w-16 place-items-center rounded-full bg-green-500 text-slate-950">
+            <div className="mx-auto grid h-16 w-16 place-items-center rounded-full bg-green-500 text-slate-950 dark:bg-green-500/20 dark:text-green-300">
               <LineIcon name="check" className="h-8 w-8" />
             </div>
             <h1 id="paid-title" className="display-2 mt-4 text-daet-ink">

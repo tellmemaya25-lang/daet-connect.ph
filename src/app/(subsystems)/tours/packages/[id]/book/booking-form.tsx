@@ -228,7 +228,7 @@ export function BookingForm({ packageId, priceVariants, dateOptions, userProfile
           {/* Pax Selection */}
           <div>
             <label htmlFor="pax" className="block text-sm font-bold text-daet-ink">
-              Number of Participants *
+              Number of guests *
             </label>
             <div className="mt-1 flex items-center gap-3">
               <button

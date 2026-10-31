@@ -133,7 +133,8 @@ export default async function TouristDashboardPage() {
                 </ButtonLink>
               ) : null}
               {checkPayable(next).ok && remainingBalance(next) > 0 ? (
-                <ButtonLink href={`/tours/bookings/${next.id}#payment`} variant="primary">
+                // On the blue panel the main button is white; a blue one would vanish.
+                <ButtonLink href={`/tours/bookings/${next.id}#payment`} variant="inverse">
                   Pay {peso(remainingBalance(next))}
                 </ButtonLink>
               ) : null}
@@ -182,7 +183,8 @@ export default async function TouristDashboardPage() {
                               <LineIcon name="clock" className="h-3.5 w-3.5" /> Waiting for operator
                             </Badge>
                           )}
-                          <Badge tone={pay.tone}>{pay.label}</Badge>
+                          {/* Nothing to pay until the operator confirms, so no payment chip yet. */}
+                          {b.status === "confirmed" ? <Badge tone={pay.tone}>{pay.label}</Badge> : null}
                         </div>
                       </div>
                       <div className="mt-3 flex flex-wrap gap-2">

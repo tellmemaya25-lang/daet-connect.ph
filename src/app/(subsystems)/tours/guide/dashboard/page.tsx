@@ -126,17 +126,15 @@ export default async function GuideDashboardPage({ searchParams }: { searchParam
                   <li key={t.id} className="rounded-2xl bg-daet-sand/40 p-3">
                     <p className="font-bold text-daet-ink">{pkgTitle(t)}</p>
                     <p className="break-words text-sm text-slate-600 dark:text-slate-400">
-                      {t.booking_reference} · {t.contact_name} · {t.number_of_pax} pax
+                      {t.booking_reference} · {t.contact_name} · {t.number_of_pax} guest{t.number_of_pax === 1 ? "" : "s"}
                     </p>
+                    {/* Scanning lives in the Scan tickets button above and the Scan tab, so the row stays on one line. */}
                     <div className="mt-2 flex flex-wrap gap-2">
-                      <ButtonLink href={`/tours/guide/tours/${t.id}/live`}>
+                      <ButtonLink href={`/tours/guide/tours/${t.id}/live`} className="px-5">
                         <LineIcon name="pin" className="h-4 w-4" /> Live map
                       </ButtonLink>
-                      <ButtonLink href={`/tours/guide/tours/${t.id}/roster`} variant="secondary">
+                      <ButtonLink href={`/tours/guide/tours/${t.id}/roster`} variant="secondary" className="px-5">
                         Guest list
-                      </ButtonLink>
-                      <ButtonLink href="/tours/guide/check-in" variant="secondary">
-                        Scan
                       </ButtonLink>
                     </div>
                   </li>
@@ -171,7 +169,7 @@ export default async function GuideDashboardPage({ searchParams }: { searchParam
                   <li key={t.id} className="py-2">
                     <p className="font-bold text-daet-ink">{pkgTitle(t)}</p>
                     <p className="text-sm text-slate-600 dark:text-slate-400">
-                      {formatDayHeading(t.tour_date)} · {t.number_of_pax} pax
+                      {formatDayHeading(t.tour_date)} · {t.number_of_pax} guest{t.number_of_pax === 1 ? "" : "s"}
                     </p>
                   </li>
                 ))}

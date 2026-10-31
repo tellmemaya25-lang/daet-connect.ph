@@ -75,7 +75,7 @@ export default async function GuideRosterPage({ params }: PageProps) {
               <p className="text-sm text-daet-ink/65">
                 {booking.booking_reference} · {booking.number_of_pax} guest{booking.number_of_pax === 1 ? "" : "s"}
               </p>
-              <a href={`tel:${booking.contact_phone}`} className="mt-1 inline-block text-sm font-bold text-daet-forest dark:text-blue-300 underline">
+              <a href={`tel:${booking.contact_phone}`} className="inline-flex min-h-11 items-center text-sm font-bold text-daet-forest dark:text-blue-300 underline">
                 {booking.contact_phone}
               </a>
             </div>

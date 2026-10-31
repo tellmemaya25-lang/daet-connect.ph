@@ -244,7 +244,7 @@ export default async function BookingDetailPage({ params, searchParams }: PagePr
               {steps.map((step, i) => (
                 <li key={step.label} className="flex items-center gap-3 sm:flex-col sm:items-start">
                   <span
-                    className={`grid h-9 w-9 shrink-0 place-items-center rounded-full text-sm font-bold ${step.done ? "bg-green-500 text-slate-950" : "bg-muted text-slate-600 dark:text-slate-400"}`}
+                    className={`grid h-9 w-9 shrink-0 place-items-center rounded-full text-sm font-bold ${step.done ? "bg-green-500 text-slate-950 dark:bg-green-500/20 dark:text-green-300" : "bg-muted text-slate-600 dark:text-slate-400"}`}
                     aria-hidden="true"
                   >
                     {step.done ? <LineIcon name="check" className="h-5 w-5" /> : i + 1}

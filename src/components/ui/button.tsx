@@ -9,14 +9,15 @@ import { cn } from "@/components/ui/cn";
  */
 const VARIANTS = {
   primary: "bg-blue-600 text-white hover:bg-blue-700 active:bg-blue-800",
-  secondary: "bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-900/40 active:bg-blue-200 dark:active:bg-blue-800/60",
+  // Dark mode: a lighter fill plus a faint edge, so the button keeps its shape on a dark card.
+  secondary: "bg-blue-50 dark:bg-blue-900/50 text-blue-700 dark:text-blue-200 dark:ring-1 dark:ring-inset dark:ring-blue-400/30 hover:bg-blue-100 dark:hover:bg-blue-800/60 active:bg-blue-200 dark:active:bg-blue-800/80",
   // Quiet, but still shaped like a button at rest: phones have no hover to reveal it.
   ghost: "text-daet-ink ring-1 ring-inset ring-daet-ink/20 hover:bg-muted active:bg-muted-strong",
   danger: "bg-red-600 text-white hover:bg-red-700 active:bg-red-800",
   accent: "bg-yellow-500 text-slate-950 hover:bg-yellow-400 active:bg-yellow-600",
   // For use on a blue-600 panel.
   inverse: "bg-surface text-blue-700 dark:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-950/40 active:bg-blue-100 dark:active:bg-blue-900/40",
-  onBlue: "text-white hover:bg-blue-700 active:bg-blue-800",
+  onBlue: "text-white ring-1 ring-inset ring-white/60 hover:bg-blue-700 active:bg-blue-800",
 } as const;
 
 const SIZES = {

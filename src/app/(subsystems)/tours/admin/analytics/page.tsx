@@ -39,16 +39,19 @@ export default async function AdminAnalyticsPage({ searchParams }: { searchParam
       <AdminPageHeading title="Analytics" backHref="/tours/admin" backLabel="Admin dashboard" />
 
       <nav aria-label="Date range" className="mb-6 flex flex-wrap items-center gap-2">
-        {RANGE_PRESETS.map((p) => (
-          <Link
-            key={p.key}
-            href={`/tours/admin/analytics?range=${p.key}`}
-            aria-current={range.preset === p.key ? "page" : undefined}
-            className={`inline-flex min-h-11 items-center rounded-full px-5 text-sm font-bold ${range.preset === p.key ? "bg-daet-forest text-white" : "border border-daet-ink/15 bg-surface text-daet-ink hover:bg-daet-sand"}`}
-          >
-            {p.label}
-          </Link>
-        ))}
+        {/* The four presets share one row, even on a phone. */}
+        <div className="grid w-full grid-cols-4 gap-1 rounded-full bg-muted p-1 sm:w-auto">
+          {RANGE_PRESETS.map((p) => (
+            <Link
+              key={p.key}
+              href={`/tours/admin/analytics?range=${p.key}`}
+              aria-current={range.preset === p.key ? "page" : undefined}
+              className={`inline-flex min-h-11 items-center justify-center whitespace-nowrap rounded-full px-2 text-sm font-bold sm:px-4 ${range.preset === p.key ? "bg-daet-forest text-white" : "text-daet-ink hover:bg-surface"}`}
+            >
+              {p.label}
+            </Link>
+          ))}
+        </div>
         <form className="flex flex-wrap items-center gap-2 text-sm" action="/tours/admin/analytics">
           <label className="sr-only" htmlFor="from">From</label>
           <input id="from" name="from" type="date" defaultValue={range.from} max={today} className="min-h-11 rounded-full border border-daet-ink/15 bg-surface px-3" />
