@@ -44,6 +44,20 @@ type Row = {
   tours_packages: Pkg | Pkg[] | null;
 };
 
+const PAST_SHOWN = 3;
+
+const owesPayment = (b: Row) => b.status === "confirmed" && b.payment_status !== "paid" && b.payment_status !== "refunded";
+
+const dayKeyToUtc = (key: string) => Date.parse(`${key}T00:00:00Z`);
+
+/** "Today", "Tomorrow" or "In 12 days" for an upcoming date; null once it is further out than a month. */
+function daysAway(key: string, today: string): string | null {
+  const days = Math.round((dayKeyToUtc(key) - dayKeyToUtc(today)) / 86_400_000);
+  if (days === 0) return "Today";
+  if (days === 1) return "Tomorrow";
+  return days > 1 && days <= 31 ? `In ${days} days` : null;
+}
+
 const longDate = (key: string) =>
   new Date(`${key}T00:00:00+08:00`).toLocaleDateString("en-PH", { weekday: "short", month: "short", day: "numeric", year: "numeric", timeZone: "Asia/Manila" });
 
@@ -76,6 +90,9 @@ export default async function MyBookingsPage() {
   const isActive = (b: Row) => (b.status === "pending" || b.status === "confirmed") && b.tour_date >= today;
   const upcoming = rows.filter(isActive);
   const past = rows.filter((b) => !isActive(b)).reverse();
+  const owing = upcoming.filter(owesPayment);
+  const owingAll = owing.every((b) => (b.payment_status ?? "unpaid") === "unpaid");
+  const owingTotal = owing.reduce((sum, b) => sum + Number(b.total_amount ?? 0), 0);
 
   return (
     <PageFrame>
@@ -87,15 +104,19 @@ export default async function MyBookingsPage() {
               {rows.length === 0 ? "Nothing booked yet." : `${upcoming.length} coming up, ${past.length} past or cancelled.`}
             </p>
           </div>
-          <div className="flex flex-wrap gap-2">
-            <ButtonLink href="/tours/messages" variant="secondary">
-              Messages
-            </ButtonLink>
-            <ButtonLink href="/tours/browse">Find a trip</ButtonLink>
-          </div>
+          <ButtonLink href="/tours/browse">Find a trip</ButtonLink>
         </header>
 
         {error ? <Notice variant="error" className="mb-6">Your bookings could not be loaded right now. Please try again.</Notice> : null}
+
+        {owing.length > 0 ? (
+          <Notice variant="warning" className="mb-8">
+            <p className="text-base font-bold">
+              {owing.length === 1 ? "One trip is waiting for payment" : `${owing.length} trips are waiting for payment`}
+              {owingAll ? `, ${formatPeso(owingTotal)} in total` : ""}.
+            </p>
+          </Notice>
+        ) : null}
 
         {rows.length === 0 && !error ? (
           <EmptyState
@@ -124,11 +145,23 @@ export default async function MyBookingsPage() {
             <h2 id="past" className="mb-4 text-2xl font-bold text-daet-ink">
               Past and cancelled
             </h2>
-            <ul className="space-y-3">
-              {past.map((b) => (
-                <BookingRow key={b.id} booking={b} today={today} quiet />
+            <ul className="space-y-2">
+              {past.slice(0, PAST_SHOWN).map((b) => (
+                <PastRow key={b.id} booking={b} />
               ))}
             </ul>
+            {past.length > PAST_SHOWN ? (
+              <details className="group mt-2">
+                <summary className="inline-flex min-h-11 cursor-pointer items-center rounded-full border border-slate-500 px-6 font-bold text-daet-ink group-open:hidden">
+                  Show all {past.length}
+                </summary>
+                <ul className="space-y-2">
+                  {past.slice(PAST_SHOWN).map((b) => (
+                    <PastRow key={b.id} booking={b} />
+                  ))}
+                </ul>
+              </details>
+            ) : null}
           </section>
         ) : null}
       </div>
@@ -136,16 +169,24 @@ export default async function MyBookingsPage() {
   );
 }
 
-function BookingRow({ booking: b, today, quiet = false }: { booking: Row; today: string; quiet?: boolean }) {
+function packageOf(b: Row) {
   const pkg = Array.isArray(b.tours_packages) ? b.tours_packages[0] : b.tours_packages;
+  const name = pkg?.title ?? (pkg?.location_name ? `Tour at ${pkg.location_name}` : "Tour");
+  return { pkg, name };
+}
+
+function BookingRow({ booking: b, today }: { booking: Row; today: string }) {
+  const { pkg, name } = packageOf(b);
   const status = STATUS[b.status] ?? { label: b.status, tone: "neutral" as const };
   const pay = PAYMENT[b.payment_status ?? "unpaid"] ?? PAYMENT.unpaid;
   const photo = PHOTOS[placePhoto(pkg?.title, pkg?.location_name)];
-  const owes = b.status === "confirmed" && b.payment_status !== "paid" && b.payment_status !== "refunded";
+  const owes = owesPayment(b);
+  const away = daysAway(b.tour_date, today);
+  const total = formatPeso(b.total_amount);
 
   return (
-    <li className="grid grid-cols-[88px_1fr] gap-4 rounded-2xl bg-surface p-3 sm:grid-cols-[160px_1fr] sm:p-4">
-      <div className={`relative aspect-square overflow-hidden rounded-2xl bg-blue-100 dark:bg-blue-900/40 sm:aspect-[4/3] ${quiet ? "opacity-80" : ""}`}>
+    <li className="grid grid-cols-[88px_1fr] gap-x-4 gap-y-3 rounded-2xl bg-surface p-3 sm:grid-cols-[160px_1fr_auto] sm:p-4">
+      <div className="relative aspect-square overflow-hidden rounded-2xl bg-blue-100 dark:bg-blue-900/40 sm:aspect-[4/3]">
         {pkg?.cover_image_url ? (
           <img src={pkg.cover_image_url} alt="" className="h-full w-full object-cover" loading="lazy" />
         ) : (
@@ -153,35 +194,65 @@ function BookingRow({ booking: b, today, quiet = false }: { booking: Row; today:
         )}
       </div>
       <div className="min-w-0">
-        <div className="flex flex-wrap gap-1.5">
-          <Badge tone={status.tone}>{status.label}</Badge>
-          {b.status === "confirmed" || b.status === "completed" ? <Badge tone={pay.tone}>{pay.label}</Badge> : null}
-        </div>
+        <p className="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm">
+          {owes ? <Badge tone="warning">{b.payment_status === "partial" ? "Balance due" : "Payment due"}</Badge> : <Badge tone={status.tone}>{status.label}</Badge>}
+          <span className="text-slate-600 dark:text-slate-400">
+            {owes ? `${status.label} by the operator` : b.status === "confirmed" || b.status === "completed" ? pay.label : null}
+          </span>
+        </p>
         <Link href={`/tours/bookings/${b.id}`} className="mt-1 block text-lg font-bold leading-snug text-daet-ink hover:text-blue-700 dark:hover:text-blue-300 sm:text-xl">
-          {pkg?.title ?? "Tour"}
+          {name}
         </Link>
         <p className="mt-1 text-daet-ink">
-          {b.tour_date === today ? <strong className="text-blue-700 dark:text-blue-300">Today</strong> : longDate(b.tour_date)} · {b.number_of_pax} guest{b.number_of_pax === 1 ? "" : "s"}
+          {away ? <strong className="text-blue-700 dark:text-blue-300">{away}</strong> : null}
+          {away ? ", " : null}
+          {longDate(b.tour_date)} · {b.number_of_pax} guest{b.number_of_pax === 1 ? "" : "s"}
         </p>
-        <p className="text-sm text-slate-600 dark:text-slate-400">
-          Ref {b.booking_reference} · {formatPeso(b.total_amount)}
+        <p className="text-sm text-slate-600 dark:text-slate-400">Ref {b.booking_reference}</p>
+      </div>
+      <div className="col-span-2 flex flex-col gap-2 sm:col-span-1 sm:w-56">
+        <p className="flex items-baseline justify-between">
+          <span className="text-sm text-slate-600 dark:text-slate-400">Total</span>
+          <strong className="text-2xl text-daet-ink">{total}</strong>
         </p>
-        <div className="mt-3 flex flex-wrap gap-2">
-          {owes ? (
-            <ButtonLink href={`/tours/bookings/${b.id}#payment`} variant="accent">
-              {b.payment_status === "partial" ? "Pay the balance" : "Pay now"}
-            </ButtonLink>
-          ) : null}
+        {owes ? (
+          <ButtonLink href={`/tours/bookings/${b.id}#payment`}>
+            {b.payment_status === "partial" ? "Pay the balance" : `Pay ${total}`}
+          </ButtonLink>
+        ) : null}
+        <div className="flex gap-2">
           {b.status === "confirmed" ? (
-            <ButtonLink href={`/tours/bookings/${b.id}/ticket`} variant="secondary">
+            <ButtonLink href={`/tours/bookings/${b.id}/ticket`} variant="secondary" className="flex-1 px-4">
               Ticket
             </ButtonLink>
           ) : null}
-          <ButtonLink href={`/tours/bookings/${b.id}`} variant="ghost">
+          <ButtonLink href={`/tours/bookings/${b.id}`} variant="secondary" className="flex-1 px-4">
             Details
           </ButtonLink>
         </div>
       </div>
+    </li>
+  );
+}
+
+/** Past and cancelled bookings: one compact row, no photo. */
+function PastRow({ booking: b }: { booking: Row }) {
+  const { name } = packageOf(b);
+  const status = STATUS[b.status] ?? { label: b.status, tone: "neutral" as const };
+  return (
+    <li className="flex flex-wrap items-center gap-x-4 gap-y-2 rounded-2xl bg-surface px-4 py-3">
+      <div className="min-w-0 flex-1 basis-60">
+        <Link href={`/tours/bookings/${b.id}`} className="font-bold text-daet-ink hover:text-blue-700 dark:hover:text-blue-300">
+          {name}
+        </Link>
+        <p className="text-sm text-slate-600 dark:text-slate-400">
+          {longDate(b.tour_date)} · {b.number_of_pax} guest{b.number_of_pax === 1 ? "" : "s"} · Ref {b.booking_reference}
+        </p>
+      </div>
+      <Badge tone={status.tone}>{status.label}</Badge>
+      <ButtonLink href={`/tours/bookings/${b.id}`} variant="ghost" className="px-4">
+        Details
+      </ButtonLink>
     </li>
   );
 }
