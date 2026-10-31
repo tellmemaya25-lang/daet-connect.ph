@@ -158,6 +158,16 @@ describe("Manila datetime-local conversion", () => {
 });
 
 describe("formatEventRange", () => {
+  it("shows only the start when no end time is announced", () => {
+    const text = formatEventRange("2026-06-19T06:00:00+08:00", "2026-06-19T06:00:00+08:00");
+    expect(text).toMatch(/Jun 19.*·\s*6:00\s*AM$/i);
+  });
+
+  it("shows whole-day events by date only", () => {
+    expect(formatEventRange("2026-06-15T00:00:00+08:00", "2026-06-24T23:59:00+08:00")).toBe("Mon, Jun 15, 2026 – Wed, Jun 24, 2026");
+    expect(formatEventRange("2026-06-24T00:00:00+08:00", "2026-06-24T23:59:00+08:00")).toBe("Wed, Jun 24, 2026 · all day");
+  });
+
   it("shows one date for same-day events", () => {
     const text = formatEventRange("2026-10-24T01:00:00Z", "2026-10-24T09:00:00Z");
     expect(text).toContain("Oct 24, 2026");

@@ -189,6 +189,13 @@ const timeFormatter = new Intl.DateTimeFormat("en-PH", {
 export function formatEventRange(startsAt: string, endsAt: string): string {
   const start = toDate(startsAt);
   const end = toDate(endsAt);
+  // A start time only (no end announced): show just when it starts.
+  if (end.getTime() <= start.getTime()) return `${dateFormatter.format(start)} · ${timeFormatter.format(start)}`;
+  // Whole days (00:00 to 23:59 Manila): dates only.
+  const clock = (d: Date) => new Intl.DateTimeFormat("en-GB", { hour: "2-digit", minute: "2-digit", hourCycle: "h23", timeZone: MANILA_TIME_ZONE }).format(d);
+  if (clock(start) === "00:00" && clock(end) === "23:59") {
+    return toManilaDateKey(start) === toManilaDateKey(end) ? `${dateFormatter.format(start)} · all day` : `${dateFormatter.format(start)} – ${dateFormatter.format(end)}`;
+  }
   if (toManilaDateKey(start) === toManilaDateKey(end)) {
     return `${dateFormatter.format(start)} · ${timeFormatter.format(start)} – ${timeFormatter.format(end)}`;
   }
