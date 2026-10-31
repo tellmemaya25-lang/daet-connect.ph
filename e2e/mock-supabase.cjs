@@ -9,6 +9,8 @@ const crypto = require("node:crypto");
  */
 const http = require("http");
 const PORT = Number(process.env.MOCK_SUPABASE_PORT || 54329);
+// MOCK_COVERS=1 gives packages cover photos, as real tours have (layout audits).
+const COVER = process.env.MOCK_COVERS === "1" ? "/photos/bagasbas-beach.jpg" : null;
 const TODAY = new Date(Date.now() + 8 * 3600 * 1000).toISOString().slice(0, 10);
 
 const CONV_ID = "cc110000-0000-4000-8000-000000000001";
@@ -22,7 +24,7 @@ function build(role) {
 const BID = "e9466de5-4877-47c1-ac14-d86deeb38b9e";
   const operator = { id: "op-1", profile_id: "9b7e5a5e-0000-4000-8000-000000000001", business_name: "Bagasbas Coast Tours", accreditation_status: "approved", accreditation_notes: null, contact_phone: "0917 555 0101", gcash_number: "0917 555 0101", gcash_name: "Maya Santos", bank_name: "BPI", bank_account_number: "1234-5678-90", bank_account_name: "Bagasbas Coast Tours", payment_instructions: "Please include your booking reference in the notes.", created_at: "2026-01-01T00:00:00Z" };
   const PKG = "aa000000-0000-4000-8000-000000000001";
-  const pkg = { id: PKG, status: "published", description: "Learn to surf at sunrise.", tours_package_price_variants: [{ id: "v1", variant_name: "Standard", price_per_pax: 466, flat_price: null, min_pax: 1, max_pax: 8, is_default: true }], title: "Bagasbas Sunrise Surf Lesson", location_name: "Bagasbas Beach", duration_value: 3, duration_type: "hours", cover_image_url: null, operator_id: "op-1", tours_operators: operator };
+  const pkg = { id: PKG, status: "published", description: "Learn to surf at sunrise.", tours_package_price_variants: [{ id: "v1", variant_name: "Standard", price_per_pax: 466, flat_price: null, min_pax: 1, max_pax: 8, is_default: true }], title: "Bagasbas Sunrise Surf Lesson", location_name: "Bagasbas Beach", duration_value: 3, duration_type: "hours", cover_image_url: COVER, operator_id: "op-1", tours_operators: operator };
   const booking = { id: BID, package_id: PKG, user_id: "9b7e5a5e-0000-4000-8000-000000000001", booking_reference: "BK-20261023-7F3K2Q", tour_date: TODAY, number_of_pax: 3, price_per_pax: 466, total_amount: 1398, total_paid: 500, payment_status: "partial", status: "confirmed", contact_name: "Juan Dela Cruz", contact_email: "juan@example.ph", contact_phone: "0918 222 3344", special_requests: null, assigned_guide_id: null, created_at: "2026-10-20T03:00:00Z", tours_packages: pkg };
   const payments = [
     { id: "pay-a", booking_id: BID, amount: 500, payment_method: "gcash", provider: "paymongo", provider_method: "gcash", reference_number: "BK-20261023-7F3K2Q", payment_date: "2026-10-21T02:15:00Z", payment_status: "completed", notes: "PayMongo checkout cs_abc", tours_bookings: { booking_reference: "BK-20261023-7F3K2Q", contact_name: "Juan Dela Cruz", tours_packages: pkg } },
