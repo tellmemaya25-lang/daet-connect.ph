@@ -286,6 +286,11 @@ http.createServer((req, res) => {
       return send(404, { message: "unknown live rpc" });
     }
     const table = url.pathname.replace("/rest/v1/", "");
+    // Like PostgREST: guides and operators link to profiles twice (profile_id,
+    // reviewed_by), so an embed that doesn't name its foreign key is refused.
+    if ((table === "tours_guides" || table === "tours_operators") && /(^|[,(\s])profiles\s*\(/.test(url.searchParams.get("select") || "")) {
+      return send(300, { code: "PGRST201", message: `Could not embed because more than one relationship was found for '${table}' and 'profiles'` });
+    }
     // The event page asks for availability joined to packages.
     const wantsEventJoin = table === "tours_package_availability" && (url.searchParams.get("select") || "").includes("tours_packages");
     let rows = (wantsEventJoin ? tables._event_availability : tables[table]) || [];

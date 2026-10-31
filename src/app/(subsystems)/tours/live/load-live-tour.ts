@@ -24,9 +24,11 @@ export async function loadLiveTour(bookingId: string, viewerId: string): Promise
   const pkg = Array.isArray(booking.tours_packages) ? booking.tours_packages[0] : booking.tours_packages;
   const operator = pkg ? (Array.isArray(pkg.tours_operators) ? pkg.tours_operators[0] : pkg.tours_operators) : null;
 
+  // tours_guides links to profiles twice (profile_id, reviewed_by), so the
+  // embed names its foreign key; an unnamed one fails and the guide reads as null.
   const [{ data: stops }, { data: guide }, { data: participants }, { data: checkins }] = await Promise.all([
     pkg ? supabase.from("tours_package_stops").select("location_name, latitude, longitude, stop_order").eq("package_id", pkg.id).order("stop_order") : Promise.resolve({ data: [] }),
-    booking.assigned_guide_id ? supabase.from("tours_guides").select("profile_id, profiles ( full_name )").eq("id", booking.assigned_guide_id).maybeSingle() : Promise.resolve({ data: null }),
+    booking.assigned_guide_id ? supabase.from("tours_guides").select("profile_id, profiles!tours_guides_profile_id_fkey ( full_name )").eq("id", booking.assigned_guide_id).maybeSingle() : Promise.resolve({ data: null }),
     supabase.from("tours_booking_participants").select("id").eq("booking_id", booking.id),
     supabase.from("tours_checkins").select("participant_id").eq("booking_id", booking.id),
   ]);
