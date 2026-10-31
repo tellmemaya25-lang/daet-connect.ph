@@ -56,7 +56,7 @@ test.describe("desktop chat heads", () => {
     await signInAs(context, "tourist");
     const booking = "/tours/bookings/e9466de5-4877-47c1-ac14-d86deeb38b9e";
     await page.goto(booking, { waitUntil: "networkidle" });
-    await page.getByRole("button", { name: "Message the operator" }).click();
+    await page.getByRole("button", { name: "Message operator" }).click();
     const dock = page.getByRole("region", { name: "Open chats" });
     await expect(dock.getByRole("heading", { level: 2, name: "Bagasbas Sunrise Surf Lesson" })).toBeVisible();
     await expect(page).toHaveURL(new RegExp(`${booking}$`));

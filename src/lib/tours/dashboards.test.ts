@@ -5,7 +5,7 @@ import {
   cancellationRate,
   dashboardPath,
   fillDays,
-  nextAvailability,
+  markDay,
   occupancy,
   parseAnalytics,
   parseAnalyticsRange,
@@ -72,10 +72,12 @@ describe("calendars and occupancy", () => {
       }),
     );
   });
-  it("cycles guide availability", () => {
-    expect(nextAvailability("unset")).toBe("available");
-    expect(nextAvailability("available")).toBe("unavailable");
-    expect(nextAvailability("unavailable")).toBe("unset");
+  it("marks a guide's day with the chosen mark, and clears it on a second tap", () => {
+    expect(markDay("unset", "available")).toBe("available");
+    expect(markDay("available", "available")).toBe("unset");
+    expect(markDay("available", "unavailable")).toBe("unavailable");
+    expect(markDay("unavailable", "unavailable")).toBe("unset");
+    expect(markDay("unset", "unavailable")).toBe("unavailable");
   });
 });
 

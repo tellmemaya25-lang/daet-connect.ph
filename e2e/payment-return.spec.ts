@@ -12,7 +12,8 @@ test.describe("returning from PayMongo", () => {
     // The mock has a PayMongo payment from a minute ago (as if the webhook got there first).
     await expect(page.getByRole("heading", { level: 1, name: "Payment successful" })).toBeVisible();
     await expect(page.getByText(/₱500\.00 received via GCash/)).toBeVisible();
-    await expect(page.getByRole("link", { name: "Show my ticket QR" })).toBeVisible();
+    // ₱500 of ₱1,398 is a part payment: the ticket QR waits until the booking is paid in full.
+    await expect(page.getByRole("link", { name: "Show my ticket QR" })).toHaveCount(0);
     await expect(page.getByRole("link", { name: "View booking" })).toHaveAttribute("href", `/tours/bookings/${BID}`);
     await checkA11y(page, "payment return");
   });

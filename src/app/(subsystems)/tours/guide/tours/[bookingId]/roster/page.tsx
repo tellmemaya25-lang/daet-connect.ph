@@ -39,7 +39,7 @@ export default async function GuideRosterPage({ params }: PageProps) {
   // RLS: the tourist, the operator, the assigned guide and admins can read the booking.
   const { data: booking } = await supabase
     .from("tours_bookings")
-    .select("id, user_id, booking_reference, status, tour_date, number_of_pax, contact_name, contact_phone, special_requests, tours_packages ( title, location_name )")
+    .select("id, user_id, booking_reference, status, payment_status, tour_date, number_of_pax, contact_name, contact_phone, special_requests, tours_packages ( title, location_name )")
     .eq("id", bookingId)
     .maybeSingle();
   if (!booking || booking.user_id === user.id) notFound();
@@ -75,7 +75,7 @@ export default async function GuideRosterPage({ params }: PageProps) {
               <p className="text-sm text-daet-ink/65">
                 {booking.booking_reference} · {booking.number_of_pax} guest{booking.number_of_pax === 1 ? "" : "s"}
               </p>
-              <a href={`tel:${booking.contact_phone}`} className="mt-1 inline-block text-sm font-bold text-daet-forest dark:text-blue-300 underline">
+              <a href={`tel:${booking.contact_phone}`} className="inline-flex min-h-11 items-center text-sm font-bold text-daet-forest dark:text-blue-300 underline">
                 {booking.contact_phone}
               </a>
             </div>

@@ -199,7 +199,7 @@ export function LiveTourBoard(props: LiveTourBoardProps) {
               <ol className="mt-2 space-y-1">
                 {props.stops.map((s, i) => (
                   <li key={`${s.name}-${i}`} className="flex items-center gap-3 py-1 text-sm">
-                    <span className={`grid h-7 w-7 shrink-0 place-items-center rounded-full text-xs font-extrabold ${i < reached ? "bg-green-500 text-slate-950" : i === reached && isLive ? "bg-blue-600 text-white" : "bg-muted-strong text-daet-ink"}`}>
+                    <span className={`grid h-7 w-7 shrink-0 place-items-center rounded-full text-xs font-extrabold ${i < reached ? "bg-green-500 text-slate-950 dark:bg-green-500/20 dark:text-green-300" : i === reached && isLive ? "bg-blue-600 text-white" : "bg-muted-strong text-daet-ink"}`}>
                       {i < reached ? <LineIcon name="check" className="h-3.5 w-3.5" /> : i + 1}
                     </span>
                     <span className={i < reached ? "text-daet-ink/70" : "font-semibold text-daet-ink"}>{s.name}</span>

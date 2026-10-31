@@ -74,7 +74,7 @@ export default async function OperatorLivePage() {
 
   return (
     <PageFrame>
-      <DashboardHeader role="operator" title="Live now" description="Your tours from yesterday to tomorrow. Open one to see the guide and, if they share, the guest on the map." />
+      <DashboardHeader backHref="/tours/operator/dashboard" backLabel="Dashboard" title="Live now" description="Your tours from yesterday to tomorrow. Open one to see the guide and, if they share, the guest on the map." />
       {rows.length === 0 ? (
         <EmptyState title="No tours around today" description="Confirmed tours for yesterday, today and tomorrow show here." />
       ) : (

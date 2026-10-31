@@ -1,3 +1,4 @@
+import { hasTicket } from "@/lib/tours/ticket";
 import Image from "next/image";
 import Link from "next/link";
 import { redirect } from "next/navigation";
@@ -18,7 +19,7 @@ export const dynamic = "force-dynamic";
 export const metadata = { title: "My bookings" };
 
 const STATUS: Record<string, { label: string; tone: BadgeTone }> = {
-  pending: { label: "Waiting for operator", tone: "warning" },
+  pending: { label: "Waiting for operator", tone: "neutral" },
   confirmed: { label: "Confirmed", tone: "success" },
   completed: { label: "Completed", tone: "info" },
   cancelled: { label: "Cancelled", tone: "neutral" },
@@ -154,7 +155,10 @@ function BookingRow({ booking: b, today, quiet = false }: { booking: Row; today:
       </div>
       <div className="min-w-0">
         <div className="flex flex-wrap gap-1.5">
-          <Badge tone={status.tone}>{status.label}</Badge>
+          <Badge tone={status.tone}>
+            {b.status === "pending" ? <LineIcon name="clock" className="h-3.5 w-3.5" /> : null}
+            {status.label}
+          </Badge>
           {b.status === "confirmed" || b.status === "completed" ? <Badge tone={pay.tone}>{pay.label}</Badge> : null}
         </div>
         <Link href={`/tours/bookings/${b.id}`} className="mt-1 block text-lg font-bold leading-snug text-daet-ink hover:text-blue-700 dark:hover:text-blue-300 sm:text-xl">
@@ -168,11 +172,11 @@ function BookingRow({ booking: b, today, quiet = false }: { booking: Row; today:
         </p>
         <div className="mt-3 flex flex-wrap gap-2">
           {owes ? (
-            <ButtonLink href={`/tours/bookings/${b.id}#payment`} variant="accent">
+            <ButtonLink href={`/tours/bookings/${b.id}#payment`} variant="primary">
               {b.payment_status === "partial" ? "Pay the balance" : "Pay now"}
             </ButtonLink>
           ) : null}
-          {b.status === "confirmed" ? (
+          {hasTicket(b) && b.status === "confirmed" ? (
             <ButtonLink href={`/tours/bookings/${b.id}/ticket`} variant="secondary">
               Ticket
             </ButtonLink>

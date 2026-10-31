@@ -30,7 +30,10 @@ test("tourist → guide → admin walkthrough screens", async ({ browser }) => {
   await expect(page.getByRole("link", { name: /show ticket qr/i }).first()).toBeVisible();
   await page.getByRole("link", { name: /^pay ₱/i }).first().click();
   await expect(page).toHaveURL(/#payment$/);
-  await expect(page.getByRole("heading", { name: /pay for this tour/i })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Next step" })).toBeVisible();
+  // No PayMongo keys in e2e, so paying the operator directly is the main button; it opens the instructions.
+  await page.getByRole("button", { name: "See how to pay the operator" }).click();
+  await expect(page.getByLabel("Reference number")).toBeVisible();
 
   // 4. Completed tour: the review form is offered.
   await page.goto("/tours/bookings/b-done", { waitUntil: "networkidle" });

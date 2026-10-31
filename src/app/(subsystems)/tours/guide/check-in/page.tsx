@@ -64,7 +64,7 @@ export default async function GuideCheckInPage() {
                       <span>
                         <span className="block font-bold text-daet-ink">{tour.contact_name}</span>
                         <span className="block text-sm text-slate-600 dark:text-slate-400">
-                          {pkg?.title ?? "Tour"} · {tour.number_of_pax} pax · {tour.booking_reference}
+                          {pkg?.title ?? "Tour"} · {tour.number_of_pax} guest{tour.number_of_pax === 1 ? "" : "s"} · {tour.booking_reference}
                         </span>
                       </span>
                       {arrived ? <Badge tone="success">Checked in</Badge> : <Badge tone="warning">Waiting</Badge>}

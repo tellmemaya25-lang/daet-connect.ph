@@ -86,159 +86,63 @@ export default async function AdminDashboardPage() {
         </div>
       </div>
 
-      {/* Stats Grid */}
-      <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 mb-8">
-        {/* Pending Operators */}
-        <Link
-          href="/tours/admin/operators"
-          className="block rounded-2xl bg-surface p-6 transition hover:bg-blue-50 dark:hover:bg-blue-950/40 active:scale-[0.99]"
-        >
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="font-bold text-daet-ink">Pending Operators</p>
-              <p className="mt-2 text-4xl font-bold text-daet-ink">{pendingOperators || 0}</p>
+      {/* Two figures per row on phones; what waits on the office is amber and links to its queue. */}
+      <div className="mb-8 grid grid-cols-2 gap-3 lg:grid-cols-5">
+        {(
+          [
+            { label: "Operators to review", value: pendingOperators || 0, href: "/tours/admin/operators", icon: "building", waiting: true },
+            { label: "Guides to verify", value: pendingGuides || 0, href: "/tours/admin/guides", icon: "user", waiting: true },
+            { label: "Packages to approve", value: pendingPackages || 0, href: "/tours/admin/packages", icon: "box", waiting: true },
+            { label: "Published packages", value: publishedPackages || 0, href: null, icon: "check", waiting: false },
+            { label: "Bookings, all time", value: totalBookings || 0, href: null, icon: "calendar", waiting: false },
+          ] as const
+        ).map((stat) => {
+          const body = (
+            <>
+              <span className="flex items-start justify-between gap-2">
+                <span className="text-sm text-slate-600 dark:text-slate-400">{stat.label}</span>
+                <LineIcon name={stat.icon} className="h-5 w-5 shrink-0 text-daet-ink/60" />
+              </span>
+              <span className={`mt-1 block text-3xl font-bold ${stat.waiting && stat.value > 0 ? "text-yellow-800 dark:text-yellow-200" : "text-daet-ink"}`}>{stat.value}</span>
+              {stat.href ? <span className="mt-1 block text-sm font-bold text-blue-700 dark:text-blue-300">{stat.value > 0 ? "Review →" : "Open →"}</span> : null}
+            </>
+          );
+          return stat.href ? (
+            <Link key={stat.label} href={stat.href} className="block rounded-2xl bg-surface p-4 transition hover:bg-blue-50 dark:hover:bg-blue-950/40 active:scale-[0.99]">
+              {body}
+            </Link>
+          ) : (
+            <div key={stat.label} className="rounded-2xl bg-surface p-4">
+              {body}
             </div>
-            <div className="grid h-14 w-14 place-items-center rounded-2xl bg-yellow-50 dark:bg-yellow-950/40 text-2xl">
-              <LineIcon name="building" className="inline-block h-[1.1em] w-[1.1em] align-[-0.15em]" />
-            </div>
-          </div>
-          <p className="mt-4 text-slate-600 dark:text-slate-400">Applications awaiting review</p>
-        </Link>
-
-        {/* Pending Guides */}
-        <Link
-          href="/tours/admin/guides"
-          className="block rounded-2xl bg-surface p-6 transition hover:bg-blue-50 dark:hover:bg-blue-950/40 active:scale-[0.99]"
-        >
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="font-bold text-daet-ink">Pending Guides</p>
-              <p className="mt-2 text-4xl font-bold text-daet-ink">{pendingGuides || 0}</p>
-            </div>
-            <div className="grid h-14 w-14 place-items-center rounded-2xl bg-yellow-50 dark:bg-yellow-950/40 text-2xl">
-              <LineIcon name="user" className="inline-block h-[1.1em] w-[1.1em] align-[-0.15em]" />
-            </div>
-          </div>
-          <p className="mt-4 text-slate-600 dark:text-slate-400">Guide applications to verify</p>
-        </Link>
-
-        {/* Pending Packages */}
-        <Link
-          href="/tours/admin/packages"
-          className="block rounded-2xl bg-surface p-6 transition hover:bg-blue-50 dark:hover:bg-blue-950/40 active:scale-[0.99]"
-        >
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="font-bold text-daet-ink">Pending Packages</p>
-              <p className="mt-2 text-4xl font-bold text-daet-ink">{pendingPackages || 0}</p>
-            </div>
-            <div className="grid h-14 w-14 place-items-center rounded-2xl bg-yellow-50 dark:bg-yellow-950/40 text-2xl">
-              <LineIcon name="box" className="inline-block h-[1.1em] w-[1.1em] align-[-0.15em]" />
-            </div>
-          </div>
-          <p className="mt-4 text-slate-600 dark:text-slate-400">Tour packages awaiting approval</p>
-        </Link>
-
-        {/* Published Packages */}
-        <div className="rounded-2xl bg-surface p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="font-bold text-daet-ink">Published Packages</p>
-              <p className="mt-2 text-4xl font-bold text-daet-ink">{publishedPackages || 0}</p>
-            </div>
-            <div className="grid h-14 w-14 place-items-center rounded-2xl bg-green-50 dark:bg-green-950/40 text-2xl">
-              ✓
-            </div>
-          </div>
-          <p className="mt-4 text-slate-600 dark:text-slate-400">Active tour offerings</p>
-        </div>
-
-        {/* Total Bookings */}
-        <div className="rounded-2xl bg-surface p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="font-bold text-daet-ink">Total Bookings</p>
-              <p className="mt-2 text-4xl font-bold text-daet-ink">{totalBookings || 0}</p>
-            </div>
-            <div className="grid h-14 w-14 place-items-center rounded-2xl bg-blue-50 dark:bg-blue-950/40 text-2xl">
-              <LineIcon name="calendar" className="inline-block h-[1.1em] w-[1.1em] align-[-0.15em]" />
-            </div>
-          </div>
-          <p className="mt-4 text-slate-600 dark:text-slate-400">All-time reservations</p>
-        </div>
+          );
+        })}
       </div>
 
-      {/* Quick Actions */}
-      <div className="rounded-2xl bg-surface p-6 mb-8">
-        <h2 className="text-xl font-bold text-daet-ink mb-4">Quick Actions</h2>
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          <Link
-            href="/tours/admin/analytics"
-            className="inline-flex min-h-11 items-center justify-center rounded-full bg-slate-900 px-6 text-sm font-bold text-white hover:bg-daet-forest transition"
-          >
-            <LineIcon name="chart" className="inline-block h-[1.1em] w-[1.1em] align-[-0.15em]" /> Tourism Analytics
-          </Link>
-          <Link
-            href="/tours/admin/operators"
-            className="inline-flex min-h-11 items-center justify-center rounded-full bg-daet-forest px-6 text-sm font-bold text-white hover:bg-blue-700 transition"
-          >
-            Review Operators
-          </Link>
-          <Link
-            href="/tours/admin/guides"
-            className="inline-flex min-h-11 items-center justify-center rounded-full bg-daet-forest px-6 text-sm font-bold text-white hover:bg-blue-700 transition"
-          >
-            Review Guides
-          </Link>
-          <Link
-            href="/tours/admin/packages"
-            className="inline-flex min-h-11 items-center justify-center rounded-full bg-daet-forest px-6 text-sm font-bold text-white hover:bg-blue-700 transition"
-          >
-            Review Packages
-          </Link>
-          <Link
-            href="/tours/admin/events"
-            className="inline-flex min-h-11 items-center justify-center rounded-full border border-daet-forest/30 px-6 text-sm font-bold text-daet-leaf dark:text-blue-300 hover:bg-daet-forest/5 transition"
-          >
-            Manage Events Calendar
-          </Link>
-          <Link
-            href="/tours/admin/attractions"
-            className="inline-flex min-h-11 items-center justify-center rounded-full border border-daet-forest/30 px-6 text-sm font-bold text-daet-leaf dark:text-blue-300 hover:bg-daet-forest/5 transition"
-          >
-            Manage Attractions
-          </Link>
-          <Link
-            href="/tours/admin/guide-places"
-            className="inline-flex min-h-11 items-center justify-center rounded-full border border-daet-forest/30 px-6 text-sm font-bold text-daet-leaf dark:text-blue-300 hover:bg-daet-forest/5 transition"
-          >
-            Local guide: food, stays, fares
-          </Link>
-          <Link
-            href="/tours/admin/reviews"
-            className="inline-flex min-h-11 items-center justify-center rounded-full border border-daet-forest/30 px-6 text-sm font-bold text-daet-leaf dark:text-blue-300 hover:bg-daet-forest/5 transition"
-          >
-            Moderate Reviews
-          </Link>
-          <Link
-            href="/tours/messages"
-            className="inline-flex min-h-11 items-center justify-center rounded-full border border-daet-forest/30 px-6 text-sm font-bold text-daet-forest dark:text-blue-300 hover:bg-daet-forest/5 transition"
-          >
-            Operator Messages
-          </Link>
-          <Link
-            href="/tours/admin/merch"
-            className="inline-flex min-h-11 items-center justify-center rounded-full border border-daet-forest/30 px-6 text-sm font-bold text-daet-leaf dark:text-blue-300 hover:bg-daet-forest/5 transition"
-          >
-            Manage Merchandise
-          </Link>
+      {/* Analytics, approvals and messages are in the tab bar and header; this lists the rest. */}
+      <div className="mb-8 rounded-2xl bg-surface p-5 sm:p-6">
+        <h2 className="mb-4 text-xl font-bold text-daet-ink">Manage</h2>
+        <div className="grid grid-cols-2 gap-2 lg:grid-cols-4">
+          {[
+            ["/tours/admin/events", "Events calendar"],
+            ["/tours/admin/attractions", "Places"],
+            ["/tours/admin/guide-places", "Food, stays and fares"],
+            ["/tours/admin/reviews", "Reviews"],
+            ["/tours/admin/merch", "Merchandise"],
+            ["/tours/admin/guides", "Guides"],
+            ["/tours/admin/packages", "Packages"],
+          ].map(([href, label]) => (
+            <Link key={href} href={href} className="flex min-h-12 items-center rounded-2xl bg-canvas px-4 font-bold leading-snug text-daet-ink transition hover:bg-blue-50 dark:hover:bg-blue-950/40 active:scale-[0.98]">
+              {label}
+            </Link>
+          ))}
         </div>
       </div>
 
       {/* Recent Activity */}
       {recentActivities && recentActivities.length > 0 && (
         <div className="rounded-2xl bg-surface p-6">
-          <h2 className="text-xl font-bold text-daet-ink mb-4">Recent Activity</h2>
+          <h2 className="text-xl font-bold text-daet-ink mb-4">Recent activity</h2>
           <div className="space-y-3">
             {recentActivities.map((activity: any) => (
               <div key={activity.id} className="flex items-start gap-3 text-sm">
