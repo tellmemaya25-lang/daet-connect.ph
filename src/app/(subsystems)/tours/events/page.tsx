@@ -93,7 +93,7 @@ export default async function EventsCalendarPage({ searchParams }: { searchParam
             <Link
               href={calendarHref({ month: currentMonthKey, day: selectedDay })}
               aria-current={category === null ? "page" : undefined}
-              className={`inline-flex min-h-11 items-center rounded-full px-4 text-[15px] font-bold transition active:scale-[0.98] ${category === null ? "bg-blue-600 text-white" : "bg-white text-daet-ink hover:bg-blue-50"}`}
+              className={`inline-flex min-h-11 items-center rounded-full px-4 text-[15px] font-bold transition active:scale-[0.98] ${category === null ? "bg-blue-600 text-white" : "bg-surface text-daet-ink hover:bg-blue-50 dark:hover:bg-blue-950/40"}`}
             >
               All
             </Link>
@@ -103,7 +103,7 @@ export default async function EventsCalendarPage({ searchParams }: { searchParam
               <Link
                 href={calendarHref({ month: currentMonthKey, day: selectedDay, category: value })}
                 aria-current={category === value ? "page" : undefined}
-                className={`inline-flex min-h-11 items-center gap-2 rounded-full px-4 text-[15px] font-bold transition active:scale-[0.98] ${category === value ? "bg-blue-600 text-white" : "bg-white text-daet-ink hover:bg-blue-50"}`}
+                className={`inline-flex min-h-11 items-center gap-2 rounded-full px-4 text-[15px] font-bold transition active:scale-[0.98] ${category === value ? "bg-blue-600 text-white" : "bg-surface text-daet-ink hover:bg-blue-50 dark:hover:bg-blue-950/40"}`}
               >
                 <span className={`h-2.5 w-2.5 rounded-full ${EVENT_CATEGORY_STYLES[value as TourEvent["category"]].dot}`} aria-hidden="true" />
                 {label}
@@ -118,20 +118,20 @@ export default async function EventsCalendarPage({ searchParams }: { searchParam
       ) : null}
 
       <div className="grid gap-6 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
-        <section aria-labelledby="calendar-month" className="order-2 -mx-2 rounded-2xl bg-white p-2 sm:mx-0 sm:p-5 lg:order-1">
+        <section aria-labelledby="calendar-month" className="order-2 -mx-2 rounded-2xl bg-surface p-2 sm:mx-0 sm:p-5 lg:order-1">
           <div className="mb-3 flex items-center justify-between gap-2">
-            <Link href={calendarHref({ month: prev, category })} aria-label="Previous month" className="grid h-11 w-11 place-items-center rounded-full bg-slate-100 text-lg font-bold hover:bg-blue-50">
+            <Link href={calendarHref({ month: prev, category })} aria-label="Previous month" className="grid h-11 w-11 place-items-center rounded-full bg-muted text-lg font-bold hover:bg-blue-50 dark:hover:bg-blue-950/40">
               ‹
             </Link>
             <div className="text-center">
               <h2 id="calendar-month" className="text-xl font-semibold text-daet-ink sm:text-2xl">{formatMonthLabel(month)}</h2>
               {currentMonthKey !== thisMonth ? (
-                <Link href={calendarHref({ month: thisMonth, day: todayKey, category })} className="inline-flex min-h-11 items-center text-sm font-bold text-blue-700 underline underline-offset-2">
+                <Link href={calendarHref({ month: thisMonth, day: todayKey, category })} className="inline-flex min-h-11 items-center text-sm font-bold text-blue-700 dark:text-blue-300 underline underline-offset-2">
                   Jump to today
                 </Link>
               ) : null}
             </div>
-            <Link href={calendarHref({ month: next, category })} aria-label="Next month" className="grid h-11 w-11 place-items-center rounded-full bg-slate-100 text-lg font-bold hover:bg-blue-50">
+            <Link href={calendarHref({ month: next, category })} aria-label="Next month" className="grid h-11 w-11 place-items-center rounded-full bg-muted text-lg font-bold hover:bg-blue-50 dark:hover:bg-blue-950/40">
               ›
             </Link>
           </div>
@@ -155,23 +155,23 @@ export default async function EventsCalendarPage({ searchParams }: { searchParam
                     isSelected
                       ? "bg-blue-600 text-white"
                       : cell.inMonth
-                        ? "bg-slate-50 text-daet-ink hover:bg-blue-50"
-                        : "text-slate-500"
+                        ? "bg-canvas text-daet-ink hover:bg-blue-50 dark:hover:bg-blue-950/40"
+                        : "text-slate-500 dark:text-slate-400"
                   } ${isToday && !isSelected ? "ring-2 ring-yellow-500" : ""}`;
 
                   const content = (
                     <>
-                      <span className={`text-sm font-bold ${isToday && !isSelected ? "text-blue-700" : ""}`}>{cell.day}</span>
+                      <span className={`text-sm font-bold ${isToday && !isSelected ? "text-blue-700 dark:text-blue-300" : ""}`}>{cell.day}</span>
                       {dayEvents.length > 0 ? (
                         <>
                           <span className="mt-1 flex gap-0.5 sm:hidden" aria-hidden="true">
                             {dayEvents.slice(0, 3).map((event) => (
-                              <span key={event.id} className={`h-1.5 w-1.5 rounded-full ${isSelected ? "bg-white" : EVENT_CATEGORY_STYLES[event.category].dot}`} />
+                              <span key={event.id} className={`h-1.5 w-1.5 rounded-full ${isSelected ? "bg-surface" : EVENT_CATEGORY_STYLES[event.category].dot}`} />
                             ))}
                           </span>
                           <span className="mt-1 hidden space-y-0.5 sm:block" aria-hidden="true">
                             {dayEvents.slice(0, 2).map((event) => (
-                              <span key={event.id} className={`flex items-center gap-1 truncate rounded px-1 text-[11px] font-semibold leading-4 ${isSelected ? "bg-white/15" : "bg-white"}`}>
+                              <span key={event.id} className={`flex items-center gap-1 truncate rounded px-1 text-[11px] font-semibold leading-4 ${isSelected ? "bg-white/15" : "bg-surface"}`}>
                                 <span className={`h-1.5 w-1.5 shrink-0 rounded-full ${EVENT_CATEGORY_STYLES[event.category].dot}`} />
                                 <span className="truncate">{event.title}</span>
                               </span>
@@ -214,7 +214,7 @@ export default async function EventsCalendarPage({ searchParams }: { searchParam
               {selectedDay ? formatDayHeading(selectedDay) : `All events in ${formatMonthLabel(month)}`}
             </h2>
             {selectedDay ? (
-              <Link href={calendarHref({ month: currentMonthKey, category })} scroll={false} className="inline-flex min-h-11 shrink-0 items-center font-bold text-blue-700 underline underline-offset-2">
+              <Link href={calendarHref({ month: currentMonthKey, category })} scroll={false} className="inline-flex min-h-11 shrink-0 items-center font-bold text-blue-700 dark:text-blue-300 underline underline-offset-2">
                 Show month
               </Link>
             ) : null}

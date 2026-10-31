@@ -14,7 +14,7 @@ export function RoleTabBar({ tabs }: { tabs: Tab[] }) {
   return (
     <nav
       aria-label="Dashboard"
-      className="fixed inset-x-0 bottom-0 z-40 bg-white pb-[env(safe-area-inset-bottom)] shadow-[0_-4px_16px_rgba(15,23,42,0.08)] sm:hidden print:hidden"
+      className="fixed inset-x-0 bottom-0 z-40 bg-surface pb-[env(safe-area-inset-bottom)] shadow-[0_-4px_16px_rgba(15,23,42,0.08)] sm:hidden print:hidden"
     >
       <ul className="mx-auto grid max-w-md grid-cols-5">
         {tabs.map((tab) => {
@@ -24,7 +24,7 @@ export function RoleTabBar({ tabs }: { tabs: Tab[] }) {
               <Link
                 href={tab.href}
                 aria-current={active ? "page" : undefined}
-                className={`flex min-h-14 flex-col items-center justify-center gap-0.5 text-xs font-bold transition active:scale-95 ${active ? "text-blue-600" : "text-daet-ink/75 hover:text-daet-ink"}`}
+                className={`flex min-h-14 flex-col items-center justify-center gap-0.5 text-xs font-bold transition active:scale-95 ${active ? "text-blue-600 dark:text-blue-300" : "text-daet-ink/75 hover:text-daet-ink"}`}
               >
                 <span className="relative">
                   <TabIcon label={tab.label} className="h-6 w-6" />

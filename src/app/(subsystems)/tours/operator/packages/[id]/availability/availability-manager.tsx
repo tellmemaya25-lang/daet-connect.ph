@@ -40,21 +40,21 @@ export function OpenDatesForm({ packageId, today }: { packageId: string; today: 
 
       <fieldset>
         <legend className="text-sm font-bold text-daet-ink">
-          Days of the week <span className="text-red-600" aria-hidden="true">*</span>
+          Days of the week <span className="text-red-600 dark:text-red-300" aria-hidden="true">*</span>
         </legend>
         <div className="mt-2 flex flex-wrap gap-2">
           {WEEKDAYS.map((label, index) => (
             <label
               key={label}
-              className="inline-flex min-h-11 cursor-pointer items-center gap-2 rounded-full border border-daet-ink/20 bg-white px-4 text-sm font-bold text-daet-ink has-[:checked]:border-daet-forest has-[:checked]:bg-daet-forest/10"
+              className="inline-flex min-h-11 cursor-pointer items-center gap-2 rounded-full border border-daet-ink/20 bg-surface px-4 text-sm font-bold text-daet-ink has-[:checked]:border-daet-forest has-[:checked]:bg-daet-forest/10"
             >
               <input type="checkbox" name="weekday" value={index} defaultChecked className="h-4 w-4 accent-daet-forest" />
               {label}
             </label>
           ))}
         </div>
-        {state.errors.weekday ? <p className="mt-1 text-sm font-semibold text-red-700">{state.errors.weekday}</p> : null}
-        <p className="mt-1 text-sm text-slate-600">Up to {MAX_DATES_PER_BATCH} dates at a time. Dates already open are left unchanged.</p>
+        {state.errors.weekday ? <p className="mt-1 text-sm font-semibold text-red-700 dark:text-red-300">{state.errors.weekday}</p> : null}
+        <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">Up to {MAX_DATES_PER_BATCH} dates at a time. Dates already open are left unchanged.</p>
       </fieldset>
 
       <Button type="submit" loading={pending} loadingText="Opening dates…">
@@ -93,7 +93,7 @@ export function AvailabilityList({ packageId, rows }: { packageId: string; rows:
   return (
     <div>
       {result ? <Notice variant={result.tone} className="mb-3">{result.text}</Notice> : null}
-      <ul className="divide-y divide-daet-ink/10 rounded-2xl bg-white">
+      <ul className="divide-y divide-daet-ink/10 rounded-2xl bg-surface">
         {rows.map((row) => {
           const left = seatsLeft(row);
           return (
@@ -113,7 +113,7 @@ export function AvailabilityList({ packageId, rows }: { packageId: string; rows:
                 }}
               >
                 <input type="hidden" name="availabilityId" value={row.id} />
-                <label className="text-sm text-slate-600">
+                <label className="text-sm text-slate-600 dark:text-slate-400">
                   Seats
                   <Input
                     name="capacity"

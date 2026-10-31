@@ -16,7 +16,7 @@ export function ImportAttractionsForm() {
     <form action={formAction} className="space-y-3">
       {state.message ? <Notice variant={state.errors.length ? "error" : "success"}>{state.message}</Notice> : null}
       {state.errors.length ? (
-        <ul className="max-h-48 list-disc overflow-y-auto rounded-2xl bg-red-50 p-3 pl-7 text-sm text-red-900">
+        <ul className="max-h-48 list-disc overflow-y-auto rounded-2xl bg-red-50 dark:bg-red-950/40 p-3 pl-7 text-sm text-red-900 dark:text-red-300">
           {state.errors.map((error) => (
             <li key={`${error.line}-${error.message}`}>
               Line {error.line}: {error.message}
@@ -40,7 +40,7 @@ export function ImportAttractionsForm() {
           Import CSV
         </Button>
       </div>
-      <a href={`data:text/csv;charset=utf-8,${encodeURIComponent(TEMPLATE)}`} download="attractions-template.csv" className="inline-flex min-h-11 items-center text-sm font-bold text-daet-forest underline">
+      <a href={`data:text/csv;charset=utf-8,${encodeURIComponent(TEMPLATE)}`} download="attractions-template.csv" className="inline-flex min-h-11 items-center text-sm font-bold text-daet-forest dark:text-blue-300 underline">
         Download a template
       </a>
     </form>

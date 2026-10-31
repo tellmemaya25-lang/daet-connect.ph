@@ -92,11 +92,11 @@ export default async function BookPackagePage({ params }: PageProps) {
       <div className="mx-auto max-w-4xl">
         {/* Breadcrumb */}
         <nav className="mb-6 text-sm text-daet-ink/70">
-          <Link href="/tours/browse" className="hover:text-daet-forest">
+          <Link href="/tours/browse" className="hover:text-daet-forest dark:hover:text-blue-300">
             Browse packages
           </Link>
           <span className="mx-2">→</span>
-          <Link href={`/tours/packages/${pkg.id}`} className="hover:text-daet-forest">
+          <Link href={`/tours/packages/${pkg.id}`} className="hover:text-daet-forest dark:hover:text-blue-300">
             {pkg.title}
           </Link>
           <span className="mx-2">→</span>
@@ -104,7 +104,7 @@ export default async function BookPackagePage({ params }: PageProps) {
         </nav>
 
         {/* Package Header */}
-        <div className="mb-8 rounded-2xl bg-white p-6">
+        <div className="mb-8 rounded-2xl bg-surface p-6">
           <div className="flex gap-6">
             {pkg.cover_image_url && (
               <img
@@ -120,7 +120,7 @@ export default async function BookPackagePage({ params }: PageProps) {
                 {pkg.duration_type === "hours" ? "hours" : "days"}
               </p>
               {Array.isArray(pkg.tours_operators) && pkg.tours_operators[0] && (
-                <p className="mt-1 text-sm font-bold text-daet-forest">
+                <p className="mt-1 text-sm font-bold text-daet-forest dark:text-blue-300">
                   by {pkg.tours_operators[0].business_name}
                 </p>
               )}

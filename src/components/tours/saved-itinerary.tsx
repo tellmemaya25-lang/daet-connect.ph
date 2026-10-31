@@ -15,15 +15,15 @@ export function SavedItinerary({ days }: { days: SavedDay[] }) {
       {days.map((day) => {
         const points = day.items.filter((i) => i.kind === "visit" && i.lat !== null && i.lng !== null).map((i) => ({ lat: i.lat!, lng: i.lng!, label: i.name }));
         return (
-          <section key={day.dayNumber} className="rounded-2xl bg-white p-5">
+          <section key={day.dayNumber} className="rounded-2xl bg-surface p-5">
             <h2 className="text-lg font-bold text-daet-ink">
               Day {day.dayNumber}
               {day.date ? ` · ${longDate(day.date)}` : ""}
             </h2>
             <ol className="mt-4 space-y-3">
               {day.items.map((item, i) => (
-                <li key={i} className={`rounded-2xl border p-4 ${item.kind === "lunch" ? "border-daet-sun/40 bg-yellow-50/60" : "border-daet-ink/10"}`}>
-                  {item.travelMinutes > 0 ? <p className="mb-1 text-sm text-slate-600">↓ about {item.travelMinutes} min travel</p> : null}
+                <li key={i} className={`rounded-2xl border p-4 ${item.kind === "lunch" ? "border-daet-sun/40 bg-yellow-50/60 dark:bg-yellow-950/40" : "border-daet-ink/10"}`}>
+                  {item.travelMinutes > 0 ? <p className="mb-1 text-sm text-slate-600 dark:text-slate-400">↓ about {item.travelMinutes} min travel</p> : null}
                   <div className="flex flex-wrap items-baseline justify-between gap-2">
                     <p className="font-bold text-daet-ink">
                       {item.kind === "lunch" ? "" : ""}
@@ -36,7 +36,7 @@ export function SavedItinerary({ days }: { days: SavedDay[] }) {
                       )}
                     </p>
                     {item.start !== null && item.end !== null ? (
-                      <p className="text-sm font-bold text-daet-forest">
+                      <p className="text-sm font-bold text-daet-forest dark:text-blue-300">
                         {formatClock(item.start)} – {formatClock(item.end)}
                       </p>
                     ) : null}

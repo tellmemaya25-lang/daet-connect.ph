@@ -62,11 +62,11 @@ export default async function PackageAvailabilityPage({ params }: PageProps) {
     <PageFrame>
       <div className="mx-auto max-w-4xl">
         <nav className="mb-6 text-sm text-daet-ink/70">
-          <Link href="/tours/operator/packages" className="hover:text-daet-forest">
+          <Link href="/tours/operator/packages" className="hover:text-daet-forest dark:hover:text-blue-300">
             My packages
           </Link>
           <span className="mx-2">→</span>
-          <Link href={`/tours/operator/packages/${pkg.id}`} className="hover:text-daet-forest">
+          <Link href={`/tours/operator/packages/${pkg.id}`} className="hover:text-daet-forest dark:hover:text-blue-300">
             {pkg.title}
           </Link>
           <span className="mx-2">→</span>

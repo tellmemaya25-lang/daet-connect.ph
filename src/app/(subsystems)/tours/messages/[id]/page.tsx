@@ -56,7 +56,7 @@ export default async function ConversationPage({ params }: PageProps) {
             <InboxList rows={inbox} viewerId={user.id} activeId={header.id} />
           </LiveInbox>
         </aside>
-        <div className="h-[calc(100dvh-11rem)] min-h-[30rem] overflow-hidden rounded-2xl bg-white">
+        <div className="h-[calc(100dvh-11rem)] min-h-[30rem] overflow-hidden rounded-2xl bg-surface">
           <ChatWindow
             key={header.id}
             conversationId={header.id}

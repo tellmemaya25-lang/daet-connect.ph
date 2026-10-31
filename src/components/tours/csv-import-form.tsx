@@ -26,7 +26,7 @@ export function CsvImportForm({
     <form action={formAction} className="space-y-3">
       {state.message ? <Notice variant={state.errors.length ? "error" : "success"}>{state.message}</Notice> : null}
       {state.errors.length ? (
-        <ul className="max-h-48 list-disc overflow-y-auto rounded-2xl bg-red-50 p-3 pl-7 text-sm text-red-900">
+        <ul className="max-h-48 list-disc overflow-y-auto rounded-2xl bg-red-50 dark:bg-red-950/40 p-3 pl-7 text-sm text-red-900 dark:text-red-300">
           {state.errors.map((error) => (
             <li key={`${error.line}-${error.message}`}>
               Line {error.line}: {error.message}
@@ -34,7 +34,7 @@ export function CsvImportForm({
           ))}
         </ul>
       ) : null}
-      <p className="text-sm text-slate-600">
+      <p className="text-sm text-slate-600 dark:text-slate-400">
         Columns: <code>{columns.join(", ")}</code>. Required: {required}.
       </p>
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
@@ -44,13 +44,13 @@ export function CsvImportForm({
           accept=".csv,text/csv"
           required
           aria-label="CSV file"
-          className="block w-full text-sm text-daet-ink file:mr-3 file:min-h-11 file:rounded-full file:border-0 file:bg-blue-50 file:px-4 file:text-sm file:font-bold file:text-blue-700"
+          className="block w-full text-sm text-daet-ink file:mr-3 file:min-h-11 file:rounded-full file:border-0 file:bg-blue-50 dark:file:bg-blue-950/40 file:px-4 file:text-sm file:font-bold file:text-blue-700 dark:file:text-blue-300"
         />
         <Button type="submit" loading={pending} loadingText="Importing…" className="shrink-0">
           Import CSV
         </Button>
       </div>
-      <a href={`data:text/csv;charset=utf-8,${encodeURIComponent(template)}`} download={templateName} className="inline-flex min-h-11 items-center font-bold text-blue-700 underline">
+      <a href={`data:text/csv;charset=utf-8,${encodeURIComponent(template)}`} download={templateName} className="inline-flex min-h-11 items-center font-bold text-blue-700 dark:text-blue-300 underline">
         Download a template
       </a>
     </form>

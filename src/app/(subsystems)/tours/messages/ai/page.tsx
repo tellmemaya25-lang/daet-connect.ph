@@ -33,15 +33,15 @@ export default async function AiChatPage() {
             <InboxList rows={inbox} viewerId={user.id} activeId="ai" />
           </LiveInbox>
         </aside>
-        <div className="flex h-[calc(100dvh-11rem)] min-h-[30rem] flex-col overflow-hidden rounded-2xl bg-white">
+        <div className="flex h-[calc(100dvh-11rem)] min-h-[30rem] flex-col overflow-hidden rounded-2xl bg-surface">
           <header className="flex items-center gap-3 px-2 py-2 sm:px-3">
-            <Link href="/tours/messages" aria-label="All messages" className="grid h-11 w-11 shrink-0 place-items-center rounded-full text-blue-700 hover:bg-blue-50 lg:hidden">
+            <Link href="/tours/messages" aria-label="All messages" className="grid h-11 w-11 shrink-0 place-items-center rounded-full text-blue-700 dark:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-950/40 lg:hidden">
               <LineIcon name="arrowRight" className="h-5 w-5 rotate-180" />
             </Link>
             <AiAvatar size="sm" />
             <div className="min-w-0">
               <h1 className="truncate text-lg font-bold text-daet-ink">{ASSISTANT_NAME}</h1>
-              <p className="text-sm text-slate-600">Your local guide · always on</p>
+              <p className="text-sm text-slate-600 dark:text-slate-400">Your local guide · always on</p>
             </div>
           </header>
           <AssistantChat signedIn />

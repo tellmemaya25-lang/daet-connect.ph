@@ -60,7 +60,7 @@ export default async function MessagesInboxPage({ searchParams }: PageProps) {
                   key={filter.label}
                   href={filter.kind ? `/tours/messages?kind=${filter.kind}` : "/tours/messages"}
                   aria-current={active ? "page" : undefined}
-                  className={`inline-flex min-h-11 shrink-0 items-center rounded-full px-4 text-[15px] font-bold transition active:scale-[0.98] ${active ? "bg-blue-600 text-white" : "bg-white text-daet-ink hover:bg-blue-50"}`}
+                  className={`inline-flex min-h-11 shrink-0 items-center rounded-full px-4 text-[15px] font-bold transition active:scale-[0.98] ${active ? "bg-blue-600 text-white" : "bg-surface text-daet-ink hover:bg-blue-50 dark:hover:bg-blue-950/40"}`}
                 >
                   {filter.label}
                 </Link>
@@ -70,8 +70,8 @@ export default async function MessagesInboxPage({ searchParams }: PageProps) {
         ) : null}
 
         {isAdmin ? (
-          <details className="mt-4 rounded-2xl bg-white p-4">
-            <summary className="min-h-11 cursor-pointer content-center text-sm font-bold text-daet-forest">Message an operator</summary>
+          <details className="mt-4 rounded-2xl bg-surface p-4">
+            <summary className="min-h-11 cursor-pointer content-center text-sm font-bold text-daet-forest dark:text-blue-300">Message an operator</summary>
             {(operatorList ?? []).length === 0 ? (
               <p className="mt-2 text-sm text-daet-ink/70">No operators have registered yet.</p>
             ) : (

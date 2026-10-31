@@ -79,7 +79,7 @@ export function ImageUploader({
         }}
         onDrop={handleDrop}
         className={`block cursor-pointer rounded-2xl border-2 border-dashed p-6 text-center transition has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-daet-forest sm:p-8 ${
-          isDragging ? 'border-daet-forest bg-daet-sand' : 'border-daet-ink/25 bg-white hover:border-daet-forest/60'
+          isDragging ? 'border-daet-forest bg-daet-sand' : 'border-daet-ink/25 bg-surface hover:border-daet-forest/60'
         }`}
       >
         <input
@@ -93,7 +93,7 @@ export function ImageUploader({
           className="sr-only"
         />
         <span className="block text-base font-bold text-daet-ink">{label}</span>
-        <span className="mt-1 block text-sm font-semibold text-daet-forest underline underline-offset-4">
+        <span className="mt-1 block text-sm font-semibold text-daet-forest dark:text-blue-300 underline underline-offset-4">
           Choose {multiple ? 'files' : 'a file'} or drop {multiple ? 'them' : 'it'} here
         </span>
         <span id={helpId} className="mt-2 block text-sm text-daet-ink/70">
@@ -102,7 +102,7 @@ export function ImageUploader({
         </span>
       </label>
       {problems.length > 0 ? (
-        <ul id={errorId} role="alert" className="mt-2 space-y-1 text-sm font-semibold text-red-700">
+        <ul id={errorId} role="alert" className="mt-2 space-y-1 text-sm font-semibold text-red-700 dark:text-red-300">
           {problems.map((problem) => (
             <li key={problem}>{problem}</li>
           ))}

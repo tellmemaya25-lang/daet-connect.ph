@@ -60,7 +60,7 @@ export function PackageInclusionsStep({
       {/* Inclusions */}
       <div>
         <label className="block text-sm font-bold text-daet-ink">Inclusions</label>
-        <p className="mt-1 text-sm text-slate-600">
+        <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
           What's provided in this tour package?
         </p>
 
@@ -72,12 +72,12 @@ export function PackageInclusionsStep({
             onKeyPress={(e) => e.key === "Enter" && (e.preventDefault(), addInclusion())}
             placeholder="e.g., Transportation, Lunch, Tour guide"
             maxLength={200}
-            className="flex-1 rounded-full border border-daet-ink/15 bg-white px-4 py-2.5 text-sm outline-none transition placeholder:text-daet-ink/35 focus:border-daet-forest focus:ring-4 focus:ring-daet-forest/10"
+            className="flex-1 rounded-full border border-daet-ink/15 bg-surface px-4 py-2.5 text-sm outline-none transition placeholder:text-daet-ink/35 focus:border-daet-forest focus:ring-4 focus:ring-daet-forest/10"
           />
           <button
             type="button"
             onClick={addInclusion}
-            className="inline-flex min-h-11 items-center justify-center rounded-full bg-daet-forest/10 px-5 text-sm font-bold text-daet-leaf transition hover:bg-daet-forest/20"
+            className="inline-flex min-h-11 items-center justify-center rounded-full bg-daet-forest/10 px-5 text-sm font-bold text-daet-leaf dark:text-blue-300 transition hover:bg-daet-forest/20"
           >
             Add
           </button>
@@ -88,9 +88,9 @@ export function PackageInclusionsStep({
             {inclusions.map((item, index) => (
               <li
                 key={index}
-                className="flex items-center justify-between gap-3 rounded-2xl bg-green-50 px-4 py-3 text-sm"
+                className="flex items-center justify-between gap-3 rounded-2xl bg-green-50 dark:bg-green-950/40 px-4 py-3 text-sm"
               >
-                <span className="flex items-center gap-2 text-green-900">
+                <span className="flex items-center gap-2 text-green-900 dark:text-green-300">
                   <span className="text-base" aria-hidden="true">
                     ✓
                   </span>
@@ -99,7 +99,7 @@ export function PackageInclusionsStep({
                 <button
                   type="button"
                   onClick={() => removeInclusion(index)}
-                  className="text-green-700 hover:text-green-900"
+                  className="text-green-700 dark:text-green-300 hover:text-green-900 dark:hover:text-green-300"
                   aria-label="Remove inclusion"
                 >
                   ✕
@@ -113,7 +113,7 @@ export function PackageInclusionsStep({
       {/* Exclusions */}
       <div>
         <label className="block text-sm font-bold text-daet-ink">Exclusions</label>
-        <p className="mt-1 text-sm text-slate-600">
+        <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
           What should tourists prepare or pay for separately?
         </p>
 
@@ -125,7 +125,7 @@ export function PackageInclusionsStep({
             onKeyPress={(e) => e.key === "Enter" && (e.preventDefault(), addExclusion())}
             placeholder="e.g., Personal expenses, Travel insurance"
             maxLength={200}
-            className="flex-1 rounded-full border border-daet-ink/15 bg-white px-4 py-2.5 text-sm outline-none transition placeholder:text-daet-ink/35 focus:border-daet-forest focus:ring-4 focus:ring-daet-forest/10"
+            className="flex-1 rounded-full border border-daet-ink/15 bg-surface px-4 py-2.5 text-sm outline-none transition placeholder:text-daet-ink/35 focus:border-daet-forest focus:ring-4 focus:ring-daet-forest/10"
           />
           <button
             type="button"
@@ -141,7 +141,7 @@ export function PackageInclusionsStep({
             {exclusions.map((item, index) => (
               <li
                 key={index}
-                className="flex items-center justify-between gap-3 rounded-2xl bg-slate-50 px-4 py-3 text-sm"
+                className="flex items-center justify-between gap-3 rounded-2xl bg-canvas px-4 py-3 text-sm"
               >
                 <span className="flex items-center gap-2 text-daet-ink/70">
                   <span className="text-base" aria-hidden="true">

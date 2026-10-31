@@ -11,7 +11,7 @@ import { REACTION_KEYS, REACTIONS, reactionSummary, type Reaction, type Reaction
 /** The menu for one message: six reactions, then Reply and Copy. */
 export function ReactionBar({ current, onPick, onReply, onCopy }: { current: ReactionKey | null; onPick: (key: ReactionKey) => void; onReply: () => void; onCopy?: () => void }) {
   return (
-    <div role="menu" aria-label="React or reply" className="flex items-center gap-0.5 rounded-full bg-white p-1 shadow-[var(--shadow-float)]">
+    <div role="menu" aria-label="React or reply" className="flex items-center gap-0.5 rounded-full bg-surface p-1 shadow-[var(--shadow-float)]">
       {REACTION_KEYS.map((key) => (
         <button
           key={key}
@@ -20,17 +20,17 @@ export function ReactionBar({ current, onPick, onReply, onCopy }: { current: Rea
           aria-checked={current === key}
           aria-label={REACTIONS[key].label}
           onClick={() => onPick(key)}
-          className={`grid h-11 w-11 place-items-center rounded-full text-2xl transition hover:scale-110 hover:bg-slate-100 ${current === key ? "bg-blue-50" : ""}`}
+          className={`grid h-11 w-11 place-items-center rounded-full text-2xl transition hover:scale-110 hover:bg-muted ${current === key ? "bg-blue-50 dark:bg-blue-950/40" : ""}`}
         >
           <span aria-hidden="true">{REACTIONS[key].emoji}</span>
         </button>
       ))}
-      <span className="mx-0.5 h-6 w-px bg-slate-200" aria-hidden="true" />
-      <button type="button" role="menuitem" onClick={onReply} aria-label="Reply" className="grid h-11 w-11 place-items-center rounded-full text-daet-ink hover:bg-slate-100">
+      <span className="mx-0.5 h-6 w-px bg-muted-strong" aria-hidden="true" />
+      <button type="button" role="menuitem" onClick={onReply} aria-label="Reply" className="grid h-11 w-11 place-items-center rounded-full text-daet-ink hover:bg-muted">
         <LineIcon name="return" className="h-5 w-5" />
       </button>
       {onCopy ? (
-        <button type="button" role="menuitem" onClick={onCopy} aria-label="Copy" className="grid h-11 w-11 place-items-center rounded-full text-daet-ink hover:bg-slate-100">
+        <button type="button" role="menuitem" onClick={onCopy} aria-label="Copy" className="grid h-11 w-11 place-items-center rounded-full text-daet-ink hover:bg-muted">
           <LineIcon name="note" className="h-5 w-5" />
         </button>
       ) : null}
@@ -51,7 +51,7 @@ export function ReactionPills({ reactions, messageId, viewerId, onToggle, mine }
           onClick={() => onToggle(r.key)}
           aria-pressed={r.mine}
           aria-label={`${REACTIONS[r.key].label}: ${r.count}${r.mine ? ", including you" : ""}`}
-          className={`inline-flex min-h-11 items-center gap-1 rounded-full px-2 text-sm shadow-[var(--shadow-float)] ${r.mine ? "bg-blue-50 text-blue-800" : "bg-white text-daet-ink"}`}
+          className={`inline-flex min-h-11 items-center gap-1 rounded-full px-2 text-sm shadow-[var(--shadow-float)] ${r.mine ? "bg-blue-50 dark:bg-blue-950/40 text-blue-800 dark:text-blue-300" : "bg-surface text-daet-ink"}`}
         >
           <span aria-hidden="true">{REACTIONS[r.key].emoji}</span>
           {r.count > 1 ? <span className="font-semibold">{r.count}</span> : null}

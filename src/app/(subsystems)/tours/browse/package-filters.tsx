@@ -22,7 +22,7 @@ const PLACES = ["Calaguas", "Mercedes", "Bagasbas", "Daet", "Vinzons"];
 
 const chip = (on: boolean) =>
   `inline-flex min-h-11 shrink-0 items-center rounded-full px-4 text-[15px] font-bold transition active:scale-[0.98] ${
-    on ? "bg-blue-600 text-white" : "bg-white text-daet-ink hover:bg-blue-50"
+    on ? "bg-blue-600 text-white" : "bg-surface text-daet-ink hover:bg-blue-50 dark:hover:bg-blue-950/40"
   }`;
 
 /**
@@ -79,12 +79,12 @@ export function PackageFilters({ currentParams }: PackageFiltersProps) {
       </nav>
 
       <details className="group mt-3" open={extra > 0 || undefined}>
-        <summary className="inline-flex min-h-11 cursor-pointer list-none items-center gap-2 rounded-full px-1 font-bold text-blue-700 hover:underline [&::-webkit-details-marker]:hidden">
+        <summary className="inline-flex min-h-11 cursor-pointer list-none items-center gap-2 rounded-full px-1 font-bold text-blue-700 dark:text-blue-300 hover:underline [&::-webkit-details-marker]:hidden">
           <LineIcon name="settings" className="h-5 w-5" />
           More filters{extra ? ` (${extra})` : ""}
         </summary>
         <form
-          className="mt-2 grid gap-4 rounded-2xl bg-white p-4 sm:grid-cols-2 sm:p-6 lg:grid-cols-[2fr_1fr_1fr_1.4fr_auto] lg:items-end"
+          className="mt-2 grid gap-4 rounded-2xl bg-surface p-4 sm:grid-cols-2 sm:p-6 lg:grid-cols-[2fr_1fr_1fr_1.4fr_auto] lg:items-end"
           onSubmit={(event) => {
             event.preventDefault();
             applyFilters();

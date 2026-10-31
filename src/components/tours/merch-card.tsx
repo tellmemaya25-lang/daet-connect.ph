@@ -25,12 +25,12 @@ export function MerchCard({ item }: { item: MerchItem }) {
   const href = item.contact_info ? contactHref(item.contact_info) : null;
 
   return (
-    <article className="flex w-full flex-col overflow-hidden rounded-2xl bg-white">
-      <div className="relative aspect-[4/3] overflow-hidden bg-blue-50 min-[420px]:aspect-square">
+    <article className="flex w-full flex-col overflow-hidden rounded-2xl bg-surface">
+      <div className="relative aspect-[4/3] overflow-hidden bg-blue-50 dark:bg-blue-950/40 min-[420px]:aspect-square">
         {item.image_url ? (
           <img src={item.image_url} alt={item.name} className="h-full w-full object-cover" />
         ) : (
-          <div className="grid h-full place-items-center text-blue-600" aria-hidden="true">
+          <div className="grid h-full place-items-center text-blue-600 dark:text-blue-300" aria-hidden="true">
             <LineIcon name={MERCH_ICONS[item.category]} className="h-16 w-16" />
           </div>
         )}
@@ -39,7 +39,7 @@ export function MerchCard({ item }: { item: MerchItem }) {
         ) : null}
       </div>
       <div className="flex flex-1 flex-col p-4">
-        <p className="text-sm font-semibold text-blue-700">{MERCH_CATEGORIES[item.category]}</p>
+        <p className="text-sm font-semibold text-blue-700 dark:text-blue-300">{MERCH_CATEGORIES[item.category]}</p>
         <h3 className="mt-1 line-clamp-2 text-lg font-bold text-daet-ink">{item.name}</h3>
         <p className="mt-1 text-lg font-bold text-daet-ink">{price ?? "Ask seller"}</p>
         {item.description ? <p className="mt-2 line-clamp-3 text-sm leading-6 text-daet-ink/80">{item.description}</p> : null}
@@ -59,7 +59,7 @@ export function MerchCard({ item }: { item: MerchItem }) {
                 Contact seller
               </a>
             ) : (
-              <p className="flex items-center gap-1.5 rounded-2xl bg-blue-50 px-3 py-2 text-sm text-daet-ink"><LineIcon name="phone" className="h-4 w-4" /> {item.contact_info}</p>
+              <p className="flex items-center gap-1.5 rounded-2xl bg-blue-50 dark:bg-blue-950/40 px-3 py-2 text-sm text-daet-ink"><LineIcon name="phone" className="h-4 w-4" /> {item.contact_info}</p>
             )}
           </div>
         ) : null}

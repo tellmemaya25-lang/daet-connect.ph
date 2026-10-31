@@ -46,12 +46,12 @@ export default async function AttractionPage({ params }: PageProps) {
   return (
     <PageFrame credits={photoKey ? [photoKey] : []}>
       <div className="mx-auto max-w-4xl">
-        <Link href="/tours/attractions" className="inline-flex min-h-11 items-center gap-1 font-semibold text-blue-700 hover:underline">
+        <Link href="/tours/attractions" className="inline-flex min-h-11 items-center gap-1 font-semibold text-blue-700 dark:text-blue-300 hover:underline">
           <LineIcon name="arrowRight" className="h-4 w-4 rotate-180" /> All places
         </Link>
 
         {attraction.photo_url || photoKey ? (
-          <figure className="relative -mx-4 mt-2 aspect-[4/3] overflow-hidden bg-blue-50 sm:mx-0 sm:aspect-[16/9] sm:rounded-2xl">
+          <figure className="relative -mx-4 mt-2 aspect-[4/3] overflow-hidden bg-blue-50 dark:bg-blue-950/40 sm:mx-0 sm:aspect-[16/9] sm:rounded-2xl">
             {attraction.photo_url ? (
               <img src={attraction.photo_url} alt={attraction.name} className="h-full w-full object-cover" />
             ) : photoKey ? (
@@ -80,13 +80,13 @@ export default async function AttractionPage({ params }: PageProps) {
           <Fact label="Municipality" value={attraction.municipality} />
         </dl>
 
-        <section className="mt-10 rounded-2xl bg-white p-5 sm:p-6">
+        <section className="mt-10 rounded-2xl bg-surface p-5 sm:p-6">
           <h2 className="text-2xl font-semibold text-daet-ink">Opening hours</h2>
           {hours.length ? (
             <table className="mt-3 w-full">
               <tbody>
                 {hours.map((line) => (
-                  <tr key={line.day} className="even:bg-slate-50">
+                  <tr key={line.day} className="even:bg-canvas">
                     <th scope="row" className="rounded-l-xl px-3 py-2 text-left font-bold text-daet-ink">{line.day}</th>
                     <td className="rounded-r-xl px-3 py-2 text-daet-ink">{line.text}</td>
                   </tr>
@@ -129,7 +129,7 @@ export default async function AttractionPage({ params }: PageProps) {
 
 function Fact({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-2xl bg-white p-4">
+    <div className="rounded-2xl bg-surface p-4">
       <dt className="text-sm font-semibold text-daet-ink/75">{label}</dt>
       <dd className="mt-1 text-lg font-bold text-daet-ink">{value}</dd>
     </div>

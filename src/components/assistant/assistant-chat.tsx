@@ -170,7 +170,7 @@ export function AssistantChat({ signedIn, onNavigate, autoFocus = false }: { sig
 
   return (
     <div className="flex min-h-0 flex-1 flex-col">
-      <div className="flex items-center justify-between gap-2 bg-slate-50 px-4 py-1 text-sm text-slate-600">
+      <div className="flex items-center justify-between gap-2 bg-canvas px-4 py-1 text-sm text-slate-600 dark:text-slate-400">
         <span>{lastMode === "basic" ? <Badge tone="neutral">Basic mode</Badge> : lastMode === "ai" ? <Badge tone="info">AI</Badge> : "Answers come from CONNECT-Daet's own listings."}</span>
         {turns.length && !signedIn ? (
           <button
@@ -180,7 +180,7 @@ export function AssistantChat({ signedIn, onNavigate, autoFocus = false }: { sig
               save([]);
               inputRef.current?.focus();
             }}
-            className="min-h-11 font-bold text-blue-700 underline"
+            className="min-h-11 font-bold text-blue-700 dark:text-blue-300 underline"
           >
             New chat
           </button>
@@ -207,7 +207,7 @@ export function AssistantChat({ signedIn, onNavigate, autoFocus = false }: { sig
               </button>
             </span>
           ) : (
-            <button type="button" onClick={() => setConfirmClear(true)} className="min-h-11 font-bold text-blue-700 underline">
+            <button type="button" onClick={() => setConfirmClear(true)} className="min-h-11 font-bold text-blue-700 dark:text-blue-300 underline">
               Delete chat history
             </button>
           )
@@ -217,13 +217,13 @@ export function AssistantChat({ signedIn, onNavigate, autoFocus = false }: { sig
       <ol ref={logRef} tabIndex={0} aria-live="polite" aria-label="Conversation" className="min-h-0 flex-1 space-y-2 overflow-y-auto px-3 py-4">
         {turns.length === 0 ? (
           <li className="space-y-3">
-            <p className="max-w-[92%] rounded-2xl rounded-bl-md bg-slate-100 px-3 py-2 text-daet-ink">
+            <p className="max-w-[92%] rounded-2xl rounded-bl-md bg-muted px-3 py-2 text-daet-ink">
               Hi! I&apos;m your local guide for Daet. Ask where to eat or stay, how to get somewhere and what it costs, where your tour meets, or about tours and events
               {signedIn ? ", your bookings, payments and tickets" : ""}. I can also pass you to a person.
             </p>
             <div className="flex flex-wrap gap-2">
               {ASSISTANT_EXAMPLES.map((example) => (
-                <button key={example} type="button" onClick={() => send(example)} className="min-h-11 rounded-full bg-blue-50 px-4 text-left text-sm font-semibold text-blue-800 transition hover:bg-blue-100 active:scale-[0.98]">
+                <button key={example} type="button" onClick={() => send(example)} className="min-h-11 rounded-full bg-blue-50 dark:bg-blue-950/40 px-4 text-left text-sm font-semibold text-blue-800 dark:text-blue-300 transition hover:bg-blue-100 dark:hover:bg-blue-900/40 active:scale-[0.98]">
                   {example}
                 </button>
               ))}
@@ -236,7 +236,7 @@ export function AssistantChat({ signedIn, onNavigate, autoFocus = false }: { sig
               <p className="max-w-[85%] whitespace-pre-wrap break-words rounded-2xl rounded-br-md bg-blue-600 px-3 py-2 text-white">{turn.content}</p>
             ) : (
               <div className="max-w-[92%] space-y-2">
-                <p className="whitespace-pre-wrap break-words rounded-2xl rounded-bl-md bg-slate-100 px-3 py-2 text-daet-ink">
+                <p className="whitespace-pre-wrap break-words rounded-2xl rounded-bl-md bg-muted px-3 py-2 text-daet-ink">
                   {turn.content || (busy && i === turns.length - 1 ? <TypingDots /> : null)}
                 </p>
                 {turn.cards?.length ? <AssistantCards cards={turn.cards} signedIn={signedIn} onNavigate={onNavigate} onShareLocation={shareAndRetry} /> : null}
@@ -247,14 +247,14 @@ export function AssistantChat({ signedIn, onNavigate, autoFocus = false }: { sig
       </ol>
 
       <form
-        className="bg-white p-3 shadow-[var(--shadow-float)]"
+        className="bg-surface p-3 shadow-[var(--shadow-float)]"
         onSubmit={(event) => {
           event.preventDefault();
           void send(text);
         }}
       >
         {error ? (
-          <p role="alert" className="mb-2 text-sm font-semibold text-red-600">
+          <p role="alert" className="mb-2 text-sm font-semibold text-red-600 dark:text-red-300">
             {error}
           </p>
         ) : null}
@@ -264,7 +264,7 @@ export function AssistantChat({ signedIn, onNavigate, autoFocus = false }: { sig
               <LineIcon name="pin" className="h-4 w-4" /> Using your location <span aria-hidden="true">·</span> Stop
             </button>
           ) : (
-            <button type="button" onClick={() => void shareLocation()} disabled={locating} className="inline-flex min-h-11 items-center gap-1.5 rounded-full bg-slate-100 px-4 text-sm font-bold text-daet-ink transition hover:bg-slate-200 disabled:opacity-60">
+            <button type="button" onClick={() => void shareLocation()} disabled={locating} className="inline-flex min-h-11 items-center gap-1.5 rounded-full bg-muted px-4 text-sm font-bold text-daet-ink transition hover:bg-muted-strong disabled:opacity-60">
               <LineIcon name="pin" className="h-4 w-4" /> {locating ? "Finding you…" : "Use my location"}
             </button>
           )}
@@ -287,13 +287,13 @@ export function AssistantChat({ signedIn, onNavigate, autoFocus = false }: { sig
               }
             }}
             placeholder="Ask anything about your trip…"
-            className="block min-h-11 w-full resize-none rounded-2xl bg-slate-100 px-4 py-2.5 text-base focus:outline-none focus:ring-2 focus:ring-blue-600/40"
+            className="block min-h-11 w-full resize-none rounded-2xl bg-muted px-4 py-2.5 text-base focus:outline-none focus:ring-2 focus:ring-blue-600/40"
           />
           <Button type="submit" loading={busy} loadingText="…" disabled={!text.trim()} aria-label="Send">
             Send
           </Button>
         </div>
-        <p className="mt-2 text-xs leading-4 text-slate-600">
+        <p className="mt-2 text-xs leading-4 text-slate-600 dark:text-slate-400">
           {here ? "Your location is sent only with your next questions, never saved. " : ""}
           {signedIn ? "Saved to your account. Delete it anytime." : "Chats aren't saved on our servers."} Never share passwords or card numbers.
         </p>
@@ -312,7 +312,7 @@ export function TypingDots() {
   );
 }
 
-const pill = "inline-flex min-h-11 items-center gap-1.5 rounded-full bg-blue-50 px-4 text-sm font-bold text-blue-700 transition hover:bg-blue-100 active:scale-[0.98]";
+const pill = "inline-flex min-h-11 items-center gap-1.5 rounded-full bg-blue-50 dark:bg-blue-950/40 px-4 text-sm font-bold text-blue-700 dark:text-blue-300 transition hover:bg-blue-100 dark:hover:bg-blue-900/40 active:scale-[0.98]";
 
 function AssistantCards({ cards, signedIn, onNavigate, onShareLocation }: { cards: AssistantCard[]; signedIn: boolean; onNavigate?: () => void; onShareLocation: () => void }) {
   const links = cards.filter((c) => c.type === "link");
@@ -321,9 +321,9 @@ function AssistantCards({ cards, signedIn, onNavigate, onShareLocation }: { card
       {cards.map((card, i) => {
         if (card.type === "tour") {
           return (
-            <div key={i} className="rounded-2xl bg-slate-50 p-3">
+            <div key={i} className="rounded-2xl bg-canvas p-3">
               <p className="font-bold text-daet-ink">{card.title}</p>
-              <p className="text-sm text-slate-600">{[card.location, card.duration, card.priceFrom ? `from ${formatPeso(card.priceFrom)} per person` : null].filter(Boolean).join(" · ")}</p>
+              <p className="text-sm text-slate-600 dark:text-slate-400">{[card.location, card.duration, card.priceFrom ? `from ${formatPeso(card.priceFrom)} per person` : null].filter(Boolean).join(" · ")}</p>
               <Link href={card.href} onClick={onNavigate} className={`${pill} mt-2`}>
                 View tour
               </Link>
@@ -332,11 +332,11 @@ function AssistantCards({ cards, signedIn, onNavigate, onShareLocation }: { card
         }
         if (card.type === "booking") {
           return (
-            <div key={i} className="rounded-2xl bg-slate-50 p-3">
+            <div key={i} className="rounded-2xl bg-canvas p-3">
               <p className="font-bold text-daet-ink">
-                {card.title} <span className="font-normal text-slate-600">· {card.reference}</span>
+                {card.title} <span className="font-normal text-slate-600 dark:text-slate-400">· {card.reference}</span>
               </p>
-              <p className="text-sm text-slate-600">
+              <p className="text-sm text-slate-600 dark:text-slate-400">
                 {card.date} · {card.statusLabel}
               </p>
               <p className="mt-1 text-sm text-daet-ink">{card.nextStep}</p>
@@ -382,11 +382,11 @@ function AssistantCards({ cards, signedIn, onNavigate, onShareLocation }: { card
 
 function PlaceCardView({ card }: { card: PlaceCard }) {
   return (
-    <div className="rounded-2xl bg-slate-50 p-3">
+    <div className="rounded-2xl bg-canvas p-3">
       <div className="flex flex-wrap items-start justify-between gap-2">
         <div className="min-w-0">
           <p className="font-bold text-daet-ink">{card.name}</p>
-          <p className="text-sm text-slate-600">{[card.kind, card.area, card.distance].filter(Boolean).join(" · ")}</p>
+          <p className="text-sm text-slate-600 dark:text-slate-400">{[card.kind, card.area, card.distance].filter(Boolean).join(" · ")}</p>
         </div>
         {card.verified ? null : <Badge tone="warning">Verify locally</Badge>}
       </div>
@@ -408,28 +408,28 @@ function PlaceCardView({ card }: { card: PlaceCard }) {
 
 function CostCardView({ card }: { card: CostCard }) {
   return (
-    <div className="rounded-2xl bg-slate-50 p-3">
+    <div className="rounded-2xl bg-canvas p-3">
       <p className="font-bold text-daet-ink">Trip estimate</p>
-      <p className="text-sm text-slate-600">{card.title}</p>
+      <p className="text-sm text-slate-600 dark:text-slate-400">{card.title}</p>
       <ul className="mt-2 space-y-1.5">
         {card.lines.map((line) => (
           <li key={line.label} className="text-sm">
             <span className="flex justify-between gap-3">
               <span className="text-daet-ink">{line.label}</span>
-              <span className={`shrink-0 font-semibold ${line.amount === "Ask locally" ? "text-yellow-800" : "text-daet-ink"}`}>{line.amount}</span>
+              <span className={`shrink-0 font-semibold ${line.amount === "Ask locally" ? "text-yellow-800 dark:text-yellow-200" : "text-daet-ink"}`}>{line.amount}</span>
             </span>
-            <span className="block text-xs text-slate-600">{line.note}</span>
+            <span className="block text-xs text-slate-600 dark:text-slate-400">{line.note}</span>
           </li>
         ))}
       </ul>
-      <p className="mt-2 flex justify-between gap-3 rounded-2xl bg-blue-50 px-3 py-2">
+      <p className="mt-2 flex justify-between gap-3 rounded-2xl bg-blue-50 dark:bg-blue-950/40 px-3 py-2">
         <span className="font-bold text-daet-ink">Total</span>
-        <span className="text-right font-bold text-blue-800">
+        <span className="text-right font-bold text-blue-800 dark:text-blue-300">
           {card.total}
           <span className="block text-xs font-semibold">{card.perPerson} per person</span>
         </span>
       </p>
-      <p className="mt-2 text-xs text-slate-600">
+      <p className="mt-2 text-xs text-slate-600 dark:text-slate-400">
         Estimates from listed prices, not quotes.{card.unknown.length ? ` Not included (no price on record): ${card.unknown.join(", ")}.` : ""}
       </p>
     </div>
@@ -438,21 +438,21 @@ function CostCardView({ card }: { card: CostCard }) {
 
 function TransportCardView({ card }: { card: TransportCard }) {
   return (
-    <div className="rounded-2xl bg-slate-50 p-3">
+    <div className="rounded-2xl bg-canvas p-3">
       <p className="font-bold text-daet-ink">{card.title}</p>
       <ol className="mt-2 space-y-3">
         {card.options.map((option, i) => (
-          <li key={i} className="rounded-2xl bg-white p-2.5">
-            {card.options.length > 1 ? <p className="text-xs font-bold text-slate-600">Option {i + 1}{option.time ? ` · about ${option.time}` : ""}</p> : option.time ? <p className="text-xs font-bold text-slate-600">About {option.time} in all</p> : null}
+          <li key={i} className="rounded-2xl bg-surface p-2.5">
+            {card.options.length > 1 ? <p className="text-xs font-bold text-slate-600 dark:text-slate-400">Option {i + 1}{option.time ? ` · about ${option.time}` : ""}</p> : option.time ? <p className="text-xs font-bold text-slate-600 dark:text-slate-400">About {option.time} in all</p> : null}
             <ol className="mt-1 space-y-2">
               {option.legs.map((leg, j) => (
                 <li key={j} className="text-sm">
                   <p className="font-semibold text-daet-ink">
                     {leg.mode}: {leg.from} to {leg.to}
                   </p>
-                  <p className="text-slate-600">{[leg.fare ?? "Fare: ask locally", leg.time].filter(Boolean).join(" · ")}{leg.verified ? "" : " · verify locally"}</p>
-                  {leg.note ? <p className="text-xs text-slate-600">{leg.note}</p> : null}
-                  <a href={leg.boardHref} target="_blank" rel="noopener noreferrer" className="mt-1 inline-flex min-h-11 items-center gap-1 text-sm font-bold text-blue-700 underline">
+                  <p className="text-slate-600 dark:text-slate-400">{[leg.fare ?? "Fare: ask locally", leg.time].filter(Boolean).join(" · ")}{leg.verified ? "" : " · verify locally"}</p>
+                  {leg.note ? <p className="text-xs text-slate-600 dark:text-slate-400">{leg.note}</p> : null}
+                  <a href={leg.boardHref} target="_blank" rel="noopener noreferrer" className="mt-1 inline-flex min-h-11 items-center gap-1 text-sm font-bold text-blue-700 dark:text-blue-300 underline">
                     <LineIcon name="pin" className="h-4 w-4" /> Where to board in {leg.from}
                     <span className="sr-only"> (opens Google Maps)</span>
                   </a>
@@ -476,7 +476,7 @@ function HandoffPanel({ card, signedIn, onNavigate }: { card: HandoffCard; signe
 
   if (!signedIn || !card.signedIn) {
     return (
-      <div className="rounded-2xl bg-slate-50 p-3 text-sm">
+      <div className="rounded-2xl bg-canvas p-3 text-sm">
         <p className="text-daet-ink">Sign in so {who} can reply to you.</p>
         <Link href="/login" onClick={onNavigate} className="mt-2 inline-flex min-h-11 items-center rounded-full bg-blue-600 px-4 text-sm font-bold text-white">
           Sign in to message
@@ -486,7 +486,7 @@ function HandoffPanel({ card, signedIn, onNavigate }: { card: HandoffCard; signe
   }
   if (state.sent) {
     return (
-      <div className="rounded-2xl bg-green-50 p-3 text-sm text-green-900">
+      <div className="rounded-2xl bg-green-50 dark:bg-green-950/40 p-3 text-sm text-green-900 dark:text-green-300">
         Sent to {who}. They&apos;ll reply in Messages.{" "}
         <Link href={`/tours/messages/${state.sent}`} onClick={onNavigate} className="font-bold underline">
           Open the chat
@@ -495,13 +495,13 @@ function HandoffPanel({ card, signedIn, onNavigate }: { card: HandoffCard; signe
     );
   }
   return (
-    <div className="rounded-2xl bg-slate-50 p-3">
+    <div className="rounded-2xl bg-canvas p-3">
       <label htmlFor={id} className="text-sm font-bold text-daet-ink">
         Message to {who} (edit before sending)
       </label>
-      <textarea id={id} rows={3} maxLength={1000} value={message} onChange={(e) => setMessage(e.target.value)} className="mt-1 block w-full rounded-2xl bg-white px-3 py-2 text-base" />
+      <textarea id={id} rows={3} maxLength={1000} value={message} onChange={(e) => setMessage(e.target.value)} className="mt-1 block w-full rounded-2xl bg-surface px-3 py-2 text-base" />
       {state.error ? (
-        <p role="alert" className="mt-1 text-sm font-semibold text-red-600">
+        <p role="alert" className="mt-1 text-sm font-semibold text-red-600 dark:text-red-300">
           {state.error}
         </p>
       ) : null}

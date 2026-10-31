@@ -35,7 +35,7 @@ export function LogoutButton({ className, compact = false }: { className?: strin
         disabled={pending}
         aria-label={compact ? "Sign out" : undefined}
         className={cn(
-          "inline-flex min-h-11 min-w-11 shrink-0 items-center justify-center gap-2 rounded-full border border-daet-ink/15 bg-white px-3 text-sm font-bold text-daet-ink transition hover:bg-daet-sand disabled:cursor-wait disabled:opacity-60",
+          "inline-flex min-h-11 min-w-11 shrink-0 items-center justify-center gap-2 rounded-full border border-daet-ink/15 bg-surface px-3 text-sm font-bold text-daet-ink transition hover:bg-daet-sand disabled:cursor-wait disabled:opacity-60",
           className,
         )}
       >
@@ -45,7 +45,7 @@ export function LogoutButton({ className, compact = false }: { className?: strin
         <span className={compact ? "sr-only sm:not-sr-only" : undefined}>{pending ? "Signing out…" : "Sign out"}</span>
       </button>
       {failed ? (
-        <span role="alert" className="absolute right-0 top-full z-50 mt-1 w-max max-w-[14rem] rounded-2xl bg-red-50 px-3 py-2 text-xs font-semibold text-red-800 shadow-[var(--shadow-float)]">
+        <span role="alert" className="absolute right-0 top-full z-50 mt-1 w-max max-w-[14rem] rounded-2xl bg-red-50 dark:bg-red-950/40 px-3 py-2 text-xs font-semibold text-red-800 dark:text-red-300 shadow-[var(--shadow-float)]">
           Sign-out failed. Check your connection and try again.
         </span>
       ) : null}

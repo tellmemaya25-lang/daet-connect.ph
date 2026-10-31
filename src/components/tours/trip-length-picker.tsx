@@ -71,18 +71,18 @@ export function TripLengthPicker({ trips }: { trips: BoardTrip[] }) {
               aria-pressed={on}
               onClick={() => setSelected(item.id)}
               className={`inline-flex min-h-12 shrink-0 items-center gap-2 rounded-full px-5 text-base font-bold transition active:scale-[0.98] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 ${
-                on ? "bg-blue-600 text-white" : "bg-white text-daet-ink hover:bg-blue-50"
+                on ? "bg-blue-600 text-white" : "bg-surface text-daet-ink hover:bg-blue-50 dark:hover:bg-blue-950/40"
               }`}
             >
               {item.label}
-              <span className={`rounded-full px-2 text-sm ${on ? "bg-white/20" : "bg-slate-100"}`}>{count}</span>
+              <span className={`rounded-full px-2 text-sm ${on ? "bg-white/20" : "bg-muted"}`}>{count}</span>
             </button>
           );
         })}
       </div>
 
       <div className="mt-6 grid gap-6 lg:grid-cols-[1fr_1.1fr] lg:gap-10">
-        <figure className="relative aspect-[4/3] overflow-hidden rounded-2xl bg-blue-100 lg:aspect-auto lg:min-h-[480px]">
+        <figure className="relative aspect-[4/3] overflow-hidden rounded-2xl bg-blue-100 dark:bg-blue-900/40 lg:aspect-auto lg:min-h-[480px]">
           <Image key={photo.src} src={photo.src} alt={photo.alt} fill sizes="(min-width: 1024px) 45vw, 100vw" className="object-cover" />
           <figcaption className="absolute inset-x-3 bottom-3 rounded-2xl bg-slate-950/80 px-4 py-3 text-white">
             <strong className="block text-lg">{place.place}</strong>
@@ -97,9 +97,9 @@ export function TripLengthPicker({ trips }: { trips: BoardTrip[] }) {
                 <li key={trip.id}>
                   <Link
                     href={`/tours/packages/${trip.id}`}
-                    className="group grid grid-cols-[1fr_auto] items-center gap-x-4 gap-y-1 rounded-2xl bg-white p-4 transition hover:bg-blue-50 active:scale-[0.99] sm:p-5"
+                    className="group grid grid-cols-[1fr_auto] items-center gap-x-4 gap-y-1 rounded-2xl bg-surface p-4 transition hover:bg-blue-50 dark:hover:bg-blue-950/40 active:scale-[0.99] sm:p-5"
                   >
-                    <span className="text-lg font-bold leading-snug text-daet-ink group-hover:text-blue-700 sm:text-xl">{trip.title}</span>
+                    <span className="text-lg font-bold leading-snug text-daet-ink group-hover:text-blue-700 dark:group-hover:text-blue-300 sm:text-xl">{trip.title}</span>
                     <span className="row-span-2 text-right">
                       {trip.price != null ? (
                         <>
@@ -115,7 +115,7 @@ export function TripLengthPicker({ trips }: { trips: BoardTrip[] }) {
                       <span className="inline-flex items-center gap-1">
                         <LineIcon name="clock" className="h-4 w-4" /> {trip.duration}
                       </span>
-                      <span className="inline-flex items-center gap-1 font-semibold text-blue-700">
+                      <span className="inline-flex items-center gap-1 font-semibold text-blue-700 dark:text-blue-300">
                         <LineIcon name="calendar" className="h-4 w-4" />
                         {trip.nextDate ? `Next: ${shortDay(trip.nextDate)}` : "Ask for dates"}
                       </span>
@@ -125,7 +125,7 @@ export function TripLengthPicker({ trips }: { trips: BoardTrip[] }) {
               ))}
             </ul>
           ) : (
-            <div className="rounded-2xl bg-white p-6 sm:p-8">
+            <div className="rounded-2xl bg-surface p-6 sm:p-8">
               <p className="text-xl font-bold text-daet-ink">No {TRIP_LENGTHS.find((l) => l.id === selected)?.label.toLowerCase()} trips are listed yet.</p>
               <p className="mt-2 text-daet-ink">{place.text}</p>
             </div>

@@ -5,6 +5,7 @@ import { MobileMenu, type MenuLink } from "@/components/ui/mobile-menu";
 import { UnreadMessagesBadge } from "@/components/chat/unread-badge";
 import { SiteNavLink } from "@/components/ui/site-nav-link";
 import { NotificationBell } from "@/components/tours/notification-bell";
+import { ThemeToggle } from "@/components/ui/theme-toggle";
 import type { DashboardRole, Tab } from "@/lib/tours/dashboards";
 
 /** What a visitor or tourist came for. Staff don't get it (adviser revision R1). */
@@ -54,7 +55,7 @@ export function SiteHeader({
   const adminLinks = showAdminLink ? ADMIN_LINKS : [];
 
   return (
-    <header className="relative z-40 bg-white print:hidden">
+    <header className="relative z-40 bg-surface print:hidden">
       <div className="mx-auto flex min-h-16 max-w-7xl items-center justify-between gap-3 px-4 sm:min-h-20 sm:px-6 lg:px-8">
         <BrandMark />
         <nav aria-label="Main navigation" className="hidden min-w-0 flex-1 items-center gap-1 md:flex lg:gap-2">
@@ -78,6 +79,7 @@ export function SiteHeader({
           ))}
         </nav>
         <div className="flex items-center gap-1 sm:gap-2">
+          <ThemeToggle className="hidden md:grid" />
           {signedIn ? (
             <>
               <NotificationBell />

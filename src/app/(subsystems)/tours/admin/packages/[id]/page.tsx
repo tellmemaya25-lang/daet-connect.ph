@@ -42,9 +42,9 @@ export default async function AdminPackageReviewPage({
           <Link href="/tours/admin/packages" className="text-sm font-bold text-daet-ink/70 hover:text-daet-ink">
             ← All packages
           </Link>
-          <div className="mt-4 bg-red-50 rounded-2xl p-6 text-center">
-            <h1 className="text-lg font-bold text-red-800">Package not found</h1>
-            <p className="text-red-700 text-sm mt-2">It may have been deleted. Go back to the package list and try again.</p>
+          <div className="mt-4 bg-red-50 dark:bg-red-950/40 rounded-2xl p-6 text-center">
+            <h1 className="text-lg font-bold text-red-800 dark:text-red-300">Package not found</h1>
+            <p className="text-red-700 dark:text-red-300 text-sm mt-2">It may have been deleted. Go back to the package list and try again.</p>
           </div>
         </div>
       </PageFrame>
@@ -132,17 +132,17 @@ export default async function AdminPackageReviewPage({
         </div>
 
         {/* Package Details */}
-        <div className="bg-white rounded-2xl border border-daet-ink/20 p-6 mb-6">
+        <div className="bg-surface rounded-2xl border border-daet-ink/20 p-6 mb-6">
           <h2 className="text-xl font-bold text-daet-ink mb-4">Package Information</h2>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <label className="block text-sm font-medium text-daet-ink/80 mb-1">Status</label>
               <span className={`inline-flex px-3 py-1 rounded-full text-sm font-medium ${
-                packageWithOperator.status === 'pending_review' ? 'bg-yellow-100 text-yellow-800' :
-                packageWithOperator.status === 'published' ? 'bg-green-100 text-green-800' :
-                packageWithOperator.status === 'rejected' ? 'bg-red-100 text-red-800' :
-                'bg-slate-100 text-daet-ink'
+                packageWithOperator.status === 'pending_review' ? 'bg-yellow-100 dark:bg-yellow-900/40 text-yellow-800 dark:text-yellow-200' :
+                packageWithOperator.status === 'published' ? 'bg-green-100 dark:bg-green-900/40 text-green-800 dark:text-green-300' :
+                packageWithOperator.status === 'rejected' ? 'bg-red-100 dark:bg-red-900/40 text-red-800 dark:text-red-300' :
+                'bg-muted text-daet-ink'
               }`}>
                 {packageWithOperator.status}
               </span>
@@ -156,7 +156,7 @@ export default async function AdminPackageReviewPage({
         </div>
 
         {/* Operator Information */}
-        <div className="bg-white rounded-2xl border border-daet-ink/20 p-6 mb-6">
+        <div className="bg-surface rounded-2xl border border-daet-ink/20 p-6 mb-6">
           <h2 className="text-xl font-bold text-daet-ink mb-4">Operator Information</h2>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -184,12 +184,12 @@ export default async function AdminPackageReviewPage({
 
         {/* Price Variants */}
         {priceVariants && priceVariants.length > 0 && (
-          <div className="bg-white rounded-2xl border border-daet-ink/20 p-6 mb-6">
+          <div className="bg-surface rounded-2xl border border-daet-ink/20 p-6 mb-6">
             <h2 className="text-xl font-bold text-daet-ink mb-4">Pricing</h2>
             
             <div className="space-y-3">
               {priceVariants.map((variant, index) => (
-                <div key={index} className="flex justify-between items-center p-3 bg-slate-50 rounded-2xl">
+                <div key={index} className="flex justify-between items-center p-3 bg-canvas rounded-2xl">
                   <span className="text-daet-ink/80">
                     {variant.min_pax} - {variant.max_pax} pax
                   </span>
@@ -204,7 +204,7 @@ export default async function AdminPackageReviewPage({
 
         {/* Inclusions */}
         {inclusions && inclusions.length > 0 && (
-          <div className="bg-white rounded-2xl border border-daet-ink/20 p-6 mb-6">
+          <div className="bg-surface rounded-2xl border border-daet-ink/20 p-6 mb-6">
             <h2 className="text-xl font-bold text-daet-ink mb-4">Inclusions</h2>
             
             <ul className="space-y-2">
@@ -222,7 +222,7 @@ export default async function AdminPackageReviewPage({
 
         {/* Itinerary */}
         {stops && stops.length > 0 && (
-          <div className="bg-white rounded-2xl border border-daet-ink/20 p-6 mb-6">
+          <div className="bg-surface rounded-2xl border border-daet-ink/20 p-6 mb-6">
             <h2 className="text-xl font-bold text-daet-ink mb-4">Itinerary</h2>
             
             <div className="space-y-4">
@@ -233,7 +233,7 @@ export default async function AdminPackageReviewPage({
                       {stop.stop_order}
                     </div>
                     {index < stops.length - 1 && (
-                      <div className="w-0.5 h-full bg-slate-300 mt-2" />
+                      <div className="w-0.5 h-full bg-line mt-2" />
                     )}
                   </div>
                   
@@ -252,7 +252,7 @@ export default async function AdminPackageReviewPage({
 
         {/* Gallery */}
         {gallery && gallery.length > 0 && (
-          <div className="bg-white rounded-2xl border border-daet-ink/20 p-6 mb-6">
+          <div className="bg-surface rounded-2xl border border-daet-ink/20 p-6 mb-6">
             <h2 className="text-xl font-bold text-daet-ink mb-4">Gallery ({gallery.length} images)</h2>
             <p className="text-daet-ink/80 text-sm">Image URLs stored in database</p>
           </div>

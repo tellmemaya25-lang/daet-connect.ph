@@ -43,7 +43,7 @@ export function OpenChatButton({
         {label}
       </Button>
       {error ? (
-        <p role="alert" className="mt-1 text-sm font-semibold text-red-700">
+        <p role="alert" className="mt-1 text-sm font-semibold text-red-700 dark:text-red-300">
           {error}
         </p>
       ) : null}

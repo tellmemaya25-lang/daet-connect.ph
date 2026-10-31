@@ -99,8 +99,8 @@ export default async function GuideMyToursPage() {
   }
 
   const statusColors: Record<string, string> = {
-    confirmed: "bg-green-100 text-green-800",
-    completed: "bg-blue-100 text-blue-900",
+    confirmed: "bg-green-100 dark:bg-green-900/40 text-green-800 dark:text-green-300",
+    completed: "bg-blue-100 dark:bg-blue-900/40 text-blue-900 dark:text-blue-300",
   };
 
   const statusLabels: Record<string, string> = {
@@ -172,19 +172,19 @@ export default async function GuideMyToursPage() {
 
         {/* Stats */}
         <div className="mb-8 grid grid-cols-2 gap-4 md:grid-cols-3">
-          <div className="rounded-2xl bg-white p-4 text-center">
+          <div className="rounded-2xl bg-surface p-4 text-center">
             <p className="text-3xl font-bold text-daet-ink">
               {assignedTours?.length || 0}
             </p>
-            <p className="text-sm text-slate-600">Total Assigned</p>
+            <p className="text-sm text-slate-600 dark:text-slate-400">Total Assigned</p>
           </div>
-          <div className="rounded-2xl bg-green-50 p-4 text-center">
-            <p className="text-3xl font-bold text-green-900">{upcomingTours.length}</p>
-            <p className="text-xs text-green-900">Upcoming</p>
+          <div className="rounded-2xl bg-green-50 dark:bg-green-950/40 p-4 text-center">
+            <p className="text-3xl font-bold text-green-900 dark:text-green-300">{upcomingTours.length}</p>
+            <p className="text-xs text-green-900 dark:text-green-300">Upcoming</p>
           </div>
-          <div className="rounded-2xl bg-blue-50 p-4 text-center">
-            <p className="text-3xl font-bold text-blue-900">{completedTours.length}</p>
-            <p className="text-xs text-blue-900">Completed</p>
+          <div className="rounded-2xl bg-blue-50 dark:bg-blue-950/40 p-4 text-center">
+            <p className="text-3xl font-bold text-blue-900 dark:text-blue-300">{completedTours.length}</p>
+            <p className="text-xs text-blue-900 dark:text-blue-300">Completed</p>
           </div>
         </div>
 
@@ -205,7 +205,7 @@ export default async function GuideMyToursPage() {
                 return (
                   <div
                     key={booking.id}
-                    className="rounded-2xl bg-green-50/50 p-6"
+                    className="rounded-2xl bg-green-50/50 dark:bg-green-950/40 p-6"
                   >
                     <div className="flex gap-6">
                       {/* Package Image */}
@@ -228,7 +228,7 @@ export default async function GuideMyToursPage() {
                               <LineIcon name="pin" className="inline-block h-[1.1em] w-[1.1em] align-[-0.15em]" /> {pkg?.location_name || "Location"}
                             </p>
                           </div>
-                          <span className="rounded-full bg-green-100 px-4 py-1 text-xs font-bold text-green-800">
+                          <span className="rounded-full bg-green-100 dark:bg-green-900/40 px-4 py-1 text-xs font-bold text-green-800 dark:text-green-300">
                             Upcoming
                           </span>
                         </div>
@@ -256,7 +256,7 @@ export default async function GuideMyToursPage() {
                           </div>
                           <div>
                             <p className="text-daet-ink/70">Reference</p>
-                            <p className="font-bold text-daet-forest">
+                            <p className="font-bold text-daet-forest dark:text-blue-300">
                               {booking.booking_reference}
                             </p>
                           </div>
@@ -273,7 +273,7 @@ export default async function GuideMyToursPage() {
 
                         <Link
                           href={`/tours/guide/tours/${booking.id}/roster`}
-                          className="mt-4 inline-flex min-h-11 items-center justify-center rounded-full border border-daet-forest/30 bg-white px-5 text-sm font-bold text-daet-leaf transition hover:bg-daet-forest/5"
+                          className="mt-4 inline-flex min-h-11 items-center justify-center rounded-full border border-daet-forest/30 bg-surface px-5 text-sm font-bold text-daet-leaf dark:text-blue-300 transition hover:bg-daet-forest/5"
                         >
                           {booking.tour_date === today ? "Guest list & check-in" : "Guest list"}
                         </Link>
@@ -305,7 +305,7 @@ export default async function GuideMyToursPage() {
                 return (
                   <div
                     key={booking.id}
-                    className="rounded-2xl bg-white p-6"
+                    className="rounded-2xl bg-surface p-6"
                   >
                     <div className="flex gap-6">
                       {pkg?.cover_image_url && (
@@ -328,7 +328,7 @@ export default async function GuideMyToursPage() {
                           • {booking.number_of_pax} pax • {booking.booking_reference}
                         </p>
                       </div>
-                      <span className="self-start rounded-full bg-blue-100 px-3 py-1 text-xs font-bold text-blue-900">
+                      <span className="self-start rounded-full bg-blue-100 dark:bg-blue-900/40 px-3 py-1 text-xs font-bold text-blue-900 dark:text-blue-300">
                         Completed
                       </span>
                     </div>
@@ -341,7 +341,7 @@ export default async function GuideMyToursPage() {
 
         {/* Empty State */}
         {(!assignedTours || assignedTours.length === 0) && (
-          <div className="rounded-2xl bg-white p-12 text-center">
+          <div className="rounded-2xl bg-surface p-12 text-center">
             <div className="mx-auto mb-4 grid h-20 w-20 place-items-center rounded-full bg-daet-sand text-4xl">
               <LineIcon name="calendar" className="inline-block h-[1.1em] w-[1.1em] align-[-0.15em]" />
             </div>

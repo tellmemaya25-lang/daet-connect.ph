@@ -36,7 +36,7 @@ export function SiteFooter({ credits = [], compact = false, className = "" }: { 
     return (
       <footer className={`mx-auto max-w-7xl px-4 py-8 text-sm text-daet-ink/80 sm:px-6 lg:px-8 print:hidden ${className}`}>
         CONNECT-Daet · Tourism in Daet, Camarines Norte ·{" "}
-        <Link href="/tours/help" className="font-bold text-blue-700 underline underline-offset-2">
+        <Link href="/tours/help" className="font-bold text-blue-700 dark:text-blue-300 underline underline-offset-2">
           Help (24/7 assistant)
         </Link>
       </footer>

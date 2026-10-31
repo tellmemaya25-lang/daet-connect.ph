@@ -61,13 +61,13 @@ export default async function EventDetailPage({ params }: { params: Promise<{ id
   return (
     <PageFrame>
       <div className="mx-auto max-w-3xl">
-        <Link href={`/tours/events?month=${dayKey.slice(0, 7)}&day=${dayKey}`} className="inline-flex min-h-11 items-center gap-1 font-semibold text-blue-700 hover:underline">
+        <Link href={`/tours/events?month=${dayKey.slice(0, 7)}&day=${dayKey}`} className="inline-flex min-h-11 items-center gap-1 font-semibold text-blue-700 dark:text-blue-300 hover:underline">
           <LineIcon name="arrowRight" className="h-4 w-4 rotate-180" /> Back to the calendar
         </Link>
 
-        <article className="overflow-hidden rounded-2xl bg-white">
+        <article className="overflow-hidden rounded-2xl bg-surface">
           {event.image_url ? (
-            <div className="aspect-video bg-blue-50">
+            <div className="aspect-video bg-blue-50 dark:bg-blue-950/40">
               <img src={event.image_url} alt={event.title} className="h-full w-full object-cover" />
             </div>
           ) : (
@@ -86,7 +86,7 @@ export default async function EventDetailPage({ params }: { params: Promise<{ id
               <span className={`rounded-full px-3 py-1 text-xs font-bold ${EVENT_CATEGORY_STYLES[event.category].chip}`}>
                 {EVENT_CATEGORIES[event.category]}
               </span>
-              {isPast ? <span className="rounded-full bg-slate-200 px-3 py-1 text-xs font-bold text-slate-900">This event has ended</span> : null}
+              {isPast ? <span className="rounded-full bg-muted-strong px-3 py-1 text-xs font-bold text-slate-900 dark:text-slate-100">This event has ended</span> : null}
             </div>
             <h1 className="display-2 mt-3 text-daet-ink">{event.title}</h1>
 
@@ -112,8 +112,8 @@ export default async function EventDetailPage({ params }: { params: Promise<{ id
             ) : null}
 
             {attraction ? (
-              <Link href={`/tours/attractions/${attraction.slug}`} className="mt-6 flex min-h-11 items-center gap-3 rounded-2xl bg-blue-50 p-4 hover:bg-blue-100">
-                <span className="text-blue-600" aria-hidden="true">
+              <Link href={`/tours/attractions/${attraction.slug}`} className="mt-6 flex min-h-11 items-center gap-3 rounded-2xl bg-blue-50 dark:bg-blue-950/40 p-4 hover:bg-blue-100 dark:hover:bg-blue-900/40">
+                <span className="text-blue-600 dark:text-blue-300" aria-hidden="true">
                   <CategoryIcon category={attraction.category} className="h-6 w-6" />
                 </span>
                 <span className="min-w-0">
@@ -131,10 +131,10 @@ export default async function EventDetailPage({ params }: { params: Promise<{ id
                   Add to my calendar
                 </a>
               ) : null}
-              <a href={mapsUrl} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-11 items-center justify-center rounded-full bg-blue-50 px-6 font-bold text-blue-700 hover:bg-blue-100">
+              <a href={mapsUrl} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-11 items-center justify-center rounded-full bg-blue-50 dark:bg-blue-950/40 px-6 font-bold text-blue-700 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-900/40">
                 Open in Google Maps
               </a>
-              <Link href="/tours/browse" className="inline-flex min-h-11 items-center justify-center rounded-full px-6 font-bold text-daet-ink hover:bg-slate-100">
+              <Link href="/tours/browse" className="inline-flex min-h-11 items-center justify-center rounded-full px-6 font-bold text-daet-ink hover:bg-muted">
                 Find a tour nearby
               </Link>
             </div>
@@ -158,7 +158,7 @@ function EventTours({ tours, attractionName }: { tours: EventTour[]; attractionN
       {tours.length === 0 ? (
         <p className="mt-2 text-sm text-daet-ink/70">
           No tours have open dates during this event yet.{" "}
-          <Link href="/tours/browse" className="inline-flex min-h-11 items-center font-bold text-daet-forest underline">
+          <Link href="/tours/browse" className="inline-flex min-h-11 items-center font-bold text-daet-forest dark:text-blue-300 underline">
             Browse all tours
           </Link>
         </p>
@@ -166,18 +166,18 @@ function EventTours({ tours, attractionName }: { tours: EventTour[]; attractionN
         <ul className="mt-4 grid gap-4 sm:grid-cols-2">
           {tours.map((tour) => (
             <li key={tour.id}>
-              <Link href={`/tours/packages/${tour.id}`} className="flex h-full gap-3 rounded-2xl bg-white p-3">
+              <Link href={`/tours/packages/${tour.id}`} className="flex h-full gap-3 rounded-2xl bg-surface p-3">
                 <div className="h-20 w-24 shrink-0 overflow-hidden rounded-2xl bg-gradient-to-br from-daet-forest to-daet-leaf">
                   {tour.cover_image_url ? <img src={tour.cover_image_url} alt="" className="h-full w-full object-cover" /> : null}
                 </div>
                 <div className="min-w-0">
                   <p className="font-bold text-daet-ink">{tour.title}</p>
-                  <p className="mt-0.5 text-sm text-slate-600">
+                  <p className="mt-0.5 text-sm text-slate-600 dark:text-slate-400">
                     Open {tour.dates.slice(0, 3).map(shortDate).join(", ")}
                     {tour.dates.length > 3 ? ` +${tour.dates.length - 3} more` : ""}
                   </p>
                   {tour.nearestMeters !== null && tour.nearestMeters <= 5000 && attractionName ? (
-                    <p className="mt-1 text-xs font-bold text-daet-forest">
+                    <p className="mt-1 text-xs font-bold text-daet-forest dark:text-blue-300">
                       Stops {tour.nearestMeters < 1000 ? `${Math.max(50, Math.round(tour.nearestMeters / 50) * 50)} m` : `${(tour.nearestMeters / 1000).toFixed(1)} km`} from {attractionName}
                     </p>
                   ) : null}

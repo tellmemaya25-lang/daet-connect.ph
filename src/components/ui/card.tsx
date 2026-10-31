@@ -6,7 +6,7 @@ import { cn } from "@/components/ui/cn";
  * slate-50 ground with no border and no shadow: the tone step separates them.
  */
 export function Card({ className, padded = true, ...props }: ComponentProps<"div"> & { padded?: boolean }) {
-  return <div className={cn("rounded-2xl bg-white", padded && "p-5 sm:p-6", className)} {...props} />;
+  return <div className={cn("rounded-2xl bg-surface", padded && "p-5 sm:p-6", className)} {...props} />;
 }
 
 /** A card's heading, with an optional one-line description under it and an action on the right. */

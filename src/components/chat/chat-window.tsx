@@ -292,27 +292,27 @@ export function ChatWindow(props: ChatWindowProps) {
   const Heading = props.headingLevel === 1 ? "h1" : "h2";
 
   return (
-    <section aria-labelledby={headingId} className="flex h-full min-h-0 flex-col bg-white">
+    <section aria-labelledby={headingId} className="flex h-full min-h-0 flex-col bg-surface">
       <header className={`flex items-center gap-2 ${compact ? "bg-blue-600 px-2 py-1.5 text-white" : "px-2 py-2 sm:px-3"}`}>
         {props.backHref ? (
-          <Link href={props.backHref} aria-label="All messages" className="grid h-11 w-11 shrink-0 place-items-center rounded-full text-blue-700 hover:bg-blue-50 lg:hidden">
+          <Link href={props.backHref} aria-label="All messages" className="grid h-11 w-11 shrink-0 place-items-center rounded-full text-blue-700 dark:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-950/40 lg:hidden">
             <LineIcon name="arrowRight" className="h-5 w-5 rotate-180" />
           </Link>
         ) : null}
         <span className="relative shrink-0" aria-hidden="true">
-          <span className={`grid ${compact ? "h-8 w-8 bg-white/20" : "h-10 w-10 bg-blue-100 text-blue-800"} place-items-center rounded-full font-bold`}>{props.title.slice(0, 1).toUpperCase()}</span>
+          <span className={`grid ${compact ? "h-8 w-8 bg-white/20" : "h-10 w-10 bg-blue-100 dark:bg-blue-900/40 text-blue-800 dark:text-blue-300"} place-items-center rounded-full font-bold`}>{props.title.slice(0, 1).toUpperCase()}</span>
           {online ? <span className="absolute -bottom-0.5 -right-0.5 h-3.5 w-3.5 rounded-full border-2 border-white bg-green-500" /> : null}
         </span>
         <div className="min-w-0 flex-1">
           <Heading id={headingId} className={`truncate font-bold ${compact ? "text-base" : "text-lg text-daet-ink"}`}>
             {props.title}
           </Heading>
-          <p className={`truncate text-sm ${compact ? "text-white/90" : "text-slate-600"}`} aria-live="polite">
+          <p className={`truncate text-sm ${compact ? "text-white/90" : "text-slate-600 dark:text-slate-400"}`} aria-live="polite">
             {typingNow.length ? "typing…" : online ? "Active now" : live === "offline" ? "Offline: refresh to see new messages" : props.subtitle}
           </p>
         </div>
         {props.link && !compact ? (
-          <Link href={props.link.href} className="hidden min-h-11 shrink-0 items-center rounded-full bg-blue-50 px-4 text-sm font-bold text-blue-700 hover:bg-blue-100 sm:inline-flex">
+          <Link href={props.link.href} className="hidden min-h-11 shrink-0 items-center rounded-full bg-blue-50 dark:bg-blue-950/40 px-4 text-sm font-bold text-blue-700 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-900/40 sm:inline-flex">
             {props.link.label}
           </Link>
         ) : null}
@@ -328,21 +328,21 @@ export function ChatWindow(props: ChatWindowProps) {
           const el = e.currentTarget;
           stickToBottom.current = el.scrollHeight - el.scrollTop - el.clientHeight < 80;
         }}
-        className="min-h-0 flex-1 overflow-y-auto bg-white px-3 py-3"
+        className="min-h-0 flex-1 overflow-y-auto bg-surface px-3 py-3"
       >
         {hasMore ? (
           <div className="mb-3 flex justify-center">
-            <button type="button" onClick={() => void loadOlder()} disabled={loadingOlder} className="min-h-11 rounded-full bg-slate-100 px-4 text-sm font-bold text-daet-ink hover:bg-slate-200 disabled:opacity-60">
+            <button type="button" onClick={() => void loadOlder()} disabled={loadingOlder} className="min-h-11 rounded-full bg-muted px-4 text-sm font-bold text-daet-ink hover:bg-muted-strong disabled:opacity-60">
               {loadingOlder ? "Loading…" : "Load earlier messages"}
             </button>
           </div>
         ) : null}
-        {messages.length === 0 ? <p className="py-10 text-center text-slate-600">{props.emptyText ?? "No messages yet. Say hello."}</p> : null}
+        {messages.length === 0 ? <p className="py-10 text-center text-slate-600 dark:text-slate-400">{props.emptyText ?? "No messages yet. Say hello."}</p> : null}
         <ul className="space-y-0.5">
           {items.map((item) => {
             if (item.type === "day") {
               return (
-                <li key={item.key} className="py-3 text-center text-sm font-semibold text-slate-600">
+                <li key={item.key} className="py-3 text-center text-sm font-semibold text-slate-600 dark:text-slate-400">
                   {item.label}
                 </li>
               );
@@ -354,18 +354,18 @@ export function ChatWindow(props: ChatWindowProps) {
             const gapTop = position === "first" || position === "single" ? "pt-2" : "";
             return (
               <li key={item.key} className={`${gapTop} flex flex-col ${mine ? "items-end" : "items-start"}`}>
-                {showSender ? <p className="mb-0.5 px-3 text-xs font-semibold text-slate-600">{senderLabel(message.sender_id, viewerId, members)}</p> : null}
+                {showSender ? <p className="mb-0.5 px-3 text-xs font-semibold text-slate-600 dark:text-slate-400">{senderLabel(message.sender_id, viewerId, members)}</p> : null}
                 <div className={`group relative flex max-w-[85%] items-center gap-1 ${mine ? "flex-row-reverse" : ""}`}>
                   <div
                     id={`msg-${conversationId}-${message.id}`}
                     {...pressHandlers(message.id)}
-                    className={`min-w-0 select-text px-3 py-2 transition ${bubbleCorners(position, mine)} ${mine ? "bg-blue-600 text-white" : "bg-slate-100 text-daet-ink"} ${message.status === "failed" ? "opacity-70" : ""}`}
+                    className={`min-w-0 select-text px-3 py-2 transition ${bubbleCorners(position, mine)} ${mine ? "bg-blue-600 text-white" : "bg-muted text-daet-ink"} ${message.status === "failed" ? "opacity-70" : ""}`}
                   >
                     {reply !== undefined || message.reply_to_id ? (
                       <button
                         type="button"
                         onClick={() => message.reply_to_id && jumpTo(message.reply_to_id)}
-                        className={`mb-1 block w-full rounded-xl px-2 py-1 text-left text-sm ${mine ? "bg-blue-800 text-white" : "bg-white text-slate-700"}`}
+                        className={`mb-1 block w-full rounded-xl px-2 py-1 text-left text-sm ${mine ? "bg-blue-800 text-white" : "bg-surface text-slate-700 dark:text-slate-300"}`}
                       >
                         <span className="block text-xs font-bold">{reply ? `Replying to ${senderLabel(reply.sender_id, viewerId, members)}` : "Reply"}</span>
                         <span className="line-clamp-2">{quotePreview(reply)}</span>
@@ -390,7 +390,7 @@ export function ChatWindow(props: ChatWindowProps) {
                       aria-label="React or reply"
                       aria-expanded={menuFor === message.id}
                       onClick={() => setMenuFor(menuFor === message.id ? null : message.id)}
-                      className="grid h-11 w-11 shrink-0 place-items-center rounded-full text-slate-500 opacity-0 transition hover:bg-slate-100 focus-visible:opacity-100 group-hover:opacity-100 aria-expanded:opacity-100"
+                      className="grid h-11 w-11 shrink-0 place-items-center rounded-full text-slate-500 dark:text-slate-400 opacity-0 transition hover:bg-muted focus-visible:opacity-100 group-hover:opacity-100 aria-expanded:opacity-100"
                     >
                       <LineIcon name="menu" className="h-5 w-5" />
                     </button>
@@ -418,20 +418,20 @@ export function ChatWindow(props: ChatWindowProps) {
                   ) : null}
                 </div>
                 {pills}
-                {message.status === "sending" ? <p className="px-3 text-xs text-slate-500">Sending…</p> : null}
+                {message.status === "sending" ? <p className="px-3 text-xs text-slate-500 dark:text-slate-400">Sending…</p> : null}
                 {message.status === "failed" ? (
-                  <button type="button" onClick={() => retry(message)} className="min-h-11 px-3 text-sm font-bold text-red-600 underline">
+                  <button type="button" onClick={() => retry(message)} className="min-h-11 px-3 text-sm font-bold text-red-600 dark:text-red-300 underline">
                     Not sent. Tap to retry
                   </button>
                 ) : null}
-                {!message.status && showTime ? <p className="px-3 pt-0.5 text-xs text-slate-500">{time(message.created_at)}</p> : null}
-                {seenId === message.id ? <p className="px-3 text-xs font-semibold text-slate-600">Seen</p> : null}
+                {!message.status && showTime ? <p className="px-3 pt-0.5 text-xs text-slate-500 dark:text-slate-400">{time(message.created_at)}</p> : null}
+                {seenId === message.id ? <p className="px-3 text-xs font-semibold text-slate-600 dark:text-slate-400">Seen</p> : null}
               </li>
             );
           })}
           {typingNow.length ? (
             <li className="flex pt-2">
-              <span className="rounded-2xl bg-slate-100 px-3 py-1">
+              <span className="rounded-2xl bg-muted px-3 py-1">
                 <TypingDots />
               </span>
             </li>
@@ -441,7 +441,7 @@ export function ChatWindow(props: ChatWindowProps) {
 
       {canSend ? (
         <form
-          className="bg-white px-2 pb-2 pt-1"
+          className="bg-surface px-2 pb-2 pt-1"
           onSubmit={(event) => {
             event.preventDefault();
             submit();
@@ -453,18 +453,18 @@ export function ChatWindow(props: ChatWindowProps) {
             </Notice>
           ) : null}
           {replyTo ? (
-            <div className="mb-1 flex items-center gap-2 rounded-2xl bg-slate-50 px-3 py-1">
+            <div className="mb-1 flex items-center gap-2 rounded-2xl bg-canvas px-3 py-1">
               <div className="min-w-0 flex-1 text-sm">
                 <p className="font-bold text-daet-ink">Replying to {senderLabel(replyTo.sender_id, viewerId, members)}</p>
-                <p className="truncate text-slate-600">{quotePreview(replyTo)}</p>
+                <p className="truncate text-slate-600 dark:text-slate-400">{quotePreview(replyTo)}</p>
               </div>
-              <button type="button" onClick={() => setReplyTo(null)} aria-label="Cancel reply" className="grid h-11 w-11 place-items-center rounded-full hover:bg-slate-100">
+              <button type="button" onClick={() => setReplyTo(null)} aria-label="Cancel reply" className="grid h-11 w-11 place-items-center rounded-full hover:bg-muted">
                 <LineIcon name="close" className="h-5 w-5" />
               </button>
             </div>
           ) : null}
           {file ? (
-            <p className="mb-1 flex items-center gap-2 px-2 text-sm text-slate-600">
+            <p className="mb-1 flex items-center gap-2 px-2 text-sm text-slate-600 dark:text-slate-400">
               <LineIcon name="image" className="h-4 w-4" /> <span className="truncate">{file.name}</span>
               <button
                 type="button"
@@ -472,14 +472,14 @@ export function ChatWindow(props: ChatWindowProps) {
                   setFile(null);
                   if (fileRef.current) fileRef.current.value = "";
                 }}
-                className="min-h-11 font-bold text-blue-700 underline"
+                className="min-h-11 font-bold text-blue-700 dark:text-blue-300 underline"
               >
                 Remove
               </button>
             </p>
           ) : null}
           <div className="flex items-end gap-1">
-            <label className="grid h-11 w-11 shrink-0 cursor-pointer place-items-center rounded-full text-blue-600 hover:bg-blue-50" title="Add a photo">
+            <label className="grid h-11 w-11 shrink-0 cursor-pointer place-items-center rounded-full text-blue-600 dark:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-950/40" title="Add a photo">
               <input ref={fileRef} type="file" accept="image/jpeg,image/png,image/webp" className="sr-only" onChange={(event) => setFile(event.target.files?.[0] ?? null)} />
               <LineIcon name="camera" className="h-6 w-6" />
               <span className="sr-only">Add a photo</span>
@@ -504,12 +504,12 @@ export function ChatWindow(props: ChatWindowProps) {
                 }
               }}
               placeholder="Aa"
-              className="block max-h-32 min-h-11 w-full resize-none rounded-2xl bg-slate-100 px-4 py-2.5 text-base focus:outline-none focus:ring-2 focus:ring-blue-600/40"
+              className="block max-h-32 min-h-11 w-full resize-none rounded-2xl bg-muted px-4 py-2.5 text-base focus:outline-none focus:ring-2 focus:ring-blue-600/40"
             />
             <button
               type="submit"
               disabled={!text.trim() && !file}
-              className="grid h-11 w-11 shrink-0 place-items-center rounded-full text-blue-600 transition hover:bg-blue-50 active:scale-95 disabled:text-slate-400"
+              className="grid h-11 w-11 shrink-0 place-items-center rounded-full text-blue-600 dark:text-blue-300 transition hover:bg-blue-50 dark:hover:bg-blue-950/40 active:scale-95 disabled:text-slate-400"
             >
               <LineIcon name="arrowRight" className="h-6 w-6" />
               <span className="sr-only">Send</span>

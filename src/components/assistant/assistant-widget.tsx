@@ -45,7 +45,7 @@ export function AssistantWidget({ signedIn, raised }: { signedIn: boolean; raise
         onClick={(event) => {
           if (event.target === dialogRef.current) close();
         }}
-        className="m-0 h-dvh max-h-dvh w-full max-w-full bg-white p-0 text-daet-ink backdrop:bg-daet-ink/40 sm:ml-auto sm:h-dvh sm:w-[26rem] sm:max-w-[26rem] sm:rounded-l-3xl"
+        className="m-0 h-dvh max-h-dvh w-full max-w-full bg-surface p-0 text-daet-ink backdrop:bg-slate-950/50 sm:ml-auto sm:h-dvh sm:w-[26rem] sm:max-w-[26rem] sm:rounded-l-3xl"
       >
         <div className="flex h-full flex-col">
           <div className="flex items-center justify-between gap-3 bg-blue-600 px-4 py-3 text-white">

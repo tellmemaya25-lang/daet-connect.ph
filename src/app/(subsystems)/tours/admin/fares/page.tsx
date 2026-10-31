@@ -38,16 +38,16 @@ export default async function AdminFaresPage({ searchParams }: { searchParams: P
       {error ? <Notice variant="error" className="mb-4">Fares could not be loaded.</Notice> : null}
 
       {fares.length === 0 ? (
-        <p className="rounded-2xl bg-white p-8 text-center text-daet-ink">No fares yet. Add one or import a spreadsheet.</p>
+        <p className="rounded-2xl bg-surface p-8 text-center text-daet-ink">No fares yet. Add one or import a spreadsheet.</p>
       ) : (
         <ul className="space-y-2">
           {fares.map((fare) => (
-            <li key={fare.id} className="flex flex-col gap-3 rounded-2xl bg-white p-4 sm:flex-row sm:items-center sm:justify-between">
+            <li key={fare.id} className="flex flex-col gap-3 rounded-2xl bg-surface p-4 sm:flex-row sm:items-center sm:justify-between">
               <div className="min-w-0">
                 <p className="font-bold text-daet-ink">
                   {fare.from_name} to {fare.to_name}
                 </p>
-                <p className="text-sm text-slate-600">
+                <p className="text-sm text-slate-600 dark:text-slate-400">
                   {[FARE_MODES[fare.mode], fareLabel(fare, formatPeso) ?? "Fare unknown", minutesLabel(fare.minutes_min, fare.minutes_max)].filter(Boolean).join(" · ")}
                 </p>
                 <div className="mt-1 flex flex-wrap gap-1.5">
@@ -56,12 +56,12 @@ export default async function AdminFaresPage({ searchParams }: { searchParams: P
                 </div>
               </div>
               <div className="grid shrink-0 grid-cols-2 gap-2 sm:flex">
-                <Link href={`/tours/admin/fares/${fare.id}/edit`} className="inline-flex min-h-11 items-center justify-center rounded-full bg-blue-50 px-5 font-bold text-blue-700 hover:bg-blue-100">
+                <Link href={`/tours/admin/fares/${fare.id}/edit`} className="inline-flex min-h-11 items-center justify-center rounded-full bg-blue-50 dark:bg-blue-950/40 px-5 font-bold text-blue-700 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-900/40">
                   Edit
                 </Link>
                 <form action={deleteFare}>
                   <input type="hidden" name="id" value={fare.id} />
-                  <ConfirmSubmitButton message={`Delete the ${FARE_MODES[fare.mode].toLowerCase()} fare from ${fare.from_name} to ${fare.to_name}?`} className="inline-flex min-h-11 w-full items-center justify-center rounded-full px-5 font-bold text-red-600 hover:bg-red-50">
+                  <ConfirmSubmitButton message={`Delete the ${FARE_MODES[fare.mode].toLowerCase()} fare from ${fare.from_name} to ${fare.to_name}?`} className="inline-flex min-h-11 w-full items-center justify-center rounded-full px-5 font-bold text-red-600 dark:text-red-300 hover:bg-red-50 dark:hover:bg-red-950/40">
                     Delete
                   </ConfirmSubmitButton>
                 </form>

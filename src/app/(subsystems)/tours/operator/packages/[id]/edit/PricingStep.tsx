@@ -129,7 +129,7 @@ export function PricingStep({
   const pricingErrors = getPricingErrors();
 
   return (
-    <div className="border rounded-2xl p-6 bg-white">
+    <div className="border rounded-2xl p-6 bg-surface">
       <div className="flex items-center justify-between mb-6">
         <h2 className="text-xl font-bold text-daet-ink">Price Variants</h2>
         {canAddVariants && (
@@ -158,7 +158,7 @@ export function PricingStep({
       <div className="overflow-x-auto">
         <table className="w-full text-sm">
           <thead>
-            <tr className="border-b border-daet-ink/20 bg-slate-50">
+            <tr className="border-b border-daet-ink/20 bg-canvas">
               <th className="px-4 py-2 text-left font-bold text-daet-ink/80">Variant Name</th>
               <th className="px-4 py-2 text-left font-bold text-daet-ink/80">Min Pax</th>
               <th className="px-4 py-2 text-left font-bold text-daet-ink/80">Max Pax</th>
@@ -169,7 +169,7 @@ export function PricingStep({
           </thead>
           <tbody className="divide-y divide-daet-ink/10">
             {data.map((variant) => (
-              <tr key={variant.id} className="hover:bg-slate-50">
+              <tr key={variant.id} className="hover:bg-canvas">
                 <td className="px-4 py-3 text-daet-ink">{variant.variantName}</td>
                 <td className="px-4 py-3 text-daet-ink/80">{variant.minPax}</td>
                 <td className="px-4 py-3 text-daet-ink/80">{variant.maxPax || "Unlimited"}</td>
@@ -191,7 +191,7 @@ export function PricingStep({
                       type="button"
                       onClick={() => handleEdit(variant)}
                       disabled={loading}
-                      className="text-daet-leaf hover:text-daet-leaf text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="text-daet-leaf dark:text-blue-300 hover:text-daet-leaf dark:hover:text-blue-300 text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       Edit
                     </button>
@@ -205,7 +205,7 @@ export function PricingStep({
                         }
                       }}
                       disabled={loading}
-                      className="text-red-700 hover:text-red-800 text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="text-red-700 dark:text-red-300 hover:text-red-800 dark:hover:text-red-300 text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       Delete
                     </button>
@@ -225,7 +225,7 @@ export function PricingStep({
 
       {/* Validation Errors */}
       {Object.keys(pricingErrors).length > 0 && (
-        <div className="mt-4 p-3 bg-red-50 rounded-2xl text-sm text-red-800">
+        <div className="mt-4 p-3 bg-red-50 dark:bg-red-950/40 rounded-2xl text-sm text-red-800 dark:text-red-300">
           <p className="font-medium">Pricing errors:</p>
           <ul className="mt-1 space-y-1">
             {Object.entries(pricingErrors).map(([key, message]) => (
@@ -238,7 +238,7 @@ export function PricingStep({
       {/* Add/Edit Form Modal */}
       {showAddForm && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl max-w-md w-full p-6 max-h-[90vh] overflow-y-auto">
+          <div className="bg-surface rounded-2xl max-w-md w-full p-6 max-h-[90vh] overflow-y-auto">
             <h3 className="text-lg font-bold text-daet-ink mb-4">
               {editingId ? "Edit Variant" : "Add Variant"}
             </h3>
@@ -342,7 +342,7 @@ export function PricingStep({
                     setShowAddForm(false);
                     setEditingId(undefined);
                   }}
-                  className="flex-1 px-4 py-2 border border-daet-ink/20 text-daet-ink/80 rounded-2xl hover:bg-slate-50 transition"
+                  className="flex-1 px-4 py-2 border border-daet-ink/20 text-daet-ink/80 rounded-2xl hover:bg-canvas transition"
                 >
                   Cancel
                 </button>
@@ -361,7 +361,7 @@ export function PricingStep({
 
       {/* Help text */}
       {!canAddVariants && (
-        <div className="mt-4 p-3 rounded-2xl bg-blue-50 text-sm text-blue-900">
+        <div className="mt-4 p-3 rounded-2xl bg-blue-50 dark:bg-blue-950/40 text-sm text-blue-900 dark:text-blue-300">
           ℹ️ Price variants cannot be modified for this package status.
         </div>
       )}

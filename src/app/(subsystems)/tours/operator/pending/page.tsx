@@ -69,12 +69,12 @@ export default async function OperatorPendingPage() {
   if (application.accreditation_status === "rejected") {
     return (
       <PageFrame>
-        <section className="mx-auto max-w-2xl rounded-2xl border-red-200 bg-white p-6 sm:p-10">
-          <span className="inline-flex rounded-full bg-red-50 px-3 py-1 text-xs font-bold text-red-700">Changes requested</span>
+        <section className="mx-auto max-w-2xl rounded-2xl border-red-200 dark:border-red-700 bg-surface p-6 sm:p-10">
+          <span className="inline-flex rounded-full bg-red-50 dark:bg-red-950/40 px-3 py-1 text-xs font-bold text-red-700 dark:text-red-300">Changes requested</span>
           <h1 className="display-2 mt-4 text-daet-ink">Please update your application</h1>
           <p className="mt-3 text-sm leading-6 text-daet-ink/70">The Tourism Office could not approve the documents as submitted. You can review the note and send an updated application.</p>
           {application.accreditation_notes ? (
-            <div className="mt-5 rounded-2xl bg-red-50 p-4 text-sm leading-6 text-red-950">
+            <div className="mt-5 rounded-2xl bg-red-50 dark:bg-red-950/40 p-4 text-sm leading-6 text-red-950 dark:text-red-300">
               <p className="font-bold">Reviewer’s note</p><p className="mt-1">{application.accreditation_notes}</p>
             </div>
           ) : null}
@@ -96,7 +96,7 @@ export default async function OperatorPendingPage() {
 
   return (
     <PageFrame>
-      <section className="mx-auto max-w-2xl overflow-hidden rounded-2xl bg-white">
+      <section className="mx-auto max-w-2xl overflow-hidden rounded-2xl bg-surface">
         <div className="bg-daet-forest px-6 py-8 text-white sm:px-10 sm:py-10">
           <span className="inline-flex items-center gap-2 rounded-full bg-white/15 px-3 py-1 text-sm font-bold">
             <span className="h-2 w-2 animate-pulse rounded-full bg-daet-sun" /> In review
@@ -107,11 +107,11 @@ export default async function OperatorPendingPage() {
         <div className="p-6 sm:p-10">
           <ol className="space-y-5">
             <li className="flex gap-4">
-              <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-green-100 text-sm font-bold text-green-800">✓</span>
+              <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-green-100 dark:bg-green-900/40 text-sm font-bold text-green-800 dark:text-green-300">✓</span>
               <div><p className="font-bold">Application submitted</p><p className="mt-1 text-sm text-daet-ink/70">{new Date(application.created_at).toLocaleDateString("en-PH", { year: "numeric", month: "long", day: "numeric" })}</p></div>
             </li>
             <li className="flex gap-4">
-              <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-yellow-100 text-sm font-bold text-yellow-900">2</span>
+              <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-yellow-100 dark:bg-yellow-900/40 text-sm font-bold text-yellow-900 dark:text-yellow-200">2</span>
               <div><p className="font-bold">Tourism Office review</p><p className="mt-1 text-sm leading-6 text-daet-ink/70">Your registration and business permit are checked by an authorized reviewer.</p></div>
             </li>
             <li className="flex gap-4">

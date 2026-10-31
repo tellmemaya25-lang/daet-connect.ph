@@ -31,14 +31,14 @@ export default async function AdminGuidePlacesPage({ searchParams }: { searchPar
   const noPrice = places.filter((p) => (p.kind === "eatery" || p.kind === "lodging") && p.price_min === null && p.price_max === null).length;
 
   const chip = (active: boolean) =>
-    `inline-flex min-h-11 items-center rounded-full px-4 text-[15px] font-bold transition ${active ? "bg-blue-600 text-white" : "bg-white text-daet-ink hover:bg-blue-50"}`;
+    `inline-flex min-h-11 items-center rounded-full px-4 text-[15px] font-bold transition ${active ? "bg-blue-600 text-white" : "bg-surface text-daet-ink hover:bg-blue-50 dark:hover:bg-blue-950/40"}`;
 
   return (
     <PageFrame adminNav>
       <AdminPageHeading title="Local guide places" backHref="/tours/admin" backLabel="Admin dashboard" action={{ href: "/tours/admin/guide-places/new", label: "+ New place" }} />
       <p className="-mt-3 mb-6 max-w-2xl text-lg text-daet-ink">
         Where to eat, stay, catch a ride and get help. The Daet AI assistant recommends only what is listed here. Fares are on the{" "}
-        <Link href="/tours/admin/fares" className="font-bold text-blue-700 underline">
+        <Link href="/tours/admin/fares" className="font-bold text-blue-700 dark:text-blue-300 underline">
           fares page
         </Link>
         .
@@ -73,14 +73,14 @@ export default async function AdminGuidePlacesPage({ searchParams }: { searchPar
       </nav>
 
       {places.length === 0 ? (
-        <p className="rounded-2xl bg-white p-8 text-center text-daet-ink">No places yet. Add one or import a spreadsheet.</p>
+        <p className="rounded-2xl bg-surface p-8 text-center text-daet-ink">No places yet. Add one or import a spreadsheet.</p>
       ) : (
         <ul className="space-y-2">
           {places.map((place) => (
-            <li key={place.id} className="flex flex-col gap-3 rounded-2xl bg-white p-4 sm:flex-row sm:items-center sm:justify-between">
+            <li key={place.id} className="flex flex-col gap-3 rounded-2xl bg-surface p-4 sm:flex-row sm:items-center sm:justify-between">
               <div className="min-w-0">
                 <p className="font-bold text-daet-ink">{place.name}</p>
-                <p className="text-sm text-slate-600">
+                <p className="text-sm text-slate-600 dark:text-slate-400">
                   {[place.municipality, priceLabel(place, formatPeso)].filter(Boolean).join(" · ")}
                 </p>
                 <div className="mt-1 flex flex-wrap gap-1.5">
@@ -91,12 +91,12 @@ export default async function AdminGuidePlacesPage({ searchParams }: { searchPar
                 </div>
               </div>
               <div className="grid shrink-0 grid-cols-2 gap-2 sm:flex">
-                <Link href={`/tours/admin/guide-places/${place.id}/edit`} className="inline-flex min-h-11 items-center justify-center rounded-full bg-blue-50 px-5 font-bold text-blue-700 hover:bg-blue-100">
+                <Link href={`/tours/admin/guide-places/${place.id}/edit`} className="inline-flex min-h-11 items-center justify-center rounded-full bg-blue-50 dark:bg-blue-950/40 px-5 font-bold text-blue-700 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-900/40">
                   Edit
                 </Link>
                 <form action={deleteGuidePlace}>
                   <input type="hidden" name="id" value={place.id} />
-                  <ConfirmSubmitButton message={`Delete "${place.name}"? This cannot be undone.`} className="inline-flex min-h-11 w-full items-center justify-center rounded-full px-5 font-bold text-red-600 hover:bg-red-50">
+                  <ConfirmSubmitButton message={`Delete "${place.name}"? This cannot be undone.`} className="inline-flex min-h-11 w-full items-center justify-center rounded-full px-5 font-bold text-red-600 dark:text-red-300 hover:bg-red-50 dark:hover:bg-red-950/40">
                     Delete
                   </ConfirmSubmitButton>
                 </form>
@@ -116,9 +116,9 @@ export default async function AdminGuidePlacesPage({ searchParams }: { searchPar
 
 function Stat({ label, value }: { label: string; value: number }) {
   return (
-    <div className="rounded-2xl bg-white p-4">
+    <div className="rounded-2xl bg-surface p-4">
       <p className="text-3xl font-bold text-daet-ink">{value}</p>
-      <p className="text-sm text-slate-600">{label}</p>
+      <p className="text-sm text-slate-600 dark:text-slate-400">{label}</p>
     </div>
   );
 }

@@ -136,7 +136,7 @@ export function StopsStep({
   const stopsErrors = getStopsErrors();
 
   return (
-    <div className="border rounded-2xl p-6 bg-white">
+    <div className="border rounded-2xl p-6 bg-surface">
       <div className="flex items-center justify-between mb-6">
         <h2 className="text-xl font-bold text-daet-ink">Tour Stops</h2>
         {canAddStops && (
@@ -164,7 +164,7 @@ export function StopsStep({
       <div className="overflow-x-auto">
         <table className="w-full text-sm">
           <thead>
-            <tr className="border-b border-daet-ink/20 bg-slate-50">
+            <tr className="border-b border-daet-ink/20 bg-canvas">
               <th className="px-4 py-2 text-left font-bold text-daet-ink/80">#</th>
               <th className="px-4 py-2 text-left font-bold text-daet-ink/80">Location</th>
               <th className="px-4 py-2 text-left font-bold text-daet-ink/80">Description</th>
@@ -174,7 +174,7 @@ export function StopsStep({
           </thead>
           <tbody className="divide-y divide-daet-ink/10">
             {sortedStops.map((stop, index) => (
-              <tr key={stop.id} className="hover:bg-slate-50">
+              <tr key={stop.id} className="hover:bg-canvas">
                 <td className="px-4 py-3 text-daet-ink font-medium">{index + 1}</td>
                 <td className="px-4 py-3 text-daet-ink">{stop.locationName}</td>
                 <td className="px-4 py-3 text-daet-ink/80">
@@ -215,7 +215,7 @@ export function StopsStep({
                       type="button"
                       onClick={() => handleEdit(stop)}
                       disabled={loading}
-                      className="text-daet-leaf hover:text-daet-leaf text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="text-daet-leaf dark:text-blue-300 hover:text-daet-leaf dark:hover:text-blue-300 text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       Edit
                     </button>
@@ -229,7 +229,7 @@ export function StopsStep({
                         }
                       }}
                       disabled={loading}
-                      className="text-red-700 hover:text-red-800 text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="text-red-700 dark:text-red-300 hover:text-red-800 dark:hover:text-red-300 text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       Delete
                     </button>
@@ -249,7 +249,7 @@ export function StopsStep({
 
       {/* Validation Errors */}
       {Object.keys(stopsErrors).length > 0 && (
-        <div className="mt-4 p-3 bg-red-50 rounded-2xl text-sm text-red-800">
+        <div className="mt-4 p-3 bg-red-50 dark:bg-red-950/40 rounded-2xl text-sm text-red-800 dark:text-red-300">
           <p className="font-medium">Stop errors:</p>
           <ul className="mt-1 space-y-1">
             {Object.entries(stopsErrors).map(([key, message]) => (
@@ -262,7 +262,7 @@ export function StopsStep({
       {/* Add/Edit Form Modal */}
       {showAddForm && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl max-w-md w-full p-6 max-h-[90vh] overflow-y-auto">
+          <div className="bg-surface rounded-2xl max-w-md w-full p-6 max-h-[90vh] overflow-y-auto">
             <h3 className="text-lg font-bold text-daet-ink mb-4">
               {editingId ? "Edit Stop" : "Add Stop"}
             </h3>
@@ -369,7 +369,7 @@ export function StopsStep({
                     setShowAddForm(false);
                     setEditingId(undefined);
                   }}
-                  className="flex-1 px-4 py-2 border border-daet-ink/20 text-daet-ink/80 rounded-2xl hover:bg-slate-50 transition"
+                  className="flex-1 px-4 py-2 border border-daet-ink/20 text-daet-ink/80 rounded-2xl hover:bg-canvas transition"
                 >
                   Cancel
                 </button>
@@ -388,7 +388,7 @@ export function StopsStep({
 
       {/* Help text */}
       {data.length === 0 && (
-        <div className="mt-4 p-3 bg-yellow-50 rounded-2xl text-sm text-yellow-800">
+        <div className="mt-4 p-3 bg-yellow-50 dark:bg-yellow-950/40 rounded-2xl text-sm text-yellow-800 dark:text-yellow-200">
           <LineIcon name="warning" className="inline-block h-[1.1em] w-[1.1em] align-[-0.15em]" /> At least one stop is required before submitting for review.
         </div>
       )}

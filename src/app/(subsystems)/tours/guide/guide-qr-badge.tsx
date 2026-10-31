@@ -13,7 +13,7 @@ export function GuideQrBadge({
 }) {
   return (
     <section className="mx-auto max-w-xl print:max-w-none">
-      <div className="rounded-2xl bg-white p-6 text-center sm:p-9 print:mx-auto print:min-h-[5in] print:w-[3.5in] print:rounded-none print:border-black print:p-4 print:shadow-none">
+      <div data-theme="light" className="rounded-2xl bg-white p-6 text-center sm:p-9 print:mx-auto print:min-h-[5in] print:w-[3.5in] print:rounded-none print:border-black print:p-4 print:shadow-none">
         <p className="text-sm font-bold text-daet-leaf print:text-black">CONNECT-DAET · Local Guide</p>
         <h1 className="mt-2 text-2xl font-bold text-daet-ink print:text-black">{fullName}</h1>
         <div className="mx-auto mt-5 w-fit rounded-2xl bg-white p-3 print:mt-3 print:p-1">

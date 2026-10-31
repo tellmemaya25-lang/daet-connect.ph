@@ -147,12 +147,12 @@ export default async function BookingDetailPage({ params, searchParams }: PagePr
   return (
     <PageFrame credits={pkg?.cover_image_url ? [] : [photoKey]}>
       <div className="mx-auto max-w-4xl">
-        <Link href="/tours/my-bookings" className="mb-4 inline-flex min-h-11 items-center gap-1 font-bold text-blue-700 hover:underline">
+        <Link href="/tours/my-bookings" className="mb-4 inline-flex min-h-11 items-center gap-1 font-bold text-blue-700 dark:text-blue-300 hover:underline">
           <LineIcon name="arrowRight" className="h-4 w-4 rotate-180" /> My bookings
         </Link>
 
-        <header className="mb-6 grid overflow-hidden rounded-2xl bg-white md:grid-cols-[1fr_1.1fr]">
-          <div className="relative min-h-48 bg-blue-100 md:min-h-full">
+        <header className="mb-6 grid overflow-hidden rounded-2xl bg-surface md:grid-cols-[1fr_1.1fr]">
+          <div className="relative min-h-48 bg-blue-100 dark:bg-blue-900/40 md:min-h-full">
             {pkg?.cover_image_url ? (
               <img src={pkg.cover_image_url} alt="" className="absolute inset-0 h-full w-full object-cover" />
             ) : (
@@ -170,7 +170,7 @@ export default async function BookingDetailPage({ params, searchParams }: PagePr
               {pkg?.location_name ? ` · ${pkg.location_name}` : ""}
               {operator ? ` · by ${operator.business_name}` : ""}
             </p>
-            <p className="mt-4 text-sm text-slate-600">Booking reference</p>
+            <p className="mt-4 text-sm text-slate-600 dark:text-slate-400">Booking reference</p>
             <p className="font-mono text-2xl font-bold tracking-wide text-daet-ink">{booking.booking_reference}</p>
             <div className="mt-5 flex flex-wrap gap-2">
               {booking.status === "confirmed" ? <ButtonLink href={`/tours/bookings/${booking.id}/ticket`}>Show my ticket QR</ButtonLink> : null}
@@ -196,7 +196,7 @@ export default async function BookingDetailPage({ params, searchParams }: PagePr
             {Number(booking.total_paid ?? 0) > 0 ? " Any amount you paid will be refunded by the operator." : ""}
           </Notice>
         ) : (
-          <section aria-labelledby="progress" className="mb-6 rounded-2xl bg-white p-5 sm:p-6">
+          <section aria-labelledby="progress" className="mb-6 rounded-2xl bg-surface p-5 sm:p-6">
             <h2 id="progress" className="text-xl font-bold text-daet-ink">
               Where it stands
             </h2>
@@ -204,12 +204,12 @@ export default async function BookingDetailPage({ params, searchParams }: PagePr
               {steps.map((step, i) => (
                 <li key={step.label} className="flex items-center gap-3 sm:flex-col sm:items-start">
                   <span
-                    className={`grid h-9 w-9 shrink-0 place-items-center rounded-full text-sm font-bold ${step.done ? "bg-green-500 text-slate-950" : "bg-slate-100 text-slate-600"}`}
+                    className={`grid h-9 w-9 shrink-0 place-items-center rounded-full text-sm font-bold ${step.done ? "bg-green-500 text-slate-950" : "bg-muted text-slate-600 dark:text-slate-400"}`}
                     aria-hidden="true"
                   >
                     {step.done ? <LineIcon name="check" className="h-5 w-5" /> : i + 1}
                   </span>
-                  <span className={step.done ? "font-bold text-daet-ink" : "text-slate-600"}>
+                  <span className={step.done ? "font-bold text-daet-ink" : "text-slate-600 dark:text-slate-400"}>
                     {step.label}
                     <span className="sr-only">{step.done ? " (done)" : " (not yet)"}</span>
                   </span>
@@ -220,7 +220,7 @@ export default async function BookingDetailPage({ params, searchParams }: PagePr
         )}
 
         {booking.status === "completed" ? (
-          <section id="review" aria-labelledby="review-title" className="mb-6 rounded-2xl bg-white p-5 sm:p-6">
+          <section id="review" aria-labelledby="review-title" className="mb-6 rounded-2xl bg-surface p-5 sm:p-6">
             <h2 id="review-title" className="text-xl font-bold text-daet-ink">
               {myReview ? "Your review" : "Rate your tour"}
             </h2>
@@ -241,7 +241,7 @@ export default async function BookingDetailPage({ params, searchParams }: PagePr
           </section>
         ) : null}
 
-        <section aria-labelledby="cost" className="mb-6 rounded-2xl bg-white p-5 sm:p-6">
+        <section aria-labelledby="cost" className="mb-6 rounded-2xl bg-surface p-5 sm:p-6">
           <h2 id="cost" className="text-xl font-bold text-daet-ink">
             What it costs
           </h2>
@@ -256,9 +256,9 @@ export default async function BookingDetailPage({ params, searchParams }: PagePr
                 <dd className="font-bold">{formatPeso(booking.price_per_pax)}</dd>
               </div>
             ) : null}
-            <div className="flex items-baseline justify-between gap-4 rounded-2xl bg-slate-50 px-4 py-3">
+            <div className="flex items-baseline justify-between gap-4 rounded-2xl bg-canvas px-4 py-3">
               <dt className="text-lg font-bold">Total</dt>
-              <dd className="text-2xl font-bold text-blue-700">{formatPeso(booking.total_amount)}</dd>
+              <dd className="text-2xl font-bold text-blue-700 dark:text-blue-300">{formatPeso(booking.total_amount)}</dd>
             </div>
           </dl>
         </section>
@@ -280,27 +280,27 @@ export default async function BookingDetailPage({ params, searchParams }: PagePr
           cancellation={(cancellation as MyCancellation | null) ?? null}
         />
 
-        <section aria-labelledby="contact" className="mb-6 rounded-2xl bg-white p-5 sm:p-6">
+        <section aria-labelledby="contact" className="mb-6 rounded-2xl bg-surface p-5 sm:p-6">
           <h2 id="contact" className="text-xl font-bold text-daet-ink">
             Your contact details
           </h2>
           <dl className="mt-4 grid gap-3 text-daet-ink sm:grid-cols-3">
             <div>
-              <dt className="text-sm text-slate-600">Name</dt>
+              <dt className="text-sm text-slate-600 dark:text-slate-400">Name</dt>
               <dd className="font-bold">{booking.contact_name}</dd>
             </div>
             <div className="min-w-0">
-              <dt className="text-sm text-slate-600">Email</dt>
+              <dt className="text-sm text-slate-600 dark:text-slate-400">Email</dt>
               <dd className="break-words font-bold">{booking.contact_email}</dd>
             </div>
             <div>
-              <dt className="text-sm text-slate-600">Phone</dt>
+              <dt className="text-sm text-slate-600 dark:text-slate-400">Phone</dt>
               <dd className="font-bold">{booking.contact_phone}</dd>
             </div>
           </dl>
           {booking.special_requests ? (
-            <div className="mt-4 rounded-2xl bg-slate-50 p-4">
-              <p className="text-sm text-slate-600">Special requests</p>
+            <div className="mt-4 rounded-2xl bg-canvas p-4">
+              <p className="text-sm text-slate-600 dark:text-slate-400">Special requests</p>
               <p className="mt-1 text-daet-ink">{booking.special_requests}</p>
             </div>
           ) : null}

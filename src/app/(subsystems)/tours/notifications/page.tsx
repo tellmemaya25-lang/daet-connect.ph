@@ -58,13 +58,13 @@ export default async function NotificationsPage() {
               <li key={row.id}>
                 <Link
                   href={safeNotificationLink(row.link)}
-                  className={`flex gap-3 rounded-2xl p-4 transition hover:bg-blue-50 active:scale-[0.99] ${row.read_at ? "bg-white" : "bg-blue-50"}`}
+                  className={`flex gap-3 rounded-2xl p-4 transition hover:bg-blue-50 dark:hover:bg-blue-950/40 active:scale-[0.99] ${row.read_at ? "bg-surface" : "bg-blue-50 dark:bg-blue-950/40"}`}
                 >
-                  <LineIcon name={notificationIcon(row.type)} className="h-6 w-6 text-blue-600" />
+                  <LineIcon name={notificationIcon(row.type)} className="h-6 w-6 text-blue-600 dark:text-blue-300" />
                   <span className="min-w-0 flex-1">
                     <span className={`block text-daet-ink ${row.read_at ? "font-semibold" : "font-bold"}`}>{row.title}</span>
                     {row.body ? <span className="block text-sm text-daet-ink/70">{row.body}</span> : null}
-                    <span className="mt-1 block text-sm text-slate-600">{timeAgo(row.created_at)}</span>
+                    <span className="mt-1 block text-sm text-slate-600 dark:text-slate-400">{timeAgo(row.created_at)}</span>
                   </span>
                   {!row.read_at ? <span className="mt-2 h-2 w-2 shrink-0 rounded-full bg-blue-600" role="img" aria-label="Unread" /> : null}
                 </Link>

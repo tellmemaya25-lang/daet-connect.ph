@@ -118,7 +118,7 @@ export default async function OperatorPackagesPage({
         )}
 
         {!packages || packages.length === 0 ? (
-          <section className="mt-8 rounded-2xl bg-white px-6 py-14 text-center">
+          <section className="mt-8 rounded-2xl bg-surface px-6 py-14 text-center">
             <span
               className="mx-auto grid h-14 w-14 place-items-center rounded-2xl bg-daet-sand text-2xl"
               aria-hidden="true"
@@ -141,7 +141,7 @@ export default async function OperatorPackagesPage({
             {packages.map((pkg) => (
               <article
                 key={pkg.id}
-                className="overflow-hidden rounded-2xl bg-white transition"
+                className="overflow-hidden rounded-2xl bg-surface transition"
               >
                 {/* Cover Image */}
                 <div className="relative aspect-video overflow-hidden bg-gradient-to-br from-daet-forest to-daet-leaf">
@@ -163,11 +163,11 @@ export default async function OperatorPackagesPage({
                     <span
                       className={`rounded-full px-3 py-1 text-xs font-bold ${
                         pkg.status === "published"
-                          ? "bg-green-100 text-green-800"
+                          ? "bg-green-100 dark:bg-green-900/40 text-green-800 dark:text-green-300"
                           : pkg.status === "pending_review"
-                            ? "bg-yellow-100 text-yellow-900"
+                            ? "bg-yellow-100 dark:bg-yellow-900/40 text-yellow-900 dark:text-yellow-200"
                             : pkg.status === "archived"
-                              ? "bg-slate-100 text-slate-800"
+                              ? "bg-muted text-slate-800 dark:text-slate-100"
                               : "bg-daet-sand text-daet-ink/70"
                       }`}
                     >
@@ -181,12 +181,12 @@ export default async function OperatorPackagesPage({
                     </span>
                   </div>
                   <p className="mt-2 text-sm text-daet-ink/70"><LineIcon name="pin" className="inline-block h-[1.1em] w-[1.1em] align-[-0.15em]" /> {pkg.location_name}</p>
-                  <p className="mt-1 text-sm text-slate-600">
+                  <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
                     Updated {new Date(pkg.updated_at).toLocaleDateString()}
                   </p>
                   <Link
                     href={`/tours/operator/packages/${pkg.id}`}
-                    className="mt-4 inline-flex min-h-10 w-full items-center justify-center rounded-full bg-daet-forest/10 text-sm font-bold text-daet-leaf transition hover:bg-daet-forest/20"
+                    className="mt-4 inline-flex min-h-10 w-full items-center justify-center rounded-full bg-daet-forest/10 text-sm font-bold text-daet-leaf dark:text-blue-300 transition hover:bg-daet-forest/20"
                   >
                     View details →
                   </Link>

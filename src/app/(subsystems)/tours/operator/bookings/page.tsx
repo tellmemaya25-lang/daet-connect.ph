@@ -223,8 +223,8 @@ export default async function OperatorBookingsPage({
   const statusColors: Record<string, string> = {
     pending: "bg-yellow-500 text-slate-950",
     confirmed: "bg-green-500 text-slate-950",
-    cancelled: "bg-slate-200 text-slate-900",
-    completed: "bg-blue-100 text-blue-900",
+    cancelled: "bg-muted-strong text-slate-900 dark:text-slate-100",
+    completed: "bg-blue-100 dark:bg-blue-900/40 text-blue-900 dark:text-blue-300",
     rejected: "bg-red-600 text-white",
   };
 
@@ -273,10 +273,10 @@ export default async function OperatorBookingsPage({
                   <Link
                     href={`/tours/operator/bookings?status=${value}`}
                     aria-current={active ? "page" : undefined}
-                    className={`inline-flex min-h-11 items-center gap-2 rounded-full px-4 text-[15px] font-bold transition active:scale-[0.98] ${active ? "bg-blue-600 text-white" : "bg-white text-daet-ink hover:bg-blue-50"}`}
+                    className={`inline-flex min-h-11 items-center gap-2 rounded-full px-4 text-[15px] font-bold transition active:scale-[0.98] ${active ? "bg-blue-600 text-white" : "bg-surface text-daet-ink hover:bg-blue-50 dark:hover:bg-blue-950/40"}`}
                   >
                     {label}
-                    <span className={`rounded-full px-2 text-sm ${active ? "bg-white/20" : value === "pending" && count > 0 ? "bg-yellow-500 text-slate-950" : "bg-slate-100"}`}>{count}</span>
+                    <span className={`rounded-full px-2 text-sm ${active ? "bg-white/20" : value === "pending" && count > 0 ? "bg-yellow-500 text-slate-950" : "bg-muted"}`}>{count}</span>
                   </Link>
                 </li>
               );
@@ -302,7 +302,7 @@ export default async function OperatorBookingsPage({
                 <div
                   key={booking.id}
                   id={`booking-${booking.id}`}
-                  className="scroll-mt-6 rounded-2xl bg-white p-6 target:ring-2 target:ring-daet-forest/50"
+                  className="scroll-mt-6 rounded-2xl bg-surface p-6 target:ring-2 target:ring-daet-forest/50"
                 >
                   <div className="flex gap-6">
                     {/* Package Image */}
@@ -322,12 +322,12 @@ export default async function OperatorBookingsPage({
                           <h3 className="text-xl font-bold text-daet-ink">
                             {pkg?.title || "Package"}
                           </h3>
-                          <p className="mt-1 text-sm font-bold text-daet-forest">
+                          <p className="mt-1 text-sm font-bold text-daet-forest dark:text-blue-300">
                             {booking.booking_reference}
                           </p>
                         </div>
                         <span
-                          className={`shrink-0 rounded-full px-3 py-1 text-sm font-bold ${statusColors[booking.status] || "bg-slate-100 text-slate-800"}`}
+                          className={`shrink-0 rounded-full px-3 py-1 text-sm font-bold ${statusColors[booking.status] || "bg-muted text-slate-800 dark:text-slate-100"}`}
                         >
                           {statusLabels[booking.status] || booking.status}
                         </span>
@@ -352,11 +352,11 @@ export default async function OperatorBookingsPage({
                         <div>
                           <p className="text-daet-ink/70">Contact</p>
                           <p className="font-bold text-daet-ink">{booking.contact_name}</p>
-                          <p className="text-sm text-slate-600">{booking.contact_phone}</p>
+                          <p className="text-sm text-slate-600 dark:text-slate-400">{booking.contact_phone}</p>
                         </div>
                         <div>
                           <p className="text-daet-ink/70">Total Amount</p>
-                          <p className="text-lg font-bold text-daet-forest">
+                          <p className="text-lg font-bold text-daet-forest dark:text-blue-300">
                             {formatPeso(booking.total_amount)}
                           </p>
                         </div>
@@ -364,8 +364,8 @@ export default async function OperatorBookingsPage({
 
                       {/* Special Requests */}
                       {booking.special_requests && (
-                        <div className="mb-4 rounded-2xl bg-slate-50 p-3">
-                          <p className="text-sm text-slate-600">Special Requests:</p>
+                        <div className="mb-4 rounded-2xl bg-canvas p-3">
+                          <p className="text-sm text-slate-600 dark:text-slate-400">Special Requests:</p>
                           <p className="mt-1 text-sm text-daet-ink">{booking.special_requests}</p>
                         </div>
                       )}
@@ -373,8 +373,8 @@ export default async function OperatorBookingsPage({
                       {/* Guide Assignment - Show for confirmed bookings */}
                       {booking.status === "confirmed" && (
                         <>
-                          <div className="mb-4 rounded-2xl bg-slate-50 p-4">
-                            <p className="mb-3 text-sm text-slate-600">
+                          <div className="mb-4 rounded-2xl bg-canvas p-4">
+                            <p className="mb-3 text-sm text-slate-600 dark:text-slate-400">
                               Guide Assignment
                             </p>
                             {swapByBooking.get(booking.id) ? (
@@ -405,7 +405,7 @@ export default async function OperatorBookingsPage({
                       )}
 
                       {(booking.status === "cancelled" || booking.status === "rejected") && booking.cancellation_reason ? (
-                        <p className="mb-4 rounded-2xl bg-slate-50 p-3 text-sm text-daet-ink">
+                        <p className="mb-4 rounded-2xl bg-canvas p-3 text-sm text-daet-ink">
                           <span className="font-bold">{booking.status === "cancelled" ? "Cancellation reason" : "Declined because"}:</span>{" "}
                           {booking.cancellation_reason}
                         </p>

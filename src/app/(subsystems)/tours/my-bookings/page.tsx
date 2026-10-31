@@ -144,8 +144,8 @@ function BookingRow({ booking: b, today, quiet = false }: { booking: Row; today:
   const owes = b.status === "confirmed" && b.payment_status !== "paid" && b.payment_status !== "refunded";
 
   return (
-    <li className="grid grid-cols-[88px_1fr] gap-4 rounded-2xl bg-white p-3 sm:grid-cols-[160px_1fr] sm:p-4">
-      <div className={`relative aspect-square overflow-hidden rounded-2xl bg-blue-100 sm:aspect-[4/3] ${quiet ? "opacity-80" : ""}`}>
+    <li className="grid grid-cols-[88px_1fr] gap-4 rounded-2xl bg-surface p-3 sm:grid-cols-[160px_1fr] sm:p-4">
+      <div className={`relative aspect-square overflow-hidden rounded-2xl bg-blue-100 dark:bg-blue-900/40 sm:aspect-[4/3] ${quiet ? "opacity-80" : ""}`}>
         {pkg?.cover_image_url ? (
           <img src={pkg.cover_image_url} alt="" className="h-full w-full object-cover" loading="lazy" />
         ) : (
@@ -157,13 +157,13 @@ function BookingRow({ booking: b, today, quiet = false }: { booking: Row; today:
           <Badge tone={status.tone}>{status.label}</Badge>
           {b.status === "confirmed" || b.status === "completed" ? <Badge tone={pay.tone}>{pay.label}</Badge> : null}
         </div>
-        <Link href={`/tours/bookings/${b.id}`} className="mt-1 block text-lg font-bold leading-snug text-daet-ink hover:text-blue-700 sm:text-xl">
+        <Link href={`/tours/bookings/${b.id}`} className="mt-1 block text-lg font-bold leading-snug text-daet-ink hover:text-blue-700 dark:hover:text-blue-300 sm:text-xl">
           {pkg?.title ?? "Tour"}
         </Link>
         <p className="mt-1 text-daet-ink">
-          {b.tour_date === today ? <strong className="text-blue-700">Today</strong> : longDate(b.tour_date)} · {b.number_of_pax} guest{b.number_of_pax === 1 ? "" : "s"}
+          {b.tour_date === today ? <strong className="text-blue-700 dark:text-blue-300">Today</strong> : longDate(b.tour_date)} · {b.number_of_pax} guest{b.number_of_pax === 1 ? "" : "s"}
         </p>
-        <p className="text-sm text-slate-600">
+        <p className="text-sm text-slate-600 dark:text-slate-400">
           Ref {b.booking_reference} · {formatPeso(b.total_amount)}
         </p>
         <div className="mt-3 flex flex-wrap gap-2">

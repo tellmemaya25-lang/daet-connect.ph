@@ -115,18 +115,18 @@ export function BookingPaymentPanel({
         </Notice>
       ) : null}
 
-      <dl className="grid grid-cols-3 gap-2 rounded-2xl bg-slate-50 p-4 text-center">
+      <dl className="grid grid-cols-3 gap-2 rounded-2xl bg-canvas p-4 text-center">
         <div>
-          <dt className="text-sm text-slate-600">Total</dt>
+          <dt className="text-sm text-slate-600 dark:text-slate-400">Total</dt>
           <dd className="mt-1 font-bold text-daet-ink">{peso(Number(booking.total_amount))}</dd>
         </div>
         <div>
-          <dt className="text-sm text-slate-600">Paid</dt>
-          <dd className="mt-1 font-bold text-green-700">{peso(Number(booking.total_paid ?? 0))}</dd>
+          <dt className="text-sm text-slate-600 dark:text-slate-400">Paid</dt>
+          <dd className="mt-1 font-bold text-green-700 dark:text-green-300">{peso(Number(booking.total_paid ?? 0))}</dd>
         </div>
         <div>
-          <dt className="text-sm text-slate-600">Balance</dt>
-          <dd className="mt-1 font-bold text-daet-forest">{peso(remaining)}</dd>
+          <dt className="text-sm text-slate-600 dark:text-slate-400">Balance</dt>
+          <dd className="mt-1 font-bold text-daet-forest dark:text-blue-300">{peso(remaining)}</dd>
         </div>
       </dl>
 
@@ -142,7 +142,7 @@ export function BookingPaymentPanel({
             <OnlinePayButton bookingId={booking.id} amountLabel={peso(payable.amountPesos)} />
           ) : null}
 
-          <details className="group rounded-2xl bg-slate-50 p-4" open={!onlinePaymentEnabled}>
+          <details className="group rounded-2xl bg-canvas p-4" open={!onlinePaymentEnabled}>
             <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between gap-3 font-bold text-daet-ink">
               {onlinePaymentEnabled ? "Paid the operator directly? Upload your receipt" : "Pay the operator and upload your receipt"}
               <span className="transition group-open:rotate-180" aria-hidden="true">⌄</span>
@@ -186,7 +186,7 @@ export function BookingPaymentPanel({
                     Ref {proof.reference_number} · sent {date(proof.submitted_at)}
                   </p>
                   {proof.verification_status === "rejected" && proof.rejection_reason ? (
-                    <p className="mt-1 rounded-2xl bg-red-50 px-3 py-2 text-red-900">Operator&apos;s note: {proof.rejection_reason}</p>
+                    <p className="mt-1 rounded-2xl bg-red-50 dark:bg-red-950/40 px-3 py-2 text-red-900 dark:text-red-300">Operator&apos;s note: {proof.rejection_reason}</p>
                   ) : null}
                 </li>
               );
@@ -210,7 +210,7 @@ export function BookingPaymentPanel({
                     {payment.reference_number ? ` · Ref ${payment.reference_number}` : ""}
                   </p>
                 </div>
-                <span className={`shrink-0 font-bold ${payment.payment_status === "refunded" ? "text-daet-ink/70 line-through" : "text-green-700"}`}>
+                <span className={`shrink-0 font-bold ${payment.payment_status === "refunded" ? "text-daet-ink/70 line-through" : "text-green-700 dark:text-green-300"}`}>
                   {peso(Number(payment.amount))}
                 </span>
               </li>

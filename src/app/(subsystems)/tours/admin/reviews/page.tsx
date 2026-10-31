@@ -51,7 +51,7 @@ export default async function AdminReviewsPage({ searchParams }: { searchParams:
             key={tab.key}
             href={tab.key === "all" ? "/tours/admin/reviews" : `/tours/admin/reviews?show=${tab.key}`}
             aria-current={filter === tab.key ? "page" : undefined}
-            className={`inline-flex min-h-11 items-center rounded-full px-5 text-sm font-bold ${filter === tab.key ? "bg-daet-forest text-white" : "border border-daet-ink/15 bg-white text-daet-ink hover:bg-daet-sand"}`}
+            className={`inline-flex min-h-11 items-center rounded-full px-5 text-sm font-bold ${filter === tab.key ? "bg-daet-forest text-white" : "border border-daet-ink/15 bg-surface text-daet-ink hover:bg-daet-sand"}`}
           >
             {tab.label}
           </Link>
@@ -69,13 +69,13 @@ export default async function AdminReviewsPage({ searchParams }: { searchParams:
             const operator = Array.isArray(review.tours_operators) ? review.tours_operators[0] : review.tours_operators;
             return (
               <li key={review.id}>
-                <Card className={review.is_hidden ? "border-red-200 bg-red-50/40" : ""}>
+                <Card className={review.is_hidden ? "border-red-200 dark:border-red-700 bg-red-50/40 dark:bg-red-950/40" : ""}>
                   <div className="flex flex-wrap items-start justify-between gap-2">
                     <div>
                       <Link href={`/tours/packages/${review.package_id}#reviews`} className="font-bold text-daet-ink hover:underline">
                         {pkg?.title ?? "Tour"}
                       </Link>
-                      <p className="text-sm text-slate-600">
+                      <p className="text-sm text-slate-600 dark:text-slate-400">
                         {operator?.business_name} · {date(review.created_at)}
                       </p>
                     </div>
@@ -90,7 +90,7 @@ export default async function AdminReviewsPage({ searchParams }: { searchParams:
                       <span className="font-bold">Operator reply:</span> {review.operator_reply}
                     </p>
                   ) : null}
-                  {review.is_hidden && review.hidden_reason ? <p className="mt-2 text-xs font-bold text-red-700">Reason: {review.hidden_reason}</p> : null}
+                  {review.is_hidden && review.hidden_reason ? <p className="mt-2 text-xs font-bold text-red-700 dark:text-red-300">Reason: {review.hidden_reason}</p> : null}
                   <div className="mt-3">
                     <ModerateForm reviewId={review.id} hidden={review.is_hidden} />
                   </div>

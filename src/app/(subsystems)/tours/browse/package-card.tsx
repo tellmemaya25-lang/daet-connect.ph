@@ -33,9 +33,9 @@ export function PackageCard({ package: pkg, rating = null }: PackageCardProps) {
   const fallback = PHOTOS[placePhoto(pkg.title, pkg.location_name)];
 
   return (
-    <article className="group h-full overflow-hidden rounded-2xl bg-white transition active:scale-[0.99]">
+    <article className="group h-full overflow-hidden rounded-2xl bg-surface transition active:scale-[0.99]">
       <Link href={`/tours/packages/${pkg.id}`} className="flex h-full flex-col">
-        <div className="relative aspect-[4/3] overflow-hidden bg-blue-100">
+        <div className="relative aspect-[4/3] overflow-hidden bg-blue-100 dark:bg-blue-900/40">
           {pkg.cover_image_url ? (
             <img
               src={pkg.cover_image_url}
@@ -55,7 +55,7 @@ export function PackageCard({ package: pkg, rating = null }: PackageCardProps) {
           )}
         </div>
         <div className="flex flex-1 flex-col p-4 sm:p-5">
-          <h2 className="font-sans text-xl font-bold leading-snug tracking-normal text-daet-ink group-hover:text-blue-700">{pkg.title}</h2>
+          <h2 className="font-sans text-xl font-bold leading-snug tracking-normal text-daet-ink group-hover:text-blue-700 dark:group-hover:text-blue-300">{pkg.title}</h2>
           <p className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-daet-ink/80">
             <span className="inline-flex items-center gap-1">
               <LineIcon name="pin" className="h-4 w-4" /> {pkg.location_name}

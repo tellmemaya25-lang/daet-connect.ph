@@ -23,7 +23,7 @@ export default async function HelpPage() {
         <p className="mt-3 text-lg leading-relaxed text-daet-ink">
           Ask about tours, open dates and prices, places and events, how to pay or cancel, or your own bookings. The assistant only reads; you make bookings and payments yourself. For anything it can&apos;t answer, it passes you to the operator or the Daet Tourism Office.
         </p>
-        <div className="mt-6 flex h-[70dvh] min-h-[28rem] flex-col overflow-hidden rounded-2xl bg-white">
+        <div className="mt-6 flex h-[70dvh] min-h-[28rem] flex-col overflow-hidden rounded-2xl bg-surface">
           <AssistantChat signedIn={signedIn} />
         </div>
       </div>
