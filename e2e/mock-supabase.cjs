@@ -9,15 +9,22 @@ const crypto = require("node:crypto");
  */
 const http = require("http");
 const PORT = Number(process.env.MOCK_SUPABASE_PORT || 54329);
+// MOCK_COVERS=1 gives packages cover photos, as real tours have (layout audits).
+const COVER = process.env.MOCK_COVERS === "1" ? "/photos/bagasbas-beach.jpg" : null;
 const TODAY = new Date(Date.now() + 8 * 3600 * 1000).toISOString().slice(0, 10);
 
 const CONV_ID = "cc110000-0000-4000-8000-000000000001";
+
+// Live tour tracking keeps state across requests (POST /__reset_live clears it).
+const LIVE_BID = "e9466de5-4877-47c1-ac14-d86deeb38b9e";
+const freshLive = () => ({ session: null, positions: [], consents: [], flares: [] });
+let live = freshLive();
 
 function build(role) {
 const BID = "e9466de5-4877-47c1-ac14-d86deeb38b9e";
   const operator = { id: "op-1", profile_id: "9b7e5a5e-0000-4000-8000-000000000001", business_name: "Bagasbas Coast Tours", accreditation_status: "approved", accreditation_notes: null, contact_phone: "0917 555 0101", gcash_number: "0917 555 0101", gcash_name: "Maya Santos", bank_name: "BPI", bank_account_number: "1234-5678-90", bank_account_name: "Bagasbas Coast Tours", payment_instructions: "Please include your booking reference in the notes.", created_at: "2026-01-01T00:00:00Z" };
   const PKG = "aa000000-0000-4000-8000-000000000001";
-  const pkg = { id: PKG, status: "published", description: "Learn to surf at sunrise.", tours_package_price_variants: [{ id: "v1", variant_name: "Standard", price_per_pax: 466, flat_price: null, min_pax: 1, max_pax: 8, is_default: true }], title: "Bagasbas Sunrise Surf Lesson", location_name: "Bagasbas Beach", duration_value: 3, duration_type: "hours", cover_image_url: null, operator_id: "op-1", tours_operators: operator };
+  const pkg = { id: PKG, status: "published", description: "Learn to surf at sunrise.", tours_package_price_variants: [{ id: "v1", variant_name: "Standard", price_per_pax: 466, flat_price: null, min_pax: 1, max_pax: 8, is_default: true }], title: "Bagasbas Sunrise Surf Lesson", location_name: "Bagasbas Beach", duration_value: 3, duration_type: "hours", cover_image_url: COVER, operator_id: "op-1", tours_operators: operator };
   const booking = { id: BID, package_id: PKG, user_id: "9b7e5a5e-0000-4000-8000-000000000001", booking_reference: "BK-20261023-7F3K2Q", tour_date: TODAY, number_of_pax: 3, price_per_pax: 466, total_amount: 1398, total_paid: 500, payment_status: "partial", status: "confirmed", contact_name: "Juan Dela Cruz", contact_email: "juan@example.ph", contact_phone: "0918 222 3344", special_requests: null, assigned_guide_id: null, created_at: "2026-10-20T03:00:00Z", tours_packages: pkg };
   const payments = [
     { id: "pay-a", booking_id: BID, amount: 500, payment_method: "gcash", provider: "paymongo", provider_method: "gcash", reference_number: "BK-20261023-7F3K2Q", payment_date: "2026-10-21T02:15:00Z", payment_status: "completed", notes: "PayMongo checkout cs_abc", tours_bookings: { booking_reference: "BK-20261023-7F3K2Q", contact_name: "Juan Dela Cruz", tours_packages: pkg } },
@@ -36,6 +43,8 @@ const BID = "e9466de5-4877-47c1-ac14-d86deeb38b9e";
     { id: "a1000000-0000-4000-8000-000000000004", package_id: PKG, available_date: "2026-11-15", capacity_total: 6, capacity_booked: 2 },
   ];
   const cancellations = role === "operator" ? [{ id: "cc000000-0000-4000-8000-000000000001", booking_id: BID, reason: "My flight to Naga was moved to the next day.", requested_at: "2026-11-05T22:00:00Z", status: "requested", admin_notes: null }] : [];
+  // The tourist's tour today has a guide, so "Find your guide" shows.
+  if (role === "tourist") booking.assigned_guide_id = "f66b1fe2-a997-4c0b-be13-22d62cf0dba6";
   if (role === "guide") { booking.user_id = "other-tourist"; booking.assigned_guide_id = "f66b1fe2-a997-4c0b-be13-22d62cf0dba6"; booking.tours_checkins = []; }
   const guides = [{ id: "f66b1fe2-a997-4c0b-be13-22d62cf0dba6", profile_id: "9b7e5a5e-0000-4000-8000-000000000001", accreditation_status: "approved", reviewed_at: "2026-10-16T13:18:25Z", updated_at: "2026-10-16T13:18:25Z", created_at: "2026-10-01T00:00:00Z", accreditation_notes: null }];
   const participants = [
@@ -183,6 +192,11 @@ const BID = "e9466de5-4877-47c1-ac14-d86deeb38b9e";
     // The operator loved their own pickup reply; the tourist can react too.
     tours_message_reactions: [{ message_id: "dd110000-0000-4000-8000-000000000002", profile_id: OPP, conversation_id: CONV, reaction: "love" }],
     tours_booking_participants: participants, tours_checkins: checkins,
+    tours_package_stops: pkg.tours_package_stops,
+    tours_live_sessions: live.session ? [live.session] : [],
+    tours_live_positions: role === "tourist" ? live.positions.filter((p) => p.role === "guide" || p.profile_id === "tourist") : live.positions,
+    tours_live_consents: live.consents,
+    tours_live_flares: live.flares,
     tours_bookings: role === "operator" ? [booking, later, pendingB, cancelled] : [booking, later, pendingB, doneB], tours_packages: [pkg], tours_package_availability: availability, _event_availability: eventAvailability, tours_cancellations: cancellations, tours_payments: payments, tours_payment_proofs: proofs, tours_operators: [operator],
     tours_guides: guides, profiles: [{ id: "9b7e5a5e-0000-4000-8000-000000000001", role, full_name: "Juan Dela Cruz" }],
     tours_events: events, tours_merchandise: role === "operator" ? merch.filter((m) => m.submitted_by_operator_id) : merch,
@@ -229,7 +243,56 @@ http.createServer((req, res) => {
     if (url.pathname === "/rest/v1/rpc/tours_request_guide_swap") return send(200, "5a000000-0000-4000-8000-000000000009");
     if (url.pathname === "/rest/v1/rpc/tours_decide_guide_swap" || url.pathname === "/rest/v1/rpc/tours_cancel_guide_swap") return send(200, null);
     if (url.pathname === "/rest/v1/rpc/tours_badge_lookup") return send(200, [{ status: "approved", full_name: "Jeremiah Sabihon", photo_url: null, approved_at: "2026-10-16T13:18:25Z" }]);
+    if (url.pathname === "/__reset_live") { live = freshLive(); return send(200, { ok: true }); }
+    if (url.pathname.startsWith("/rest/v1/rpc/tours_live_")) {
+      let args = {};
+      try { args = JSON.parse(body || "{}"); } catch { args = {}; }
+      const now = Date.now();
+      const iso = (ms) => new Date(ms).toISOString();
+      const name = url.pathname.slice("/rest/v1/rpc/".length);
+      const me = role === "guide" ? "guide" : "tourist";
+      const isLive = live.session && !live.session.ended_at;
+      if (name === "tours_live_window") return send(200, { opens: iso(now - 3600e3), closes: iso(now + 5 * 3600e3), trip_opens: iso(now - 25 * 3600e3) });
+      if (name === "tours_live_start") {
+        if (role !== "guide") return send(403, { code: "42501", message: "Only the guide assigned to this tour can start live sharing." });
+        live.session = { booking_id: LIVE_BID, guide_id: "f66b1fe2-a997-4c0b-be13-22d62cf0dba6", started_at: iso(now), ended_at: null, stops_reached: 0 };
+        return send(200, live.session);
+      }
+      if (name === "tours_live_reach_stop") { if (live.session) live.session.stops_reached = args.p_stops_reached; return send(200, live.session); }
+      if (name === "tours_live_end") { if (live.session) live.session.ended_at = iso(now); live.positions = []; live.flares = []; return send(200, null); }
+      if (name === "tours_live_set_consent") {
+        live.consents = [{ booking_id: LIVE_BID, profile_id: "tourist", share_trip: Boolean(args.p_share_trip), share_tour: Boolean(args.p_share_tour), updated_at: iso(now) }];
+        live.positions = live.positions.filter((p) => p.role === "guide" || (p.precision === "town" ? args.p_share_trip : args.p_share_tour));
+        return send(200, live.consents[0]);
+      }
+      if (name === "tours_live_ping") {
+        const consent = live.consents[0];
+        let precision = "exact";
+        let lat = args.p_lat, lng = args.p_lng, place = null;
+        if (me === "guide" && !isLive) return send(200, { stored: false, reason: "not_live" });
+        if (me === "tourist") {
+          if (isLive && consent?.share_tour) precision = "exact";
+          else if (!isLive && consent?.share_trip) { precision = "town"; lat = 13.921; lng = 122.1002; place = "Gumaca"; }
+          else return send(200, { stored: false, reason: "no_consent" });
+        }
+        live.positions = live.positions.filter((p) => p.profile_id !== me);
+        live.positions.push({ booking_id: LIVE_BID, profile_id: me, role: me, lat, lng, accuracy_m: precision === "town" ? null : args.p_accuracy_m ?? null, precision, place_name: place, updated_at: iso(now) });
+        return send(200, { stored: true, reason: "ok", precision, place_name: place });
+      }
+      if (name === "tours_live_flare") {
+        const flare = { id: crypto.randomUUID(), booking_id: LIVE_BID, profile_id: "tourist", lat: args.p_lat, lng: args.p_lng, accuracy_m: args.p_accuracy_m ?? null, created_at: iso(now), resolved_at: null, resolved_by: null };
+        live.flares.unshift(flare);
+        return send(200, flare);
+      }
+      if (name === "tours_live_resolve_flare") { live.flares = live.flares.filter((f) => f.id !== args.p_flare_id); return send(200, null); }
+      return send(404, { message: "unknown live rpc" });
+    }
     const table = url.pathname.replace("/rest/v1/", "");
+    // Like PostgREST: guides and operators link to profiles twice (profile_id,
+    // reviewed_by), so an embed that doesn't name its foreign key is refused.
+    if ((table === "tours_guides" || table === "tours_operators") && /(^|[,(\s])profiles\s*\(/.test(url.searchParams.get("select") || "")) {
+      return send(300, { code: "PGRST201", message: `Could not embed because more than one relationship was found for '${table}' and 'profiles'` });
+    }
     // The event page asks for availability joined to packages.
     const wantsEventJoin = table === "tours_package_availability" && (url.searchParams.get("select") || "").includes("tours_packages");
     let rows = (wantsEventJoin ? tables._event_availability : tables[table]) || [];

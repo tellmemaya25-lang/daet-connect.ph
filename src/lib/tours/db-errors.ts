@@ -7,7 +7,7 @@
 
 type DbError = { code?: string | null; message?: string | null } | null | undefined;
 
-const RAISED_CODES = new Set(["23514", "23505", "42501", "P0001", "P0002"]);
+const RAISED_CODES = new Set(["22023", "23514", "23505", "42501", "P0001", "P0002"]);
 const POSTGRES_WORDING = /^(new row|duplicate key|permission denied|null value|insert or update|update or delete|violates|value too long|invalid input)/i;
 
 export function userFacingDbError(error: DbError, fallback: string): string {

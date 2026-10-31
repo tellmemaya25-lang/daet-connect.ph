@@ -14,7 +14,7 @@ export type NotificationRow = {
 };
 
 /** The kind of line icon each notification type shows (NotificationIcon in components/ui/icons.tsx). */
-export type NotificationKind = "inbox" | "check" | "cancel" | "star" | "return" | "guide" | "money" | "receipt" | "ticket" | "message" | "award" | "note" | "gift" | "bag" | "swap" | "bell";
+export type NotificationKind = "inbox" | "check" | "cancel" | "star" | "return" | "guide" | "money" | "receipt" | "ticket" | "message" | "award" | "note" | "gift" | "bag" | "swap" | "warning" | "bell";
 
 const KINDS: Record<string, NotificationKind> = {
   booking_created: "inbox",
@@ -45,6 +45,8 @@ const KINDS: Record<string, NotificationKind> = {
   guide_swap_requested: "swap",
   guide_swap_approved: "check",
   guide_swap_rejected: "return",
+  live_started: "guide",
+  live_separated: "warning",
 };
 
 export function notificationIcon(type: string): NotificationKind {

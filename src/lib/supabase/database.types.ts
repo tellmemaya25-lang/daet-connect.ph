@@ -155,6 +155,44 @@ export type Database = {
           },
         ]
       }
+      tours_ai_messages: {
+        Row: {
+          cards: Json | null
+          content: string
+          created_at: string
+          id: string
+          mode: string | null
+          profile_id: string
+          role: string
+        }
+        Insert: {
+          cards?: Json | null
+          content: string
+          created_at?: string
+          id?: string
+          mode?: string | null
+          profile_id?: string
+          role: string
+        }
+        Update: {
+          cards?: Json | null
+          content?: string
+          created_at?: string
+          id?: string
+          mode?: string | null
+          profile_id?: string
+          role?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tours_ai_messages_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       tours_attractions: {
         Row: {
           address: string | null
@@ -669,6 +707,74 @@ export type Database = {
           },
         ]
       }
+      tours_fares: {
+        Row: {
+          board_place_id: string | null
+          checked_on: string
+          created_at: string
+          fare_max: number | null
+          fare_min: number | null
+          fare_per: string
+          from_name: string
+          id: string
+          is_active: boolean
+          minutes_max: number | null
+          minutes_min: number | null
+          mode: string
+          schedule_note: string | null
+          source: string
+          to_name: string
+          updated_at: string
+          verified: boolean
+        }
+        Insert: {
+          board_place_id?: string | null
+          checked_on?: string
+          created_at?: string
+          fare_max?: number | null
+          fare_min?: number | null
+          fare_per?: string
+          from_name: string
+          id?: string
+          is_active?: boolean
+          minutes_max?: number | null
+          minutes_min?: number | null
+          mode: string
+          schedule_note?: string | null
+          source: string
+          to_name: string
+          updated_at?: string
+          verified?: boolean
+        }
+        Update: {
+          board_place_id?: string | null
+          checked_on?: string
+          created_at?: string
+          fare_max?: number | null
+          fare_min?: number | null
+          fare_per?: string
+          from_name?: string
+          id?: string
+          is_active?: boolean
+          minutes_max?: number | null
+          minutes_min?: number | null
+          mode?: string
+          schedule_note?: string | null
+          source?: string
+          to_name?: string
+          updated_at?: string
+          verified?: boolean
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tours_fares_board_place_id_fkey"
+            columns: ["board_place_id"]
+            isOneToOne: false
+            referencedRelation: "tours_guide_places"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       tours_guide_availability: {
         Row: {
           available_date: string
@@ -700,6 +806,84 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      tours_guide_places: {
+        Row: {
+          address: string | null
+          checked_on: string
+          created_at: string
+          description: string | null
+          id: string
+          is_active: boolean
+          kind: string
+          latitude: number | null
+          location_verified: boolean
+          longitude: number | null
+          municipality: string
+          name: string
+          opening_hours: Json | null
+          phone: string | null
+          price_max: number | null
+          price_min: number | null
+          price_unit: string | null
+          slug: string
+          source: string
+          specialties: string[]
+          tags: string[]
+          updated_at: string
+          verified: boolean
+        }
+        Insert: {
+          address?: string | null
+          checked_on?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          kind: string
+          latitude?: number | null
+          location_verified?: boolean
+          longitude?: number | null
+          municipality?: string
+          name: string
+          opening_hours?: Json | null
+          phone?: string | null
+          price_max?: number | null
+          price_min?: number | null
+          price_unit?: string | null
+          slug: string
+          source: string
+          specialties?: string[]
+          tags?: string[]
+          updated_at?: string
+          verified?: boolean
+        }
+        Update: {
+          address?: string | null
+          checked_on?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          kind?: string
+          latitude?: number | null
+          location_verified?: boolean
+          longitude?: number | null
+          municipality?: string
+          name?: string
+          opening_hours?: Json | null
+          phone?: string | null
+          price_max?: number | null
+          price_min?: number | null
+          price_unit?: string | null
+          slug?: string
+          source?: string
+          specialties?: string[]
+          tags?: string[]
+          updated_at?: string
+          verified?: boolean
+        }
+        Relationships: []
       }
       tours_guide_sensitive_info: {
         Row: {
@@ -1017,6 +1201,193 @@ export type Database = {
           },
         ]
       }
+      tours_live_consents: {
+        Row: {
+          booking_id: string
+          profile_id: string
+          share_tour: boolean
+          share_trip: boolean
+          updated_at: string
+        }
+        Insert: {
+          booking_id: string
+          profile_id: string
+          share_tour?: boolean
+          share_trip?: boolean
+          updated_at?: string
+        }
+        Update: {
+          booking_id?: string
+          profile_id?: string
+          share_tour?: boolean
+          share_trip?: boolean
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tours_live_consents_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: false
+            referencedRelation: "tours_bookings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tours_live_consents_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tours_live_flares: {
+        Row: {
+          accuracy_m: number | null
+          booking_id: string
+          created_at: string
+          id: string
+          lat: number
+          lng: number
+          profile_id: string
+          resolved_at: string | null
+          resolved_by: string | null
+        }
+        Insert: {
+          accuracy_m?: number | null
+          booking_id: string
+          created_at?: string
+          id?: string
+          lat: number
+          lng: number
+          profile_id: string
+          resolved_at?: string | null
+          resolved_by?: string | null
+        }
+        Update: {
+          accuracy_m?: number | null
+          booking_id?: string
+          created_at?: string
+          id?: string
+          lat?: number
+          lng?: number
+          profile_id?: string
+          resolved_at?: string | null
+          resolved_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tours_live_flares_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: false
+            referencedRelation: "tours_bookings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tours_live_flares_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tours_live_flares_resolved_by_fkey"
+            columns: ["resolved_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tours_live_positions: {
+        Row: {
+          accuracy_m: number | null
+          booking_id: string
+          lat: number
+          lng: number
+          place_name: string | null
+          precision: string
+          profile_id: string
+          role: string
+          updated_at: string
+        }
+        Insert: {
+          accuracy_m?: number | null
+          booking_id: string
+          lat: number
+          lng: number
+          place_name?: string | null
+          precision: string
+          profile_id: string
+          role: string
+          updated_at?: string
+        }
+        Update: {
+          accuracy_m?: number | null
+          booking_id?: string
+          lat?: number
+          lng?: number
+          place_name?: string | null
+          precision?: string
+          profile_id?: string
+          role?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tours_live_positions_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: false
+            referencedRelation: "tours_bookings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tours_live_positions_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tours_live_sessions: {
+        Row: {
+          booking_id: string
+          ended_at: string | null
+          guide_id: string
+          started_at: string
+          stops_reached: number
+        }
+        Insert: {
+          booking_id: string
+          ended_at?: string | null
+          guide_id: string
+          started_at?: string
+          stops_reached?: number
+        }
+        Update: {
+          booking_id?: string
+          ended_at?: string | null
+          guide_id?: string
+          started_at?: string
+          stops_reached?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tours_live_sessions_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: true
+            referencedRelation: "tours_bookings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tours_live_sessions_guide_id_fkey"
+            columns: ["guide_id"]
+            isOneToOne: false
+            referencedRelation: "tours_guides"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       tours_merchandise: {
         Row: {
           category: string
@@ -1095,6 +1466,52 @@ export type Database = {
           },
         ]
       }
+      tours_message_reactions: {
+        Row: {
+          conversation_id: string
+          created_at: string
+          message_id: string
+          profile_id: string
+          reaction: string
+        }
+        Insert: {
+          conversation_id: string
+          created_at?: string
+          message_id: string
+          profile_id?: string
+          reaction: string
+        }
+        Update: {
+          conversation_id?: string
+          created_at?: string
+          message_id?: string
+          profile_id?: string
+          reaction?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tours_message_reactions_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "tours_conversations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tours_message_reactions_message_id_fkey"
+            columns: ["message_id"]
+            isOneToOne: false
+            referencedRelation: "tours_messages"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tours_message_reactions_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       tours_messages: {
         Row: {
           attachment_url: string | null
@@ -1103,6 +1520,7 @@ export type Database = {
           id: string
           is_read: boolean
           message_text: string | null
+          reply_to_id: string | null
           sender_id: string
         }
         Insert: {
@@ -1112,6 +1530,7 @@ export type Database = {
           id?: string
           is_read?: boolean
           message_text?: string | null
+          reply_to_id?: string | null
           sender_id?: string
         }
         Update: {
@@ -1121,6 +1540,7 @@ export type Database = {
           id?: string
           is_read?: boolean
           message_text?: string | null
+          reply_to_id?: string | null
           sender_id?: string
         }
         Relationships: [
@@ -1129,6 +1549,13 @@ export type Database = {
             columns: ["conversation_id"]
             isOneToOne: false
             referencedRelation: "tours_conversations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tours_messages_reply_to_id_fkey"
+            columns: ["reply_to_id"]
+            isOneToOne: false
+            referencedRelation: "tours_messages"
             referencedColumns: ["id"]
           },
           {
@@ -1392,6 +1819,7 @@ export type Database = {
       tours_package_inclusions: {
         Row: {
           created_at: string | null
+          display_order: number
           id: string
           is_included: boolean
           item_text: string
@@ -1399,6 +1827,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string | null
+          display_order: number
           id?: string
           is_included?: boolean
           item_text: string
@@ -1406,6 +1835,7 @@ export type Database = {
         }
         Update: {
           created_at?: string | null
+          display_order?: number
           id?: string
           is_included?: boolean
           item_text?: string
@@ -1522,6 +1952,10 @@ export type Database = {
           id: string
           inclusions: string[] | null
           location_name: string
+          meeting_lat: number | null
+          meeting_lng: number | null
+          meeting_point_name: string | null
+          meeting_time: string | null
           operator_id: string
           rejection_reason: string | null
           status: Database["public"]["Enums"]["package_status"]
@@ -1540,6 +1974,10 @@ export type Database = {
           id?: string
           inclusions?: string[] | null
           location_name: string
+          meeting_lat?: number | null
+          meeting_lng?: number | null
+          meeting_point_name?: string | null
+          meeting_time?: string | null
           operator_id: string
           rejection_reason?: string | null
           status?: Database["public"]["Enums"]["package_status"]
@@ -1558,6 +1996,10 @@ export type Database = {
           id?: string
           inclusions?: string[] | null
           location_name?: string
+          meeting_lat?: number | null
+          meeting_lng?: number | null
+          meeting_point_name?: string | null
+          meeting_time?: string | null
           operator_id?: string
           rejection_reason?: string | null
           status?: Database["public"]["Enums"]["package_status"]
@@ -1988,6 +2430,13 @@ export type Database = {
       }
     }
     Functions: {
+      concurrency_check: {
+        Args: { p_cached_updated_at: string; p_package_id: string }
+        Returns: {
+          current_updated_at: string
+          has_conflict: boolean
+        }[]
+      }
       generate_booking_reference: { Args: never; Returns: string }
       get_my_role: { Args: never; Returns: string }
       replace_package_price_variants: {
@@ -2074,6 +2523,13 @@ export type Database = {
         Args: { p_conversation_id: string }
         Returns: Json
       }
+      tours_conversation_read_marks: {
+        Args: { p_conversation_id: string }
+        Returns: {
+          last_read_at: string
+          profile_id: string
+        }[]
+      }
       tours_count_booked_seats: {
         Args: { p_date: string; p_package_id: string }
         Returns: number
@@ -2138,6 +2594,116 @@ export type Database = {
         Args: { p_operator_id: string }
         Returns: boolean
       }
+      tours_live_can_watch: { Args: { p_booking_id: string }; Returns: boolean }
+      tours_live_distance_m: {
+        Args: { lat1: number; lat2: number; lng1: number; lng2: number }
+        Returns: number
+      }
+      tours_live_end: { Args: { p_booking_id: string }; Returns: undefined }
+      tours_live_expire: { Args: { p_booking_id: string }; Returns: boolean }
+      tours_live_flare: {
+        Args: {
+          p_accuracy_m?: number
+          p_booking_id: string
+          p_lat: number
+          p_lng: number
+        }
+        Returns: {
+          accuracy_m: number | null
+          booking_id: string
+          created_at: string
+          id: string
+          lat: number
+          lng: number
+          profile_id: string
+          resolved_at: string | null
+          resolved_by: string | null
+        }
+        SetofOptions: {
+          from: "*"
+          to: "tours_live_flares"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      tours_live_ping: {
+        Args: {
+          p_accuracy_m?: number
+          p_booking_id: string
+          p_lat: number
+          p_lng: number
+        }
+        Returns: Json
+      }
+      tours_live_reach_stop: {
+        Args: { p_booking_id: string; p_stops_reached: number }
+        Returns: {
+          booking_id: string
+          ended_at: string | null
+          guide_id: string
+          started_at: string
+          stops_reached: number
+        }
+        SetofOptions: {
+          from: "*"
+          to: "tours_live_sessions"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      tours_live_resolve_flare: {
+        Args: { p_flare_id: string }
+        Returns: undefined
+      }
+      tours_live_session_active: {
+        Args: { p_booking_id: string }
+        Returns: boolean
+      }
+      tours_live_set_consent: {
+        Args: {
+          p_booking_id: string
+          p_share_tour: boolean
+          p_share_trip: boolean
+        }
+        Returns: {
+          booking_id: string
+          profile_id: string
+          share_tour: boolean
+          share_trip: boolean
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "tours_live_consents"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      tours_live_snap_town: {
+        Args: { p_lat: number; p_lng: number }
+        Returns: Record<string, unknown>
+      }
+      tours_live_start: {
+        Args: { p_booking_id: string }
+        Returns: {
+          booking_id: string
+          ended_at: string | null
+          guide_id: string
+          started_at: string
+          stops_reached: number
+        }
+        SetofOptions: {
+          from: "*"
+          to: "tours_live_sessions"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      tours_live_sweep: { Args: never; Returns: undefined }
+      tours_live_window: {
+        Args: { p_booking_id: string }
+        Returns: Record<string, unknown>
+      }
       tours_mark_conversation_read: {
         Args: { p_conversation_id: string }
         Returns: undefined
@@ -2174,6 +2740,14 @@ export type Database = {
         Returns: string
       }
       tours_peso: { Args: { p_amount: number }; Returns: string }
+      tours_realtime_conversation_allowed: {
+        Args: { p_topic: string }
+        Returns: boolean
+      }
+      tours_realtime_live_allowed: {
+        Args: { p_topic: string }
+        Returns: boolean
+      }
       tours_record_refund: {
         Args: {
           p_amount: number
@@ -2203,6 +2777,16 @@ export type Database = {
         Args: { p_approve: boolean; p_cancellation_id: string; p_notes: string }
         Returns: string
       }
+      tours_set_meeting_point: {
+        Args: {
+          p_lat: number
+          p_lng: number
+          p_name: string
+          p_package_id: string
+          p_time: string
+        }
+        Returns: undefined
+      }
       tours_set_review_hidden: {
         Args: { p_hidden: boolean; p_reason: string; p_review_id: string }
         Returns: undefined
@@ -2211,6 +2795,23 @@ export type Database = {
       tours_submit_review: {
         Args: { p_booking_id: string; p_comment: string; p_rating: number }
         Returns: string
+      }
+      update_package_and_relations: {
+        Args: {
+          p_expected_updated_at?: string
+          p_gallery: Json
+          p_inclusions: Json
+          p_package_data: Json
+          p_package_id: string
+          p_price_variants: Json
+          p_stops: Json
+          p_submit_for_review?: boolean
+        }
+        Returns: {
+          new_status: string
+          new_updated_at: string
+          success: boolean
+        }[]
       }
     }
     Enums: {
