@@ -31,7 +31,8 @@ type StyleProps = { variant?: ButtonVariant; size?: ButtonSize; fullWidth?: bool
 
 export function buttonClasses({ variant = "primary", size = "md", fullWidth = false }: StyleProps = {}): string {
   return cn(
-    "inline-flex items-center justify-center gap-2 rounded-full font-bold transition-[background-color,transform] active:scale-[0.98]",
+    // Tailwind's scale-* sets the `scale` property, so that is what transitions.
+    "inline-flex items-center justify-center gap-2 rounded-full font-bold transition-[background-color,color,scale] duration-150 ease-out active:scale-[0.97]",
     "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600/50 focus-visible:ring-offset-2",
     "disabled:cursor-not-allowed disabled:opacity-60",
     VARIANTS[variant],

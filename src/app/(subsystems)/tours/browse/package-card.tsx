@@ -33,7 +33,7 @@ export function PackageCard({ package: pkg, rating = null }: PackageCardProps) {
   const fallback = PHOTOS[placePhoto(pkg.title, pkg.location_name)];
 
   return (
-    <article className="group h-full overflow-hidden rounded-2xl bg-surface transition active:scale-[0.99]">
+    <article className="hover-lift group h-full overflow-hidden rounded-2xl bg-surface active:scale-[0.99]">
       <Link href={`/tours/packages/${pkg.id}`} className="flex h-full flex-col">
         <div className="relative aspect-[4/3] overflow-hidden bg-blue-100 dark:bg-blue-900/40">
           {pkg.cover_image_url ? (
@@ -42,7 +42,7 @@ export function PackageCard({ package: pkg, rating = null }: PackageCardProps) {
               alt={pkg.title}
               loading="lazy"
               decoding="async"
-              className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
+              className="hover-zoom h-full w-full object-cover"
             />
           ) : (
             <Image
@@ -50,7 +50,7 @@ export function PackageCard({ package: pkg, rating = null }: PackageCardProps) {
               alt={`${pkg.location_name}: ${fallback.alt}`}
               fill
               sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
-              className="object-cover transition duration-500 group-hover:scale-105"
+              className="hover-zoom object-cover"
             />
           )}
         </div>

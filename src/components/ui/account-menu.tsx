@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { useUnreadChats } from "@/components/chat/unread-badge";
 import { LogoutButton } from "@/components/ui/logout-button";
 import { DarkModeSwitch } from "@/components/ui/theme-toggle";
+import { useDragDismiss } from "@/components/ui/use-drag-dismiss";
 import { usePopover } from "@/components/ui/use-popover";
 
 export type AccountLink = { href: string; label: string };
@@ -35,10 +36,12 @@ function Avatar({ initial, unread, small = false, ring = false }: { initial: str
  * Sign out. `tab` is the phone version, the last tab of the bottom bar.
  */
 export function AccountMenu({ initial, name, links, variant = "header" }: { initial: string; name: string; links: AccountLink[]; variant?: "header" | "tab" }) {
-  const { open, toggle, rootRef, buttonRef } = usePopover(`account-${variant}`);
+  const { open, setOpen, toggle, rootRef, buttonRef } = usePopover(`account-${variant}`);
   const unread = useUnreadChats();
   const pathname = usePathname() ?? "";
   const tab = variant === "tab";
+  // On phones the sheet can be swiped down to close.
+  const { sheetRef } = useDragDismiss<HTMLDivElement>("down", () => setOpen(false), open && tab);
 
   return (
     <div ref={rootRef} className={tab ? "contents" : "relative"}>
@@ -53,8 +56,8 @@ export function AccountMenu({ initial, name, links, variant = "header" }: { init
         onClick={toggle}
         className={
           tab
-            ? `flex min-h-14 w-full flex-col items-center justify-center gap-0.5 text-xs font-bold transition active:scale-95 ${open ? "text-blue-600 dark:text-blue-300" : "text-daet-ink/75 hover:text-daet-ink"}`
-            : "grid h-12 w-12 place-items-center rounded-full hover:bg-muted"
+            ? `flex min-h-14 w-full flex-col items-center justify-center gap-0.5 text-xs font-bold transition-[color,scale] duration-150 ease-out active:scale-95 ${open ? "text-blue-600 dark:text-blue-300" : "text-daet-ink/75 hover:text-daet-ink"}`
+            : "grid h-12 w-12 place-items-center rounded-full transition-[background-color,scale] duration-150 ease-out hover:bg-muted active:scale-95"
         }
       >
         <Avatar initial={initial} unread={unread} small={tab} ring={tab && open} />
@@ -67,15 +70,18 @@ export function AccountMenu({ initial, name, links, variant = "header" }: { init
       </button>
       {open ? (
         <div
+          ref={tab ? sheetRef : undefined}
           id={`account-panel-${variant}`}
           className={
             tab
-              ? "fixed inset-x-4 bottom-[calc(4.25rem+env(safe-area-inset-bottom))] z-50 mx-auto max-w-md"
-              : "absolute right-0 top-full z-50 mt-3 w-[18.75rem]"
+              ? "motion-rise fixed inset-x-4 bottom-[calc(4.25rem+env(safe-area-inset-bottom))] z-50 mx-auto max-w-md touch-none"
+              : // Grows from the avatar.
+                "motion-pop absolute right-0 top-full z-50 mt-3 w-[18.75rem] [--pop-origin:calc(100%-1.5rem)_0]"
           }
         >
           {tab ? null : <span aria-hidden="true" className="absolute -top-1.5 right-4 h-4 w-4 rotate-45 rounded-[3px] bg-surface" />}
           <nav aria-label="Your account" className="relative rounded-2xl bg-surface p-2 shadow-[var(--shadow-float)]">
+            {tab ? <span aria-hidden="true" className="mx-auto mt-1 block h-1.5 w-10 rounded-full bg-muted-strong" /> : null}
             <p className="truncate px-4 pb-1 pt-2 text-sm text-daet-ink/70">{name}</p>
             <ul>
               {links.map((link) => {

@@ -38,6 +38,12 @@
   --color-line: #cbd5e1;
   /* Only for things that float above the page: menus, dialogs, the bottom booking bar. */
   --shadow-float: 0 12px 32px rgba(15, 23, 42, 0.18);
+  /* Motion. Strong curves (the built-in ones are too weak): ease-out for
+     things entering or leaving, ease-in-out for on-screen movement, the
+     drawer curve for sheets. These replace Tailwind's ease-out/ease-in-out. */
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+  --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
   --color-success: #22c55e;
   --color-warning: #eab308;
   --color-error: #dc2626;
@@ -209,6 +215,65 @@
 
 .drift {
   animation: daet-drift 24s ease-in-out infinite alternate;
+}
+
+/* Popovers grow from their trigger. Set --pop-origin to the trigger's spot. */
+.motion-pop {
+  transform-origin: var(--pop-origin, top right);
+  transition:
+    opacity 180ms var(--ease-out),
+    transform 180ms var(--ease-out);
+
+  @starting-style {
+    opacity: 0;
+    transform: translateY(-4px) scale(0.96);
+  }
+}
+
+/* Phone sheets that rise from the tab bar. */
+.motion-rise {
+  transition:
+    opacity 260ms var(--ease-drawer),
+    transform 260ms var(--ease-drawer);
+
+  @starting-style {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+}
+
+/* A count or indicator that just appeared (re-keyed on change). */
+.motion-pop-in {
+  transition:
+    opacity 200ms var(--ease-out),
+    transform 200ms var(--ease-out);
+
+  @starting-style {
+    opacity: 0;
+    transform: scale(0.6);
+  }
+}
+
+/* Cards: a small lift and a slow photo zoom, only with a real pointer
+   (touch fires hover on tap). Press feedback works everywhere. */
+.hover-lift {
+  transition:
+    transform 200ms ease,
+    scale 150ms var(--ease-out);
+}
+
+.hover-zoom {
+  transition: transform 250ms ease;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .hover-lift:hover {
+    transform: translateY(-2px);
+  }
+
+  .group:hover .hover-zoom {
+    transform: scale(1.04);
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
