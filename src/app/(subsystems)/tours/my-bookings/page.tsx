@@ -1,3 +1,4 @@
+import { hasTicket } from "@/lib/tours/ticket";
 import Image from "next/image";
 import Link from "next/link";
 import { redirect } from "next/navigation";
@@ -175,7 +176,7 @@ function BookingRow({ booking: b, today, quiet = false }: { booking: Row; today:
               {b.payment_status === "partial" ? "Pay the balance" : "Pay now"}
             </ButtonLink>
           ) : null}
-          {b.status === "confirmed" ? (
+          {hasTicket(b) && b.status === "confirmed" ? (
             <ButtonLink href={`/tours/bookings/${b.id}/ticket`} variant="secondary">
               Ticket
             </ButtonLink>

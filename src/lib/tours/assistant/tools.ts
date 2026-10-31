@@ -1,3 +1,4 @@
+import { hasTicket } from "@/lib/tours/ticket";
 import { formatPeso } from "@/lib/money";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { toAttraction, ATTRACTION_COLUMNS } from "@/lib/tours/attractions";
@@ -220,12 +221,12 @@ export function bookingCard(row: BookingRow, today: string): BookingCard {
   let nextStep: string;
   if (row.status === "pending") nextStep = "Waiting for the operator to confirm. You'll be notified.";
   else if (row.status === "confirmed" && due > 0 && row.payment_status !== "refunded") {
-    nextStep = `Confirmed. ${formatPeso(due)} left to pay.`;
+    nextStep = `Confirmed. ${formatPeso(due)} left to pay; your ticket QR appears once it is paid in full.`;
     links.push({ href: `/tours/bookings/${row.id}#payment`, label: "Pay now" });
   } else if (row.status === "confirmed") nextStep = row.tour_date >= today ? "Confirmed and paid. Show your ticket QR on the tour day." : "Confirmed. The operator will mark it completed.";
   else if (row.status === "completed") nextStep = "Completed. You can leave a review.";
   else nextStep = row.status === "rejected" ? "Declined by the operator; the reason is on the booking." : "Cancelled. Any refund is arranged by the operator.";
-  if (row.status === "confirmed") links.push({ href: `/tours/bookings/${row.id}/ticket`, label: "Show ticket QR" });
+  if (hasTicket(row) && row.status === "confirmed") links.push({ href: `/tours/bookings/${row.id}/ticket`, label: "Show ticket QR" });
   links.push(view);
   return {
     type: "booking",

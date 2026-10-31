@@ -45,3 +45,14 @@ test("signed-in pages use the one-line footer", async ({ context, page }) => {
   await page.goto("/tours/my-bookings", { waitUntil: "networkidle" });
   await expect(page.getByRole("contentinfo").getByRole("link", { name: "Apply as an operator" })).toHaveCount(0);
 });
+
+test("the ticket QR waits until a booking is paid in full", async ({ context, page }) => {
+  await signInAs(context, "tourist");
+  await page.goto("/tours/my-bookings", { waitUntil: "networkidle" });
+  const partPaid = page.getByRole("listitem").filter({ hasText: "BK-20261023-7F3K2Q" });
+  await expect(partPaid.getByRole("link", { name: "Ticket" })).toHaveCount(0);
+  const paid = page.getByRole("listitem").filter({ hasText: "BK-20261020-PD77KK" });
+  await expect(paid.getByRole("link", { name: "Ticket" })).toBeVisible();
+  await page.goto("/tours/bookings/e9466de5-4877-47c1-ac14-d86deeb38b9e/ticket", { waitUntil: "networkidle" });
+  await expect(page.getByText("Pay to get your ticket")).toBeVisible();
+});

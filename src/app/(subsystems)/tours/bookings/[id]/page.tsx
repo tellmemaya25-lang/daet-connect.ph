@@ -1,3 +1,4 @@
+import { hasTicket } from "@/lib/tours/ticket";
 import Image from "next/image";
 import { LineIcon } from "@/components/ui/icons";
 import { Badge } from "@/components/ui/badge";
@@ -190,9 +191,9 @@ export default async function BookingDetailPage({ params, searchParams }: PagePr
             <p className="mt-3 text-sm text-slate-600 dark:text-slate-400 sm:mt-4">Booking reference</p>
             <p className="font-mono text-lg font-bold tracking-wide text-daet-ink sm:text-2xl">{booking.booking_reference}</p>
             <div className="mt-4 flex flex-wrap gap-2 sm:mt-5">
-              {/* While a balance is owed, paying is the main action (in Next step below). */}
-              {booking.status === "confirmed" ? (
-                <ButtonLink href={`/tours/bookings/${booking.id}/ticket`} variant={owes ? "secondary" : "primary"}>
+              {/* The ticket QR appears once the booking is paid in full; until then paying is the next step. */}
+              {hasTicket(booking) && booking.status === "confirmed" ? (
+                <ButtonLink href={`/tours/bookings/${booking.id}/ticket`}>
                   <LineIcon name="ticket" className="h-4 w-4" /> Show my ticket QR
                 </ButtonLink>
               ) : null}

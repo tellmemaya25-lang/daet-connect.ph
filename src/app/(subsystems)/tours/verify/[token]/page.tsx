@@ -121,7 +121,7 @@ export default async function VerifyQrPage({ params }: PageProps) {
 
   const { data: booking } = await supabase
     .from("tours_bookings")
-    .select("id, user_id, booking_reference, status, tour_date, number_of_pax, contact_name, assigned_guide_id, tours_packages ( title )")
+    .select("id, user_id, booking_reference, status, payment_status, tour_date, number_of_pax, contact_name, assigned_guide_id, tours_packages ( title )")
     .eq("id", claims.id)
     .maybeSingle();
   if (!booking) {

@@ -1,3 +1,4 @@
+import { hasTicket } from "@/lib/tours/ticket";
 import { LineIcon } from "@/components/ui/icons";
 import { formatPeso } from "@/lib/money";
 import Image from "next/image";
@@ -126,7 +127,7 @@ export default async function TouristDashboardPage() {
               {pkgOf(next)?.location_name ? ` · ${pkgOf(next)?.location_name}` : ""}
             </p>
             <div className="mt-5 flex flex-wrap gap-2">
-              {next.status === "confirmed" ? (
+              {hasTicket(next) ? (
                 <ButtonLink href={`/tours/bookings/${next.id}/ticket`} variant="inverse">
                   Show ticket QR
                 </ButtonLink>
@@ -185,7 +186,7 @@ export default async function TouristDashboardPage() {
                         </div>
                       </div>
                       <div className="mt-3 flex flex-wrap gap-2">
-                        {b.status === "confirmed" ? (
+                        {hasTicket(b) ? (
                           <ButtonLink href={`/tours/bookings/${b.id}/ticket`} size="md">
                             Show ticket QR
                           </ButtonLink>

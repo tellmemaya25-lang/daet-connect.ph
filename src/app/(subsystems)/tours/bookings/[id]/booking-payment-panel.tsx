@@ -113,7 +113,7 @@ export function PaymentNextStep({
         <p className="text-3xl font-bold text-daet-ink">{peso(remaining)}</p>
       </div>
       <p className="text-sm text-slate-600 dark:text-slate-400">
-        {peso(paid)} of {peso(Number(booking.total_amount))} paid
+        {peso(paid)} of {peso(Number(booking.total_amount))} paid · your ticket QR appears once it is paid in full
       </p>
 
       {paymentReturn === "cancelled" ? (

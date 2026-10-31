@@ -1,3 +1,4 @@
+import { hasTicket } from "@/lib/tours/ticket";
 import Link from "next/link";
 import { cookies } from "next/headers";
 import { notFound, redirect } from "next/navigation";
@@ -115,7 +116,7 @@ export default async function PaymentSuccessPage({ params }: PageProps) {
               </div>
             </dl>
             <div className="mt-6 flex flex-wrap justify-center gap-2">
-              {booking.status === "confirmed" ? <ButtonLink href={`/tours/bookings/${id}/ticket`}>Show my ticket QR</ButtonLink> : null}
+              {hasTicket(booking) && booking.status === "confirmed" ? <ButtonLink href={`/tours/bookings/${id}/ticket`}>Show my ticket QR</ButtonLink> : null}
               <ButtonLink href={`/tours/bookings/${id}`} variant="secondary">
                 View booking
               </ButtonLink>

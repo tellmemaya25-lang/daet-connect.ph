@@ -13,6 +13,7 @@ const pages: Record<Role, string[]> = {
     "/tours/my-bookings",
     "/tours/bookings/e9466de5-4877-47c1-ac14-d86deeb38b9e",
     "/tours/bookings/e9466de5-4877-47c1-ac14-d86deeb38b9e/ticket",
+    "/tours/bookings/a7d1c3e2-5b4f-4c6a-9e8d-1f2a3b4c5d6e/ticket",
     "/tours/messages",
     "/tours/messages?kind=guide_tourist",
     "/tours/messages/cc110000-0000-4000-8000-000000000001",
