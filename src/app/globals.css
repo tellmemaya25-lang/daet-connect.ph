@@ -1,5 +1,20 @@
 @import "tailwindcss";
 
+/* Dark mode: on when the visitor picks Dark (data-theme="dark" on <html>, set
+   before paint by the script in layout.tsx), or when they leave it on System
+   and their device is dark. Use dark:… only for coloured tints and text; the
+   neutral surfaces below switch on their own. */
+@custom-variant dark {
+  &:where([data-theme="dark"], [data-theme="dark"] *) {
+    @slot;
+  }
+  @media (prefers-color-scheme: dark) {
+    &:where(:root:not([data-theme="light"]), :root:not([data-theme="light"]) *) {
+      @slot;
+    }
+  }
+}
+
 /* CONNECT-DAET design system (team UI & mobile-first standards).
    Primary blue-600 ("Daet Blue"), success green-500, warning yellow-500,
    error red-600; rounded-2xl cards, rounded-full primary buttons, 44px touch
@@ -14,6 +29,13 @@
   --color-daet-sand: #eff6ff;
   --color-daet-sun: #eab308;
   --color-daet-coral: #dc2626;
+  /* Neutral surfaces that follow the theme (see the dark values below). Use
+     these instead of bg-white / bg-slate-50 / -100 / -200 / -300. */
+  --color-surface: #ffffff;
+  --color-canvas: #f8fafc;
+  --color-muted: #f1f5f9;
+  --color-muted-strong: #e2e8f0;
+  --color-line: #cbd5e1;
   /* Only for things that float above the page: menus, dialogs, the bottom booking bar. */
   --shadow-float: 0 12px 32px rgba(15, 23, 42, 0.18);
   --color-success: #22c55e;
@@ -28,8 +50,8 @@
 @layer base {
   :root {
     color-scheme: light;
-    background: #f8fafc;
-    color: #0f172a;
+    background: var(--color-canvas);
+    color: var(--color-daet-ink);
   }
 
   * {
@@ -58,8 +80,8 @@
   body {
     margin: 0;
     min-height: 100vh;
-    background: #f8fafc;
-    color: #0f172a;
+    background: var(--color-canvas);
+    color: var(--color-daet-ink);
     font-family: var(--font-public-sans), system-ui, -apple-system, "Segoe UI", sans-serif;
     -webkit-font-smoothing: antialiased;
     /* Only 400/600/700 are loaded; never fake a heavier weight for font-black. */
@@ -74,6 +96,65 @@
 
   ::selection {
     background: rgba(37, 99, 235, 0.2);
+  }
+}
+
+/* Dark theme values. Raised cards stay one tone lighter than the ground, as in
+   light mode. Brand blue fills, green/yellow fills and text-white keep their
+   light values: they pass contrast on both grounds. */
+@layer theme {
+  [data-theme="dark"] {
+    color-scheme: dark;
+    --color-daet-ink: #e2e8f0;
+    --color-daet-sand: #172446;
+    --color-surface: #111a2e;
+    --color-canvas: #0b1220;
+    --color-muted: #1a2540;
+    --color-muted-strong: #26324d;
+    --color-line: #334160;
+    --shadow-float: 0 12px 32px rgba(0, 0, 0, 0.55);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      color-scheme: dark;
+      --color-daet-ink: #e2e8f0;
+      --color-daet-sand: #172446;
+      --color-surface: #111a2e;
+      --color-canvas: #0b1220;
+      --color-muted: #1a2540;
+      --color-muted-strong: #26324d;
+      --color-line: #334160;
+      --shadow-float: 0 12px 32px rgba(0, 0, 0, 0.55);
+    }
+  }
+}
+
+/* A light island inside a dark page (printed badge, QR codes). */
+@layer theme {
+  :root [data-theme="light"] {
+    color-scheme: light;
+    --color-daet-ink: #0f172a;
+    --color-daet-sand: #eff6ff;
+    --color-surface: #ffffff;
+    --color-canvas: #f8fafc;
+    --color-muted: #f1f5f9;
+    --color-muted-strong: #e2e8f0;
+    --color-line: #cbd5e1;
+  }
+}
+
+/* Paper is always light. */
+@media print {
+  :root,
+  [data-theme="dark"] {
+    color-scheme: light;
+    --color-daet-ink: #0f172a;
+    --color-daet-sand: #eff6ff;
+    --color-surface: #ffffff;
+    --color-canvas: #ffffff;
+    --color-muted: #f1f5f9;
+    --color-muted-strong: #e2e8f0;
+    --color-line: #cbd5e1;
   }
 }
 
