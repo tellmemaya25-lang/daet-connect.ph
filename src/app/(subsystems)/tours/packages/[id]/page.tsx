@@ -1,6 +1,6 @@
 import { formatPeso } from "@/lib/money";
 import { notFound } from "next/navigation";
-import { RouteMap } from "@/components/maps/route-map";
+import { StopExplorer } from "@/components/tours/stop-explorer";
 import { directionsUrl, formatDistance, formatDuration } from "@/lib/maps/geo";
 import { planRoute, type RouteSummary } from "@/lib/maps/routes";
 import Image from "next/image";
@@ -19,6 +19,7 @@ import { FREE_CANCELLATION_HOURS } from "@/lib/tours/cancellation";
 import { CheckIcon, LineIcon, MapPinIcon, ShieldCheckIcon } from "@/components/ui/icons";
 import { mapsDirectionsUrl } from "@/lib/tours/guide/maps";
 import { meetingPointOf, meetingTimeLabel } from "@/lib/tours/guide/meeting";
+import { buildStopDetails, type AttractionRef } from "@/lib/tours/stop-details";
 
 export const dynamic = "force-dynamic";
 
@@ -112,7 +113,7 @@ export default async function PackageDetailPage({ params }: PageProps) {
   }
 
   const operatorRow = Array.isArray(pkg.tours_operators) ? pkg.tours_operators[0] : pkg.tours_operators;
-  const [{ data: packageRating }, { data: operatorRating }, { data: reviewRows }] = await Promise.all([
+  const [{ data: packageRating }, { data: operatorRating }, { data: reviewRows }, { data: attractionRows }] = await Promise.all([
     supabase.from("tours_package_ratings").select("review_count, average_rating").eq("package_id", pkg.id).maybeSingle(),
     operatorRow
       ? supabase.from("tours_operator_ratings").select("review_count, average_rating").eq("operator_id", operatorRow.id).maybeSingle()
@@ -124,6 +125,10 @@ export default async function PackageDetailPage({ params }: PageProps) {
       .eq("is_hidden", false)
       .order("created_at", { ascending: false })
       .limit(20),
+    // Listed places, so a stop that is one gets its photo and a link (a short table).
+    (pkg.tours_package_stops?.length ?? 0) > 0
+      ? supabase.from("tours_attractions").select("name, slug, description, latitude, longitude, photo_url").eq("is_active", true)
+      : Promise.resolve({ data: [] }),
   ]);
   const rating = toSummary(packageRating);
   const operatorSummary = toSummary(operatorRating);
@@ -156,6 +161,7 @@ export default async function PackageDetailPage({ params }: PageProps) {
     }
   }
   const mapPoints = pinnedStops.map((stop: any) => ({ lat: stop.lat, lng: stop.lng, label: stop.location_name }));
+  const stopDetails = buildStopDetails(stops, (attractionRows ?? []) as AttractionRef[]);
   const routeLink = directionsUrl(mapPoints);
 
   // Sort gallery by display order
@@ -264,25 +270,8 @@ export default async function PackageDetailPage({ params }: PageProps) {
 
           {stops.length > 0 ? (
             <section aria-labelledby="itinerary" className="mt-12">
-              <h2 id="itinerary" className="text-2xl font-semibold text-daet-ink sm:text-3xl">The route, stop by stop</h2>
-              <ol className="mt-4 space-y-2">
-                {stops.map((stop: any, idx: number) => (
-                  <li key={stop.id} className="flex gap-4 rounded-2xl bg-surface p-4">
-                    <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-blue-600 font-bold text-white">{idx + 1}</span>
-                    <div>
-                      <h3 className="text-lg font-bold text-daet-ink">{stop.location_name}</h3>
-                      {stop.description ? <p className="mt-0.5 text-daet-ink/80">{stop.description}</p> : null}
-                    </div>
-                  </li>
-                ))}
-              </ol>
-            </section>
-          ) : null}
-
-          {mapPoints.length > 0 ? (
-            <section aria-labelledby="route" className="mt-12">
               <div className="flex flex-wrap items-baseline justify-between gap-2">
-                <h2 id="route" className="text-2xl font-semibold text-daet-ink sm:text-3xl">Map</h2>
+                <h2 id="itinerary" className="text-2xl font-semibold text-daet-ink sm:text-3xl">The route, stop by stop</h2>
                 {route ? (
                   <p className="font-semibold text-daet-ink">
                     {route.estimated ? "About " : ""}
@@ -290,20 +279,9 @@ export default async function PackageDetailPage({ params }: PageProps) {
                   </p>
                 ) : null}
               </div>
-              <div className="mt-4 overflow-hidden rounded-2xl bg-surface">
-                <RouteMap points={mapPoints} polylines={route?.legs.map((leg) => leg.polyline) ?? []} connect title={`Route map for ${pkg.title}`} />
+              <div className="mt-4">
+                <StopExplorer stops={stopDetails} legs={route?.legs ?? []} meetingPoint={meetingPoint} title={`Route map for ${pkg.title}`} />
               </div>
-              {route && route.legs.length > 0 ? (
-                <ol className="mt-4 space-y-1 text-daet-ink/90">
-                  {route.legs.map((leg, i) => (
-                    <li key={i}>
-                      <span className="font-bold text-daet-ink">{mapPoints[i].label}</span> to <span className="font-bold text-daet-ink">{mapPoints[i + 1].label}</span>:{" "}
-                      {leg.estimated ? "about " : ""}
-                      {formatDistance(leg.distanceM)}, {formatDuration(leg.durationS)}
-                    </li>
-                  ))}
-                </ol>
-              ) : null}
               {route?.estimated ? <p className="mt-2 text-sm text-daet-ink/75">Some distances are estimated in a straight line; roads and boat crossings may differ.</p> : null}
               {routeLink ? (
                 <a href={routeLink} target="_blank" rel="noopener noreferrer" className="mt-4 inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-blue-50 dark:bg-blue-950/40 px-5 font-bold text-blue-700 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-900/40">

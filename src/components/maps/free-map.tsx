@@ -2,7 +2,7 @@
 
 import "maplibre-gl/dist/maplibre-gl.css";
 import { useEffect, useRef, useState } from "react";
-import type { Map as MapLibreMap, Marker as MapLibreMarker } from "maplibre-gl";
+import type { Map as MapLibreMap, Marker as MapLibreMarker, Popup as MapLibrePopup } from "maplibre-gl";
 import { MARKER_CLASSES, type FreeMapLine, type FreeMapMarker } from "@/components/maps/map-types";
 import { SketchMap } from "@/components/maps/sketch-map";
 import type { LatLng } from "@/lib/maps/geo";
@@ -40,24 +40,62 @@ function addLineLayers(map: MapLibreMap, lines: FreeMapLine[]) {
   map.addLayer({ id: `${LINE_SOURCE}-dashed`, type: "line", source: LINE_SOURCE, filter: ["==", ["get", "dashed"], true], layout: { "line-cap": "round" }, paint: { ...paint, "line-dasharray": [2, 1.5] } });
 }
 
-function markerElement(m: FreeMapMarker): HTMLElement {
-  const el = document.createElement(m.href ? "a" : "div");
-  if (m.href) (el as HTMLAnchorElement).href = m.href;
-  el.className = MARKER_CLASSES[m.kind];
+const reducedMotion = () => window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ?? false;
+
+function markerElement(m: FreeMapMarker, active: boolean, onClick?: (id: string) => void): HTMLElement {
+  // With a click handler the marker is a button that picks the stop; otherwise a link or a picture.
+  const el = document.createElement(onClick ? "button" : m.href ? "a" : "div");
+  if (onClick) {
+    (el as HTMLButtonElement).type = "button";
+    el.addEventListener("click", (event) => {
+      event.stopPropagation();
+      onClick(m.id);
+    });
+    if (active) el.setAttribute("aria-current", "true");
+  } else if (m.href) (el as HTMLAnchorElement).href = m.href;
+  el.className = MARKER_CLASSES[active && m.kind === "stop" ? "stopActive" : m.kind];
   el.textContent = m.label;
   el.title = m.title;
-  // aria-label needs a role on a plain element; a link already has one.
-  if (!m.href) el.setAttribute("role", "img");
+  // aria-label needs a role on a plain element; links and buttons already have one.
+  if (!m.href && !onClick) el.setAttribute("role", "img");
   el.setAttribute("aria-label", m.title);
   return el;
 }
 
-const signature = (m: FreeMapMarker) => `${m.kind}|${m.label}|${m.title}|${m.href ?? ""}`;
+const signature = (m: FreeMapMarker, active: boolean, clickable: boolean) => `${m.kind}|${m.label}|${m.title}|${m.href ?? ""}|${active}|${clickable}`;
 
-function fit(map: MapLibreMap, points: LatLng[]) {
+/** The popup over a focused marker. Text only (textContent): operators write these strings. */
+function popupContent(m: FreeMapMarker): HTMLElement {
+  const box = document.createElement("div");
+  box.className = "w-60";
+  if (m.detail?.photo) {
+    const img = document.createElement("img");
+    img.src = m.detail.photo.src;
+    img.alt = m.detail.photo.alt;
+    img.className = "h-28 w-full object-cover";
+    box.append(img);
+  }
+  const body = document.createElement("div");
+  body.className = "p-3";
+  const name = document.createElement("p");
+  name.className = "font-bold text-daet-ink";
+  name.textContent = m.title;
+  body.append(name);
+  if (m.detail?.text) {
+    const text = document.createElement("p");
+    text.className = "mt-1 line-clamp-3 text-sm text-daet-ink/80";
+    text.textContent = m.detail.text;
+    body.append(text);
+  }
+  box.append(body);
+  return box;
+}
+
+function fit(map: MapLibreMap, points: LatLng[], animate = false) {
   if (points.length === 0) return;
+  const duration = animate && !reducedMotion() ? 800 : 0;
   if (points.length === 1) {
-    map.jumpTo({ center: [points[0].lng, points[0].lat], zoom: 15 });
+    map.easeTo({ center: [points[0].lng, points[0].lat], zoom: 15, duration });
     return;
   }
   const lngs = points.map((p) => p.lng);
@@ -67,7 +105,7 @@ function fit(map: MapLibreMap, points: LatLng[]) {
       [Math.min(...lngs), Math.min(...lats)],
       [Math.max(...lngs), Math.max(...lats)],
     ],
-    { padding: 56, maxZoom: 16, duration: 0 },
+    { padding: 56, maxZoom: 16, duration },
   );
 }
 
@@ -78,6 +116,10 @@ function fit(map: MapLibreMap, points: LatLng[]) {
  *
  * `fitKey`: the map frames all markers and lines on load and again whenever
  * this value changes; otherwise it stays where the viewer left it.
+ *
+ * `focusId`: fly to that marker, mark it active and open its popup (`detail`).
+ * `onMarkerClick` makes markers buttons; `onFocusClear` runs when the viewer
+ * closes the popup. `animateFit` eases reframes after the first one.
  */
 export function FreeMap({
   markers,
@@ -85,21 +127,36 @@ export function FreeMap({
   title,
   fitKey = "",
   className = "h-72 sm:h-96",
+  focusId = null,
+  onMarkerClick,
+  onFocusClear,
+  animateFit = false,
 }: {
   markers: FreeMapMarker[];
   lines?: FreeMapLine[];
   title: string;
   fitKey?: string;
   className?: string;
+  focusId?: string | null;
+  onMarkerClick?: (id: string) => void;
+  onFocusClear?: () => void;
+  animateFit?: boolean;
 }) {
   const container = useRef<HTMLDivElement>(null);
   const mapRef = useRef<MapLibreMap | null>(null);
   const libRef = useRef<MapLibre | null>(null);
   const markerRefs = useRef(new Map<string, { marker: MapLibreMarker; sig: string }>());
   const latest = useRef({ markers, lines });
+  const popupRef = useRef<MapLibrePopup | null>(null);
+  const clickRef = useRef(onMarkerClick);
+  const clearRef = useRef(onFocusClear);
+  const firstFit = useRef(true);
   const [mode, setMode] = useState<"map" | "sketch">("map");
   const [ready, setReady] = useState(false);
   latest.current = { markers, lines };
+  clickRef.current = onMarkerClick;
+  clearRef.current = onFocusClear;
+  const clickable = Boolean(onMarkerClick);
 
   // Create the map once.
   useEffect(() => {
@@ -185,6 +242,7 @@ export function FreeMap({
       window.clearTimeout(timer);
       markersMap.forEach(({ marker }) => marker.remove());
       markersMap.clear();
+      popupRef.current = null;
       map?.remove();
       mapRef.current = null;
     };
@@ -198,14 +256,17 @@ export function FreeMap({
     const seen = new Set<string>();
     for (const m of markers) {
       seen.add(m.id);
+      const active = m.id === focusId;
+      const sig = signature(m, active, clickable);
       const existing = markerRefs.current.get(m.id);
-      if (existing && existing.sig === signature(m)) {
+      if (existing && existing.sig === sig) {
         existing.marker.setLngLat([m.lng, m.lat]);
         continue;
       }
       existing?.marker.remove();
-      const marker = new lib.Marker({ element: markerElement(m) }).setLngLat([m.lng, m.lat]).addTo(map);
-      markerRefs.current.set(m.id, { marker, sig: signature(m) });
+      const element = markerElement(m, active, clickable ? (id) => clickRef.current?.(id) : undefined);
+      const marker = new lib.Marker({ element }).setLngLat([m.lng, m.lat]).addTo(map);
+      markerRefs.current.set(m.id, { marker, sig });
     }
     for (const [id, { marker }] of markerRefs.current) {
       if (!seen.has(id)) {
@@ -213,7 +274,32 @@ export function FreeMap({
         markerRefs.current.delete(id);
       }
     }
-  }, [markers, ready]);
+  }, [markers, ready, focusId, clickable]);
+
+  // Focus: fly to the picked marker and open its popup.
+  useEffect(() => {
+    const map = mapRef.current;
+    const lib = libRef.current;
+    const previous = popupRef.current;
+    popupRef.current = null;
+    previous?.remove(); // Not a viewer close: the ref is already cleared, so onFocusClear doesn't run.
+    if (!ready || !map || !lib || !focusId) return;
+    const m = latest.current.markers.find((marker) => marker.id === focusId);
+    if (!m) return;
+    const camera = { center: [m.lng, m.lat] as [number, number], zoom: Math.max(map.getZoom(), 15) };
+    if (reducedMotion()) map.jumpTo(camera);
+    else map.flyTo({ ...camera, speed: 1.2, curve: 1.42, essential: true });
+    const popup = new lib.Popup({ offset: 26, maxWidth: "none", className: "free-map-popup", focusAfterOpen: false })
+      .setLngLat([m.lng, m.lat])
+      .setDOMContent(popupContent(m))
+      .addTo(map);
+    popup.on("close", () => {
+      if (popupRef.current !== popup) return;
+      popupRef.current = null;
+      clearRef.current?.();
+    });
+    popupRef.current = popup;
+  }, [focusId, ready]);
 
   // Lines.
   useEffect(() => {
@@ -224,11 +310,12 @@ export function FreeMap({
   // Reframe when asked.
   useEffect(() => {
     if (!ready || !mapRef.current) return;
-    fit(mapRef.current, [...latest.current.markers, ...latest.current.lines.flatMap((l) => l.path)]);
-  }, [fitKey, ready]);
+    fit(mapRef.current, [...latest.current.markers, ...latest.current.lines.flatMap((l) => l.path)], animateFit && !firstFit.current);
+    firstFit.current = false;
+  }, [fitKey, ready, animateFit]);
 
   if (markers.length === 0 && lines.length === 0) return null;
-  if (mode === "sketch") return <SketchMap markers={markers} lines={lines} title={title} />;
+  if (mode === "sketch") return <SketchMap markers={markers} lines={lines} title={title} focusId={focusId} />;
 
   return (
     <figure>

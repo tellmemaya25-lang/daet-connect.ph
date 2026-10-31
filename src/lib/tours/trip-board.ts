@@ -57,7 +57,7 @@ const EXACT_PHOTOS: Array<[RegExp, PhotoKey]> = [
   [/apuao/i, "apuao"],
   [/bagasbas/i, "bagasbas"],
   [/rizal/i, "rizal"],
-  [/st\.? john|cathedral/i, "church"],
+  [/st\.? john/i, "church"], // St John the Baptist Church. Daet's cathedral (Most Holy Trinity) is another church.
   [/mercedes port/i, "mercedesPort"],
 ];
 

@@ -6,7 +6,13 @@ import type { FreeMapMarker } from "@/components/maps/map-types";
 
 jest.mock("maplibre-gl/dist/maplibre-gl.css", () => ({}), { virtual: true });
 
-const mockState: { fail: "constructor" | "style" | null; styles: string[] } = { fail: null, styles: [] };
+const mockState: {
+  fail: "constructor" | "style" | null;
+  styles: string[];
+  camera: Array<[string, unknown]>;
+  popups: Array<{ content: HTMLElement | null; removed: boolean; fireClose: () => void }>;
+  markerEls: HTMLElement[];
+} = { fail: null, styles: [], camera: [], popups: [], markerEls: [] };
 
 // maplibre-gl ships ESM only (no "require" export), so Jest gets a stand-in.
 jest.mock("maplibre-gl", () => {
@@ -37,13 +43,29 @@ jest.mock("maplibre-gl", () => {
     }
     addSource() {}
     addLayer() {}
-    jumpTo() {}
-    fitBounds() {}
+    getZoom() {
+      return 12;
+    }
+    jumpTo(options: unknown) {
+      mockState.camera.push(["jumpTo", options]);
+    }
+    flyTo(options: unknown) {
+      mockState.camera.push(["flyTo", options]);
+    }
+    easeTo(options: unknown) {
+      mockState.camera.push(["easeTo", options]);
+    }
+    fitBounds(_bounds: unknown, options: unknown) {
+      mockState.camera.push(["fitBounds", options]);
+    }
     remove() {
       this.emit("remove");
     }
   }
   class MockMarker {
+    constructor(options: { element: HTMLElement }) {
+      mockState.markerEls.push(options.element);
+    }
     setLngLat() {
       return this;
     }
@@ -52,7 +74,33 @@ jest.mock("maplibre-gl", () => {
     }
     remove() {}
   }
-  return { Map: MockMap, Marker: MockMarker, NavigationControl: class {}, setWorkerUrl: jest.fn(), getVersion: () => "0.0.0" };
+  class MockPopup {
+    record = { content: null as HTMLElement | null, removed: false, fireClose: () => {} };
+    closeHandlers: Array<() => void> = [];
+    constructor() {
+      this.record.fireClose = () => this.closeHandlers.forEach((fn) => fn());
+      mockState.popups.push(this.record);
+    }
+    setLngLat() {
+      return this;
+    }
+    setDOMContent(el: HTMLElement) {
+      this.record.content = el;
+      return this;
+    }
+    addTo() {
+      return this;
+    }
+    on(_event: string, fn: () => void) {
+      this.closeHandlers.push(fn);
+      return this;
+    }
+    remove() {
+      this.record.removed = true;
+      this.record.fireClose();
+    }
+  }
+  return { Map: MockMap, Marker: MockMarker, Popup: MockPopup, NavigationControl: class {}, setWorkerUrl: jest.fn(), getVersion: () => "0.0.0" };
 }, { virtual: true });
 
 const markers: FreeMapMarker[] = [
@@ -63,6 +111,9 @@ const markers: FreeMapMarker[] = [
 beforeEach(() => {
   mockState.fail = null;
   mockState.styles = [];
+  mockState.camera = [];
+  mockState.popups = [];
+  mockState.markerEls = [];
   Object.defineProperty(window, "matchMedia", { configurable: true, value: () => ({ matches: false, addEventListener() {}, removeEventListener() {} }) });
   document.documentElement.removeAttribute("data-theme");
 });
@@ -82,6 +133,43 @@ describe("FreeMap", () => {
     await waitFor(() => expect(screen.getByRole("img", { name: "Route map" })).toBeInTheDocument());
     expect(mockState.styles).toEqual(["https://tiles.openfreemap.org/styles/dark", "https://tiles.openfreemap.org/styles/positron"]);
     expect(screen.getByText(/Sketch map/)).toBeInTheDocument();
+  });
+
+  it("flies to the focused stop, marks it active and opens its popup as plain text", async () => {
+    const withDetail = markers.map((m) => (m.id === "b" ? { ...m, detail: { text: "<b>Surf</b> lesson", photo: { src: "/photos/bagasbas-beach.jpg", alt: "Bagasbas sand" } } } : m));
+    const onFocusClear = jest.fn();
+    const { rerender } = render(<FreeMap markers={withDetail} title="Route map" onMarkerClick={() => {}} onFocusClear={onFocusClear} />);
+    await waitFor(() => expect(mockState.markerEls).toHaveLength(2));
+    rerender(<FreeMap markers={withDetail} title="Route map" focusId="b" onMarkerClick={() => {}} onFocusClear={onFocusClear} />);
+    await waitFor(() => expect(mockState.camera.some(([kind]) => kind === "flyTo")).toBe(true));
+    expect(mockState.camera.find(([kind]) => kind === "flyTo")?.[1]).toMatchObject({ center: [122.9851, 14.1316], zoom: 15 });
+    const popup = mockState.popups.at(-1)!;
+    expect(popup.content?.textContent).toContain("<b>Surf</b> lesson");
+    expect(popup.content?.querySelector("b")).toBeNull();
+    expect(popup.content?.querySelector("img")?.getAttribute("alt")).toBe("Bagasbas sand");
+    const active = mockState.markerEls.at(-1)!;
+    expect(active.tagName).toBe("BUTTON");
+    expect(active.getAttribute("aria-current")).toBe("true");
+
+    // Moving focus swaps the popup without counting as the viewer closing it.
+    rerender(<FreeMap markers={withDetail} title="Route map" focusId="a" onMarkerClick={() => {}} onFocusClear={onFocusClear} />);
+    await waitFor(() => expect(popup.removed).toBe(true));
+    expect(onFocusClear).not.toHaveBeenCalled();
+    // The viewer closing the popup clears the focus.
+    mockState.popups.at(-1)!.fireClose();
+    expect(onFocusClear).toHaveBeenCalledTimes(1);
+  });
+
+  it("jumps instead of flying when the device asks for less motion", async () => {
+    Object.defineProperty(window, "matchMedia", {
+      configurable: true,
+      value: (query: string) => ({ matches: query.includes("reduced-motion"), addEventListener() {}, removeEventListener() {} }),
+    });
+    const { rerender } = render(<FreeMap markers={markers} title="Route map" />);
+    await waitFor(() => expect(mockState.markerEls).toHaveLength(2));
+    rerender(<FreeMap markers={markers} title="Route map" focusId="a" />);
+    await waitFor(() => expect(mockState.camera.some(([kind]) => kind === "jumpTo")).toBe(true));
+    expect(mockState.camera.some(([kind]) => kind === "flyTo")).toBe(false);
   });
 
   it("draws the sketch when the map can't start", async () => {

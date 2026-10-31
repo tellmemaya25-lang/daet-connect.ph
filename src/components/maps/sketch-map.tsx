@@ -9,7 +9,20 @@ const H = 360;
  * positions. Used when the tile map can't load (no network, weak signal,
  * no WebGL), so the page still shows where things are.
  */
-export function SketchMap({ markers, lines = [], title, className = "" }: { markers: FreeMapMarker[]; lines?: FreeMapLine[]; title: string; className?: string }) {
+export function SketchMap({
+  markers,
+  lines = [],
+  title,
+  className = "",
+  focusId = null,
+}: {
+  markers: FreeMapMarker[];
+  lines?: FreeMapLine[];
+  title: string;
+  className?: string;
+  /** The picked stop, drawn bigger with an amber ring (the tile map flies to it instead). */
+  focusId?: string | null;
+}) {
   const all = [...markers, ...lines.flatMap((line) => line.path)];
   if (all.length === 0) return null;
   const projected = projectPoints(all, W, H, 40);
@@ -51,10 +64,12 @@ export function SketchMap({ markers, lines = [], title, className = "" }: { mark
             flare: "fill-red-600",
           }[m.kind];
           const text = m.kind === "guest" ? "fill-white dark:fill-slate-900" : m.kind === "paused" ? "fill-daet-ink" : "fill-white";
-          const r = m.kind === "guide" ? 16 : 13;
+          const active = m.id === focusId;
+          const r = m.kind === "guide" || active ? 16 : 13;
           const showName = m.kind === "stop" || m.kind === "place";
           return (
             <g key={key}>
+              {active ? <circle cx={p.x} cy={p.y} r={r + 7} className="fill-amber-400/50" /> : null}
               {m.kind === "guide" || m.kind === "flare" ? <circle cx={p.x} cy={p.y} r={r + 9} className={m.kind === "guide" ? "fill-blue-600/20" : "fill-red-600/25"} /> : null}
               <circle cx={p.x} cy={p.y} r={r} className={`${fill} ${m.kind === "paused" ? "stroke-slate-500" : "stroke-surface"}`} strokeWidth="3" strokeDasharray={m.kind === "paused" ? "3 3" : undefined} />
               <text x={p.x} y={p.y + 4.5} textAnchor="middle" fontSize={m.label.length > 2 ? 9 : 12} fontWeight="800" className={text}>
