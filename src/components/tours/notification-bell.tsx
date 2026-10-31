@@ -6,6 +6,7 @@ import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
 import { LineIcon } from "@/components/ui/icons";
 import { notificationIcon, safeNotificationLink, timeAgo, type NotificationRow } from "@/lib/tours/notifications";
+import { announceOverlay } from "@/lib/ui-overlay";
 import { markNotificationsRead } from "@/app/(subsystems)/tours/notifications/actions";
 
 const SELECT = "id, type, title, body, link, read_at, created_at";
@@ -70,6 +71,14 @@ export function NotificationBell() {
     };
   }, [open]);
 
+  useEffect(() => {
+    announceOverlay("notifications", open);
+    // Leaving the page with the panel open must not keep the chat button hidden.
+    return () => {
+      if (open) announceOverlay("notifications", false);
+    };
+  }, [open]);
+
   if (!userId) return null;
 
   function markRead(ids?: string[]) {
@@ -80,7 +89,7 @@ export function NotificationBell() {
   }
 
   return (
-    <div ref={rootRef} className="relative">
+    <div ref={rootRef} className="sm:relative">
       <button
         type="button"
         onClick={() => setOpen((value) => !value)}
@@ -101,7 +110,7 @@ export function NotificationBell() {
       </button>
 
       {open ? (
-        <div className="absolute right-0 z-50 mt-2 w-[min(22rem,calc(100vw-2rem))] overflow-hidden rounded-2xl bg-surface text-left shadow-[var(--shadow-float)]">
+        <div className="absolute inset-x-4 top-full z-50 mt-1 overflow-hidden rounded-2xl bg-surface text-left shadow-[var(--shadow-float)] sm:inset-x-auto sm:right-0 sm:top-auto sm:mt-2 sm:w-[22rem]">
           <div className="flex items-center justify-between border-b border-daet-ink/10 px-4 py-3">
             <p className="font-bold text-daet-ink">Notifications</p>
             {unread > 0 ? (

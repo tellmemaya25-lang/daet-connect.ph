@@ -1,3 +1,6 @@
+import type React from "react";
+import { Badge } from "@/components/ui/badge";
+import { ButtonLink } from "@/components/ui/button";
 import { LineIcon } from "@/components/ui/icons";
 import { redirect } from "next/navigation";
 import Link from "next/link";
@@ -98,15 +101,6 @@ export default async function GuideMyToursPage() {
     console.error("Assigned tours fetch error:", error);
   }
 
-  const statusColors: Record<string, string> = {
-    confirmed: "bg-green-100 dark:bg-green-900/40 text-green-800 dark:text-green-300",
-    completed: "bg-blue-100 dark:bg-blue-900/40 text-blue-900 dark:text-blue-300",
-  };
-
-  const statusLabels: Record<string, string> = {
-    confirmed: "Upcoming",
-    completed: "Completed",
-  };
 
   // Separate upcoming and completed
   // Compare Manila calendar days so today's tours stay under "Upcoming".
@@ -143,223 +137,166 @@ export default async function GuideMyToursPage() {
     latestSwap.set(row.booking_id, { id: row.id, status: row.status, toGuideName: toName, reason: row.reason, decisionNote: row.decision_note });
   }
 
+  const todayTours = upcomingTours.filter((t) => t.tour_date === today);
+  const laterTours = upcomingTours.filter((t) => t.tour_date > today);
+
   return (
     <PageFrame>
-      <div className="mx-auto max-w-6xl">
-        {/* Header */}
-        <div className="mb-8">
-          <h1 className="display-2 text-daet-ink">My Assigned Tours</h1>
-          <p className="mt-2 text-sm text-daet-ink/70">
-            Tours assigned to {guideName}
-          </p>
+      <div className="mx-auto max-w-3xl">
+        <Link href="/tours/guide/dashboard" className="mb-4 inline-flex min-h-11 items-center text-sm font-bold text-daet-ink/70 hover:text-daet-ink">
+          ← Dashboard
+        </Link>
+        <div className="flex flex-wrap items-end justify-between gap-3">
+          <div className="min-w-0">
+            <h1 className="display-2 text-daet-ink">My tours</h1>
+            <p className="mt-1 text-sm text-daet-ink/70">Assigned to {guideName}</p>
+          </div>
+          <ButtonLink href="/tours/guide/check-in">Scan tickets</ButtonLink>
         </div>
 
-        {/* Back Button */}
-        <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
-          <Link
-            href="/tours/guide/dashboard"
-            className="inline-flex items-center gap-2 text-sm font-bold text-daet-ink/70 transition hover:text-daet-ink"
-          >
-            ← Back to Dashboard
-          </Link>
-          <Link
-            href="/tours/guide/check-in"
-            className="inline-flex min-h-11 items-center justify-center rounded-full bg-daet-forest px-6 text-sm font-bold text-white transition hover:bg-blue-700"
-          >
-            Scan tickets
-          </Link>
-        </div>
+        <dl className="mt-6 grid grid-cols-3 gap-2 sm:gap-4">
+          {[
+            { label: "Today", value: todayTours.length },
+            { label: "Upcoming", value: upcomingTours.length },
+            { label: "Completed", value: completedTours.length },
+          ].map((stat) => (
+            <div key={stat.label} className="flex flex-col-reverse rounded-2xl bg-surface p-3 text-center sm:p-4">
+              {/* dt before dd for valid markup; flex-col-reverse shows the number on top. */}
+              <dt className="text-sm text-daet-ink/70">{stat.label}</dt>
+              <dd className="text-2xl font-bold tabular-nums text-daet-ink sm:text-3xl">{stat.value}</dd>
+            </div>
+          ))}
+        </dl>
 
-        {/* Stats */}
-        <div className="mb-8 grid grid-cols-2 gap-4 md:grid-cols-3">
-          <div className="rounded-2xl bg-surface p-4 text-center">
-            <p className="text-3xl font-bold text-daet-ink">
-              {assignedTours?.length || 0}
-            </p>
-            <p className="text-sm text-slate-600 dark:text-slate-400">Total Assigned</p>
-          </div>
-          <div className="rounded-2xl bg-green-50 dark:bg-green-950/40 p-4 text-center">
-            <p className="text-3xl font-bold text-green-900 dark:text-green-300">{upcomingTours.length}</p>
-            <p className="text-xs text-green-900 dark:text-green-300">Upcoming</p>
-          </div>
-          <div className="rounded-2xl bg-blue-50 dark:bg-blue-950/40 p-4 text-center">
-            <p className="text-3xl font-bold text-blue-900 dark:text-blue-300">{completedTours.length}</p>
-            <p className="text-xs text-blue-900 dark:text-blue-300">Completed</p>
-          </div>
-        </div>
-
-        {/* Upcoming Tours */}
-        {upcomingTours.length > 0 && (
-          <section className="mb-8">
-            <h2 className="mb-4 text-2xl font-bold text-daet-ink">Upcoming Tours</h2>
+        {todayTours.length > 0 ? (
+          <section aria-labelledby="today-tours" className="mt-8">
+            <h2 id="today-tours" className="mb-3 text-xl font-bold text-daet-ink">
+              Today
+            </h2>
             <div className="space-y-4">
-              {upcomingTours.map((booking) => {
-                const pkg = Array.isArray(booking.tours_packages)
-                  ? booking.tours_packages[0]
-                  : booking.tours_packages;
-
-                const operator = Array.isArray(pkg?.tours_operators)
-                  ? pkg.tours_operators[0]
-                  : pkg?.tours_operators;
-
-                return (
-                  <div
-                    key={booking.id}
-                    className="rounded-2xl bg-green-50/50 dark:bg-green-950/40 p-6"
-                  >
-                    <div className="flex gap-6">
-                      {/* Package Image */}
-                      {pkg?.cover_image_url && (
-                        <img
-                          src={pkg.cover_image_url}
-                          alt={pkg.title}
-                          className="h-32 w-40 flex-shrink-0 rounded-2xl object-cover"
-                        />
-                      )}
-
-                      {/* Tour Details */}
-                      <div className="flex-1">
-                        <div className="mb-3 flex items-start justify-between gap-4">
-                          <div>
-                            <h3 className="text-xl font-bold text-daet-ink">
-                              {pkg?.title || "Tour Package"}
-                            </h3>
-                            <p className="mt-1 text-sm text-daet-ink/70">
-                              <LineIcon name="pin" className="inline-block h-[1.1em] w-[1.1em] align-[-0.15em]" /> {pkg?.location_name || "Location"}
-                            </p>
-                          </div>
-                          <span className="rounded-full bg-green-100 dark:bg-green-900/40 px-4 py-1 text-xs font-bold text-green-800 dark:text-green-300">
-                            Upcoming
-                          </span>
-                        </div>
-
-                        <div className="grid grid-cols-2 gap-4 text-sm md:grid-cols-4">
-                          <div>
-                            <p className="text-daet-ink/70">Tour Date</p>
-                            <p className="font-bold text-daet-ink">
-                              {new Date(booking.tour_date).toLocaleDateString("en-US", {
-                                weekday: "short",
-                                month: "short",
-                                day: "numeric",
-                              })}
-                            </p>
-                          </div>
-                          <div>
-                            <p className="text-daet-ink/70">Participants</p>
-                            <p className="font-bold text-daet-ink">{booking.number_of_pax} pax</p>
-                          </div>
-                          <div>
-                            <p className="text-daet-ink/70">Operator</p>
-                            <p className="font-bold text-daet-ink">
-                              {operator?.business_name || "N/A"}
-                            </p>
-                          </div>
-                          <div>
-                            <p className="text-daet-ink/70">Reference</p>
-                            <p className="font-bold text-daet-forest dark:text-blue-300">
-                              {booking.booking_reference}
-                            </p>
-                          </div>
-                        </div>
-
-                        {operator?.contact_phone && (
-                          <div className="mt-3 text-sm">
-                            <span className="text-daet-ink/70">Operator Contact: </span>
-                            <span className="font-bold text-daet-ink">
-                              {operator.contact_phone}
-                            </span>
-                          </div>
-                        )}
-
-                        <Link
-                          href={`/tours/guide/tours/${booking.id}/roster`}
-                          className="mt-4 inline-flex min-h-11 items-center justify-center rounded-full border border-daet-forest/30 bg-surface px-5 text-sm font-bold text-daet-leaf dark:text-blue-300 transition hover:bg-daet-forest/5"
-                        >
-                          {booking.tour_date === today ? "Guest list & check-in" : "Guest list"}
-                        </Link>
-                        {booking.tour_date === today && booking.status === "confirmed" ? (
-                          <Link
-                            href={`/tours/guide/tours/${booking.id}/live`}
-                            className="ml-2 mt-4 inline-flex min-h-11 items-center justify-center rounded-full bg-blue-600 px-5 text-sm font-bold text-white transition hover:bg-blue-700"
-                          >
-                            Live map
-                          </Link>
-                        ) : null}
-                        <SwapRequest
-                          bookingId={booking.id}
-                          reference={booking.booking_reference}
-                          guides={pickers.get(booking.tour_date) ?? []}
-                          latest={latestSwap.get(booking.id) ?? null}
-                        />
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
+              {todayTours.map((booking) => (
+                <TourCard key={booking.id} booking={booking} today={today} swap={<SwapRequest bookingId={booking.id} reference={booking.booking_reference} guides={pickers.get(booking.tour_date) ?? []} latest={latestSwap.get(booking.id) ?? null} />} />
+              ))}
             </div>
           </section>
-        )}
+        ) : null}
 
-        {/* Completed Tours */}
-        {completedTours.length > 0 && (
-          <section>
-            <h2 className="mb-4 text-2xl font-bold text-daet-ink">Completed Tours</h2>
+        {laterTours.length > 0 ? (
+          <section aria-labelledby="upcoming-tours" className="mt-8">
+            <h2 id="upcoming-tours" className="mb-3 text-xl font-bold text-daet-ink">
+              Upcoming
+            </h2>
             <div className="space-y-4">
+              {laterTours.map((booking) => (
+                <TourCard key={booking.id} booking={booking} today={today} swap={<SwapRequest bookingId={booking.id} reference={booking.booking_reference} guides={pickers.get(booking.tour_date) ?? []} latest={latestSwap.get(booking.id) ?? null} />} />
+              ))}
+            </div>
+          </section>
+        ) : null}
+
+        {completedTours.length > 0 ? (
+          <section aria-labelledby="completed-tours" className="mt-8">
+            <h2 id="completed-tours" className="mb-3 text-xl font-bold text-daet-ink">
+              Completed
+            </h2>
+            <ul className="space-y-3">
               {completedTours.map((booking) => {
-                const pkg = Array.isArray(booking.tours_packages)
-                  ? booking.tours_packages[0]
-                  : booking.tours_packages;
-
+                const pkg = Array.isArray(booking.tours_packages) ? booking.tours_packages[0] : booking.tours_packages;
                 return (
-                  <div
-                    key={booking.id}
-                    className="rounded-2xl bg-surface p-6"
-                  >
-                    <div className="flex gap-6">
-                      {pkg?.cover_image_url && (
-                        <img
-                          src={pkg.cover_image_url}
-                          alt={pkg.title}
-                          className="h-24 w-32 flex-shrink-0 rounded-2xl object-cover"
-                        />
-                      )}
-                      <div className="flex-1">
-                        <h3 className="text-lg font-bold text-daet-ink">
-                          {pkg?.title || "Tour Package"}
-                        </h3>
-                        <p className="mt-1 text-sm text-daet-ink/70">
-                          {new Date(booking.tour_date).toLocaleDateString("en-US", {
-                            month: "long",
-                            day: "numeric",
-                            year: "numeric",
-                          })}{" "}
-                          • {booking.number_of_pax} pax • {booking.booking_reference}
-                        </p>
-                      </div>
-                      <span className="self-start rounded-full bg-blue-100 dark:bg-blue-900/40 px-3 py-1 text-xs font-bold text-blue-900 dark:text-blue-300">
-                        Completed
-                      </span>
+                  <li key={booking.id} className="flex items-center gap-3 rounded-2xl bg-surface p-3">
+                    {pkg?.cover_image_url ? <img src={pkg.cover_image_url} alt="" className="h-16 w-16 shrink-0 rounded-xl object-cover" /> : null}
+                    <div className="min-w-0 flex-1">
+                      <p className="font-bold text-daet-ink">{pkg?.title || "Tour"}</p>
+                      <p className="break-words text-sm text-daet-ink/70">
+                        {shortDate(booking.tour_date, true)} · {booking.number_of_pax} pax · {booking.booking_reference}
+                      </p>
                     </div>
-                  </div>
+                    <Badge tone="info" className="shrink-0">Completed</Badge>
+                  </li>
                 );
               })}
-            </div>
+            </ul>
           </section>
-        )}
+        ) : null}
 
-        {/* Empty State */}
-        {(!assignedTours || assignedTours.length === 0) && (
-          <div className="rounded-2xl bg-surface p-12 text-center">
-            <div className="mx-auto mb-4 grid h-20 w-20 place-items-center rounded-full bg-daet-sand text-4xl">
-              <LineIcon name="calendar" className="inline-block h-[1.1em] w-[1.1em] align-[-0.15em]" />
+        {!assignedTours || assignedTours.length === 0 ? (
+          <div className="mt-8 rounded-2xl bg-surface p-8 text-center">
+            <div className="mx-auto mb-4 grid h-16 w-16 place-items-center rounded-full bg-daet-sand text-daet-ink">
+              <LineIcon name="calendar" className="h-7 w-7" />
             </div>
             <h2 className="text-xl font-bold text-daet-ink">No assigned tours yet</h2>
-            <p className="mt-2 text-sm text-daet-ink/70">
-              Operators will assign you to tours once bookings are confirmed.
-            </p>
+            <p className="mt-2 text-sm text-daet-ink/70">Operators assign you to tours once bookings are confirmed.</p>
           </div>
-        )}
+        ) : null}
       </div>
     </PageFrame>
+  );
+}
+
+const shortDate = (dateKey: string, withYear = false) =>
+  new Date(`${dateKey}T00:00:00Z`).toLocaleDateString("en-PH", { weekday: withYear ? undefined : "short", month: "short", day: "numeric", year: withYear ? "numeric" : undefined, timeZone: "UTC" });
+
+type AssignedBooking = {
+  id: string;
+  tour_date: string;
+  status: string;
+  number_of_pax: number;
+  booking_reference: string;
+  tours_packages:
+    | { title: string | null; location_name: string | null; cover_image_url: string | null; tours_operators: { business_name: string | null; contact_phone: string | null } | Array<{ business_name: string | null; contact_phone: string | null }> | null }
+    | Array<{ title: string | null; location_name: string | null; cover_image_url: string | null; tours_operators: { business_name: string | null; contact_phone: string | null } | Array<{ business_name: string | null; contact_phone: string | null }> | null }>
+    | null;
+};
+
+/** One assigned tour. On phones the photo sits on top so the details get the full width. */
+function TourCard({ booking, today, swap }: { booking: AssignedBooking; today: string; swap: React.ReactNode }) {
+  const pkg = Array.isArray(booking.tours_packages) ? booking.tours_packages[0] : booking.tours_packages;
+  const operator = Array.isArray(pkg?.tours_operators) ? pkg?.tours_operators[0] : pkg?.tours_operators;
+  const isToday = booking.tour_date === today;
+  return (
+    <article className="overflow-hidden rounded-2xl bg-surface sm:flex">
+      {pkg?.cover_image_url ? <img src={pkg.cover_image_url} alt="" className="h-36 w-full object-cover sm:h-auto sm:w-44 sm:shrink-0" /> : null}
+      <div className="min-w-0 flex-1 p-4 sm:p-5">
+        <div className="flex items-start justify-between gap-3">
+          <h3 className="min-w-0 text-lg font-bold text-daet-ink">{pkg?.title || "Tour"}</h3>
+          <Badge tone={isToday ? "brand" : "success"} className="shrink-0">
+            {isToday ? "Today" : "Upcoming"}
+          </Badge>
+        </div>
+        {pkg?.location_name ? (
+          <p className="mt-1 flex items-center gap-1 text-sm text-daet-ink/70">
+            <LineIcon name="pin" className="h-4 w-4 shrink-0" /> {pkg.location_name}
+          </p>
+        ) : null}
+        <dl className="mt-3 grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
+          {[
+            ["Date", shortDate(booking.tour_date)],
+            ["Guests", `${booking.number_of_pax} pax`],
+            ["Operator", operator?.business_name || "—"],
+            ["Reference", booking.booking_reference],
+          ].map(([label, value]) => (
+            <div key={label} className="min-w-0">
+              <dt className="text-daet-ink/70">{label}</dt>
+              <dd className="break-words font-bold text-daet-ink">{value}</dd>
+            </div>
+          ))}
+        </dl>
+        {operator?.contact_phone ? (
+          <p className="mt-2 text-sm text-daet-ink/70">
+            Operator contact:{" "}
+            <a href={`tel:${operator.contact_phone}`} className="font-bold text-blue-700 underline dark:text-blue-300">
+              {operator.contact_phone}
+            </a>
+          </p>
+        ) : null}
+        <div className="mt-4 flex flex-wrap gap-2">
+          {isToday && booking.status === "confirmed" ? <ButtonLink href={`/tours/guide/tours/${booking.id}/live`}>Live map</ButtonLink> : null}
+          <ButtonLink href={`/tours/guide/tours/${booking.id}/roster`} variant="secondary">
+            {isToday ? "Guest list & check-in" : "Guest list"}
+          </ButtonLink>
+        </div>
+        {swap}
+      </div>
+    </article>
   );
 }
