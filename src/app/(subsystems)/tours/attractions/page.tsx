@@ -101,20 +101,20 @@ export default async function AttractionsPage({ searchParams }: PageProps) {
             const photoKey = attraction.photo_url ? null : matchPlacePhoto(attraction.name);
             return (
               <li key={attraction.id} data-reveal>
-                <Link href={`/tours/attractions/${attraction.slug}`} className="group flex h-full flex-col overflow-hidden rounded-2xl bg-white transition hover:bg-blue-50 active:scale-[0.99]">
-                  <div className="relative aspect-[16/10] overflow-hidden bg-blue-50">
+                <Link href={`/tours/attractions/${attraction.slug}`} className="group flex h-full flex-col overflow-hidden rounded-2xl bg-surface transition hover:bg-blue-50 dark:hover:bg-blue-950/40 active:scale-[0.99]">
+                  <div className="relative aspect-[16/10] overflow-hidden bg-blue-50 dark:bg-blue-950/40">
                     {attraction.photo_url ? (
                       <img src={attraction.photo_url} alt="" loading="lazy" className="h-full w-full object-cover" />
                     ) : photoKey ? (
                       <Image src={PHOTOS[photoKey].src} alt="" fill sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw" className="object-cover" />
                     ) : (
-                      <div className="grid h-full place-items-center text-blue-600" aria-hidden="true">
+                      <div className="grid h-full place-items-center text-blue-600 dark:text-blue-300" aria-hidden="true">
                         <CategoryIcon category={attraction.category} className="h-14 w-14" />
                       </div>
                     )}
                   </div>
                   <div className="flex flex-1 flex-col p-4 sm:p-5">
-                    <h2 className="font-sans text-xl font-bold leading-snug tracking-normal text-daet-ink group-hover:text-blue-700">{attraction.name}</h2>
+                    <h2 className="font-sans text-xl font-bold leading-snug tracking-normal text-daet-ink group-hover:text-blue-700 dark:group-hover:text-blue-300">{attraction.name}</h2>
                     <p className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-daet-ink/80">
                       <span className="inline-flex items-center gap-1">
                         <CategoryIcon category={attraction.category} className="h-4 w-4" /> {ATTRACTION_CATEGORIES[attraction.category]}
@@ -136,7 +136,7 @@ export default async function AttractionsPage({ searchParams }: PageProps) {
       {pins.length > 0 ? (
         <section aria-labelledby="places-map" className="mt-16">
           <h2 id="places-map" className="text-2xl font-semibold text-daet-ink sm:text-3xl">Where they are</h2>
-          <div className="mt-4 overflow-hidden rounded-2xl bg-white">
+          <div className="mt-4 overflow-hidden rounded-2xl bg-surface">
             <RouteMap points={pins} title="Map of the listed places" />
           </div>
         </section>
@@ -147,6 +147,6 @@ export default async function AttractionsPage({ searchParams }: PageProps) {
 
 function chip(active: boolean) {
   return `inline-flex min-h-11 shrink-0 items-center gap-2 rounded-full px-4 text-[15px] font-bold transition active:scale-[0.98] ${
-    active ? "bg-blue-600 text-white" : "bg-white text-daet-ink hover:bg-blue-50"
+    active ? "bg-blue-600 text-white" : "bg-surface text-daet-ink hover:bg-blue-50 dark:hover:bg-blue-950/40"
   }`;
 }

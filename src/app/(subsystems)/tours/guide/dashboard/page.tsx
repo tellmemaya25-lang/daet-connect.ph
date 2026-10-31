@@ -125,7 +125,7 @@ export default async function GuideDashboardPage({ searchParams }: { searchParam
                 {todays.map((t) => (
                   <li key={t.id} className="rounded-2xl bg-daet-sand/40 p-3">
                     <p className="font-bold text-daet-ink">{pkgTitle(t)}</p>
-                    <p className="text-sm text-slate-600">
+                    <p className="text-sm text-slate-600 dark:text-slate-400">
                       {t.booking_reference} · {t.contact_name} · {t.number_of_pax} pax
                     </p>
                     <div className="mt-2 flex flex-wrap gap-2">
@@ -157,7 +157,7 @@ export default async function GuideDashboardPage({ searchParams }: { searchParam
           </Card>
 
           <Card>
-            <CardHeader title="Next tours" action={<Link href="/tours/guide/my-tours" className="inline-flex min-h-11 items-center font-bold text-daet-forest hover:underline">All tours</Link>} />
+            <CardHeader title="Next tours" action={<Link href="/tours/guide/my-tours" className="inline-flex min-h-11 items-center font-bold text-daet-forest dark:text-blue-300 hover:underline">All tours</Link>} />
             {later.length === 0 ? (
               <p className="text-sm text-daet-ink/70">No upcoming assignments yet. Mark the days you can work so operators can assign you.</p>
             ) : (
@@ -165,7 +165,7 @@ export default async function GuideDashboardPage({ searchParams }: { searchParam
                 {later.map((t) => (
                   <li key={t.id} className="py-2">
                     <p className="font-bold text-daet-ink">{pkgTitle(t)}</p>
-                    <p className="text-sm text-slate-600">
+                    <p className="text-sm text-slate-600 dark:text-slate-400">
                       {formatDayHeading(t.tour_date)} · {t.number_of_pax} pax
                     </p>
                   </li>

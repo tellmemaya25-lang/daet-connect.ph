@@ -71,7 +71,7 @@ export default async function BookingTicketPage({ params }: PageProps) {
       <div className="mx-auto max-w-md">
         {back}
         {/* A boarding pass: the trip and date on the blue band, the QR in the middle, the details below. */}
-        <section className="mt-4 overflow-hidden rounded-2xl bg-white print:border print:border-black">
+        <section className="mt-4 overflow-hidden rounded-2xl bg-surface print:border print:border-black">
           <div className="bg-blue-600 px-5 py-5 text-white print:bg-white print:text-black">
             <p className="font-semibold">CONNECT-Daet tour ticket</p>
             <h1 className="mt-1 font-[family-name:var(--font-display)] text-3xl font-semibold leading-tight">{pkg?.title ?? "Tour booking"}</h1>
@@ -94,19 +94,19 @@ export default async function BookingTicketPage({ params }: PageProps) {
             <p className="mt-4 font-[family-name:var(--font-display)] text-3xl font-semibold text-daet-ink">{booking.booking_reference}</p>
             {ticket ? <p className="mt-2 text-daet-ink/80">Show this QR to your guide on the tour day. Valid until the end of the tour day.</p> : null}
           </div>
-          <dl className="grid grid-cols-2 gap-px bg-slate-100 text-left">
-            <div className="bg-white px-5 py-3">
+          <dl className="grid grid-cols-2 gap-px bg-muted text-left">
+            <div className="bg-surface px-5 py-3">
               <dt className="text-sm text-daet-ink/75">Guests</dt>
               <dd className="font-bold text-daet-ink">
                 {booking.number_of_pax} guest{booking.number_of_pax === 1 ? "" : "s"}
               </dd>
             </div>
-            <div className="bg-white px-5 py-3">
+            <div className="bg-surface px-5 py-3">
               <dt className="text-sm text-daet-ink/75">Booked by</dt>
               <dd className="truncate font-bold text-daet-ink">{booking.contact_name}</dd>
             </div>
             {pkg?.location_name ? (
-              <div className="col-span-2 bg-white px-5 py-3">
+              <div className="col-span-2 bg-surface px-5 py-3">
                 <dt className="text-sm text-daet-ink/75">Where</dt>
                 <dd className="flex items-center gap-1 font-bold text-daet-ink">
                   <MapPinIcon className="h-4 w-4" /> {pkg.location_name}

@@ -25,7 +25,7 @@ export function MonthCalendar({
 }) {
   const grid = buildMonthGrid(month);
   const title = formatMonthLabel(month);
-  const arrow = "grid h-11 w-11 place-items-center rounded-full bg-slate-100 text-lg font-bold hover:bg-blue-50";
+  const arrow = "grid h-11 w-11 place-items-center rounded-full bg-muted text-lg font-bold hover:bg-blue-50 dark:hover:bg-blue-950/40";
   return (
     <div>
       <div className="mb-3 flex items-center justify-between gap-2">
@@ -46,7 +46,7 @@ export function MonthCalendar({
         )}
       </div>
       <div role="grid" aria-label={title} className="-mx-3 sm:mx-0">
-        <div role="row" className="grid grid-cols-7 text-center text-sm font-semibold text-slate-600">
+        <div role="row" className="grid grid-cols-7 text-center text-sm font-semibold text-slate-600 dark:text-slate-400">
           {WEEKDAYS.map((d) => (
             <span role="columnheader" key={d} className="py-1">
               {d}

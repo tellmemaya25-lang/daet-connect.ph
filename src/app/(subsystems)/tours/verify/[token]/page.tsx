@@ -20,9 +20,9 @@ const tourDate = (dateKey: string) =>
 
 function ResultCard({ tone, title, children }: { tone: "valid" | "invalid" | "neutral"; title: string; children?: React.ReactNode }) {
   const styles = {
-    valid: { box: "bg-green-50", icon: "bg-green-500 text-slate-950", mark: "✓", title: "text-green-950" },
-    invalid: { box: "bg-red-50", icon: "bg-red-600 text-white", mark: "✕", title: "text-red-950" },
-    neutral: { box: "bg-white", icon: "bg-blue-50 text-blue-700", mark: "i", title: "text-daet-ink" },
+    valid: { box: "bg-green-50 dark:bg-green-950/40", icon: "bg-green-500 text-slate-950", mark: "✓", title: "text-green-950 dark:text-green-200" },
+    invalid: { box: "bg-red-50 dark:bg-red-950/40", icon: "bg-red-600 text-white", mark: "✕", title: "text-red-950 dark:text-red-200" },
+    neutral: { box: "bg-surface", icon: "bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300", mark: "i", title: "text-daet-ink" },
   }[tone];
   return (
     <section className={`mx-auto max-w-md rounded-2xl p-6 text-center sm:p-8 ${styles.box}`} aria-live="polite">
@@ -94,7 +94,7 @@ export default async function VerifyQrPage({ params }: PageProps) {
           ) : null}
           <p className="text-xl font-bold text-daet-ink">{badge.full_name}</p>
           <p className="mt-1">Accredited by the Daet Tourism Office through CONNECT-Daet.</p>
-          <p className="mt-3 text-sm text-slate-600">Badge valid until {longDate(claims.exp * 1000)}</p>
+          <p className="mt-3 text-sm text-slate-600 dark:text-slate-400">Badge valid until {longDate(claims.exp * 1000)}</p>
         </ResultCard>
       </PageFrame>
     );
@@ -105,7 +105,7 @@ export default async function VerifyQrPage({ params }: PageProps) {
     data: { user },
   } = await supabase.auth.getUser();
   const signInLink = (
-    <Link href={`/login?next=${encodeURIComponent(`/tours/verify/${rawToken}`)}`} className="inline-flex min-h-11 items-center font-bold text-daet-forest underline">
+    <Link href={`/login?next=${encodeURIComponent(`/tours/verify/${rawToken}`)}`} className="inline-flex min-h-11 items-center font-bold text-daet-forest dark:text-blue-300 underline">
       Sign in
     </Link>
   );
@@ -155,7 +155,7 @@ export default async function VerifyQrPage({ params }: PageProps) {
           </dd>
         </dl>
         {partyCheckIn ? (
-          <p className="mt-3 font-semibold text-green-800">
+          <p className="mt-3 font-semibold text-green-800 dark:text-green-300">
             Checked in at {new Date(partyCheckIn.scanned_at).toLocaleTimeString("en-PH", { timeStyle: "short", timeZone: "Asia/Manila" })}
           </p>
         ) : isTourist ? (
@@ -169,7 +169,7 @@ export default async function VerifyQrPage({ params }: PageProps) {
         )}
         {!isTourist ? (
           <p className="mt-4">
-            <Link href={`/tours/guide/tours/${booking.id}/roster`} className="inline-flex min-h-11 items-center font-bold text-daet-forest underline">
+            <Link href={`/tours/guide/tours/${booking.id}/roster`} className="inline-flex min-h-11 items-center font-bold text-daet-forest dark:text-blue-300 underline">
               Open guest list
             </Link>
           </p>

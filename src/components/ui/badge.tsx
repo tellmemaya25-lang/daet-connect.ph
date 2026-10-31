@@ -7,12 +7,12 @@ import { cn } from "@/components/ui/cn";
  * text, because white on them fails contrast.
  */
 const TONES = {
-  neutral: "bg-slate-200 text-slate-900",
+  neutral: "bg-muted-strong text-slate-900 dark:text-slate-100",
   brand: "bg-blue-600 text-white",
   success: "bg-green-500 text-slate-950",
   warning: "bg-yellow-500 text-slate-950",
   danger: "bg-red-600 text-white",
-  info: "bg-blue-100 text-blue-900",
+  info: "bg-blue-100 dark:bg-blue-900/40 text-blue-900 dark:text-blue-300",
 } as const;
 
 export type BadgeTone = keyof typeof TONES;

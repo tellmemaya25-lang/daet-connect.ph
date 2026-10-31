@@ -37,7 +37,7 @@ export function DashboardHeader({ title, description, backHref, backLabel = "Bac
               <li key={link.href}>
                 <Link
                   href={link.href}
-                  className="inline-flex min-h-11 items-center rounded-full bg-white px-4 text-[15px] font-bold text-daet-ink transition hover:bg-blue-50 active:scale-[0.98]"
+                  className="inline-flex min-h-11 items-center rounded-full bg-surface px-4 text-[15px] font-bold text-daet-ink transition hover:bg-blue-50 dark:hover:bg-blue-950/40 active:scale-[0.98]"
                 >
                   {link.label}
                 </Link>
@@ -50,7 +50,7 @@ export function DashboardHeader({ title, description, backHref, backLabel = "Bac
       {title || description || backHref || children ? (
         <div className="mb-8">
           {backHref ? (
-            <Link href={backHref} className="mb-3 inline-flex min-h-11 items-center gap-1 font-bold text-blue-700 hover:underline">
+            <Link href={backHref} className="mb-3 inline-flex min-h-11 items-center gap-1 font-bold text-blue-700 dark:text-blue-300 hover:underline">
               <LineIcon name="arrowRight" className="h-4 w-4 rotate-180" />
               {backLabel}
             </Link>

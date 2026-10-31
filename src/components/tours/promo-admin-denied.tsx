@@ -32,7 +32,7 @@ export function AdminPageHeading({
   return (
     <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
       <div>
-        <Link href={backHref} className="inline-flex min-h-11 items-center text-sm font-bold text-daet-forest hover:underline">
+        <Link href={backHref} className="inline-flex min-h-11 items-center text-sm font-bold text-daet-forest dark:text-blue-300 hover:underline">
           ← {backLabel}
         </Link>
         <h1 className="display-2 text-daet-ink">{title}</h1>

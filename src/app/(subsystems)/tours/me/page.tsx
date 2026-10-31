@@ -114,7 +114,7 @@ export default async function TouristDashboardPage() {
       </div>
 
       {next ? (
-        <section aria-labelledby="next-trip" className="mb-6 grid overflow-hidden rounded-2xl bg-white md:grid-cols-[1.2fr_1fr]">
+        <section aria-labelledby="next-trip" className="mb-6 grid overflow-hidden rounded-2xl bg-surface md:grid-cols-[1.2fr_1fr]">
           <div className="bg-blue-600 p-5 text-white sm:p-8">
             <p className="font-semibold">{next.tour_date === today ? "Today" : "Your next trip"}</p>
             <h2 id="next-trip" className="mt-1 font-[family-name:var(--font-display)] text-3xl font-semibold leading-tight sm:text-4xl">
@@ -150,11 +150,11 @@ export default async function TouristDashboardPage() {
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         <div className="space-y-6 lg:col-span-2">
           <Card>
-            <CardHeader title={next ? "Also coming up" : "Upcoming trips"} action={<Link href="/tours/my-bookings" className="inline-flex min-h-11 items-center font-bold text-blue-700 hover:underline">All bookings</Link>} />
+            <CardHeader title={next ? "Also coming up" : "Upcoming trips"} action={<Link href="/tours/my-bookings" className="inline-flex min-h-11 items-center font-bold text-blue-700 dark:text-blue-300 hover:underline">All bookings</Link>} />
             {upcoming.length === 0 ? (
               <EmptyState className="px-0 py-4" icon={<LineIcon name="boat" />} title="No upcoming trips" description="Book a trip and it will show up here with your ticket." action={<ButtonLink href="/tours/browse">Find a trip</ButtonLink>} />
             ) : rest.length === 0 ? (
-              <p className="text-daet-ink/80">Nothing else booked yet. <Link href="/tours/browse" className="font-bold text-blue-700 underline">Find another trip</Link></p>
+              <p className="text-daet-ink/80">Nothing else booked yet. <Link href="/tours/browse" className="font-bold text-blue-700 dark:text-blue-300 underline">Find another trip</Link></p>
             ) : (
               <ul className="space-y-2">
                 {rest.map((b) => {
@@ -163,14 +163,14 @@ export default async function TouristDashboardPage() {
                   const balance = remainingBalance(b);
                   const payable = checkPayable(b).ok;
                   return (
-                    <li key={b.id} className="rounded-2xl bg-slate-50 p-4">
+                    <li key={b.id} className="rounded-2xl bg-canvas p-4">
                       <div className="flex flex-wrap items-start justify-between gap-2">
                         <div className="min-w-0">
                           <Link href={`/tours/bookings/${b.id}`} className="text-lg font-bold text-daet-ink hover:underline">
                             {pkg?.title ?? "Tour"}
                           </Link>
                           <p className="text-daet-ink/80">
-                            {b.tour_date === today ? <strong className="text-blue-700">Today</strong> : longDate(b.tour_date)} · {b.number_of_pax} pax · {pkg?.location_name}
+                            {b.tour_date === today ? <strong className="text-blue-700 dark:text-blue-300">Today</strong> : longDate(b.tour_date)} · {b.number_of_pax} pax · {pkg?.location_name}
                           </p>
                         </div>
                         <div className="flex flex-wrap gap-1.5">
@@ -205,7 +205,7 @@ export default async function TouristDashboardPage() {
               <CardHeader title="Rate your recent tours" />
               <ul className="space-y-3">
                 {toReview.map((b) => (
-                  <li key={b.id} className="flex flex-wrap items-center justify-between gap-2 rounded-2xl bg-slate-50 p-4">
+                  <li key={b.id} className="flex flex-wrap items-center justify-between gap-2 rounded-2xl bg-canvas p-4">
                     <span className="min-w-0">
                       <span className="block font-bold text-daet-ink">{pkgOf(b)?.title ?? "Tour"}</span>
                       <span className="text-sm text-daet-ink/80">{longDate(b.tour_date)}</span>
@@ -234,7 +234,7 @@ export default async function TouristDashboardPage() {
                     <span className="min-w-0 truncate text-daet-ink/75" title={entry.description ?? undefined}>
                       {sourceLabel(entry.source)}
                     </span>
-                    <span className={`shrink-0 font-bold ${entry.points > 0 ? "text-daet-forest" : "text-red-700"}`}>
+                    <span className={`shrink-0 font-bold ${entry.points > 0 ? "text-daet-forest dark:text-blue-300" : "text-red-700 dark:text-red-300"}`}>
                       {entry.points > 0 ? "+" : "−"}
                       {Math.abs(entry.points)}
                     </span>
@@ -243,7 +243,7 @@ export default async function TouristDashboardPage() {
               </ul>
             ) : null}
             <details className="mt-3 text-sm">
-              <summary className="inline-flex min-h-11 cursor-pointer items-center font-bold text-blue-700">How to earn points</summary>
+              <summary className="inline-flex min-h-11 cursor-pointer items-center font-bold text-blue-700 dark:text-blue-300">How to earn points</summary>
               <ul className="mt-2 space-y-1 text-daet-ink/70">
                 {TOURS_REWARD_RULES.map((rule) => (
                   <li key={rule.source} className="flex justify-between gap-2">
@@ -252,7 +252,7 @@ export default async function TouristDashboardPage() {
                   </li>
                 ))}
               </ul>
-              <p className="mt-2 text-sm text-slate-600">Points for a payment are removed if it is refunded.</p>
+              <p className="mt-2 text-sm text-slate-600 dark:text-slate-400">Points for a payment are removed if it is refunded.</p>
             </details>
           </Card>
 
@@ -273,18 +273,18 @@ export default async function TouristDashboardPage() {
           </Card>
 
           <Card>
-            <CardHeader title="Saved trip plans" action={<Link href="/tours/my-itineraries" className="inline-flex min-h-11 items-center font-bold text-blue-700 hover:underline">All plans</Link>} />
+            <CardHeader title="Saved trip plans" action={<Link href="/tours/my-itineraries" className="inline-flex min-h-11 items-center font-bold text-blue-700 dark:text-blue-300 hover:underline">All plans</Link>} />
             {(itineraries ?? []).length === 0 ? (
               <p className="text-sm text-daet-ink/70">
-                Plan a trip around Daet and save it here. <Link href="/tours/plan" className="inline-flex min-h-11 items-center font-bold text-daet-forest underline">Start planning</Link>
+                Plan a trip around Daet and save it here. <Link href="/tours/plan" className="inline-flex min-h-11 items-center font-bold text-daet-forest dark:text-blue-300 underline">Start planning</Link>
               </p>
             ) : (
               <ul className="space-y-2">
                 {(itineraries ?? []).map((it) => (
                   <li key={it.id}>
-                    <Link href={`/tours/my-itineraries/${it.id}`} className="block rounded-2xl p-3 hover:bg-blue-50">
+                    <Link href={`/tours/my-itineraries/${it.id}`} className="block rounded-2xl p-3 hover:bg-blue-50 dark:hover:bg-blue-950/40">
                       <span className="block font-bold text-daet-ink">{it.title}</span>
-                      <span className="text-sm text-slate-600">
+                      <span className="text-sm text-slate-600 dark:text-slate-400">
                         {it.start_date ? longDate(it.start_date) : "No date"} · {it.tours_itinerary_items?.length ?? 0} stops
                       </span>
                     </Link>

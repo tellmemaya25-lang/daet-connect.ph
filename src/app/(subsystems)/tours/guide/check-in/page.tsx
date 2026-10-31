@@ -54,7 +54,7 @@ export default async function GuideCheckInPage() {
         <section className="mt-8">
           <h2 className="mb-3 text-lg font-bold text-daet-ink">Today&apos;s groups</h2>
           {tours && tours.length > 0 ? (
-            <ul className="divide-y divide-daet-ink/10 rounded-2xl bg-white">
+            <ul className="divide-y divide-daet-ink/10 rounded-2xl bg-surface">
               {tours.map((tour) => {
                 const pkg = Array.isArray(tour.tours_packages) ? tour.tours_packages[0] : tour.tours_packages;
                 const arrived = (tour.tours_checkins ?? []).some((row: { participant_id: string | null }) => row.participant_id === null);
@@ -63,7 +63,7 @@ export default async function GuideCheckInPage() {
                     <Link href={`/tours/guide/tours/${tour.id}/roster`} className="flex min-h-11 items-center justify-between gap-3 p-4 hover:bg-daet-sand/40">
                       <span>
                         <span className="block font-bold text-daet-ink">{tour.contact_name}</span>
-                        <span className="block text-sm text-slate-600">
+                        <span className="block text-sm text-slate-600 dark:text-slate-400">
                           {pkg?.title ?? "Tour"} · {tour.number_of_pax} pax · {tour.booking_reference}
                         </span>
                       </span>

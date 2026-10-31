@@ -25,7 +25,7 @@ export function MeetingPointForm({
     <form action={action} className="space-y-4">
       <input type="hidden" name="packageId" value={packageId} />
       {state.message ? <Notice variant={state.ok ? "success" : "error"}>{state.message}</Notice> : null}
-      <p className="text-slate-600">Guests see this on the tour page and in their ticket, with a Google Maps button. Leave it empty to use the first stop.</p>
+      <p className="text-slate-600 dark:text-slate-400">Guests see this on the tour page and in their ticket, with a Google Maps button. Leave it empty to use the first stop.</p>
       <div className="grid gap-4 sm:grid-cols-[2fr_1fr]">
         <PromoField id="meeting-name" label="Meeting point" error={state.errors.name}>
           <input id="meeting-name" name="name" defaultValue={name ?? ""} maxLength={120} className={promoInputClass} placeholder="Daet plaza, in front of the church" />

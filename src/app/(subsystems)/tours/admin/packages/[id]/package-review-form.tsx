@@ -49,12 +49,12 @@ export function PackageReviewForm({ packageId, currentStatus }: PackageReviewFor
   };
 
   return (
-    <form onSubmit={handleSubmit} className="bg-white rounded-2xl border border-daet-ink/20 p-6">
+    <form onSubmit={handleSubmit} className="bg-surface rounded-2xl border border-daet-ink/20 p-6">
       <h2 className="text-xl font-bold text-daet-ink mb-4">Review & Update Status</h2>
 
       {message && (
         <div className={`mb-4 p-4 rounded-2xl ${
-          message.type === 'success' ? 'bg-green-50 text-green-800' : 'bg-red-50 text-red-800'
+          message.type === 'success' ? 'bg-green-50 dark:bg-green-950/40 text-green-800 dark:text-green-300' : 'bg-red-50 dark:bg-red-950/40 text-red-800 dark:text-red-300'
         }`}>
           {message.text}
         </div>
@@ -104,7 +104,7 @@ export function PackageReviewForm({ packageId, currentStatus }: PackageReviewFor
           <button
             type="submit"
             disabled={isSubmitting || status === getValidStatus(currentStatus)}
-            className="min-h-11 flex-1 bg-daet-forest text-white px-4 py-2 rounded-2xl hover:bg-daet-leaf disabled:bg-slate-300 disabled:cursor-not-allowed font-medium"
+            className="min-h-11 flex-1 bg-daet-forest text-white px-4 py-2 rounded-2xl hover:bg-daet-leaf disabled:bg-line disabled:cursor-not-allowed font-medium"
           >
             {isSubmitting ? 'Updating...' : 'Update Status'}
           </button>
@@ -123,7 +123,7 @@ export function PackageReviewForm({ packageId, currentStatus }: PackageReviewFor
                 }, 100);
               }}
               disabled={isSubmitting}
-              className="px-6 py-2 bg-green-600 text-white rounded-2xl hover:bg-green-700 disabled:bg-slate-300 disabled:cursor-not-allowed font-medium"
+              className="px-6 py-2 bg-green-600 text-white rounded-2xl hover:bg-green-700 disabled:bg-line disabled:cursor-not-allowed font-medium"
             >
               Quick Approve
             </button>

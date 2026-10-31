@@ -34,7 +34,7 @@ export default async function MerchPage({
   const items = (data ?? []) as MerchItem[];
 
   const chipClass = (active: boolean) =>
-    `inline-flex min-h-11 items-center rounded-full px-4 text-[15px] font-bold transition active:scale-[0.98] ${active ? "bg-blue-600 text-white" : "bg-white text-daet-ink hover:bg-blue-50"}`;
+    `inline-flex min-h-11 items-center rounded-full px-4 text-[15px] font-bold transition active:scale-[0.98] ${active ? "bg-blue-600 text-white" : "bg-surface text-daet-ink hover:bg-blue-50 dark:hover:bg-blue-950/40"}`;
 
   return (
     <PageFrame>

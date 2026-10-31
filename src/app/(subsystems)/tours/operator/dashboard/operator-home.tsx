@@ -100,28 +100,28 @@ export async function OperatorHome({ operatorId, searchParams }: { operatorId: s
 
       <div className="mb-6 grid grid-cols-2 gap-3 lg:grid-cols-4">
         <Card>
-          <p className="text-sm text-slate-600">Waiting for you</p>
-          <p className="mt-1 text-2xl font-bold text-yellow-800">{pendingCount ?? 0}</p>
-          <p className="text-sm text-slate-600">booking request{pendingCount === 1 ? "" : "s"}</p>
+          <p className="text-sm text-slate-600 dark:text-slate-400">Waiting for you</p>
+          <p className="mt-1 text-2xl font-bold text-yellow-800 dark:text-yellow-200">{pendingCount ?? 0}</p>
+          <p className="text-sm text-slate-600 dark:text-slate-400">booking request{pendingCount === 1 ? "" : "s"}</p>
         </Card>
         <Card>
-          <p className="text-sm text-slate-600">Received in {key === monthKey(thisMonth) ? "this month" : key}</p>
-          <p className="mt-1 text-2xl font-bold text-daet-forest">{revenue ? peso(revenue.received) : "—"}</p>
-          <Link href={`/tours/operator/payments?month=${key}`} className="inline-flex min-h-11 items-center font-bold text-daet-forest hover:underline">
+          <p className="text-sm text-slate-600 dark:text-slate-400">Received in {key === monthKey(thisMonth) ? "this month" : key}</p>
+          <p className="mt-1 text-2xl font-bold text-daet-forest dark:text-blue-300">{revenue ? peso(revenue.received) : "—"}</p>
+          <Link href={`/tours/operator/payments?month=${key}`} className="inline-flex min-h-11 items-center font-bold text-daet-forest dark:text-blue-300 hover:underline">
             Revenue report →
           </Link>
         </Card>
         <Card>
-          <p className="text-sm text-slate-600">Occupancy</p>
+          <p className="text-sm text-slate-600 dark:text-slate-400">Occupancy</p>
           <p className="mt-1 text-2xl font-bold text-daet-ink">{occ.percent === null ? "—" : `${occ.percent}%`}</p>
-          <p className="text-sm text-slate-600">{occ.seats ? `${occ.booked} of ${occ.seats} seats · ${occ.openDays} open days` : "No open dates this month"}</p>
+          <p className="text-sm text-slate-600 dark:text-slate-400">{occ.seats ? `${occ.booked} of ${occ.seats} seats · ${occ.openDays} open days` : "No open dates this month"}</p>
         </Card>
         <Card>
-          <p className="text-sm text-slate-600">Rating</p>
+          <p className="text-sm text-slate-600 dark:text-slate-400">Rating</p>
           <div className="mt-1">
             <RatingBadge summary={rating} />
           </div>
-          <Link href="/tours/operator/reviews" className="inline-flex min-h-11 items-center font-bold text-daet-forest hover:underline">
+          <Link href="/tours/operator/reviews" className="inline-flex min-h-11 items-center font-bold text-daet-forest dark:text-blue-300 hover:underline">
             {unreplied ? `${unreplied} to reply →` : "Reviews →"}
           </Link>
         </Card>
@@ -146,7 +146,7 @@ export async function OperatorHome({ operatorId, searchParams }: { operatorId: s
                   className={`flex h-12 flex-col items-center justify-center rounded-2xl text-sm transition ${selected ? "bg-daet-forest text-white" : day ? "bg-daet-sand font-bold text-daet-ink hover:bg-daet-sand/70" : "text-daet-ink/70 hover:bg-daet-sand/50"} ${isToday && !selected ? "ring-2 ring-daet-forest/40" : ""}`}
                 >
                   <span>{cell.day}</span>
-                  {day ? <span className={`text-[10px] leading-none ${selected ? "text-white" : "text-daet-forest"}`}>{day.pax} pax</span> : null}
+                  {day ? <span className={`text-[10px] leading-none ${selected ? "text-white" : "text-daet-forest dark:text-blue-300"}`}>{day.pax} pax</span> : null}
                   <span className="sr-only">
                     {` ${formatDayHeading(cell.dateKey)}${day ? `, ${day.bookings} booking${day.bookings === 1 ? "" : "s"}` : ""}`}
                   </span>
@@ -178,7 +178,7 @@ export async function OperatorHome({ operatorId, searchParams }: { operatorId: s
 
           {revenue && revenue.byPackage.length > 0 ? (
             <Card>
-              <CardHeader title="Revenue by package" action={<Link href={`/tours/operator/payments/export?month=${key}`} prefetch={false} className="inline-flex min-h-11 items-center font-bold text-daet-forest hover:underline">Download CSV</Link>} />
+              <CardHeader title="Revenue by package" action={<Link href={`/tours/operator/payments/export?month=${key}`} prefetch={false} className="inline-flex min-h-11 items-center font-bold text-daet-forest dark:text-blue-300 hover:underline">Download CSV</Link>} />
               <ul className="space-y-2">
                 {revenue.byPackage.slice(0, 5).map((entry) => (
                   <li key={entry.title}>
@@ -207,7 +207,7 @@ export async function OperatorHome({ operatorId, searchParams }: { operatorId: s
                 ["/tours/operator/merch", "Merchandise"],
                 ["/tours/operator/settings", "Payment settings"],
               ].map(([href, label]) => (
-                <Link key={href} href={href} className="flex min-h-12 items-center justify-between rounded-2xl bg-slate-50 px-4 font-bold text-daet-ink transition hover:bg-blue-50 active:scale-[0.98]">
+                <Link key={href} href={href} className="flex min-h-12 items-center justify-between rounded-2xl bg-canvas px-4 font-bold text-daet-ink transition hover:bg-blue-50 dark:hover:bg-blue-950/40 active:scale-[0.98]">
                   {label}
                 </Link>
               ))}
@@ -228,7 +228,7 @@ function BookingLines({ bookings, title }: { bookings: DayBooking[]; title: (b: 
             <Link href={`/tours/operator/bookings?status=${b.status}#booking-${b.id}`} className="flex min-h-11 items-center truncate font-bold text-daet-ink hover:underline">
               {title(b)}
             </Link>
-            <p className="truncate text-sm text-slate-600">
+            <p className="truncate text-sm text-slate-600 dark:text-slate-400">
               {b.booking_reference} · {b.contact_name} · {b.number_of_pax} pax{b.assigned_guide_id ? "" : " · no guide yet"}
             </p>
           </div>

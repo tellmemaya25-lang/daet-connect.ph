@@ -44,7 +44,7 @@ export default async function OperatorMerchPage({ searchParams }: { searchParams
     <PageFrame>
       <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <Link href="/tours/operator/dashboard" className="inline-flex min-h-11 items-center text-sm font-bold text-daet-forest hover:underline">
+          <Link href="/tours/operator/dashboard" className="inline-flex min-h-11 items-center text-sm font-bold text-daet-forest dark:text-blue-300 hover:underline">
             ← Dashboard
           </Link>
           <h1 className="display-2 text-daet-ink">My merchandise</h1>
@@ -62,7 +62,7 @@ export default async function OperatorMerchPage({ searchParams }: { searchParams
       ) : (
         <ul className="space-y-3">
           {items.map((item) => (
-            <li key={item.id} className="flex flex-col gap-3 rounded-2xl bg-white p-4 sm:flex-row sm:items-center">
+            <li key={item.id} className="flex flex-col gap-3 rounded-2xl bg-surface p-4 sm:flex-row sm:items-center">
               <div className="flex min-w-0 flex-1 items-center gap-3">
                 <div className="grid h-16 w-16 shrink-0 place-items-center overflow-hidden rounded-2xl bg-daet-sand text-2xl">
                   {item.image_url ? <img src={item.image_url} alt="" className="h-full w-full object-cover" /> : <span aria-hidden="true"><LineIcon name="bag" className="inline-block h-[1.1em] w-[1.1em] align-[-0.15em]" /></span>}
@@ -70,13 +70,13 @@ export default async function OperatorMerchPage({ searchParams }: { searchParams
                 <div className="min-w-0">
                   <div className="flex flex-wrap items-center gap-2">
                     <Badge tone={TONE[item.review_status]}>{MERCH_REVIEW_LABELS[item.review_status]}</Badge>
-                    <span className="text-sm text-slate-600">{MERCH_CATEGORIES[item.category]}</span>
-                    {item.review_status === "approved" && !item.is_active ? <span className="text-sm text-slate-600">· hidden by you</span> : null}
+                    <span className="text-sm text-slate-600 dark:text-slate-400">{MERCH_CATEGORIES[item.category]}</span>
+                    {item.review_status === "approved" && !item.is_active ? <span className="text-sm text-slate-600 dark:text-slate-400">· hidden by you</span> : null}
                   </div>
                   <p className="mt-1 truncate font-bold text-daet-ink">{item.name}</p>
                   <p className="text-sm text-daet-ink/70">{formatPeso(item.price) ?? "Ask seller"} · {item.seller_name}</p>
                   {item.review_status === "rejected" && item.review_notes ? (
-                    <p className="mt-1 text-sm font-bold text-red-700">Tourism Office: {item.review_notes}</p>
+                    <p className="mt-1 text-sm font-bold text-red-700 dark:text-red-300">Tourism Office: {item.review_notes}</p>
                   ) : null}
                 </div>
               </div>
@@ -88,7 +88,7 @@ export default async function OperatorMerchPage({ searchParams }: { searchParams
                   <input type="hidden" name="id" value={item.id} />
                   <ConfirmSubmitButton
                     message={`Remove "${item.name}"? This cannot be undone.`}
-                    className="inline-flex min-h-11 w-full items-center justify-center rounded-full px-5 text-sm font-bold text-red-700 hover:bg-red-50"
+                    className="inline-flex min-h-11 w-full items-center justify-center rounded-full px-5 text-sm font-bold text-red-700 dark:text-red-300 hover:bg-red-50 dark:hover:bg-red-950/40"
                   >
                     Remove
                   </ConfirmSubmitButton>

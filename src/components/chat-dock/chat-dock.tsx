@@ -76,7 +76,7 @@ export function ChatDock() {
   return (
     <div aria-label="Open chats" role="region" className="pointer-events-none fixed bottom-0 right-24 z-40 hidden items-end gap-3 lg:flex print:hidden">
       {[...state.open].reverse().map((id) => (
-        <div key={id} className="pointer-events-auto flex h-[30rem] w-[22rem] flex-col overflow-hidden rounded-t-2xl bg-white shadow-[var(--shadow-float)]">
+        <div key={id} className="pointer-events-auto flex h-[30rem] w-[22rem] flex-col overflow-hidden rounded-t-2xl bg-surface shadow-[var(--shadow-float)]">
           {id === "ai" ? (
             <AiDockWindow onMinimize={() => setState((s) => ({ ...s, ...dockMinimize(s, id) }))} onClose={() => setState((s) => ({ ...s, ...dockClose(s, id) }))} />
           ) : (
@@ -98,7 +98,7 @@ export function ChatDock() {
                 onClick={() => setState((s) => ({ ...s, ...dockOpen(s, id) }))}
                 aria-label={`Open chat: ${title(id)}`}
                 title={title(id)}
-                className="grid h-12 w-12 place-items-center rounded-full bg-blue-100 text-lg font-bold text-blue-800 shadow-[var(--shadow-float)] transition hover:scale-105"
+                className="grid h-12 w-12 place-items-center rounded-full bg-blue-100 dark:bg-blue-900/40 text-lg font-bold text-blue-800 dark:text-blue-300 shadow-[var(--shadow-float)] transition hover:scale-105"
               >
                 {id === "ai" ? <AiAvatar /> : title(id).slice(0, 1).toUpperCase()}
               </button>
@@ -106,7 +106,7 @@ export function ChatDock() {
                 type="button"
                 onClick={() => setState((s) => ({ ...s, ...dockClose(s, id) }))}
                 aria-label={`Close chat: ${title(id)}`}
-                className="absolute -left-2 -top-2 grid h-6 w-6 place-items-center rounded-full bg-white text-slate-700 opacity-0 shadow-[var(--shadow-float)] transition focus-visible:opacity-100 group-hover:opacity-100"
+                className="absolute -left-2 -top-2 grid h-6 w-6 place-items-center rounded-full bg-surface text-slate-700 dark:text-slate-300 opacity-0 shadow-[var(--shadow-float)] transition focus-visible:opacity-100 group-hover:opacity-100"
               >
                 <LineIcon name="close" className="h-3.5 w-3.5" />
               </button>
@@ -126,7 +126,7 @@ function WindowControls({ name, onMinimize, onClose, href }: { name: string; onM
         <LineIcon name="arrowRight" className="h-5 w-5 -rotate-45" />
       </a>
       <button type="button" onClick={onMinimize} aria-label={`Minimise ${name}`} className={btn}>
-        <span aria-hidden="true" className="h-0.5 w-4 rounded bg-white" />
+        <span aria-hidden="true" className="h-0.5 w-4 rounded bg-surface" />
       </button>
       <button type="button" onClick={onClose} aria-label={`Close ${name}`} className={btn}>
         <LineIcon name="close" className="h-5 w-5" />
@@ -163,7 +163,7 @@ function ThreadDockWindow({ id, onLoaded, onMinimize, onClose }: { id: string; o
           <p className="flex-1 font-bold">{thread === null ? "Chat unavailable" : "Opening chat…"}</p>
           <WindowControls name="chat" href={`/tours/messages/${id}`} onMinimize={onMinimize} onClose={onClose} />
         </div>
-        <p className="p-4 text-slate-600">{thread === null ? "This chat could not be opened." : "Loading messages…"}</p>
+        <p className="p-4 text-slate-600 dark:text-slate-400">{thread === null ? "This chat could not be opened." : "Loading messages…"}</p>
       </div>
     );
   }

@@ -68,14 +68,14 @@ export default async function GuideRosterPage({ params }: PageProps) {
 
         {!rule.ok ? <Notice variant="info" className="mt-4">{rule.reason}</Notice> : null}
 
-        <section className="mt-6 rounded-2xl bg-white p-5">
+        <section className="mt-6 rounded-2xl bg-surface p-5">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
               <p className="text-lg font-bold text-daet-ink">{booking.contact_name}</p>
               <p className="text-sm text-daet-ink/65">
                 {booking.booking_reference} · {booking.number_of_pax} guest{booking.number_of_pax === 1 ? "" : "s"}
               </p>
-              <a href={`tel:${booking.contact_phone}`} className="mt-1 inline-block text-sm font-bold text-daet-forest underline">
+              <a href={`tel:${booking.contact_phone}`} className="mt-1 inline-block text-sm font-bold text-daet-forest dark:text-blue-300 underline">
                 {booking.contact_phone}
               </a>
             </div>
@@ -106,14 +106,14 @@ export default async function GuideRosterPage({ params }: PageProps) {
             <h2 className="mb-3 text-lg font-bold text-daet-ink">
               Guests <span className="text-sm font-bold text-daet-ink/70">({checkedGuests} of {guests.length} present)</span>
             </h2>
-            <ul className="divide-y divide-daet-ink/10 rounded-2xl bg-white">
+            <ul className="divide-y divide-daet-ink/10 rounded-2xl bg-surface">
               {guests.map((guest) => {
                 const done = byParticipant.get(guest.id);
                 return (
                   <li key={guest.id} className="flex flex-wrap items-center justify-between gap-3 p-4">
                     <div>
                       <p className="font-bold text-daet-ink">{guest.full_name}</p>
-                      {guest.special_requirements ? <p className="text-sm text-slate-600">{guest.special_requirements}</p> : null}
+                      {guest.special_requirements ? <p className="text-sm text-slate-600 dark:text-slate-400">{guest.special_requirements}</p> : null}
                     </div>
                     {done ? (
                       <Badge tone="success">Present {time(done.scanned_at)}</Badge>

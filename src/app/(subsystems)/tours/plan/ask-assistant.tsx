@@ -43,7 +43,7 @@ export function AskAssistant({
           {turns.map((turn) => (
             <li key={turn.id} className="space-y-1">
               <p className="ml-auto w-fit max-w-[90%] rounded-2xl bg-white/15 px-3 py-2 text-sm">{turn.request}</p>
-              <div className="w-fit max-w-[90%] rounded-2xl bg-white px-3 py-2 text-sm text-daet-ink">
+              <div className="w-fit max-w-[90%] rounded-2xl bg-surface px-3 py-2 text-sm text-daet-ink">
                 <p>{turn.reply}</p>
                 {turn.undo && turn === last ? (
                   <button
@@ -52,7 +52,7 @@ export function AskAssistant({
                       turn.undo?.();
                       setTurns((current) => current.map((t) => (t.id === turn.id ? { ...t, undo: undefined, reply: `${t.reply} (Undone.)` } : t)));
                     }}
-                    className="mt-1 min-h-11 text-sm font-bold text-daet-leaf underline"
+                    className="mt-1 min-h-11 text-sm font-bold text-daet-leaf dark:text-blue-300 underline"
                   >
                     Undo this change
                   </button>
@@ -93,7 +93,7 @@ export function AskAssistant({
             type="button"
             disabled={pending}
             onClick={() => send(example)}
-            className="min-h-11 rounded-full border border-blue-200 px-4 text-sm text-white transition-colors hover:bg-white/10 disabled:opacity-60"
+            className="min-h-11 rounded-full border border-blue-200 dark:border-blue-700 px-4 text-sm text-white transition-colors hover:bg-white/10 disabled:opacity-60"
           >
             {example}
           </button>

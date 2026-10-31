@@ -46,7 +46,7 @@ export function ShareControls({ id, initialToken, baseUrl }: { id: string; initi
           Create share link
         </Button>
       )}
-      {error ? <p className="mt-2 text-sm font-semibold text-red-700">{error}</p> : null}
+      {error ? <p className="mt-2 text-sm font-semibold text-red-700 dark:text-red-300">{error}</p> : null}
     </div>
   );
 }

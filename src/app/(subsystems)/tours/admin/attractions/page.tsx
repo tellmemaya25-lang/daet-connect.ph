@@ -34,7 +34,7 @@ export default async function AdminAttractionsPage({ searchParams }: { searchPar
 
       <p className="-mt-3 mb-6 text-lg text-daet-ink">
         Places to eat, stay and catch a ride are on the{" "}
-        <Link href="/tours/admin/guide-places" className="font-bold text-blue-700 underline">
+        <Link href="/tours/admin/guide-places" className="font-bold text-blue-700 dark:text-blue-300 underline">
           local guide
         </Link>{" "}
         page.
@@ -57,9 +57,9 @@ export default async function AdminAttractionsPage({ searchParams }: { searchPar
       </Card>
 
       {attractions.length === 0 ? (
-        <p className="rounded-2xl bg-white p-8 text-center text-sm text-daet-ink/70">No attractions yet. Add one or import the Tourism Office list.</p>
+        <p className="rounded-2xl bg-surface p-8 text-center text-sm text-daet-ink/70">No attractions yet. Add one or import the Tourism Office list.</p>
       ) : (
-        <ul className="divide-y divide-daet-ink/10 overflow-hidden rounded-2xl bg-white">
+        <ul className="divide-y divide-daet-ink/10 overflow-hidden rounded-2xl bg-surface">
           {attractions.map((attraction) => (
             <li key={attraction.id} className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between">
               <div className="min-w-0">
@@ -73,14 +73,14 @@ export default async function AdminAttractionsPage({ searchParams }: { searchPar
                 </div>
               </div>
               <div className="grid shrink-0 grid-cols-2 gap-2 sm:flex">
-                <Link href={`/tours/admin/attractions/${attraction.id}/edit`} className="inline-flex min-h-11 items-center justify-center rounded-full border border-daet-forest/30 px-5 text-sm font-bold text-daet-leaf hover:bg-daet-forest/5">
+                <Link href={`/tours/admin/attractions/${attraction.id}/edit`} className="inline-flex min-h-11 items-center justify-center rounded-full border border-daet-forest/30 px-5 text-sm font-bold text-daet-leaf dark:text-blue-300 hover:bg-daet-forest/5">
                   Edit
                 </Link>
                 <form action={deleteAttraction}>
                   <input type="hidden" name="id" value={attraction.id} />
                   <ConfirmSubmitButton
                     message={`Delete "${attraction.name}"? This cannot be undone.`}
-                    className="inline-flex min-h-11 w-full items-center justify-center rounded-full px-5 text-sm font-bold text-red-700 hover:bg-red-50"
+                    className="inline-flex min-h-11 w-full items-center justify-center rounded-full px-5 text-sm font-bold text-red-700 dark:text-red-300 hover:bg-red-50 dark:hover:bg-red-950/40"
                   >
                     Delete
                   </ConfirmSubmitButton>
@@ -96,9 +96,9 @@ export default async function AdminAttractionsPage({ searchParams }: { searchPar
 
 function Stat({ label, value }: { label: string; value: number }) {
   return (
-    <div className="rounded-2xl bg-white p-4">
+    <div className="rounded-2xl bg-surface p-4">
       <p className="text-3xl font-bold text-daet-ink">{value}</p>
-      <p className="text-sm text-slate-600">{label}</p>
+      <p className="text-sm text-slate-600 dark:text-slate-400">{label}</p>
     </div>
   );
 }

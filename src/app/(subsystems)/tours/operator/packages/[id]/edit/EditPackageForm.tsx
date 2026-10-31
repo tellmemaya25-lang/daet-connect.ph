@@ -79,9 +79,9 @@ function Toast({
 function LoadingOverlay() {
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-2xl p-8 flex flex-col items-center gap-4">
+      <div className="bg-surface rounded-2xl p-8 flex flex-col items-center gap-4">
         <div className="animate-spin">
-          <svg className="w-8 h-8 text-daet-leaf" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg className="w-8 h-8 text-daet-leaf dark:text-blue-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
             <path
               className="opacity-75"
@@ -101,14 +101,14 @@ function LoadingOverlay() {
  */
 function ErrorBanner({ message, onDismiss }: { message: string; onDismiss: () => void }) {
   return (
-    <div className="mb-6 p-4 bg-red-50 rounded-2xl flex items-start gap-4">
+    <div className="mb-6 p-4 bg-red-50 dark:bg-red-950/40 rounded-2xl flex items-start gap-4">
       <svg className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
         <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
       </svg>
       <div className="flex-1">
-        <p className="text-red-800 text-sm font-medium">{message}</p>
+        <p className="text-red-800 dark:text-red-300 text-sm font-medium">{message}</p>
       </div>
-      <button onClick={onDismiss} className="text-red-500 hover:text-red-700">
+      <button onClick={onDismiss} className="text-red-500 hover:text-red-700 dark:hover:text-red-300">
         <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
           <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
         </svg>
@@ -128,12 +128,12 @@ function ConcurrencyConflictBanner({
   onDismiss: () => void;
 }) {
   return (
-    <div className="mb-6 p-4 bg-yellow-50 rounded-2xl flex items-start gap-4">
-      <svg className="w-5 h-5 text-yellow-600 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+    <div className="mb-6 p-4 bg-yellow-50 dark:bg-yellow-950/40 rounded-2xl flex items-start gap-4">
+      <svg className="w-5 h-5 text-yellow-600 dark:text-yellow-200 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
         <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
       </svg>
       <div className="flex-1">
-        <p className="text-yellow-800 text-sm font-medium mb-2">{EDIT_MESSAGES.conflict}</p>
+        <p className="text-yellow-800 dark:text-yellow-200 text-sm font-medium mb-2">{EDIT_MESSAGES.conflict}</p>
         <div className="flex gap-2">
           <button
             onClick={onReload}
@@ -143,7 +143,7 @@ function ConcurrencyConflictBanner({
           </button>
           <button
             onClick={onDismiss}
-            className="inline-flex min-h-11 items-center justify-center px-3 py-1 border border-yellow-300 text-yellow-700 text-sm rounded-2xl hover:bg-yellow-100 transition"
+            className="inline-flex min-h-11 items-center justify-center px-3 py-1 border border-yellow-300 dark:border-yellow-700 text-yellow-700 dark:text-yellow-200 text-sm rounded-2xl hover:bg-yellow-100 dark:hover:bg-yellow-900/40 transition"
           >
             Dismiss
           </button>
@@ -454,7 +454,7 @@ export function EditPackageForm({ packageData }: EditPackageFormProps) {
           type="button"
           onClick={handleSaveDraft}
           disabled={isButtonDisabled}
-          className="inline-flex min-h-11 items-center justify-center px-6 py-2 border border-daet-ink/20 text-daet-ink/80 rounded-2xl font-medium hover:bg-slate-50 transition disabled:opacity-50 disabled:cursor-not-allowed"
+          className="inline-flex min-h-11 items-center justify-center px-6 py-2 border border-daet-ink/20 text-daet-ink/80 rounded-2xl font-medium hover:bg-canvas transition disabled:opacity-50 disabled:cursor-not-allowed"
         >
           Save as Draft
         </button>

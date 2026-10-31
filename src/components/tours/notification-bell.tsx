@@ -101,11 +101,11 @@ export function NotificationBell() {
       </button>
 
       {open ? (
-        <div className="absolute right-0 z-50 mt-2 w-[min(22rem,calc(100vw-2rem))] overflow-hidden rounded-2xl bg-white text-left shadow-[var(--shadow-float)]">
+        <div className="absolute right-0 z-50 mt-2 w-[min(22rem,calc(100vw-2rem))] overflow-hidden rounded-2xl bg-surface text-left shadow-[var(--shadow-float)]">
           <div className="flex items-center justify-between border-b border-daet-ink/10 px-4 py-3">
             <p className="font-bold text-daet-ink">Notifications</p>
             {unread > 0 ? (
-              <button type="button" onClick={() => markRead()} className="min-h-11 rounded-full px-2 text-sm font-bold text-daet-forest hover:bg-daet-sand">
+              <button type="button" onClick={() => markRead()} className="min-h-11 rounded-full px-2 text-sm font-bold text-daet-forest dark:text-blue-300 hover:bg-daet-sand">
                 Mark all read
               </button>
             ) : null}
@@ -124,7 +124,7 @@ export function NotificationBell() {
                     }}
                     className={`flex gap-3 px-4 py-3 transition hover:bg-daet-sand/40 ${item.read_at ? "" : "bg-daet-forest/5"}`}
                   >
-                    <LineIcon name={notificationIcon(item.type)} className="h-6 w-6 text-blue-600" />
+                    <LineIcon name={notificationIcon(item.type)} className="h-6 w-6 text-blue-600 dark:text-blue-300" />
                     <span className="min-w-0 flex-1">
                       <span className={`block text-sm text-daet-ink ${item.read_at ? "font-semibold" : "font-bold"}`}>{item.title}</span>
                       {item.body ? <span className="block line-clamp-2 text-xs text-daet-ink/65">{item.body}</span> : null}
@@ -139,7 +139,7 @@ export function NotificationBell() {
           <Link
             href="/tours/notifications"
             onClick={() => setOpen(false)}
-            className="block border-t border-daet-ink/10 px-4 py-3 text-center text-sm font-bold text-daet-forest hover:bg-daet-sand/40"
+            className="block border-t border-daet-ink/10 px-4 py-3 text-center text-sm font-bold text-daet-forest dark:text-blue-300 hover:bg-daet-sand/40"
           >
             See all and notification settings
           </Link>

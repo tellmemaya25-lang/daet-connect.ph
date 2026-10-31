@@ -91,90 +91,90 @@ export default async function AdminDashboardPage() {
         {/* Pending Operators */}
         <Link
           href="/tours/admin/operators"
-          className="block rounded-2xl bg-white p-6 transition hover:bg-blue-50 active:scale-[0.99]"
+          className="block rounded-2xl bg-surface p-6 transition hover:bg-blue-50 dark:hover:bg-blue-950/40 active:scale-[0.99]"
         >
           <div className="flex items-center justify-between">
             <div>
               <p className="font-bold text-daet-ink">Pending Operators</p>
               <p className="mt-2 text-4xl font-bold text-daet-ink">{pendingOperators || 0}</p>
             </div>
-            <div className="grid h-14 w-14 place-items-center rounded-2xl bg-yellow-50 text-2xl">
+            <div className="grid h-14 w-14 place-items-center rounded-2xl bg-yellow-50 dark:bg-yellow-950/40 text-2xl">
               <LineIcon name="building" className="inline-block h-[1.1em] w-[1.1em] align-[-0.15em]" />
             </div>
           </div>
-          <p className="mt-4 text-slate-600">Applications awaiting review</p>
+          <p className="mt-4 text-slate-600 dark:text-slate-400">Applications awaiting review</p>
         </Link>
 
         {/* Pending Guides */}
         <Link
           href="/tours/admin/guides"
-          className="block rounded-2xl bg-white p-6 transition hover:bg-blue-50 active:scale-[0.99]"
+          className="block rounded-2xl bg-surface p-6 transition hover:bg-blue-50 dark:hover:bg-blue-950/40 active:scale-[0.99]"
         >
           <div className="flex items-center justify-between">
             <div>
               <p className="font-bold text-daet-ink">Pending Guides</p>
               <p className="mt-2 text-4xl font-bold text-daet-ink">{pendingGuides || 0}</p>
             </div>
-            <div className="grid h-14 w-14 place-items-center rounded-2xl bg-yellow-50 text-2xl">
+            <div className="grid h-14 w-14 place-items-center rounded-2xl bg-yellow-50 dark:bg-yellow-950/40 text-2xl">
               <LineIcon name="user" className="inline-block h-[1.1em] w-[1.1em] align-[-0.15em]" />
             </div>
           </div>
-          <p className="mt-4 text-slate-600">Guide applications to verify</p>
+          <p className="mt-4 text-slate-600 dark:text-slate-400">Guide applications to verify</p>
         </Link>
 
         {/* Pending Packages */}
         <Link
           href="/tours/admin/packages"
-          className="block rounded-2xl bg-white p-6 transition hover:bg-blue-50 active:scale-[0.99]"
+          className="block rounded-2xl bg-surface p-6 transition hover:bg-blue-50 dark:hover:bg-blue-950/40 active:scale-[0.99]"
         >
           <div className="flex items-center justify-between">
             <div>
               <p className="font-bold text-daet-ink">Pending Packages</p>
               <p className="mt-2 text-4xl font-bold text-daet-ink">{pendingPackages || 0}</p>
             </div>
-            <div className="grid h-14 w-14 place-items-center rounded-2xl bg-yellow-50 text-2xl">
+            <div className="grid h-14 w-14 place-items-center rounded-2xl bg-yellow-50 dark:bg-yellow-950/40 text-2xl">
               <LineIcon name="box" className="inline-block h-[1.1em] w-[1.1em] align-[-0.15em]" />
             </div>
           </div>
-          <p className="mt-4 text-slate-600">Tour packages awaiting approval</p>
+          <p className="mt-4 text-slate-600 dark:text-slate-400">Tour packages awaiting approval</p>
         </Link>
 
         {/* Published Packages */}
-        <div className="rounded-2xl bg-white p-6">
+        <div className="rounded-2xl bg-surface p-6">
           <div className="flex items-center justify-between">
             <div>
               <p className="font-bold text-daet-ink">Published Packages</p>
               <p className="mt-2 text-4xl font-bold text-daet-ink">{publishedPackages || 0}</p>
             </div>
-            <div className="grid h-14 w-14 place-items-center rounded-2xl bg-green-50 text-2xl">
+            <div className="grid h-14 w-14 place-items-center rounded-2xl bg-green-50 dark:bg-green-950/40 text-2xl">
               ✓
             </div>
           </div>
-          <p className="mt-4 text-slate-600">Active tour offerings</p>
+          <p className="mt-4 text-slate-600 dark:text-slate-400">Active tour offerings</p>
         </div>
 
         {/* Total Bookings */}
-        <div className="rounded-2xl bg-white p-6">
+        <div className="rounded-2xl bg-surface p-6">
           <div className="flex items-center justify-between">
             <div>
               <p className="font-bold text-daet-ink">Total Bookings</p>
               <p className="mt-2 text-4xl font-bold text-daet-ink">{totalBookings || 0}</p>
             </div>
-            <div className="grid h-14 w-14 place-items-center rounded-2xl bg-blue-50 text-2xl">
+            <div className="grid h-14 w-14 place-items-center rounded-2xl bg-blue-50 dark:bg-blue-950/40 text-2xl">
               <LineIcon name="calendar" className="inline-block h-[1.1em] w-[1.1em] align-[-0.15em]" />
             </div>
           </div>
-          <p className="mt-4 text-slate-600">All-time reservations</p>
+          <p className="mt-4 text-slate-600 dark:text-slate-400">All-time reservations</p>
         </div>
       </div>
 
       {/* Quick Actions */}
-      <div className="rounded-2xl bg-white p-6 mb-8">
+      <div className="rounded-2xl bg-surface p-6 mb-8">
         <h2 className="text-xl font-bold text-daet-ink mb-4">Quick Actions</h2>
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           <Link
             href="/tours/admin/analytics"
-            className="inline-flex min-h-11 items-center justify-center rounded-full bg-daet-ink px-6 text-sm font-bold text-white hover:bg-daet-forest transition"
+            className="inline-flex min-h-11 items-center justify-center rounded-full bg-slate-900 px-6 text-sm font-bold text-white hover:bg-daet-forest transition"
           >
             <LineIcon name="chart" className="inline-block h-[1.1em] w-[1.1em] align-[-0.15em]" /> Tourism Analytics
           </Link>
@@ -198,37 +198,37 @@ export default async function AdminDashboardPage() {
           </Link>
           <Link
             href="/tours/admin/events"
-            className="inline-flex min-h-11 items-center justify-center rounded-full border border-daet-forest/30 px-6 text-sm font-bold text-daet-leaf hover:bg-daet-forest/5 transition"
+            className="inline-flex min-h-11 items-center justify-center rounded-full border border-daet-forest/30 px-6 text-sm font-bold text-daet-leaf dark:text-blue-300 hover:bg-daet-forest/5 transition"
           >
             Manage Events Calendar
           </Link>
           <Link
             href="/tours/admin/attractions"
-            className="inline-flex min-h-11 items-center justify-center rounded-full border border-daet-forest/30 px-6 text-sm font-bold text-daet-leaf hover:bg-daet-forest/5 transition"
+            className="inline-flex min-h-11 items-center justify-center rounded-full border border-daet-forest/30 px-6 text-sm font-bold text-daet-leaf dark:text-blue-300 hover:bg-daet-forest/5 transition"
           >
             Manage Attractions
           </Link>
           <Link
             href="/tours/admin/guide-places"
-            className="inline-flex min-h-11 items-center justify-center rounded-full border border-daet-forest/30 px-6 text-sm font-bold text-daet-leaf hover:bg-daet-forest/5 transition"
+            className="inline-flex min-h-11 items-center justify-center rounded-full border border-daet-forest/30 px-6 text-sm font-bold text-daet-leaf dark:text-blue-300 hover:bg-daet-forest/5 transition"
           >
             Local guide: food, stays, fares
           </Link>
           <Link
             href="/tours/admin/reviews"
-            className="inline-flex min-h-11 items-center justify-center rounded-full border border-daet-forest/30 px-6 text-sm font-bold text-daet-leaf hover:bg-daet-forest/5 transition"
+            className="inline-flex min-h-11 items-center justify-center rounded-full border border-daet-forest/30 px-6 text-sm font-bold text-daet-leaf dark:text-blue-300 hover:bg-daet-forest/5 transition"
           >
             Moderate Reviews
           </Link>
           <Link
             href="/tours/messages"
-            className="inline-flex min-h-11 items-center justify-center rounded-full border border-daet-forest/30 px-6 text-sm font-bold text-daet-forest hover:bg-daet-forest/5 transition"
+            className="inline-flex min-h-11 items-center justify-center rounded-full border border-daet-forest/30 px-6 text-sm font-bold text-daet-forest dark:text-blue-300 hover:bg-daet-forest/5 transition"
           >
             Operator Messages
           </Link>
           <Link
             href="/tours/admin/merch"
-            className="inline-flex min-h-11 items-center justify-center rounded-full border border-daet-forest/30 px-6 text-sm font-bold text-daet-leaf hover:bg-daet-forest/5 transition"
+            className="inline-flex min-h-11 items-center justify-center rounded-full border border-daet-forest/30 px-6 text-sm font-bold text-daet-leaf dark:text-blue-300 hover:bg-daet-forest/5 transition"
           >
             Manage Merchandise
           </Link>
@@ -237,7 +237,7 @@ export default async function AdminDashboardPage() {
 
       {/* Recent Activity */}
       {recentActivities && recentActivities.length > 0 && (
-        <div className="rounded-2xl bg-white p-6">
+        <div className="rounded-2xl bg-surface p-6">
           <h2 className="text-xl font-bold text-daet-ink mb-4">Recent Activity</h2>
           <div className="space-y-3">
             {recentActivities.map((activity: any) => (
@@ -252,11 +252,11 @@ export default async function AdminDashboardPage() {
                       {getActivityDescription(activity)}
                     </span>
                   </p>
-                  <p className="text-sm text-slate-600 mt-1">
+                  <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
                     {new Date(activity.created_at).toLocaleString()}
                   </p>
                   {activity.notes && (
-                    <p className="text-sm text-slate-600 mt-1 italic">"{activity.notes}"</p>
+                    <p className="text-sm text-slate-600 dark:text-slate-400 mt-1 italic">"{activity.notes}"</p>
                   )}
                 </div>
               </div>

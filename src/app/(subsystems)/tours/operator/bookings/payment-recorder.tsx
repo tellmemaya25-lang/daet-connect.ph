@@ -61,10 +61,10 @@ export function PaymentRecorder({
   };
 
   const statusColors: Record<string, string> = {
-    unpaid: "bg-red-100 text-red-800",
-    partial: "bg-yellow-100 text-yellow-800",
-    paid: "bg-green-100 text-green-800",
-    refunded: "bg-slate-100 text-daet-ink",
+    unpaid: "bg-red-100 dark:bg-red-900/40 text-red-800 dark:text-red-300",
+    partial: "bg-yellow-100 dark:bg-yellow-900/40 text-yellow-800 dark:text-yellow-200",
+    paid: "bg-green-100 dark:bg-green-900/40 text-green-800 dark:text-green-300",
+    refunded: "bg-muted text-daet-ink",
   };
 
   const statusLabels: Record<string, string> = {
@@ -75,15 +75,15 @@ export function PaymentRecorder({
   };
 
   return (
-    <div className="rounded-2xl bg-slate-50 p-4">
+    <div className="rounded-2xl bg-canvas p-4">
       <div className="mb-3 flex items-center justify-between">
         <div>
-          <p className="text-sm text-slate-600">
+          <p className="text-sm text-slate-600 dark:text-slate-400">
             Payment Status
           </p>
           <span
             className={`mt-1 inline-block rounded-full px-3 py-1 text-xs font-bold ${
-              statusColors[paymentStatus] || "bg-slate-100 text-daet-ink"
+              statusColors[paymentStatus] || "bg-muted text-daet-ink"
             }`}
           >
             {statusLabels[paymentStatus] || paymentStatus}
@@ -106,11 +106,11 @@ export function PaymentRecorder({
         </div>
         <div>
           <p className="text-daet-ink/70">Total Paid</p>
-          <p className="font-bold text-green-700">{formatPeso(totalPaid)}</p>
+          <p className="font-bold text-green-700 dark:text-green-300">{formatPeso(totalPaid)}</p>
         </div>
         <div>
           <p className="text-daet-ink/70">Remaining</p>
-          <p className="font-bold text-yellow-800">{formatPeso(remaining)}</p>
+          <p className="font-bold text-yellow-800 dark:text-yellow-200">{formatPeso(remaining)}</p>
         </div>
       </div>
 

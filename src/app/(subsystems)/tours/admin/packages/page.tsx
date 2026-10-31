@@ -133,7 +133,7 @@ export default async function AdminPackagesPage() {
           </div>
           
           {pendingPackages.length === 0 ? (
-            <div className="bg-white rounded-2xl p-6 text-center text-daet-ink/70">
+            <div className="bg-surface rounded-2xl p-6 text-center text-daet-ink/70">
               No pending packages
             </div>
           ) : (
@@ -154,7 +154,7 @@ export default async function AdminPackagesPage() {
           </div>
           
           {publishedPackages.length === 0 ? (
-            <div className="bg-white rounded-2xl p-6 text-center text-daet-ink/70">
+            <div className="bg-surface rounded-2xl p-6 text-center text-daet-ink/70">
               No published packages
             </div>
           ) : (
@@ -190,9 +190,9 @@ export default async function AdminPackagesPage() {
 
 function PackageCard({ package: pkg }: { package: any }) {
   const statusColors = {
-    pending: 'bg-yellow-100 text-yellow-800',
-    published: 'bg-green-100 text-green-800',
-    archived: 'bg-slate-100 text-daet-ink',
+    pending: 'bg-yellow-100 dark:bg-yellow-900/40 text-yellow-800 dark:text-yellow-200',
+    published: 'bg-green-100 dark:bg-green-900/40 text-green-800 dark:text-green-300',
+    archived: 'bg-muted text-daet-ink',
   };
 
   const operator = pkg.tours_operators;
@@ -200,7 +200,7 @@ function PackageCard({ package: pkg }: { package: any }) {
   const contactName = operator?.profiles?.full_name || 'Unknown';
 
   return (
-    <div className="bg-white rounded-2xl border border-daet-ink/20 p-6">
+    <div className="bg-surface rounded-2xl border border-daet-ink/20 p-6">
       <div className="flex items-start justify-between">
         <div className="flex-1">
           <div className="flex items-center gap-3 mb-2">
@@ -221,7 +221,7 @@ function PackageCard({ package: pkg }: { package: any }) {
         <div className="ml-4">
           <Link
             href={`/tours/admin/packages/${pkg.id}`}
-            className="min-h-11 inline-flex items-center px-4 py-2 border border-daet-ink/20 rounded-2xl text-sm font-medium text-daet-ink/80 bg-white hover:bg-slate-50"
+            className="min-h-11 inline-flex items-center px-4 py-2 border border-daet-ink/20 rounded-2xl text-sm font-medium text-daet-ink/80 bg-surface hover:bg-canvas"
           >
             Review
           </Link>

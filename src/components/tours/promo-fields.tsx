@@ -17,11 +17,11 @@ export function PromoCheckbox({
   defaultChecked: boolean;
 }) {
   return (
-    <label className="flex min-h-11 cursor-pointer items-start gap-3 rounded-2xl bg-slate-50 p-3">
+    <label className="flex min-h-11 cursor-pointer items-start gap-3 rounded-2xl bg-canvas p-3">
       <input type="checkbox" name={name} defaultChecked={defaultChecked} className="mt-1 h-5 w-5 accent-daet-forest" />
       <span>
         <span className="block text-sm font-bold text-daet-ink">{label}</span>
-        {description ? <span className="block text-sm text-slate-600">{description}</span> : null}
+        {description ? <span className="block text-sm text-slate-600 dark:text-slate-400">{description}</span> : null}
       </span>
     </label>
   );

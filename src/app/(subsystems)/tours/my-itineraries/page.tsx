@@ -55,10 +55,10 @@ export default async function MyItinerariesPage({ searchParams }: { searchParams
           <ul className="mt-6 space-y-2">
             {(data ?? []).map((row) => (
               <li key={row.id}>
-                <Link href={`/tours/my-itineraries/${row.id}`} className="flex min-h-11 flex-wrap items-center justify-between gap-2 rounded-2xl bg-white p-4 transition hover:bg-blue-50">
+                <Link href={`/tours/my-itineraries/${row.id}`} className="flex min-h-11 flex-wrap items-center justify-between gap-2 rounded-2xl bg-surface p-4 transition hover:bg-blue-50 dark:hover:bg-blue-950/40">
                   <span>
                     <span className="block font-bold text-daet-ink">{row.title}</span>
-                    <span className="block text-sm text-slate-600">
+                    <span className="block text-sm text-slate-600 dark:text-slate-400">
                       {shortDate(row.start_date)} – {shortDate(row.end_date)} · {(row.tours_itinerary_items ?? []).length} items
                     </span>
                   </span>

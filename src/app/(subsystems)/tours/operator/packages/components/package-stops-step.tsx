@@ -101,7 +101,7 @@ export function PackageStopsStep({
             value={formData.locationName || ""}
             onChange={(e) => setFormData({ ...formData, locationName: e.target.value })}
             placeholder="Location name (e.g., Bagasbas Beach)"
-            className="w-full rounded-2xl border border-daet-ink/15 bg-white px-3 py-2.5 text-sm"
+            className="w-full rounded-2xl border border-daet-ink/15 bg-surface px-3 py-2.5 text-sm"
           />
 
           <div className="grid grid-cols-2 gap-3">
@@ -111,7 +111,7 @@ export function PackageStopsStep({
               onChange={(e) => setFormData({ ...formData, latitude: Number(e.target.value) })}
               placeholder="Latitude"
               step="any"
-              className="w-full rounded-2xl border border-daet-ink/15 bg-white px-3 py-2.5 text-sm"
+              className="w-full rounded-2xl border border-daet-ink/15 bg-surface px-3 py-2.5 text-sm"
             />
             <input
               type="number"
@@ -119,7 +119,7 @@ export function PackageStopsStep({
               onChange={(e) => setFormData({ ...formData, longitude: Number(e.target.value) })}
               placeholder="Longitude"
               step="any"
-              className="w-full rounded-2xl border border-daet-ink/15 bg-white px-3 py-2.5 text-sm"
+              className="w-full rounded-2xl border border-daet-ink/15 bg-surface px-3 py-2.5 text-sm"
             />
           </div>
 
@@ -128,7 +128,7 @@ export function PackageStopsStep({
             onChange={(e) => setFormData({ ...formData, description: e.target.value || null })}
             placeholder="Brief description of this stop (optional)"
             rows={2}
-            className="w-full rounded-2xl border border-daet-ink/15 bg-white px-3 py-2.5 text-sm"
+            className="w-full rounded-2xl border border-daet-ink/15 bg-surface px-3 py-2.5 text-sm"
           />
 
           <input
@@ -142,7 +142,7 @@ export function PackageStopsStep({
             }
             placeholder="Estimated duration (minutes, optional)"
             min={0}
-            className="w-full rounded-2xl border border-daet-ink/15 bg-white px-3 py-2.5 text-sm"
+            className="w-full rounded-2xl border border-daet-ink/15 bg-surface px-3 py-2.5 text-sm"
           />
 
           <div className="flex gap-2">
@@ -158,7 +158,7 @@ export function PackageStopsStep({
               <button
                 type="button"
                 onClick={cancelEdit}
-                className="inline-flex min-h-10 items-center justify-center rounded-full border border-daet-ink/20 px-5 text-sm font-bold text-daet-ink transition hover:bg-white"
+                className="inline-flex min-h-10 items-center justify-center rounded-full border border-daet-ink/20 px-5 text-sm font-bold text-daet-ink transition hover:bg-surface"
               >
                 Cancel
               </button>
@@ -166,7 +166,7 @@ export function PackageStopsStep({
           </div>
         </div>
 
-        <p className="mt-3 text-sm text-slate-600">
+        <p className="mt-3 text-sm text-slate-600 dark:text-slate-400">
           <LineIcon name="tip" className="inline-block h-[1.1em] w-[1.1em] align-[-0.15em]" /> Use Google Maps to find latitude/longitude coordinates for accurate pin placement
         </p>
       </div>
@@ -181,7 +181,7 @@ export function PackageStopsStep({
             {stops.map((stop, index) => (
               <li
                 key={index}
-                className="flex items-start justify-between gap-3 rounded-2xl bg-white p-4"
+                className="flex items-start justify-between gap-3 rounded-2xl bg-surface p-4"
               >
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2">
@@ -190,14 +190,14 @@ export function PackageStopsStep({
                     </span>
                     <p className="font-bold text-daet-ink">{stop.locationName}</p>
                   </div>
-                  <p className="mt-1 text-sm text-slate-600">
+                  <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
                     {stop.latitude.toFixed(4)}, {stop.longitude.toFixed(4)}
                   </p>
                   {stop.description && (
                     <p className="mt-1 text-sm text-daet-ink/70">{stop.description}</p>
                   )}
                   {stop.estimatedDurationMinutes && (
-                    <p className="mt-1 text-sm text-slate-600">
+                    <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
                       ~{stop.estimatedDurationMinutes} minutes
                     </p>
                   )}
@@ -206,7 +206,7 @@ export function PackageStopsStep({
                   <button
                     type="button"
                     onClick={() => editStop(index)}
-                    className="grid h-8 w-8 place-items-center rounded-full text-daet-leaf transition hover:bg-daet-forest/10"
+                    className="grid h-8 w-8 place-items-center rounded-full text-daet-leaf dark:text-blue-300 transition hover:bg-daet-forest/10"
                     aria-label="Edit stop"
                   >
                     <LineIcon name="edit" className="inline-block h-[1.1em] w-[1.1em] align-[-0.15em]" />
@@ -214,7 +214,7 @@ export function PackageStopsStep({
                   <button
                     type="button"
                     onClick={() => removeStop(index)}
-                    className="grid h-8 w-8 place-items-center rounded-full text-red-600 transition hover:bg-red-50"
+                    className="grid h-8 w-8 place-items-center rounded-full text-red-600 dark:text-red-300 transition hover:bg-red-50 dark:hover:bg-red-950/40"
                     aria-label="Remove stop"
                   >
                     ✕

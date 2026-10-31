@@ -43,7 +43,7 @@ export function PackageReviewStep({
       </div>
 
       {/* Package Summary */}
-      <div className="space-y-6 rounded-2xl bg-white p-6">
+      <div className="space-y-6 rounded-2xl bg-surface p-6">
         {/* Title & Location */}
         <div>
           <h3 className="text-xl font-bold text-daet-ink">{data.title}</h3>
@@ -56,7 +56,7 @@ export function PackageReviewStep({
         {/* Description */}
         {data.description && (
           <div>
-            <p className="text-sm text-slate-600">
+            <p className="text-sm text-slate-600 dark:text-slate-400">
               Description
             </p>
             <p className="mt-1 text-sm leading-6 text-daet-ink/70">{data.description}</p>
@@ -66,12 +66,12 @@ export function PackageReviewStep({
         {/* Inclusions */}
         {data.inclusions.length > 0 && (
           <div>
-            <p className="text-sm text-slate-600">
+            <p className="text-sm text-slate-600 dark:text-slate-400">
               Inclusions ({data.inclusions.length})
             </p>
             <ul className="mt-2 space-y-1">
               {data.inclusions.map((item, i) => (
-                <li key={i} className="flex items-center gap-2 text-sm text-green-800">
+                <li key={i} className="flex items-center gap-2 text-sm text-green-800 dark:text-green-300">
                   <span className="text-xs">✓</span>
                   {item}
                 </li>
@@ -83,7 +83,7 @@ export function PackageReviewStep({
         {/* Exclusions */}
         {data.exclusions.length > 0 && (
           <div>
-            <p className="text-sm text-slate-600">
+            <p className="text-sm text-slate-600 dark:text-slate-400">
               Exclusions ({data.exclusions.length})
             </p>
             <ul className="mt-2 space-y-1">
@@ -99,7 +99,7 @@ export function PackageReviewStep({
 
         {/* Price Variants */}
         <div>
-          <p className="text-sm text-slate-600">
+          <p className="text-sm text-slate-600 dark:text-slate-400">
             Price variants ({data.priceVariants.length})
           </p>
           <div className="mt-2 space-y-2">
@@ -109,7 +109,7 @@ export function PackageReviewStep({
                 className={`rounded-2xl border p-3 ${
                   variant.isDefault
                     ? "border-daet-forest/30 bg-daet-forest/5"
-                    : "border-daet-ink/10 bg-white"
+                    : "border-daet-ink/10 bg-surface"
                 }`}
               >
                 <div className="flex items-center justify-between">
@@ -117,10 +117,10 @@ export function PackageReviewStep({
                     <p className="text-sm font-bold text-daet-ink">
                       {variant.variantName}
                       {variant.isDefault && (
-                        <span className="ml-2 text-xs text-daet-forest">(Default)</span>
+                        <span className="ml-2 text-xs text-daet-forest dark:text-blue-300">(Default)</span>
                       )}
                     </p>
-                    <p className="text-sm text-slate-600">
+                    <p className="text-sm text-slate-600 dark:text-slate-400">
                       {variant.minPax}
                       {variant.maxPax ? `–${variant.maxPax}` : "+"} pax
                     </p>
@@ -138,13 +138,13 @@ export function PackageReviewStep({
 
         {/* Stops */}
         <div>
-          <p className="text-sm text-slate-600">
+          <p className="text-sm text-slate-600 dark:text-slate-400">
             Itinerary stops ({data.stops.length})
           </p>
           <div className="mt-2 space-y-1">
             {data.stops.map((stop, i) => (
               <div key={i} className="flex items-center gap-2 text-sm text-daet-ink/70">
-                <span className="flex h-5 w-5 items-center justify-center rounded-full bg-daet-forest/10 text-xs font-bold text-daet-leaf">
+                <span className="flex h-5 w-5 items-center justify-center rounded-full bg-daet-forest/10 text-xs font-bold text-daet-leaf dark:text-blue-300">
                   {i + 1}
                 </span>
                 {stop.locationName}
@@ -155,9 +155,9 @@ export function PackageReviewStep({
       </div>
 
       {/* Warning Box */}
-      <div className="rounded-2xl bg-yellow-50 p-4 text-sm">
-        <p className="font-bold text-yellow-900"><LineIcon name="warning" className="inline-block h-[1.1em] w-[1.1em] align-[-0.15em]" /> Before submitting</p>
-        <ul className="mt-2 space-y-1 text-xs text-yellow-800">
+      <div className="rounded-2xl bg-yellow-50 dark:bg-yellow-950/40 p-4 text-sm">
+        <p className="font-bold text-yellow-900 dark:text-yellow-200"><LineIcon name="warning" className="inline-block h-[1.1em] w-[1.1em] align-[-0.15em]" /> Before submitting</p>
+        <ul className="mt-2 space-y-1 text-xs text-yellow-800 dark:text-yellow-200">
           <li>• All information is accurate and up-to-date</li>
           <li>• Pricing matches your actual tour costs</li>
           <li>• You have at least one price variant marked as default</li>
@@ -182,7 +182,7 @@ export function PackageReviewStep({
               type="button"
               onClick={onSaveDraft}
               disabled={loading}
-              className="inline-flex min-h-12 items-center justify-center rounded-full border border-daet-ink/20 px-8 text-sm font-bold text-daet-ink transition hover:bg-white disabled:cursor-not-allowed disabled:opacity-50"
+              className="inline-flex min-h-12 items-center justify-center rounded-full border border-daet-ink/20 px-8 text-sm font-bold text-daet-ink transition hover:bg-surface disabled:cursor-not-allowed disabled:opacity-50"
             >
               Save as draft
             </button>

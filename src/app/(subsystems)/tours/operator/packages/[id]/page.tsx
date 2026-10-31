@@ -184,11 +184,11 @@ export default async function OperatorPackageDetailPage({ params }: PageProps) {
   const getStatusBadge = () => {
     switch (pkg.status) {
       case "published":
-        return "bg-green-100 text-green-800";
+        return "bg-green-100 dark:bg-green-900/40 text-green-800 dark:text-green-300";
       case "pending_review":
-        return "bg-yellow-100 text-yellow-900";
+        return "bg-yellow-100 dark:bg-yellow-900/40 text-yellow-900 dark:text-yellow-200";
       case "rejected":
-        return "bg-red-100 text-red-800";
+        return "bg-red-100 dark:bg-red-900/40 text-red-800 dark:text-red-300";
       default:
         return "bg-daet-sand text-daet-ink/70";
     }
@@ -212,7 +212,7 @@ export default async function OperatorPackageDetailPage({ params }: PageProps) {
       <div className="mx-auto max-w-7xl">
         {/* Breadcrumb */}
         <nav className="mb-6 text-sm text-daet-ink/70">
-          <Link href="/tours/operator/packages" className="hover:text-daet-forest">
+          <Link href="/tours/operator/packages" className="hover:text-daet-forest dark:hover:text-blue-300">
             My packages
           </Link>
           <span className="mx-2">→</span>
@@ -257,7 +257,7 @@ export default async function OperatorPackageDetailPage({ params }: PageProps) {
           </Link>
           <Link
             href={`/tours/operator/packages/${pkg.id}/availability`}
-            className="inline-flex min-h-11 items-center justify-center rounded-full border border-daet-forest/30 bg-white px-6 text-sm font-bold text-daet-leaf transition hover:bg-daet-forest/5"
+            className="inline-flex min-h-11 items-center justify-center rounded-full border border-daet-forest/30 bg-surface px-6 text-sm font-bold text-daet-leaf dark:text-blue-300 transition hover:bg-daet-forest/5"
           >
             Dates &amp; seats
           </Link>
@@ -265,7 +265,7 @@ export default async function OperatorPackageDetailPage({ params }: PageProps) {
             <Link
               href={`/tours/packages/${pkg.id}`}
               target="_blank"
-              className="inline-flex min-h-10 items-center justify-center rounded-full border border-daet-ink/20 bg-white px-6 text-sm font-bold text-daet-ink transition hover:bg-daet-sand"
+              className="inline-flex min-h-10 items-center justify-center rounded-full border border-daet-ink/20 bg-surface px-6 text-sm font-bold text-daet-ink transition hover:bg-daet-sand"
             >
               View public page →
             </Link>
@@ -289,7 +289,7 @@ export default async function OperatorPackageDetailPage({ params }: PageProps) {
             )}
 
             {/* Basic info */}
-            <div className="mt-6 rounded-2xl bg-white p-6">
+            <div className="mt-6 rounded-2xl bg-surface p-6">
               <h2 className="font-bold text-daet-ink">Basic information</h2>
               <dl className="mt-4 space-y-3 text-sm">
                 <div>
@@ -314,23 +314,23 @@ export default async function OperatorPackageDetailPage({ params }: PageProps) {
 
             {/* Pricing */}
             {pkg.tours_package_price_variants && pkg.tours_package_price_variants.length > 0 && (
-              <div className="mt-6 rounded-2xl bg-white p-6">
+              <div className="mt-6 rounded-2xl bg-surface p-6">
                 <h2 className="font-bold text-daet-ink">Pricing variants</h2>
                 <div className="mt-4 space-y-3">
                   {pkg.tours_package_price_variants.map((variant: any) => (
                     <div
                       key={variant.id}
-                      className="bg-slate-50 flex items-center justify-between rounded-2xl p-4"
+                      className="bg-canvas flex items-center justify-between rounded-2xl p-4"
                     >
                       <div>
                         <p className="font-bold text-daet-ink">
                           {variant.variant_name}
                           {variant.is_default && (
-                            <span className="ml-2 text-xs text-daet-leaf">(Default)</span>
+                            <span className="ml-2 text-xs text-daet-leaf dark:text-blue-300">(Default)</span>
                           )}
                         </p>
                         {(variant.min_pax || variant.max_pax) && (
-                          <p className="mt-1 text-sm text-slate-600">
+                          <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
                             {variant.min_pax && `Min: ${variant.min_pax} pax`}
                             {variant.min_pax && variant.max_pax && " · "}
                             {variant.max_pax && `Max: ${variant.max_pax} pax`}
@@ -341,7 +341,7 @@ export default async function OperatorPackageDetailPage({ params }: PageProps) {
                         <p className="text-xl font-bold text-daet-ink">
                           {formatPeso(variant.price_per_pax || variant.flat_price || 0)}
                         </p>
-                        <p className="text-sm text-slate-600">
+                        <p className="text-sm text-slate-600 dark:text-slate-400">
                           {variant.price_per_pax ? "per person" : "flat rate"}
                         </p>
                       </div>
@@ -353,7 +353,7 @@ export default async function OperatorPackageDetailPage({ params }: PageProps) {
 
             {/* Inclusions */}
             {(included.length > 0 || excluded.length > 0) && (
-              <div className="mt-6 rounded-2xl bg-white p-6">
+              <div className="mt-6 rounded-2xl bg-surface p-6">
                 <h2 className="font-bold text-daet-ink">Inclusions</h2>
 
                 {included.length > 0 && (
@@ -365,7 +365,7 @@ export default async function OperatorPackageDetailPage({ params }: PageProps) {
                           key={item.id}
                           className="flex items-start gap-2 text-sm text-daet-ink/80"
                         >
-                          <span className="text-green-600">✓</span>
+                          <span className="text-green-600 dark:text-green-300">✓</span>
                           <span>{item.item_text}</span>
                         </li>
                       ))}
@@ -382,7 +382,7 @@ export default async function OperatorPackageDetailPage({ params }: PageProps) {
                           key={item.id}
                           className="flex items-start gap-2 text-sm text-daet-ink/80"
                         >
-                          <span className="text-red-600">✗</span>
+                          <span className="text-red-600 dark:text-red-300">✗</span>
                           <span>{item.item_text}</span>
                         </li>
                       ))}
@@ -394,7 +394,7 @@ export default async function OperatorPackageDetailPage({ params }: PageProps) {
 
             {/* Itinerary */}
             {stops.length > 0 && (
-              <div className="mt-6 rounded-2xl bg-white p-6">
+              <div className="mt-6 rounded-2xl bg-surface p-6">
                 <h2 className="font-bold text-daet-ink">Itinerary stops</h2>
                 <div className="mt-4 space-y-4">
                   {stops.map((stop: any, idx: number) => (
@@ -410,7 +410,7 @@ export default async function OperatorPackageDetailPage({ params }: PageProps) {
                           </p>
                         )}
                         {(stop.latitude || stop.longitude) && (
-                          <p className="mt-1 text-sm text-slate-600">
+                          <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
                             {stop.latitude}, {stop.longitude}
                           </p>
                         )}
@@ -421,7 +421,7 @@ export default async function OperatorPackageDetailPage({ params }: PageProps) {
               </div>
             )}
 
-            <section aria-labelledby="meeting-heading" className="mt-6 rounded-2xl bg-white p-6">
+            <section aria-labelledby="meeting-heading" className="mt-6 rounded-2xl bg-surface p-6">
               <h2 id="meeting-heading" className="font-bold text-daet-ink">Where guests meet</h2>
               <div className="mt-3">
                 <MeetingPointForm
@@ -436,7 +436,7 @@ export default async function OperatorPackageDetailPage({ params }: PageProps) {
 
             {/* Gallery */}
             {gallery.length > 0 && (
-              <div className="mt-6 rounded-2xl bg-white p-6">
+              <div className="mt-6 rounded-2xl bg-surface p-6">
                 <h2 className="font-bold text-daet-ink">Photo gallery</h2>
                 <div className="mt-4 grid gap-4 sm:grid-cols-2">
                   {gallery.map((img: any) => (
@@ -447,7 +447,7 @@ export default async function OperatorPackageDetailPage({ params }: PageProps) {
                         className="aspect-video w-full object-cover"
                       />
                       {img.caption && (
-                        <p className="p-3 text-sm text-slate-600">{img.caption}</p>
+                        <p className="p-3 text-sm text-slate-600 dark:text-slate-400">{img.caption}</p>
                       )}
                     </div>
                   ))}
@@ -458,16 +458,16 @@ export default async function OperatorPackageDetailPage({ params }: PageProps) {
 
           {/* Sidebar - Stats */}
           <div className="lg:col-span-1">
-            <div className="sticky top-6 rounded-2xl bg-white p-6 shadow-[var(--shadow-float)]">
+            <div className="sticky top-6 rounded-2xl bg-surface p-6 shadow-[var(--shadow-float)]">
               <h2 className="font-bold text-daet-ink">Package stats</h2>
 
               <div className="mt-4 space-y-4">
                 <div>
-                  <p className="text-sm text-slate-600">Base price</p>
+                  <p className="text-sm text-slate-600 dark:text-slate-400">Base price</p>
                   <p className="mt-1 text-2xl font-bold text-daet-ink">
                     {formatPeso(displayPrice)}
                   </p>
-                  <p className="text-sm text-slate-600">{priceLabel}</p>
+                  <p className="text-sm text-slate-600 dark:text-slate-400">{priceLabel}</p>
                 </div>
 
               </div>

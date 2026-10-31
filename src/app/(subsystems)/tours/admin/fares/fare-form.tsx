@@ -36,9 +36,9 @@ export function FareForm({ fare }: { fare?: Fare }) {
         </PromoField>
       </div>
 
-      <fieldset className="rounded-2xl bg-slate-50 p-4">
+      <fieldset className="rounded-2xl bg-canvas p-4">
         <legend className="px-1 font-bold text-daet-ink">Fare</legend>
-        <p className="text-sm text-slate-600">Leave empty if unknown; the assistant then says to ask locally.</p>
+        <p className="text-sm text-slate-600 dark:text-slate-400">Leave empty if unknown; the assistant then says to ask locally.</p>
         <div className="mt-3 grid gap-5 sm:grid-cols-3">
           <PromoField id="fareMin" label="From (₱)" error={errors.fareMin}>
             <input id="fareMin" name="fareMin" inputMode="decimal" defaultValue={fare?.fare_min ?? ""} aria-invalid={invalid("fareMin")} className={promoInputClass} />
@@ -84,7 +84,7 @@ export function FareForm({ fare }: { fare?: Fare }) {
       <PromoCheckbox name="isActive" label="Show to travellers" defaultChecked={fare?.is_active ?? true} />
 
       <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
-        <Link href="/tours/admin/fares" className="inline-flex min-h-11 items-center justify-center rounded-full bg-slate-100 px-6 font-bold text-daet-ink hover:bg-slate-200">
+        <Link href="/tours/admin/fares" className="inline-flex min-h-11 items-center justify-center rounded-full bg-muted px-6 font-bold text-daet-ink hover:bg-muted-strong">
           Cancel
         </Link>
         <button type="submit" disabled={pending} className="inline-flex min-h-11 items-center justify-center rounded-full bg-blue-600 px-6 font-bold text-white hover:bg-blue-700 disabled:opacity-60">

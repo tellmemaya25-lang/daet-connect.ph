@@ -44,18 +44,18 @@ export default async function AdminAnalyticsPage({ searchParams }: { searchParam
             key={p.key}
             href={`/tours/admin/analytics?range=${p.key}`}
             aria-current={range.preset === p.key ? "page" : undefined}
-            className={`inline-flex min-h-11 items-center rounded-full px-5 text-sm font-bold ${range.preset === p.key ? "bg-daet-forest text-white" : "border border-daet-ink/15 bg-white text-daet-ink hover:bg-daet-sand"}`}
+            className={`inline-flex min-h-11 items-center rounded-full px-5 text-sm font-bold ${range.preset === p.key ? "bg-daet-forest text-white" : "border border-daet-ink/15 bg-surface text-daet-ink hover:bg-daet-sand"}`}
           >
             {p.label}
           </Link>
         ))}
         <form className="flex flex-wrap items-center gap-2 text-sm" action="/tours/admin/analytics">
           <label className="sr-only" htmlFor="from">From</label>
-          <input id="from" name="from" type="date" defaultValue={range.from} max={today} className="min-h-11 rounded-full border border-daet-ink/15 bg-white px-3" />
+          <input id="from" name="from" type="date" defaultValue={range.from} max={today} className="min-h-11 rounded-full border border-daet-ink/15 bg-surface px-3" />
           <span aria-hidden="true">–</span>
           <label className="sr-only" htmlFor="to">To</label>
-          <input id="to" name="to" type="date" defaultValue={range.to} max={today} className="min-h-11 rounded-full border border-daet-ink/15 bg-white px-3" />
-          <button type="submit" className="min-h-11 rounded-full border border-daet-forest/30 bg-white px-4 font-bold text-daet-leaf hover:bg-daet-forest/5">
+          <input id="to" name="to" type="date" defaultValue={range.to} max={today} className="min-h-11 rounded-full border border-daet-ink/15 bg-surface px-3" />
+          <button type="submit" className="min-h-11 rounded-full border border-daet-forest/30 bg-surface px-4 font-bold text-daet-leaf dark:text-blue-300 hover:bg-daet-forest/5">
             Apply
           </button>
         </form>
@@ -105,7 +105,7 @@ export default async function AdminAnalyticsPage({ searchParams }: { searchParam
           />
         </Card>
         <Card>
-          <CardHeader title="Rating distribution" action={<Link href="/tours/admin/reviews" className="inline-flex min-h-11 items-center font-bold text-daet-forest hover:underline">Moderate</Link>} />
+          <CardHeader title="Rating distribution" action={<Link href="/tours/admin/reviews" className="inline-flex min-h-11 items-center font-bold text-daet-forest dark:text-blue-300 hover:underline">Moderate</Link>} />
           <BarList
             items={ratingTotal ? a.ratings.map((r) => ({ key: String(r.stars), label: `${r.stars} ★`, value: r.count })) : []}
             empty="No reviews in this range."
@@ -114,15 +114,15 @@ export default async function AdminAnalyticsPage({ searchParams }: { searchParam
       </div>
 
       <Card>
-        <CardHeader title="Accreditation queue" action={<Link href="/tours/admin/operators" className="inline-flex min-h-11 items-center font-bold text-daet-forest hover:underline">Review applications</Link>} />
+        <CardHeader title="Accreditation queue" action={<Link href="/tours/admin/operators" className="inline-flex min-h-11 items-center font-bold text-daet-forest dark:text-blue-300 hover:underline">Review applications</Link>} />
         <p className="mb-3 text-sm text-daet-ink/65">
           {a.queue.length === 0 ? "No applications are waiting." : `${a.queue.length} waiting now. Oldest: ${oldest.name} (${oldest.kind}), ${oldest.waiting_days} day${oldest.waiting_days === 1 ? "" : "s"}.`}
         </p>
         <div className="grid grid-cols-3 gap-3">
           {buckets.map((b, i) => (
-            <div key={b.label} className="bg-slate-50 rounded-2xl p-3 text-center">
+            <div key={b.label} className="bg-canvas rounded-2xl p-3 text-center">
               <p className="text-2xl font-bold text-daet-ink">{b.count}</p>
-              <p className="text-sm text-slate-600">{b.label}</p>
+              <p className="text-sm text-slate-600 dark:text-slate-400">{b.label}</p>
               {i === 2 && b.count > 0 ? (
                 <Badge tone="warning" className="mt-1">
                   <LineIcon name="warning" className="inline-block h-[1.1em] w-[1.1em] align-[-0.15em]" /> Overdue
@@ -139,9 +139,9 @@ export default async function AdminAnalyticsPage({ searchParams }: { searchParam
 function Stat({ label, value, note }: { label: string; value: string; note: string }) {
   return (
     <Card>
-      <p className="text-sm text-slate-600">{label}</p>
+      <p className="text-sm text-slate-600 dark:text-slate-400">{label}</p>
       <p className="mt-1 text-2xl font-bold text-daet-ink">{value}</p>
-      <p className="text-sm text-slate-600">{note}</p>
+      <p className="text-sm text-slate-600 dark:text-slate-400">{note}</p>
     </Card>
   );
 }

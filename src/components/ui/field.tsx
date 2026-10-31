@@ -7,7 +7,7 @@ import { cn } from "@/components/ui/cn";
  * `Field` wires the label, hint and error message to the control by id.
  */
 export const controlClasses =
-  "mt-1 block min-h-12 w-full rounded-2xl border border-slate-300 bg-white px-4 py-2.5 text-base text-daet-ink placeholder:text-slate-500 focus:border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-600/20 disabled:bg-slate-100 aria-[invalid=true]:border-red-600";
+  "mt-1 block min-h-12 w-full rounded-2xl border border-line bg-surface px-4 py-2.5 text-base text-daet-ink placeholder:text-slate-500 dark:placeholder:text-slate-400 focus:border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-600/20 disabled:bg-muted aria-[invalid=true]:border-red-600";
 
 export function fieldDescribedBy(id: string, { hint, error }: { hint?: ReactNode; error?: ReactNode }) {
   if (error) return `${id}-error`;
@@ -47,7 +47,7 @@ export function Field({
       <label htmlFor={id} className="block text-sm font-bold text-daet-ink">
         {label}
         {required ? (
-          <span className="text-red-600" aria-hidden="true">
+          <span className="text-red-600 dark:text-red-300" aria-hidden="true">
             {" "}*
           </span>
         ) : null}
@@ -59,7 +59,7 @@ export function Field({
         </p>
       ) : null}
       {error ? (
-        <p id={`${id}-error`} role="alert" className="mt-1 text-sm font-semibold text-red-700">
+        <p id={`${id}-error`} role="alert" className="mt-1 text-sm font-semibold text-red-700 dark:text-red-300">
           {error}
         </p>
       ) : null}

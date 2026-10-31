@@ -2,10 +2,10 @@ import type { ReactNode } from "react";
 
 /** Tinted fields in the standard's status colours; no border. */
 const variants = {
-  info: "bg-blue-50 text-blue-950",
-  warning: "bg-yellow-50 text-yellow-950",
-  success: "bg-green-50 text-green-950",
-  error: "bg-red-50 text-red-950",
+  info: "bg-blue-50 dark:bg-blue-950/40 text-blue-950 dark:text-blue-300",
+  warning: "bg-yellow-50 dark:bg-yellow-950/40 text-yellow-950 dark:text-yellow-200",
+  success: "bg-green-50 dark:bg-green-950/40 text-green-950 dark:text-green-300",
+  error: "bg-red-50 dark:bg-red-950/40 text-red-950 dark:text-red-300",
 } as const;
 
 export function Notice({

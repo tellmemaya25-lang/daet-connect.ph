@@ -178,12 +178,12 @@ export default async function PackageDetailPage({ params }: PageProps) {
 
   return (
     <PageFrame credits={pkg.cover_image_url ? [] : [fallbackKey]}>
-      <Link href="/tours/browse" className="inline-flex min-h-11 items-center gap-1 font-semibold text-blue-700 hover:underline">
+      <Link href="/tours/browse" className="inline-flex min-h-11 items-center gap-1 font-semibold text-blue-700 dark:text-blue-300 hover:underline">
         <LineIcon name="arrowRight" className="h-4 w-4 rotate-180" /> All trips
       </Link>
 
       {/* The trip itself, as big as the screen allows. */}
-      <figure className="relative -mx-4 mt-2 aspect-[4/3] overflow-hidden bg-blue-100 sm:mx-0 sm:aspect-[16/9] sm:rounded-2xl lg:aspect-[21/9]">
+      <figure className="relative -mx-4 mt-2 aspect-[4/3] overflow-hidden bg-blue-100 dark:bg-blue-900/40 sm:mx-0 sm:aspect-[16/9] sm:rounded-2xl lg:aspect-[21/9]">
         {pkg.cover_image_url ? (
           <img src={pkg.cover_image_url} alt={pkg.title} fetchPriority="high" className="h-full w-full object-cover" />
         ) : (
@@ -206,7 +206,7 @@ export default async function PackageDetailPage({ params }: PageProps) {
           {/* The departure line: where to be, how long it takes, what it costs. */}
           <dl className="mt-6 grid gap-2 sm:grid-cols-3">
             {facts.map(([label, value]) => (
-              <div key={label} className="rounded-2xl bg-white p-4">
+              <div key={label} className="rounded-2xl bg-surface p-4">
                 <dt className="text-sm font-semibold text-daet-ink/75">{label}</dt>
                 <dd className="mt-1 text-lg font-bold leading-snug text-daet-ink">{value}</dd>
               </div>
@@ -216,7 +216,7 @@ export default async function PackageDetailPage({ params }: PageProps) {
             href={meetingDirections}
             target="_blank"
             rel="noopener noreferrer"
-            className="mt-3 inline-flex min-h-11 items-center gap-2 rounded-full bg-blue-50 px-5 font-bold text-blue-700 transition hover:bg-blue-100 active:scale-[0.98]"
+            className="mt-3 inline-flex min-h-11 items-center gap-2 rounded-full bg-blue-50 dark:bg-blue-950/40 px-5 font-bold text-blue-700 dark:text-blue-300 transition hover:bg-blue-100 dark:hover:bg-blue-900/40 active:scale-[0.98]"
           >
             <LineIcon name="pin" className="h-5 w-5" /> Directions to the meeting point
             <span className="sr-only"> (opens Google Maps)</span>
@@ -249,7 +249,7 @@ export default async function PackageDetailPage({ params }: PageProps) {
                     <ul className="mt-3 space-y-3">
                       {excluded.map((item: any) => (
                         <li key={item.id} className="flex items-start gap-3 text-daet-ink">
-                          <span className="mt-0.5 grid h-6 w-6 shrink-0 place-items-center rounded-full bg-slate-200 text-slate-800">
+                          <span className="mt-0.5 grid h-6 w-6 shrink-0 place-items-center rounded-full bg-muted-strong text-slate-800 dark:text-slate-100">
                             <LineIcon name="cancel" className="h-4 w-4" />
                           </span>
                           {item.item_text}
@@ -267,7 +267,7 @@ export default async function PackageDetailPage({ params }: PageProps) {
               <h2 id="itinerary" className="text-2xl font-semibold text-daet-ink sm:text-3xl">The route, stop by stop</h2>
               <ol className="mt-4 space-y-2">
                 {stops.map((stop: any, idx: number) => (
-                  <li key={stop.id} className="flex gap-4 rounded-2xl bg-white p-4">
+                  <li key={stop.id} className="flex gap-4 rounded-2xl bg-surface p-4">
                     <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-blue-600 font-bold text-white">{idx + 1}</span>
                     <div>
                       <h3 className="text-lg font-bold text-daet-ink">{stop.location_name}</h3>
@@ -290,7 +290,7 @@ export default async function PackageDetailPage({ params }: PageProps) {
                   </p>
                 ) : null}
               </div>
-              <div className="mt-4 overflow-hidden rounded-2xl bg-white">
+              <div className="mt-4 overflow-hidden rounded-2xl bg-surface">
                 <RouteMap points={mapPoints} polylines={route?.legs.map((leg) => leg.polyline) ?? []} connect title={`Route map for ${pkg.title}`} />
               </div>
               {route && route.legs.length > 0 ? (
@@ -306,7 +306,7 @@ export default async function PackageDetailPage({ params }: PageProps) {
               ) : null}
               {route?.estimated ? <p className="mt-2 text-sm text-daet-ink/75">Some distances are estimated in a straight line; roads and boat crossings may differ.</p> : null}
               {routeLink ? (
-                <a href={routeLink} target="_blank" rel="noopener noreferrer" className="mt-4 inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-blue-50 px-5 font-bold text-blue-700 hover:bg-blue-100">
+                <a href={routeLink} target="_blank" rel="noopener noreferrer" className="mt-4 inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-blue-50 dark:bg-blue-950/40 px-5 font-bold text-blue-700 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-900/40">
                   Open in Google Maps <LineIcon name="arrowRight" className="h-4 w-4" />
                 </a>
               ) : null}
@@ -328,10 +328,10 @@ export default async function PackageDetailPage({ params }: PageProps) {
           ) : null}
 
           {operatorName ? (
-            <section aria-labelledby="operator" className="mt-12 rounded-2xl bg-white p-5 sm:p-6">
+            <section aria-labelledby="operator" className="mt-12 rounded-2xl bg-surface p-5 sm:p-6">
               <h2 id="operator" className="text-2xl font-semibold text-daet-ink">Run by {operatorName}</h2>
               <p className="mt-2 flex flex-wrap items-center gap-2 text-daet-ink/80">
-                <ShieldCheckIcon className="h-5 w-5 text-blue-600" /> Accredited by the Daet Tourism Office
+                <ShieldCheckIcon className="h-5 w-5 text-blue-600 dark:text-blue-300" /> Accredited by the Daet Tourism Office
               </p>
               {operatorSummary ? (
                 <p className="mt-1 text-daet-ink/80">
@@ -347,7 +347,7 @@ export default async function PackageDetailPage({ params }: PageProps) {
               <p className="text-sm text-daet-ink/75">Only travellers who finished this trip can review it.</p>
             </div>
             {rating ? (
-              <div className="mt-4 grid gap-6 rounded-2xl bg-white p-5 sm:grid-cols-[auto_1fr] sm:items-center sm:p-6">
+              <div className="mt-4 grid gap-6 rounded-2xl bg-surface p-5 sm:grid-cols-[auto_1fr] sm:items-center sm:p-6">
                 <div className="sm:pr-4">
                   <p className="font-[family-name:var(--font-display)] text-6xl font-semibold leading-none text-daet-ink">{rating.average.toFixed(1)}</p>
                   <Stars value={rating.average} />
@@ -359,7 +359,7 @@ export default async function PackageDetailPage({ params }: PageProps) {
                   {distribution(reviews.map((r) => r.rating)).map((row) => (
                     <li key={row.stars} className="flex items-center gap-3">
                       <span className="w-10">{row.stars} star</span>
-                      <span className="h-3 flex-1 overflow-hidden rounded-full bg-slate-100">
+                      <span className="h-3 flex-1 overflow-hidden rounded-full bg-muted">
                         <span className="block h-full rounded-full bg-yellow-500" style={{ width: `${reviews.length ? (row.count / reviews.length) * 100 : 0}%` }} />
                       </span>
                       <span className="w-6 text-right">{row.count}</span>
@@ -376,7 +376,7 @@ export default async function PackageDetailPage({ params }: PageProps) {
 
         {/* Booking panel: beside the content on wide screens, a bar at the bottom on phones. */}
         <aside aria-label="Book this trip" className="hidden lg:block">
-          <div className="sticky top-6 rounded-2xl bg-white p-6">
+          <div className="sticky top-6 rounded-2xl bg-surface p-6">
             <p className="text-sm font-semibold text-daet-ink/75">From</p>
             <p className="text-4xl font-bold text-daet-ink">{formatPeso(displayPrice)}</p>
             <p className="text-daet-ink/80">{priceLabel}</p>
@@ -389,7 +389,7 @@ export default async function PackageDetailPage({ params }: PageProps) {
             <ul className="mt-6 space-y-3 text-daet-ink">
               {["Confirmed by the local operator", `Free cancellation up to ${FREE_CANCELLATION_HOURS} hours before`, "Led by an accredited local guide"].map((line) => (
                 <li key={line} className="flex items-start gap-2">
-                  <CheckIcon className="mt-0.5 h-5 w-5 text-blue-600" />
+                  <CheckIcon className="mt-0.5 h-5 w-5 text-blue-600 dark:text-blue-300" />
                   {line}
                 </li>
               ))}
@@ -398,7 +398,7 @@ export default async function PackageDetailPage({ params }: PageProps) {
         </aside>
       </div>
 
-      <div className="fixed inset-x-0 bottom-0 z-50 bg-white px-4 pb-[calc(0.75rem+env(safe-area-inset-bottom))] pt-3 shadow-[var(--shadow-float)] lg:hidden print:hidden">
+      <div className="fixed inset-x-0 bottom-0 z-50 bg-surface px-4 pb-[calc(0.75rem+env(safe-area-inset-bottom))] pt-3 shadow-[var(--shadow-float)] lg:hidden print:hidden">
         <div className="mx-auto flex max-w-7xl items-center justify-between gap-4">
           <p className="leading-tight">
             <span className="block text-sm text-daet-ink/75">From</span>

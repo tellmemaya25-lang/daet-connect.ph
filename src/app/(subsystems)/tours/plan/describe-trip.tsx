@@ -37,7 +37,7 @@ export function DescribeTrip({
   }
 
   return (
-    <section aria-labelledby="describe-trip" className="rounded-2xl bg-white p-5 sm:p-6">
+    <section aria-labelledby="describe-trip" className="rounded-2xl bg-surface p-5 sm:p-6">
       <h2 id="describe-trip" className="font-display text-2xl font-semibold text-daet-ink">
         Describe your trip
       </h2>
@@ -65,7 +65,7 @@ export function DescribeTrip({
               setText(example);
               interpret(example);
             }}
-            className="min-h-11 rounded-full border border-daet-ink/25 bg-white px-4 py-2 text-left text-sm text-daet-ink transition-colors hover:bg-daet-sand"
+            className="min-h-11 rounded-full border border-daet-ink/25 bg-surface px-4 py-2 text-left text-sm text-daet-ink transition-colors hover:bg-daet-sand"
           >
             {example}
           </button>
@@ -81,7 +81,7 @@ export function DescribeTrip({
       </div>
       <div aria-live="polite">
         {state?.tone === "error" ? (
-          <p className="mt-3 text-sm font-semibold text-red-700">{state.text}</p>
+          <p className="mt-3 text-sm font-semibold text-red-700 dark:text-red-300">{state.text}</p>
         ) : state?.understood ? (
           <div className="mt-3">
             <p className="text-sm font-bold text-daet-ink">

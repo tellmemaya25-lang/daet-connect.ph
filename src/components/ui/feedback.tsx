@@ -33,9 +33,9 @@ type Feedback = {
 const FeedbackContext = createContext<Feedback | null>(null);
 
 const TOAST_STYLES: Record<ToastKind, string> = {
-  success: "border-green-200 bg-green-50 text-green-950",
-  error: "border-red-200 bg-red-50 text-red-950",
-  info: "border-sky-200 bg-sky-50 text-sky-950",
+  success: "border-green-200 dark:border-green-700 bg-green-50 dark:bg-green-950/40 text-green-950 dark:text-green-300",
+  error: "border-red-200 dark:border-red-700 bg-red-50 dark:bg-red-950/40 text-red-950 dark:text-red-300",
+  info: "border-sky-200 dark:border-sky-700 bg-sky-50 dark:bg-sky-950/40 text-sky-950 dark:text-sky-300",
 };
 
 export function FeedbackProvider({ children }: { children: ReactNode }) {

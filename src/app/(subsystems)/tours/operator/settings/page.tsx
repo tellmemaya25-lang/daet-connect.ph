@@ -87,7 +87,7 @@ export default async function OperatorSettingsPage() {
         </div>
 
         {/* Business Info */}
-        <div className="mb-6 rounded-2xl bg-white p-6">
+        <div className="mb-6 rounded-2xl bg-surface p-6">
           <h2 className="mb-4 text-xl font-bold text-daet-ink">Business Information</h2>
           <div className="grid grid-cols-2 gap-4 text-sm">
             <div>
@@ -104,7 +104,7 @@ export default async function OperatorSettingsPage() {
             </div>
             <div>
               <p className="text-daet-ink/70">Status</p>
-              <p className="font-bold capitalize text-green-700">
+              <p className="font-bold capitalize text-green-700 dark:text-green-300">
                 {operator.accreditation_status}
               </p>
             </div>
@@ -112,7 +112,7 @@ export default async function OperatorSettingsPage() {
         </div>
 
         {/* Payment Settings Form */}
-        <div className="rounded-2xl bg-white p-6">
+        <div className="rounded-2xl bg-surface p-6">
           <div className="mb-4">
             <h2 className="text-xl font-bold text-daet-ink">Payment Details</h2>
             <p className="mt-1 text-sm text-daet-ink/70">

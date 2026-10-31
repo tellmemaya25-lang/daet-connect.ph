@@ -84,7 +84,7 @@ export default async function HomePage() {
   return (
     <PageFrame bleed credits={HOME_PHOTOS}>
       {/* First screen: what this is, one plain sentence, one action, and the beach itself. */}
-      <section aria-labelledby="home-title" className="bg-white">
+      <section aria-labelledby="home-title" className="bg-surface">
         <div className={`${WRAP} grid gap-8 pb-10 pt-6 sm:pt-10 lg:grid-cols-[1fr_1.2fr] lg:items-center lg:gap-14 lg:pb-16`}>
           <div className="flex flex-col gap-5">
             <h1 id="home-title" data-reveal className="display-1 max-w-[10ch] text-daet-ink">
@@ -138,7 +138,7 @@ export default async function HomePage() {
         <ul className="mt-8 space-y-14 sm:mt-12 sm:space-y-24">
           {PLACES.map((place, index) => (
             <li key={place.name} className="grid items-center gap-6 lg:grid-cols-2 lg:gap-14">
-              <div data-reveal className={`relative -mx-4 aspect-[4/3] overflow-hidden bg-blue-100 sm:mx-0 sm:rounded-2xl ${index % 2 ? "lg:order-2" : ""}`}>
+              <div data-reveal className={`relative -mx-4 aspect-[4/3] overflow-hidden bg-blue-100 dark:bg-blue-900/40 sm:mx-0 sm:rounded-2xl ${index % 2 ? "lg:order-2" : ""}`}>
                 <Image src={PHOTOS[place.photo].src} alt={PHOTOS[place.photo].alt} fill sizes="(min-width: 1024px) 50vw, 100vw" className="object-cover" />
               </div>
               <div>
@@ -149,7 +149,7 @@ export default async function HomePage() {
                   {place.text}
                 </p>
                 <p data-reveal style={{ "--reveal-index": 2 } as React.CSSProperties} className="mt-3 flex items-center gap-2 font-semibold text-daet-ink/80">
-                  <LineIcon name="boat" className="h-5 w-5 text-blue-600" /> {place.detail}
+                  <LineIcon name="boat" className="h-5 w-5 text-blue-600 dark:text-blue-300" /> {place.detail}
                 </p>
                 <ButtonLink href={`/tours/browse?location=${encodeURIComponent(place.location)}`} variant="secondary" className="mt-6">
                   Trips in {place.location}
@@ -166,7 +166,7 @@ export default async function HomePage() {
           <h2 id="home-events" data-reveal className="display-2 text-daet-ink">
             What&apos;s on in Daet
           </h2>
-          <Link href="/tours/events" className="inline-flex min-h-11 items-center gap-1 font-bold text-blue-700 hover:underline">
+          <Link href="/tours/events" className="inline-flex min-h-11 items-center gap-1 font-bold text-blue-700 dark:text-blue-300 hover:underline">
             Full calendar <LineIcon name="arrowRight" className="h-5 w-5" />
           </Link>
         </div>
@@ -179,8 +179,8 @@ export default async function HomePage() {
             ))}
           </ul>
         ) : (
-          <p className="mt-6 rounded-2xl bg-white p-6 text-lg text-daet-ink">
-            No events are posted yet. The <Link href="/tours/events" className="font-bold text-blue-700 underline">calendar</Link> lists the
+          <p className="mt-6 rounded-2xl bg-surface p-6 text-lg text-daet-ink">
+            No events are posted yet. The <Link href="/tours/events" className="font-bold text-blue-700 dark:text-blue-300 underline">calendar</Link> lists the
             festivals and seasons through the year.
           </p>
         )}
@@ -216,7 +216,7 @@ export default async function HomePage() {
             <h2 id="home-merch" data-reveal className="display-2 text-daet-ink">
               Take Daet home
             </h2>
-            <Link href="/tours/merch" className="inline-flex min-h-11 items-center gap-1 font-bold text-blue-700 hover:underline">
+            <Link href="/tours/merch" className="inline-flex min-h-11 items-center gap-1 font-bold text-blue-700 dark:text-blue-300 hover:underline">
               All souvenirs <LineIcon name="arrowRight" className="h-5 w-5" />
             </Link>
           </div>
@@ -232,7 +232,7 @@ export default async function HomePage() {
 
       {/* For operators and guides: a picture of their working world, and two ways in. */}
       <section aria-labelledby="home-ops" className={`${WRAP} pt-20 sm:pt-32`}>
-        <div className="grid items-center gap-8 overflow-hidden rounded-2xl bg-white lg:grid-cols-2">
+        <div className="grid items-center gap-8 overflow-hidden rounded-2xl bg-surface lg:grid-cols-2">
           <div className="relative aspect-[4/3] lg:aspect-auto lg:h-full lg:min-h-[420px]">
             <Image src={PHOTOS.mercedesPort.src} alt={PHOTOS.mercedesPort.alt} fill sizes="(min-width: 1024px) 50vw, 100vw" className="object-cover" />
           </div>

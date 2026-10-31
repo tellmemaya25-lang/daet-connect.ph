@@ -4,7 +4,8 @@ import { join } from "node:path";
 /**
  * The redesign's rules, enforced (docs/DESIGN_SYSTEM.md): no emoji as icons,
  * no tiny uppercase letter-spaced labels, no resting shadows (only things that
- * float use --shadow-float), no eyebrow labels above headings, cards rounded-2xl.
+ * float use --shadow-float), no eyebrow labels above headings, cards rounded-2xl,
+ * and neutral backgrounds use the theme tokens so dark mode keeps working.
  */
 const files: string[] = [];
 const walk = (dir: string) => {
@@ -41,6 +42,14 @@ describe("design rules", () => {
 
   it("has no resting shadows", () => {
     expect(offenders((line) => /(?<![\w-])shadow(-(sm|md|lg|xl|2xl|card))?(?![\w-[])/.test(line) && !line.trim().startsWith("*") && !line.includes("print:shadow-none"))).toEqual([]);
+  });
+
+  it("uses theme surfaces, so dark mode can't regress", () => {
+    // bg-surface / bg-canvas / bg-muted / bg-muted-strong / bg-line switch with the theme.
+    // White stays white only on print and inside a data-theme="light" island.
+    const LIGHT_ONLY = /(?<![\w:-])(?:[a-z-]+:)*bg-(?:white|slate-(?:50|100|200|300))(?![\w/-])/;
+    const screenOnly = (line: string) => line.replace(/\b(?:print|dark):\S+/g, "");
+    expect(offenders((line) => LIGHT_ONLY.test(screenOnly(line)) && !line.includes('data-theme="light"')).filter((at) => !at.startsWith("src/app/(subsystems)/tours/guide/guide-qr-badge.tsx"))).toEqual([]);
   });
 
   it("has no eyebrow labels and no rounded-3xl cards", () => {

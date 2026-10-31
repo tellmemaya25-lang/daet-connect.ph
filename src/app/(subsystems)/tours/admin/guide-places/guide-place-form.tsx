@@ -42,9 +42,9 @@ export function GuidePlaceForm({ place }: { place?: GuidePlace }) {
         </PromoField>
       </div>
 
-      <fieldset className="rounded-2xl bg-slate-50 p-4">
+      <fieldset className="rounded-2xl bg-canvas p-4">
         <legend className="px-1 font-bold text-daet-ink">Map pin</legend>
-        <p className="text-sm text-slate-600">Without a pin, directions search Google Maps by the name and municipality.</p>
+        <p className="text-sm text-slate-600 dark:text-slate-400">Without a pin, directions search Google Maps by the name and municipality.</p>
         <div className="mt-3 grid gap-5 sm:grid-cols-2">
           <PromoField id="latitude" label="Latitude" error={errors.latitude}>
             <input id="latitude" name="latitude" inputMode="decimal" defaultValue={place?.latitude ?? ""} aria-invalid={invalid("latitude")} className={promoInputClass} placeholder="14.1131" />
@@ -58,9 +58,9 @@ export function GuidePlaceForm({ place }: { place?: GuidePlace }) {
         </div>
       </fieldset>
 
-      <fieldset className="rounded-2xl bg-slate-50 p-4">
+      <fieldset className="rounded-2xl bg-canvas p-4">
         <legend className="px-1 font-bold text-daet-ink">Price</legend>
-        <p className="text-sm text-slate-600">Used for trip cost estimates. Leave empty if unknown; the assistant then says to ask locally.</p>
+        <p className="text-sm text-slate-600 dark:text-slate-400">Used for trip cost estimates. Leave empty if unknown; the assistant then says to ask locally.</p>
         <div className="mt-3 grid gap-5 sm:grid-cols-3">
           <PromoField id="priceMin" label="From (₱)" error={errors.priceMin}>
             <input id="priceMin" name="priceMin" inputMode="decimal" defaultValue={place?.price_min ?? ""} aria-invalid={invalid("priceMin")} className={promoInputClass} />
@@ -117,7 +117,7 @@ export function GuidePlaceForm({ place }: { place?: GuidePlace }) {
       <input type="hidden" name="slug" value={place?.slug ?? ""} />
 
       <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
-        <Link href="/tours/admin/guide-places" className="inline-flex min-h-11 items-center justify-center rounded-full bg-slate-100 px-6 font-bold text-daet-ink hover:bg-slate-200">
+        <Link href="/tours/admin/guide-places" className="inline-flex min-h-11 items-center justify-center rounded-full bg-muted px-6 font-bold text-daet-ink hover:bg-muted-strong">
           Cancel
         </Link>
         <button type="submit" disabled={pending} className="inline-flex min-h-11 items-center justify-center rounded-full bg-blue-600 px-6 font-bold text-white hover:bg-blue-700 disabled:opacity-60">

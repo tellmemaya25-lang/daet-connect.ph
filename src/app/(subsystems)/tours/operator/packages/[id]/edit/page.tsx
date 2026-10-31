@@ -17,25 +17,25 @@ function EditPackageSkeleton() {
   return (
     <div className="max-w-4xl mx-auto px-4 py-8 space-y-8 animate-pulse">
       <div className="space-y-3">
-        <div className="h-8 bg-slate-200 rounded-2xl w-1/3" />
-        <div className="h-4 bg-slate-200 rounded-2xl w-2/3" />
+        <div className="h-8 bg-muted-strong rounded-2xl w-1/3" />
+        <div className="h-4 bg-muted-strong rounded-2xl w-2/3" />
       </div>
 
       <div className="space-y-6">
         {[1, 2, 3, 4].map((i) => (
-          <div key={i} className="space-y-3 border rounded-2xl p-6 bg-slate-50">
-            <div className="h-6 bg-slate-200 rounded-2xl w-1/4" />
+          <div key={i} className="space-y-3 border rounded-2xl p-6 bg-canvas">
+            <div className="h-6 bg-muted-strong rounded-2xl w-1/4" />
             <div className="space-y-2">
-              <div className="h-10 bg-slate-200 rounded-2xl" />
-              <div className="h-10 bg-slate-200 rounded-2xl" />
+              <div className="h-10 bg-muted-strong rounded-2xl" />
+              <div className="h-10 bg-muted-strong rounded-2xl" />
             </div>
           </div>
         ))}
       </div>
 
       <div className="flex gap-4 justify-end">
-        <div className="h-10 bg-slate-200 rounded-2xl w-32" />
-        <div className="h-10 bg-slate-200 rounded-2xl w-40" />
+        <div className="h-10 bg-muted-strong rounded-2xl w-32" />
+        <div className="h-10 bg-muted-strong rounded-2xl w-40" />
       </div>
     </div>
   );
@@ -102,7 +102,7 @@ function ServerErrorDisplay() {
           </button>
           <Link
             href="/tours/operator/packages"
-            className="min-h-11 inline-block px-6 py-2 border border-daet-ink/20 text-daet-ink/80 rounded-2xl hover:bg-slate-50 transition"
+            className="min-h-11 inline-block px-6 py-2 border border-daet-ink/20 text-daet-ink/80 rounded-2xl hover:bg-canvas transition"
           >
             ← Back to Packages
           </Link>
@@ -134,7 +134,7 @@ async function EditPackageContent({ packageId }: { packageId: string }) {
     <div className="max-w-4xl mx-auto px-4 py-8">
       <div className="mb-8">
         <div className="flex items-center gap-2 mb-4">
-          <Link href="/tours/operator/packages" className="inline-flex min-h-11 items-center font-bold text-blue-700 hover:underline">
+          <Link href="/tours/operator/packages" className="inline-flex min-h-11 items-center font-bold text-blue-700 dark:text-blue-300 hover:underline">
             Packages
           </Link>
           <span className="text-daet-ink/70">/</span>

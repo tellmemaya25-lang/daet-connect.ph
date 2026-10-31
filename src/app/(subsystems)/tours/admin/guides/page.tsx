@@ -85,14 +85,14 @@ export default async function AdminGuideQueuePage({ searchParams }: { searchPara
           <h1 className="display-2 mt-2 text-daet-ink">Guide applications</h1>
           <p className="mt-2 max-w-2xl text-sm leading-6 text-daet-ink/65">Review public profile details and verify the submitted ID through a short-lived private document link.</p>
         </div>
-        <span className="inline-flex min-h-10 items-center self-start rounded-full bg-yellow-50 px-4 text-sm font-bold text-yellow-900 sm:self-auto">Pending · page {page}</span>
+        <span className="inline-flex min-h-10 items-center self-start rounded-full bg-yellow-50 dark:bg-yellow-950/40 px-4 text-sm font-bold text-yellow-900 dark:text-yellow-200 sm:self-auto">Pending · page {page}</span>
       </div>
       <Notice variant="warning" className="mb-6">
         Government ID files are highly sensitive. Open them only when needed for verification. Links expire after 3 minutes; do not forward or retain copies outside approved systems.
       </Notice>
       {guides.length === 0 ? (
-        <section className="rounded-2xl bg-white px-6 py-14 text-center">
-          <span className="mx-auto grid h-14 w-14 place-items-center rounded-2xl bg-green-50 text-2xl text-green-700" aria-hidden="true">✓</span>
+        <section className="rounded-2xl bg-surface px-6 py-14 text-center">
+          <span className="mx-auto grid h-14 w-14 place-items-center rounded-2xl bg-green-50 dark:bg-green-950/40 text-2xl text-green-700 dark:text-green-300" aria-hidden="true">✓</span>
           <h2 className="mt-4 text-xl font-bold text-daet-ink">No pending guide applications</h2>
           <p className="mt-2 text-sm text-daet-ink/70">You’re all caught up on this page.</p>
         </section>
@@ -100,8 +100,8 @@ export default async function AdminGuideQueuePage({ searchParams }: { searchPara
         <div className="space-y-5">{guides.map((guide) => <GuideReviewCard key={guide.id} guide={guide} />)}</div>
       )}
       <nav className="mt-7 flex items-center justify-between" aria-label="Guide application pages">
-        {page > 1 ? <Link href={`/tours/admin/guides?page=${page - 1}`} className="inline-flex min-h-11 items-center rounded-full border border-daet-ink/15 px-5 text-sm font-bold text-daet-ink hover:bg-white">← Previous</Link> : <span />}
-        {hasNext ? <Link href={`/tours/admin/guides?page=${page + 1}`} className="inline-flex min-h-11 items-center rounded-full border border-daet-ink/15 px-5 text-sm font-bold text-daet-ink hover:bg-white">Next →</Link> : <span />}
+        {page > 1 ? <Link href={`/tours/admin/guides?page=${page - 1}`} className="inline-flex min-h-11 items-center rounded-full border border-daet-ink/15 px-5 text-sm font-bold text-daet-ink hover:bg-surface">← Previous</Link> : <span />}
+        {hasNext ? <Link href={`/tours/admin/guides?page=${page + 1}`} className="inline-flex min-h-11 items-center rounded-full border border-daet-ink/15 px-5 text-sm font-bold text-daet-ink hover:bg-surface">Next →</Link> : <span />}
       </nav>
     </PageFrame>
   );

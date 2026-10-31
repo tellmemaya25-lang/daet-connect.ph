@@ -120,7 +120,7 @@ export function PackagePricingStep({
         {variants.map((variant, index) => (
           <div
             key={index}
-            className="rounded-2xl bg-white p-5"
+            className="rounded-2xl bg-surface p-5"
           >
             <div className="flex items-start justify-between gap-3">
               <div className="flex-1 space-y-4">
@@ -131,10 +131,10 @@ export function PackagePricingStep({
                     value={variant.variantName}
                     onChange={(e) => updateVariant(index, { variantName: e.target.value })}
                     placeholder="Variant name (e.g., Solo, Group)"
-                    className="w-full rounded-2xl border border-daet-ink/15 bg-white px-3 py-2 text-sm font-bold outline-none transition focus:border-daet-forest focus:ring-2 focus:ring-daet-forest/20"
+                    className="w-full rounded-2xl border border-daet-ink/15 bg-surface px-3 py-2 text-sm font-bold outline-none transition focus:border-daet-forest focus:ring-2 focus:ring-daet-forest/20"
                   />
                   {errors[index]?.variantName && (
-                    <p className="mt-1 text-xs text-red-700">{errors[index].variantName}</p>
+                    <p className="mt-1 text-xs text-red-700 dark:text-red-300">{errors[index].variantName}</p>
                   )}
                 </div>
 
@@ -150,7 +150,7 @@ export function PackagePricingStep({
                       className="mt-1 w-full rounded-2xl border border-daet-ink/15 px-3 py-2 text-sm"
                     />
                     {errors[index]?.minPax && (
-                      <p className="mt-1 text-xs text-red-700">{errors[index].minPax}</p>
+                      <p className="mt-1 text-xs text-red-700 dark:text-red-300">{errors[index].minPax}</p>
                     )}
                   </div>
                   <div>
@@ -168,7 +168,7 @@ export function PackagePricingStep({
                       className="mt-1 w-full rounded-2xl border border-daet-ink/15 px-3 py-2 text-sm"
                     />
                     {errors[index]?.maxPax && (
-                      <p className="mt-1 text-xs text-red-700">{errors[index].maxPax}</p>
+                      <p className="mt-1 text-xs text-red-700 dark:text-red-300">{errors[index].maxPax}</p>
                     )}
                   </div>
                 </div>
@@ -211,7 +211,7 @@ export function PackagePricingStep({
                   </div>
                 </div>
                 {errors[index]?.pricing && (
-                  <p className="text-xs text-red-700">{errors[index].pricing}</p>
+                  <p className="text-xs text-red-700 dark:text-red-300">{errors[index].pricing}</p>
                 )}
 
                 {/* Default Checkbox */}
@@ -220,7 +220,7 @@ export function PackagePricingStep({
                     type="checkbox"
                     checked={variant.isDefault}
                     onChange={() => setDefaultVariant(index)}
-                    className="h-4 w-4 rounded-2xl border-daet-ink/30 text-daet-forest focus:ring-2 focus:ring-daet-forest/20"
+                    className="h-4 w-4 rounded-2xl border-daet-ink/30 text-daet-forest dark:text-blue-300 focus:ring-2 focus:ring-daet-forest/20"
                   />
                   <span className="font-bold">Default variant</span>
                 </label>
@@ -231,7 +231,7 @@ export function PackagePricingStep({
                 <button
                   type="button"
                   onClick={() => removeVariant(index)}
-                  className="grid h-8 w-8 place-items-center rounded-full text-red-600 transition hover:bg-red-50"
+                  className="grid h-8 w-8 place-items-center rounded-full text-red-600 dark:text-red-300 transition hover:bg-red-50 dark:hover:bg-red-950/40"
                   aria-label="Remove variant"
                 >
                   ✕
@@ -246,7 +246,7 @@ export function PackagePricingStep({
       <button
         type="button"
         onClick={addVariant}
-        className="inline-flex min-h-11 items-center gap-2 rounded-full border-2 border-dashed border-daet-forest/30 bg-daet-forest/5 px-5 text-sm font-bold text-daet-leaf transition hover:border-daet-forest/50 hover:bg-daet-forest/10"
+        className="inline-flex min-h-11 items-center gap-2 rounded-full border-2 border-dashed border-daet-forest/30 bg-daet-forest/5 px-5 text-sm font-bold text-daet-leaf dark:text-blue-300 transition hover:border-daet-forest/50 hover:bg-daet-forest/10"
       >
         + Add another variant
       </button>

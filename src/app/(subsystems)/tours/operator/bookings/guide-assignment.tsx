@@ -75,7 +75,7 @@ export function GuideAssignment({
 
   if (availableGuides.length === 0) {
     return (
-      <div className="rounded-2xl bg-yellow-50 p-3 text-sm text-yellow-800">
+      <div className="rounded-2xl bg-yellow-50 dark:bg-yellow-950/40 p-3 text-sm text-yellow-800 dark:text-yellow-200">
         No approved guides available. Guides must be approved before assignment.
       </div>
     );
@@ -84,7 +84,7 @@ export function GuideAssignment({
   return (
     <div className="space-y-3">
       {error && (
-        <div className="rounded-2xl bg-red-50 p-3 text-sm text-red-800">
+        <div className="rounded-2xl bg-red-50 dark:bg-red-950/40 p-3 text-sm text-red-800 dark:text-red-300">
           {error}
         </div>
       )}
@@ -116,7 +116,7 @@ export function GuideAssignment({
           <button
             onClick={handleUnassign}
             disabled={isSubmitting}
-            className="inline-flex min-h-11 items-center rounded-full bg-slate-100 px-4 text-sm font-bold text-daet-ink transition hover:bg-slate-200 disabled:opacity-50"
+            className="inline-flex min-h-11 items-center rounded-full bg-muted px-4 text-sm font-bold text-daet-ink transition hover:bg-muted-strong disabled:opacity-50"
           >
             {isSubmitting ? "Unassigning..." : "Unassign"}
           </button>
@@ -132,13 +132,13 @@ export function GuideAssignment({
       </div>
 
       {selectedGuideId && availability[selectedGuideId] === false && selectedGuideId !== currentGuideId ? (
-        <p className="text-sm font-bold text-yellow-800">This guide marked the tour date as not available. Message them before assigning.</p>
+        <p className="text-sm font-bold text-yellow-800 dark:text-yellow-200">This guide marked the tour date as not available. Message them before assigning.</p>
       ) : null}
 
       {currentGuideId && (
         <div className="flex items-center gap-2 text-sm">
           <span className="text-daet-ink/70">Currently assigned:</span>
-          <span className="font-bold text-daet-forest">
+          <span className="font-bold text-daet-forest dark:text-blue-300">
             {availableGuides.find((g) => g.id === currentGuideId)?.full_name || "Unknown"}
           </span>
         </div>

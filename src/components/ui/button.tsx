@@ -9,12 +9,12 @@ import { cn } from "@/components/ui/cn";
  */
 const VARIANTS = {
   primary: "bg-blue-600 text-white hover:bg-blue-700 active:bg-blue-800",
-  secondary: "bg-blue-50 text-blue-700 hover:bg-blue-100 active:bg-blue-200",
-  ghost: "text-daet-ink hover:bg-slate-100 active:bg-slate-200",
+  secondary: "bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-900/40 active:bg-blue-200 dark:active:bg-blue-800/60",
+  ghost: "text-daet-ink hover:bg-muted active:bg-muted-strong",
   danger: "bg-red-600 text-white hover:bg-red-700 active:bg-red-800",
   accent: "bg-yellow-500 text-slate-950 hover:bg-yellow-400 active:bg-yellow-600",
   // For use on a blue-600 panel.
-  inverse: "bg-white text-blue-700 hover:bg-blue-50 active:bg-blue-100",
+  inverse: "bg-surface text-blue-700 dark:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-950/40 active:bg-blue-100 dark:active:bg-blue-900/40",
   onBlue: "text-white hover:bg-blue-700 active:bg-blue-800",
 } as const;
 
