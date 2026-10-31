@@ -1,12 +1,14 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { isUuid } from "@/lib/tours/operator-access";
 import { MAX_PENDING_PROOFS_PER_BOOKING, parseProofForm, PROOF_BUCKET } from "@/lib/tours/payment-proof";
 import { buildCheckoutSessionBody, checkPayable, remainingBalance, type PayableBooking } from "@/lib/paymongo/checkout";
 import { createCheckoutSession, getPaymongoConfig, PaymongoApiError } from "@/lib/paymongo/client";
+import { checkoutCookieName } from "@/lib/paymongo/return";
 
 export type CheckoutActionState = { error: string | null };
 
@@ -55,6 +57,14 @@ export async function startOnlinePayment(_prev: CheckoutActionState, formData: F
       }),
     );
     checkoutUrl = session.attributes.checkout_url;
+    // The success page confirms this session with PayMongo when the tourist returns.
+    (await cookies()).set(checkoutCookieName(booking.id), session.id, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      path: `/tours/bookings/${booking.id}`,
+      maxAge: 60 * 60 * 24,
+    });
   } catch (cause) {
     console.error("PayMongo checkout error:", cause instanceof PaymongoApiError ? cause.details : cause);
     return { error: "We couldn't start the online payment. Please try again in a moment." };

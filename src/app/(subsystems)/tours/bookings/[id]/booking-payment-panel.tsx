@@ -87,7 +87,7 @@ export function BookingPaymentPanel({
   payments: PanelPayment[];
   proofs: PanelProof[];
   onlinePaymentEnabled: boolean;
-  paymentReturn: "success" | "cancelled" | null;
+  paymentReturn: "cancelled" | null;
 }) {
   const remaining = remainingBalance(booking);
   const payable = checkPayable(booking);
@@ -99,16 +99,6 @@ export function BookingPaymentPanel({
     <Card id="payment" className="mb-6 scroll-mt-6" aria-labelledby="payment-heading">
       <CardHeader title={<span id="payment-heading">Pay for this tour</span>} action={<Badge tone={status.tone}>{status.label}</Badge>} />
 
-      {paymentReturn === "success" && booking.payment_status !== "paid" ? (
-        <Notice variant="info" title="Payment received by PayMongo" className="mb-4">
-          We&apos;re confirming it now. This usually takes under a minute; refresh this page to see the update.
-        </Notice>
-      ) : null}
-      {paymentReturn === "success" && booking.payment_status === "paid" ? (
-        <Notice variant="success" title="Payment confirmed" className="mb-4">
-          Thank you! Your booking is fully paid.
-        </Notice>
-      ) : null}
       {paymentReturn === "cancelled" ? (
         <Notice variant="warning" className="mb-4">
           The online payment was cancelled. You have not been charged.

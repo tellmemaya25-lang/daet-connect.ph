@@ -10,6 +10,7 @@ import Link from "next/link";
 import { PageFrame } from "@/components/ui/page-frame";
 import { Notice } from "@/components/ui/notice";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
+import { isUuid } from "@/lib/tours/operator-access";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { isPaymongoConfigured } from "@/lib/paymongo/client";
 import { cancellationOption } from "@/lib/tours/cancellation";
@@ -44,7 +45,9 @@ export default async function BookingDetailPage({ params, searchParams }: PagePr
 
   const { id } = await params;
   const { payment } = await searchParams;
-  const paymentReturn = payment === "success" || payment === "cancelled" ? payment : null;
+  // Checkouts started before the success page existed still return with ?payment=success.
+  if (payment === "success" && isUuid(id)) redirect(`/tours/bookings/${id}/paid`);
+  const paymentReturn = payment === "cancelled" ? payment : null;
   const supabase = await createSupabaseServerClient();
 
   // Get current user

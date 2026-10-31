@@ -45,6 +45,40 @@ export interface WebhookStore {
   markProcessed(eventId: string, outcome: string, bookingId: string | null): Promise<void>;
 }
 
+/**
+ * Ledger rows for every paid payment on a checkout session. Shared by the
+ * webhook and the return page, so both record a payment the same way and the
+ * unique (provider, provider_ref) keeps it to one row whichever comes first.
+ */
+export function ledgerRowsFromSession({
+  session,
+  sessionId,
+  bookingId,
+  now,
+  rawEvent,
+}: {
+  session: unknown;
+  sessionId: string;
+  bookingId: string;
+  now: Date;
+  rawEvent: (paymentId: string) => unknown;
+}): LedgerInsert[] {
+  const reference = String(asRecord(asRecord(session)?.attributes)?.reference_number ?? sessionId);
+  return extractPaidPayments(session).map((payment) => ({
+    booking_id: bookingId,
+    amount: centavosToPesos(payment.amountCentavos),
+    payment_method: ledgerPaymentMethod(payment.method),
+    payment_status: "completed",
+    provider: "paymongo",
+    provider_ref: payment.id,
+    provider_method: payment.method,
+    reference_number: reference,
+    payment_date: payment.paidAt ?? now.toISOString(),
+    notes: `PayMongo checkout ${sessionId}`,
+    raw_event: rawEvent(payment.id),
+  }));
+}
+
 export type WebhookDeps = {
   webhookSecret: string;
   mode: SignatureMode;
@@ -114,20 +148,13 @@ export async function processPaymongoWebhook(
     return respond(200, "Checkout session is not linked to a booking");
   }
 
-  const reference = String(asRecord(asRecord(session)?.attributes)?.reference_number ?? sessionId);
-  const rows: LedgerInsert[] = extractPaidPayments(session).map((payment) => ({
-    booking_id: bookingId,
-    amount: centavosToPesos(payment.amountCentavos),
-    payment_method: ledgerPaymentMethod(payment.method),
-    payment_status: "completed",
-    provider: "paymongo",
-    provider_ref: payment.id,
-    provider_method: payment.method,
-    reference_number: reference,
-    payment_date: payment.paidAt ?? (deps.now ?? new Date()).toISOString(),
-    notes: `PayMongo checkout ${sessionId}`,
-    raw_event: { event_id: eventId, session_id: sessionId, payment_id: payment.id },
-  }));
+  const rows = ledgerRowsFromSession({
+    session,
+    sessionId,
+    bookingId,
+    now: deps.now ?? new Date(),
+    rawEvent: (paymentId) => ({ event_id: eventId, session_id: sessionId, payment_id: paymentId }),
+  });
 
   if (rows.length === 0) {
     await deps.store.markProcessed(eventId, "no_paid_payments", bookingId);
