@@ -277,6 +277,14 @@ export default async function GuideMyToursPage() {
                         >
                           {booking.tour_date === today ? "Guest list & check-in" : "Guest list"}
                         </Link>
+                        {booking.tour_date === today && booking.status === "confirmed" ? (
+                          <Link
+                            href={`/tours/guide/tours/${booking.id}/live`}
+                            className="ml-2 mt-4 inline-flex min-h-11 items-center justify-center rounded-full bg-blue-600 px-5 text-sm font-bold text-white transition hover:bg-blue-700"
+                          >
+                            Live map
+                          </Link>
+                        ) : null}
                         <SwapRequest
                           bookingId={booking.id}
                           reference={booking.booking_reference}

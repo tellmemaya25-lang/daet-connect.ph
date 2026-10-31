@@ -14,6 +14,8 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { isPaymongoConfigured } from "@/lib/paymongo/client";
 import { cancellationOption } from "@/lib/tours/cancellation";
 import { PushOptIn } from "@/components/tours/push-opt-in";
+import { LiveShareCard } from "@/components/tours/live/live-share-card";
+import { toManilaDateKey } from "@/lib/tours/events-calendar";
 import { OpenChatButton } from "@/app/(subsystems)/tours/messages/open-chat-button";
 import { CancelBookingPanel, type MyCancellation } from "./cancel-booking-panel";
 import { BookingPaymentPanel, type PanelPayment, type PanelProof } from "./booking-payment-panel";
@@ -67,6 +69,9 @@ export default async function BookingDetailPage({ params, searchParams }: PagePr
         duration_value,
         duration_type,
         cover_image_url,
+        meeting_point_name,
+        meeting_lat,
+        meeting_lng,
         tours_operators (
           business_name,
           contact_phone,
@@ -144,6 +149,12 @@ export default async function BookingDetailPage({ params, searchParams }: PagePr
     timeZone: "Asia/Manila",
   });
 
+  // "Find your guide" from two days before the tour until its last day.
+  const todayKey = toManilaDateKey(new Date());
+  const dayOffset = (key: string, days: number) => new Date(Date.parse(`${key}T00:00:00Z`) + days * 86_400_000).toISOString().slice(0, 10);
+  const lastDay = dayOffset(booking.tour_date, pkg?.duration_type === "days" ? Math.max(1, pkg.duration_value ?? 1) - 1 : 0);
+  const showLive = booking.status === "confirmed" && Boolean(booking.assigned_guide_id) && todayKey >= dayOffset(booking.tour_date, -2) && todayKey <= lastDay;
+
   return (
     <PageFrame credits={pkg?.cover_image_url ? [] : [photoKey]}>
       <div className="mx-auto max-w-4xl">
@@ -189,6 +200,19 @@ export default async function BookingDetailPage({ params, searchParams }: PagePr
         ) : null}
 
         {booking.status === "pending" || booking.status === "confirmed" ? <PushOptIn variant="prompt" /> : null}
+
+        {showLive ? (
+          <LiveShareCard
+            bookingId={booking.id}
+            operatorName={operator?.business_name ?? null}
+            operatorPhone={operator?.contact_phone ?? null}
+            meetingPoint={
+              pkg?.meeting_lat != null && pkg?.meeting_lng != null
+                ? { name: pkg.meeting_point_name ?? "Meeting point", lat: Number(pkg.meeting_lat), lng: Number(pkg.meeting_lng) }
+                : null
+            }
+          />
+        ) : null}
 
         {closed ? (
           <Notice variant={booking.status === "rejected" ? "warning" : "info"} className="mb-6" title={booking.status === "rejected" ? "The operator declined this booking" : "This booking was cancelled"}>

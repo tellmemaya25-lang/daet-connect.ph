@@ -16,6 +16,7 @@ const ROLE_LINKS: Record<NonNullable<DashboardHeaderProps["role"]>, { href: stri
     { href: "/tours/operator/dashboard", label: "Dashboard" },
     { href: "/tours/operator/packages", label: "Packages" },
     { href: "/tours/operator/bookings", label: "Bookings" },
+    { href: "/tours/operator/live", label: "Live now" },
     { href: "/tours/operator/reviews", label: "Reviews" },
     { href: "/tours/messages", label: "Messages" },
   ],

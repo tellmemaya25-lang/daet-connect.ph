@@ -92,6 +92,11 @@ export default async function GuideRosterPage({ params }: PageProps) {
           ) : null}
           <div className="mt-4 flex flex-wrap gap-3">
             {!party && rule.ok ? <RosterCheckInButton bookingId={booking.id} label="Check in whole group" /> : null}
+            {booking.status === "confirmed" && rule.ok ? (
+              <Link href={`/tours/guide/tours/${booking.id}/live`} className="inline-flex min-h-11 items-center justify-center rounded-full bg-blue-600 px-5 text-sm font-bold text-white hover:bg-blue-700">
+                Live map
+              </Link>
+            ) : null}
             {booking.status === "confirmed" || booking.status === "completed" ? (
               <>
                 <OpenChatButton bookingId={booking.id} label="Message group" />
