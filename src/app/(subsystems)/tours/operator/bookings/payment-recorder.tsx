@@ -1,5 +1,7 @@
 "use client";
 
+import { badgeTone } from "@/components/ui/badge";
+import { buttonClasses } from "@/components/ui/button";
 import { formatPeso } from "@/lib/money";
 import { useState } from "react";
 import { useFeedback } from "@/components/ui/feedback";
@@ -60,17 +62,18 @@ export function PaymentRecorder({
     }
   };
 
+  // Same chip colours as everywhere else: amber while money is owed, green when done.
   const statusColors: Record<string, string> = {
-    unpaid: "bg-red-100 dark:bg-red-900/40 text-red-800 dark:text-red-300",
-    partial: "bg-yellow-100 dark:bg-yellow-900/40 text-yellow-800 dark:text-yellow-200",
-    paid: "bg-green-100 dark:bg-green-900/40 text-green-800 dark:text-green-300",
-    refunded: "bg-muted text-daet-ink",
+    unpaid: badgeTone("warning"),
+    partial: badgeTone("warning"),
+    paid: badgeTone("success"),
+    refunded: badgeTone("neutral"),
   };
 
   const statusLabels: Record<string, string> = {
     unpaid: "Unpaid",
-    partial: "Partially Paid",
-    paid: "Fully Paid",
+    partial: "Part paid",
+    paid: "Paid in full",
     refunded: "Refunded",
   };
 
@@ -79,7 +82,7 @@ export function PaymentRecorder({
       <div className="mb-3 flex items-center justify-between">
         <div>
           <p className="text-sm text-slate-600 dark:text-slate-400">
-            Payment Status
+            Payment status
           </p>
           <span
             className={`mt-1 inline-block rounded-full px-3 py-1 text-xs font-bold ${
@@ -92,25 +95,26 @@ export function PaymentRecorder({
         {paymentStatus !== "paid" && (
           <button
             onClick={() => setIsOpen(!isOpen)}
-            className="inline-flex min-h-11 items-center rounded-full bg-daet-forest px-4 text-sm font-bold text-white transition hover:bg-blue-700"
+            className={buttonClasses({ variant: "secondary" })}
           >
-            {isOpen ? "Cancel" : "Record Payment"}
+            {isOpen ? "Cancel" : "Record payment"}
           </button>
         )}
       </div>
 
       <div className="grid grid-cols-3 gap-3 text-sm">
         <div>
-          <p className="text-daet-ink/70">Total Amount</p>
+          <p className="text-daet-ink/70">Total</p>
           <p className="font-bold text-daet-ink">{formatPeso(totalAmount)}</p>
         </div>
         <div>
-          <p className="text-daet-ink/70">Total Paid</p>
-          <p className="font-bold text-green-700 dark:text-green-300">{formatPeso(totalPaid)}</p>
+          <p className="text-daet-ink/70">Paid</p>
+          <p className="font-bold text-daet-ink">{formatPeso(totalPaid)}</p>
         </div>
         <div>
           <p className="text-daet-ink/70">Remaining</p>
-          <p className="font-bold text-yellow-800 dark:text-yellow-200">{formatPeso(remaining)}</p>
+          {/* Only colour what is still owed; ₱0.00 is not a warning. */}
+          <p className={`font-bold ${remaining > 0 ? "text-yellow-800 dark:text-yellow-200" : "text-daet-ink/70"}`}>{formatPeso(Math.max(0, remaining))}</p>
         </div>
       </div>
 
@@ -196,7 +200,7 @@ export function PaymentRecorder({
             disabled={isSubmitting}
             className="inline-flex min-h-11 items-center justify-center w-full rounded-full bg-daet-forest px-4 py-2 text-sm font-bold text-white transition hover:bg-blue-700 disabled:opacity-50"
           >
-            {isSubmitting ? "Recording..." : "Record Payment"}
+            {isSubmitting ? "Recording…" : "Record payment"}
           </button>
         </form>
       )}

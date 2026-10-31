@@ -1,3 +1,4 @@
+import { hasTicket } from "@/lib/tours/ticket";
 import { LineIcon } from "@/components/ui/icons";
 import { formatPeso } from "@/lib/money";
 import Image from "next/image";
@@ -108,7 +109,7 @@ export default async function TouristDashboardPage() {
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
-          <ButtonLink href="/tours/browse">Find a tour</ButtonLink>
+          <ButtonLink href="/tours/browse">Find a trip</ButtonLink>
           <ButtonLink href="/tours/plan" variant="secondary">Plan a trip</ButtonLink>
         </div>
       </div>
@@ -126,13 +127,14 @@ export default async function TouristDashboardPage() {
               {pkgOf(next)?.location_name ? ` · ${pkgOf(next)?.location_name}` : ""}
             </p>
             <div className="mt-5 flex flex-wrap gap-2">
-              {next.status === "confirmed" ? (
+              {hasTicket(next) ? (
                 <ButtonLink href={`/tours/bookings/${next.id}/ticket`} variant="inverse">
                   Show ticket QR
                 </ButtonLink>
               ) : null}
               {checkPayable(next).ok && remainingBalance(next) > 0 ? (
-                <ButtonLink href={`/tours/bookings/${next.id}#payment`} variant="accent">
+                // On the blue panel the main button is white; a blue one would vanish.
+                <ButtonLink href={`/tours/bookings/${next.id}#payment`} variant="inverse">
                   Pay {peso(remainingBalance(next))}
                 </ButtonLink>
               ) : null}
@@ -170,22 +172,29 @@ export default async function TouristDashboardPage() {
                             {pkg?.title ?? "Tour"}
                           </Link>
                           <p className="text-daet-ink/80">
-                            {b.tour_date === today ? <strong className="text-blue-700 dark:text-blue-300">Today</strong> : longDate(b.tour_date)} · {b.number_of_pax} pax · {pkg?.location_name}
+                            {b.tour_date === today ? <strong className="text-blue-700 dark:text-blue-300">Today</strong> : longDate(b.tour_date)} · {b.number_of_pax} guest{b.number_of_pax === 1 ? "" : "s"} · {pkg?.location_name}
                           </p>
                         </div>
                         <div className="flex flex-wrap gap-1.5">
-                          <Badge tone={b.status === "confirmed" ? "success" : "warning"}>{b.status === "confirmed" ? "Confirmed" : "Waiting for operator"}</Badge>
-                          <Badge tone={pay.tone}>{pay.label}</Badge>
+                          {b.status === "confirmed" ? (
+                            <Badge tone="success">Confirmed</Badge>
+                          ) : (
+                            <Badge tone="neutral">
+                              <LineIcon name="clock" className="h-3.5 w-3.5" /> Waiting for operator
+                            </Badge>
+                          )}
+                          {/* Nothing to pay until the operator confirms, so no payment chip yet. */}
+                          {b.status === "confirmed" ? <Badge tone={pay.tone}>{pay.label}</Badge> : null}
                         </div>
                       </div>
                       <div className="mt-3 flex flex-wrap gap-2">
-                        {b.status === "confirmed" ? (
+                        {hasTicket(b) ? (
                           <ButtonLink href={`/tours/bookings/${b.id}/ticket`} size="md">
                             Show ticket QR
                           </ButtonLink>
                         ) : null}
                         {payable && balance > 0 ? (
-                          <ButtonLink href={`/tours/bookings/${b.id}#payment`} variant="accent">
+                          <ButtonLink href={`/tours/bookings/${b.id}#payment`} variant="primary">
                             Pay {peso(balance)}
                           </ButtonLink>
                         ) : null}

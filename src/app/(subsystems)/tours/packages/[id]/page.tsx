@@ -235,7 +235,7 @@ export default async function PackageDetailPage({ params }: PageProps) {
                   <ul className="space-y-3">
                     {included.map((item: any) => (
                       <li key={item.id} className="flex items-start gap-3 text-lg text-daet-ink">
-                        <span className="mt-0.5 grid h-6 w-6 shrink-0 place-items-center rounded-full bg-green-500 text-slate-950">
+                        <span className="mt-0.5 grid h-6 w-6 shrink-0 place-items-center rounded-full bg-green-500 text-slate-950 dark:bg-green-500/20 dark:text-green-300">
                           <CheckIcon className="h-4 w-4" />
                         </span>
                         {item.item_text}

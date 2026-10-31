@@ -1,3 +1,4 @@
+import { hasTicket } from "@/lib/tours/ticket";
 import Image from "next/image";
 import { LineIcon } from "@/components/ui/icons";
 import { Badge } from "@/components/ui/badge";
@@ -19,7 +20,7 @@ import { LiveShareCard } from "@/components/tours/live/live-share-card";
 import { toManilaDateKey } from "@/lib/tours/events-calendar";
 import { OpenChatButton } from "@/app/(subsystems)/tours/messages/open-chat-button";
 import { CancelBookingPanel, type MyCancellation } from "./cancel-booking-panel";
-import { BookingPaymentPanel, type PanelPayment, type PanelProof } from "./booking-payment-panel";
+import { BookingPaymentPanel, PaymentNextStep, owesBalance, type PanelPayment, type PanelProof } from "./booking-payment-panel";
 import { ReviewForm } from "./review-form";
 import { ReviewList } from "@/components/tours/review-list";
 import type { Review } from "@/lib/tours/reviews";
@@ -129,6 +130,8 @@ export default async function BookingDetailPage({ params, searchParams }: PagePr
   ]);
 
   const closed = booking.status === "cancelled" || booking.status === "rejected";
+  const owes = owesBalance(booking);
+  const proofs = (proofRows ?? []) as PanelProof[];
   const photoKey = placePhoto(pkg?.title, pkg?.location_name);
   const photo = PHOTOS[photoKey];
   const steps = [
@@ -166,7 +169,7 @@ export default async function BookingDetailPage({ params, searchParams }: PagePr
         </Link>
 
         <header className="mb-6 grid overflow-hidden rounded-2xl bg-surface md:grid-cols-[1fr_1.1fr]">
-          <div className="relative min-h-48 bg-blue-100 dark:bg-blue-900/40 md:min-h-full">
+          <div className="relative min-h-28 bg-blue-100 dark:bg-blue-900/40 sm:min-h-48 md:min-h-full">
             {pkg?.cover_image_url ? (
               <img src={pkg.cover_image_url} alt="" className="absolute inset-0 h-full w-full object-cover" />
             ) : (
@@ -174,23 +177,29 @@ export default async function BookingDetailPage({ params, searchParams }: PagePr
             )}
           </div>
           <div className="p-5 sm:p-8">
-            <Badge tone={closed ? (booking.status === "rejected" ? "danger" : "neutral") : booking.status === "pending" ? "warning" : "success"}>
+            <Badge tone={closed ? (booking.status === "rejected" ? "danger" : "neutral") : booking.status === "pending" ? "neutral" : "success"}>
+              {booking.status === "pending" ? <LineIcon name="clock" className="h-3.5 w-3.5" /> : null}
               {statusLabel[booking.status] ?? booking.status}
             </Badge>
             <h1 className="display-2 mt-3 text-daet-ink">{pkg?.title ?? "Your booking"}</h1>
-            <p className="mt-2 text-lg text-daet-ink">{longTourDate}</p>
+            <p className="mt-2 text-daet-ink sm:text-lg">{longTourDate}</p>
             <p className="text-daet-ink">
               {booking.number_of_pax} guest{booking.number_of_pax === 1 ? "" : "s"}
               {pkg?.location_name ? ` · ${pkg.location_name}` : ""}
               {operator ? ` · by ${operator.business_name}` : ""}
             </p>
-            <p className="mt-4 text-sm text-slate-600 dark:text-slate-400">Booking reference</p>
-            <p className="font-mono text-2xl font-bold tracking-wide text-daet-ink">{booking.booking_reference}</p>
-            <div className="mt-5 flex flex-wrap gap-2">
-              {booking.status === "confirmed" ? <ButtonLink href={`/tours/bookings/${booking.id}/ticket`}>Show my ticket QR</ButtonLink> : null}
-              {!closed ? <OpenChatButton bookingId={booking.id} label="Message the operator" /> : null}
+            <p className="mt-3 text-sm text-slate-600 dark:text-slate-400 sm:mt-4">Booking reference</p>
+            <p className="font-mono text-lg font-bold tracking-wide text-daet-ink sm:text-2xl">{booking.booking_reference}</p>
+            <div className="mt-4 flex flex-wrap gap-2 sm:mt-5">
+              {/* The ticket QR appears once the booking is paid in full; until then paying is the next step. */}
+              {hasTicket(booking) && booking.status === "confirmed" ? (
+                <ButtonLink href={`/tours/bookings/${booking.id}/ticket`}>
+                  <LineIcon name="ticket" className="h-4 w-4" /> Show my ticket QR
+                </ButtonLink>
+              ) : null}
+              {!closed ? <OpenChatButton bookingId={booking.id} label="Message operator" variant={owes ? "ghost" : "secondary"} /> : null}
               {!closed && booking.assigned_guide_id ? (
-                <OpenChatButton target={{ kind: "guide_tourist", bookingId: booking.id }} label="Message your guide" variant="ghost" />
+                <OpenChatButton target={{ kind: "guide_tourist", bookingId: booking.id }} label="Message guide" variant="ghost" />
               ) : null}
             </div>
           </div>
@@ -200,6 +209,10 @@ export default async function BookingDetailPage({ params, searchParams }: PagePr
           <Notice variant="success" className="mb-6" title="Booking sent">
             The operator will confirm it here and in your notifications. You can pay once it is confirmed.
           </Notice>
+        ) : null}
+
+        {owes ? (
+          <PaymentNextStep booking={booking} proofs={proofs} onlinePaymentEnabled={isPaymongoConfigured()} paymentReturn={paymentReturn} />
         ) : null}
 
         {booking.status === "pending" || booking.status === "confirmed" ? <PushOptIn variant="prompt" /> : null}
@@ -231,7 +244,7 @@ export default async function BookingDetailPage({ params, searchParams }: PagePr
               {steps.map((step, i) => (
                 <li key={step.label} className="flex items-center gap-3 sm:flex-col sm:items-start">
                   <span
-                    className={`grid h-9 w-9 shrink-0 place-items-center rounded-full text-sm font-bold ${step.done ? "bg-green-500 text-slate-950" : "bg-muted text-slate-600 dark:text-slate-400"}`}
+                    className={`grid h-9 w-9 shrink-0 place-items-center rounded-full text-sm font-bold ${step.done ? "bg-green-500 text-slate-950 dark:bg-green-500/20 dark:text-green-300" : "bg-muted text-slate-600 dark:text-slate-400"}`}
                     aria-hidden="true"
                   >
                     {step.done ? <LineIcon name="check" className="h-5 w-5" /> : i + 1}
@@ -295,9 +308,8 @@ export default async function BookingDetailPage({ params, searchParams }: PagePr
             booking={booking}
             operator={operator ?? null}
             payments={(paymentRows ?? []) as PanelPayment[]}
-            proofs={(proofRows ?? []) as PanelProof[]}
+            proofs={proofs}
             onlinePaymentEnabled={isPaymongoConfigured()}
-            paymentReturn={paymentReturn}
           />
         ) : null}
 

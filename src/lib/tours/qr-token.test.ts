@@ -82,11 +82,15 @@ describe("expiry helpers", () => {
 });
 
 describe("checkInAllowed", () => {
-  it("only confirmed bookings on the tour date", () => {
-    expect(checkInAllowed({ status: "confirmed", tour_date: "2026-11-07" }, "2026-11-07")).toEqual({ ok: true });
-    expect(checkInAllowed({ status: "confirmed", tour_date: "2026-11-08" }, "2026-11-07")).toEqual({ ok: false, reason: "Check-in opens on the tour date." });
-    expect(checkInAllowed({ status: "confirmed", tour_date: "2026-11-06" }, "2026-11-07").ok).toBe(false);
-    expect(checkInAllowed({ status: "pending", tour_date: "2026-11-07" }, "2026-11-07")).toEqual({ ok: false, reason: "This booking is not confirmed yet." });
-    expect(checkInAllowed({ status: "cancelled", tour_date: "2026-11-07" }, "2026-11-07").ok).toBe(false);
+  it("only confirmed, paid bookings on the tour date", () => {
+    expect(checkInAllowed({ status: "confirmed", payment_status: "paid", tour_date: "2026-11-07" }, "2026-11-07")).toEqual({ ok: true });
+    expect(checkInAllowed({ status: "confirmed", payment_status: "paid", tour_date: "2026-11-08" }, "2026-11-07")).toEqual({ ok: false, reason: "Check-in opens on the tour date." });
+    expect(checkInAllowed({ status: "confirmed", payment_status: "paid", tour_date: "2026-11-06" }, "2026-11-07").ok).toBe(false);
+    expect(checkInAllowed({ status: "pending", payment_status: "paid", tour_date: "2026-11-07" }, "2026-11-07")).toEqual({ ok: false, reason: "This booking is not confirmed yet." });
+    expect(checkInAllowed({ status: "cancelled", payment_status: "paid", tour_date: "2026-11-07" }, "2026-11-07").ok).toBe(false);
+  });
+  it("only bookings paid in full", () => {
+    expect(checkInAllowed({ status: "confirmed", payment_status: "partial", tour_date: "2026-11-07" }, "2026-11-07")).toEqual({ ok: false, reason: "This booking isn't paid in full yet, so it can't be checked in." });
+    expect(checkInAllowed({ status: "confirmed", payment_status: "unpaid", tour_date: "2026-11-07" }, "2026-11-07").ok).toBe(false);
   });
 });

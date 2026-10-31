@@ -16,6 +16,9 @@ const HIDDEN = [/^\/login/, /^\/signup/, /^\/forgot-password/, /^\/tours\/help/,
  * The native <dialog> traps focus and closes on Escape.
  */
 export function AssistantWidget({ signedIn, raised }: { signedIn: boolean; raised: boolean }) {
+  // Phones with a tab bar reach the assistant from Messages, where it is pinned
+  // first, so the floating button would only cover cards and buttons.
+  const phoneHidden = signedIn && raised;
   const pathname = usePathname() ?? "";
   const dialogRef = useRef<HTMLDialogElement>(null);
   const [open, setOpen] = useState(false);
@@ -44,9 +47,9 @@ export function AssistantWidget({ signedIn, raised }: { signedIn: boolean; raise
           setOpen(true);
         }}
         aria-haspopup="dialog"
-        className={`fixed right-4 z-40 ${covered.length ? "hidden md:inline-flex" : "inline-flex"} h-12 min-w-12 items-center justify-center gap-2 rounded-full bg-blue-600 px-3 text-sm font-bold text-white shadow-[var(--shadow-float)] transition hover:bg-blue-700 active:scale-95 sm:bottom-6 sm:right-6 sm:px-4 print:hidden ${raised ? "bottom-20" : "bottom-4"}`}
+        className={`fixed right-4 z-40 ${covered.length ? "hidden md:inline-flex" : phoneHidden ? "hidden sm:inline-flex" : "inline-flex"} h-12 min-w-12 items-center justify-center gap-2 rounded-full bg-blue-600 px-3 text-sm font-bold text-white shadow-[var(--shadow-float)] transition hover:bg-blue-700 active:scale-95 sm:bottom-6 sm:right-6 sm:px-4 print:hidden ${raised ? "bottom-20" : "bottom-4"}`}
       >
-        <LineIcon name="chat" className="h-6 w-6 sm:h-5 sm:w-5" />
+        <LineIcon name="sparkle" className="h-6 w-6 sm:h-5 sm:w-5" />
         <span className="sr-only sm:not-sr-only">Daet AI assistant</span>
       </button>
       <dialog

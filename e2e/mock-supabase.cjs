@@ -109,6 +109,8 @@ const BID = "e9466de5-4877-47c1-ac14-d86deeb38b9e";
   const addDays = (n) => { const d = new Date(TODAY + "T00:00:00Z"); d.setUTCDate(d.getUTCDate() + n); return d.toISOString().slice(0, 10); };
   const later = { ...booking, id: "b-later", booking_reference: "BK-20261101-LT55AA", tour_date: addDays(5), status: "confirmed", payment_status: "unpaid", total_paid: 0, number_of_pax: 2, total_amount: 932, contact_name: "Ana Reyes" };
   const pendingB = { ...booking, id: "b-pend", booking_reference: "BK-20261102-PN11ZZ", tour_date: addDays(9), status: "pending", payment_status: "unpaid", total_paid: 0, number_of_pax: 4, total_amount: 1864, contact_name: "Mark O'Neil" };
+  // Paid in full, so it has a ticket QR (tickets need full payment).
+  const paidB = { ...booking, id: "a7d1c3e2-5b4f-4c6a-9e8d-1f2a3b4c5d6e", booking_reference: "BK-20261020-PD77KK", tour_date: addDays(14), status: "confirmed", payment_status: "paid", total_paid: 1398 };
   const doneB = { ...booking, id: "b-done", booking_reference: "BK-20261001-DN88QQ", tour_date: addDays(-12), status: "completed", payment_status: "paid", total_paid: 1398 };
   const guideAvailability = [
     { guide_id: guides[0].id, available_date: addDays(1), is_available: true },
@@ -197,7 +199,7 @@ const BID = "e9466de5-4877-47c1-ac14-d86deeb38b9e";
     tours_live_positions: role === "tourist" ? live.positions.filter((p) => p.role === "guide" || p.profile_id === "tourist") : live.positions,
     tours_live_consents: live.consents,
     tours_live_flares: live.flares,
-    tours_bookings: role === "operator" ? [booking, later, pendingB, cancelled] : [booking, later, pendingB, doneB], tours_packages: [pkg], tours_package_availability: availability, _event_availability: eventAvailability, tours_cancellations: cancellations, tours_payments: payments, tours_payment_proofs: proofs, tours_operators: [operator],
+    tours_bookings: role === "operator" ? [booking, later, pendingB, cancelled] : [booking, later, pendingB, paidB, doneB], tours_packages: [pkg], tours_package_availability: availability, _event_availability: eventAvailability, tours_cancellations: cancellations, tours_payments: payments, tours_payment_proofs: proofs, tours_operators: [operator],
     tours_guides: guides, profiles: [{ id: "9b7e5a5e-0000-4000-8000-000000000001", role, full_name: "Juan Dela Cruz" }],
     tours_events: events, tours_merchandise: role === "operator" ? merch.filter((m) => m.submitted_by_operator_id) : merch,
     // R6: the operator sees one pending swap request from the guide on today's booking.

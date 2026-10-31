@@ -3,7 +3,6 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { PageFrame } from "@/components/ui/page-frame";
 import { Notice } from "@/components/ui/notice";
-import { DashboardHeader } from "@/components/ui/dashboard-header";
 import { canAccessOperatorDashboard } from "@/lib/tours/operator-access";
 import {
   OPERATOR_OWN_STATUS_SELECT,
@@ -91,7 +90,6 @@ export default async function OperatorPackagesPage({
 
   return (
     <PageFrame>
-      <DashboardHeader role="operator" />
       
       <div className="mx-auto max-w-6xl">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between mb-6">

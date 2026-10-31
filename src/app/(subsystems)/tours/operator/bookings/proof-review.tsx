@@ -5,6 +5,7 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { LineIcon } from "@/components/ui/icons";
 import { Field, Textarea } from "@/components/ui/field";
 import { ConfirmDialog, Modal } from "@/components/ui/modal";
 import { Notice } from "@/components/ui/notice";
@@ -71,15 +72,16 @@ export function ProofReview({ proofs }: { proofs: ReviewableProof[] }) {
                 {isProofMethod(proof.payment_method) ? PROOF_METHODS[proof.payment_method] : proof.payment_method} · Ref {proof.reference_number}
               </span>
             </div>
-            <div className="mt-3 grid grid-cols-3 gap-2">
-              <Button variant="ghost" onClick={() => viewReceipt(proof.id)} disabled={pending}>
-                View
-              </Button>
-              <Button variant="danger" onClick={() => setRejecting(proof)} disabled={pending}>
-                Reject
+            {/* Look at the receipt first; approving is the main step, rejecting asks for a reason. */}
+            <div className="mt-3 grid gap-2 sm:grid-cols-[1fr_auto_auto]">
+              <Button variant="secondary" onClick={() => viewReceipt(proof.id)} disabled={pending}>
+                <LineIcon name="receipt" className="h-4 w-4" /> View receipt
               </Button>
               <Button onClick={() => setApproving(proof)} disabled={pending}>
                 Approve
+              </Button>
+              <Button variant="ghost" onClick={() => setRejecting(proof)} disabled={pending}>
+                Reject…
               </Button>
             </div>
           </li>

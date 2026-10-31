@@ -80,7 +80,7 @@ export default async function OperatorSettingsPage() {
         <div className="mb-6">
           <Link
             href="/tours/operator/dashboard"
-            className="inline-flex items-center gap-2 text-sm font-bold text-daet-ink/70 transition hover:text-daet-ink"
+            className="inline-flex min-h-11 items-center gap-2 text-sm font-bold text-daet-ink/70 transition hover:text-daet-ink"
           >
             ← Back to Dashboard
           </Link>

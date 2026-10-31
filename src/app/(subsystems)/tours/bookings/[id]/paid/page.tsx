@@ -1,3 +1,4 @@
+import { hasTicket } from "@/lib/tours/ticket";
 import Link from "next/link";
 import { cookies } from "next/headers";
 import { notFound, redirect } from "next/navigation";
@@ -78,7 +79,7 @@ export default async function PaymentSuccessPage({ params }: PageProps) {
       <div className="mx-auto max-w-xl">
         {paid ? (
           <section aria-labelledby="paid-title" className="rounded-2xl bg-surface p-6 text-center sm:p-8">
-            <div className="mx-auto grid h-16 w-16 place-items-center rounded-full bg-green-500 text-slate-950">
+            <div className="mx-auto grid h-16 w-16 place-items-center rounded-full bg-green-500 text-slate-950 dark:bg-green-500/20 dark:text-green-300">
               <LineIcon name="check" className="h-8 w-8" />
             </div>
             <h1 id="paid-title" className="display-2 mt-4 text-daet-ink">
@@ -115,7 +116,7 @@ export default async function PaymentSuccessPage({ params }: PageProps) {
               </div>
             </dl>
             <div className="mt-6 flex flex-wrap justify-center gap-2">
-              {booking.status === "confirmed" ? <ButtonLink href={`/tours/bookings/${id}/ticket`}>Show my ticket QR</ButtonLink> : null}
+              {hasTicket(booking) && booking.status === "confirmed" ? <ButtonLink href={`/tours/bookings/${id}/ticket`}>Show my ticket QR</ButtonLink> : null}
               <ButtonLink href={`/tours/bookings/${id}`} variant="secondary">
                 View booking
               </ButtonLink>
