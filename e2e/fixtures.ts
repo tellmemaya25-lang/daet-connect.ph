@@ -30,10 +30,55 @@ export async function visit(page: Page, path: string, heading?: string | RegExp)
   if (heading) await expect(page.getByRole("heading", { level: 1 })).toContainText(heading);
   else await expect(page.getByRole("heading", { level: 1 }).first()).toBeVisible();
   await expect(page.locator("html")).toHaveAttribute("lang", /^(en|fil|tl)/);
-  const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
+  const overflow = await page.evaluate(() => Math.max(document.documentElement.scrollWidth, document.body.scrollWidth) - window.innerWidth);
   expect(overflow, `${path} horizontal overflow`).toBeLessThanOrEqual(0);
+  expect(await offScreen(page), `${path} content past the screen edge`).toEqual([]);
   await checkA11y(page, path);
   expect(errors, `${path} page errors`).toEqual([]);
+}
+
+/**
+ * Text, buttons and images that stick out past the screen edge. Overflow the
+ * page hides doesn't show in scrollWidth, but phones still clip or scroll it.
+ * Content spilling out of its card counts too. Sideways scrollers (chip
+ * rows) and fixed layers are left out.
+ */
+export async function offScreen(page: Page): Promise<string[]> {
+  return page.evaluate(() => {
+    const vw = window.innerWidth;
+    const inScroller = (el: Element) => {
+      for (let a = el.parentElement; a; a = a.parentElement) {
+        const s = getComputedStyle(a);
+        if (/(auto|scroll)/.test(s.overflowX) && a.scrollWidth > a.clientWidth) return true;
+        if (s.position === "fixed") return true;
+      }
+      return false;
+    };
+    const found: string[] = [];
+    for (const el of document.querySelectorAll("body *")) {
+      if (el.closest("svg, .sr-only, [aria-hidden='true'], .maplibregl-map, figure")) continue;
+      const tag = el.tagName.toLowerCase();
+      const hasText = [...el.childNodes].some((n) => n.nodeType === 3 && n.textContent?.trim());
+      if (!hasText && !["button", "a", "img", "input", "select", "textarea"].includes(tag)) continue;
+      const r = el.getBoundingClientRect();
+      if (r.width < 2 || r.height < 2 || getComputedStyle(el).position === "fixed") continue;
+      if (inScroller(el)) continue;
+      const label = `${tag} "${(el.textContent ?? "").trim().slice(0, 30)}"`;
+      if (r.right > vw + 1 || r.left < -1) found.push(`${label} [${Math.round(r.left)}..${Math.round(r.right)}]`);
+      else {
+        // Spilling out of its card (a rounded panel with a background) also counts.
+        for (let a = el.parentElement; a && a !== document.body; a = a.parentElement) {
+          const s = getComputedStyle(a);
+          if (parseFloat(s.borderTopLeftRadius) >= 12 && s.backgroundColor !== "rgba(0, 0, 0, 0)" && a.getBoundingClientRect().width > 200) {
+            if (r.right > a.getBoundingClientRect().right + 1) found.push(`${label} past its card`);
+            break;
+          }
+        }
+      }
+      if (found.length >= 5) break;
+    }
+    return found;
+  });
 }
 
 export async function checkA11y(page: Page, label: string) {

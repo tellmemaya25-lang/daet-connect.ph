@@ -31,7 +31,7 @@ export default defineConfig({
       command: "node e2e/mock-supabase.cjs",
       url: `http://127.0.0.1:${mockPort}/rest/v1/tours_packages`,
       reuseExistingServer: !process.env.CI,
-      env: { MOCK_SUPABASE_PORT: String(mockPort) },
+      env: { MOCK_SUPABASE_PORT: String(mockPort), MOCK_COVERS: "1" },
     },
     {
       command: `npx next dev --port ${port}`,

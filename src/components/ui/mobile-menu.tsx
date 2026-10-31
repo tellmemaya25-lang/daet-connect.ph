@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { useEffect, useRef } from "react";
 import { LineIcon } from "@/components/ui/icons";
 import { ThemeChoices } from "@/components/ui/theme-toggle";
+import { announceOverlay } from "@/lib/ui-overlay";
 
 export type MenuLink = { href: string; label: string };
 
@@ -22,7 +23,7 @@ export function MobileMenu({ groups }: { groups: Array<{ label: string; links: M
   const visible = groups.filter((g) => g.links.length);
 
   return (
-    <details ref={ref} className="group md:hidden">
+    <details ref={ref} className="group md:hidden" onToggle={(event) => announceOverlay("menu", event.currentTarget.open)}>
       <summary className="flex min-h-11 min-w-11 cursor-pointer list-none items-center justify-center gap-1.5 rounded-full px-3 text-sm font-bold text-daet-ink hover:bg-muted [&::-webkit-details-marker]:hidden">
         <LineIcon name="menu" className="h-6 w-6 group-open:hidden" />
         <LineIcon name="close" className="hidden h-6 w-6 group-open:block" />

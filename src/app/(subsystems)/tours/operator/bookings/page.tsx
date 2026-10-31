@@ -302,27 +302,28 @@ export default async function OperatorBookingsPage({
                 <div
                   key={booking.id}
                   id={`booking-${booking.id}`}
-                  className="scroll-mt-6 rounded-2xl bg-surface p-6 target:ring-2 target:ring-daet-forest/50"
+                  className="scroll-mt-6 overflow-hidden rounded-2xl bg-surface p-4 target:ring-2 target:ring-daet-forest/50 sm:p-6"
                 >
-                  <div className="flex gap-6">
+                  {/* Phones: photo on top, details full width. Wider: side by side. */}
+                  <div className="flex flex-col gap-4 sm:flex-row sm:gap-6">
                     {/* Package Image */}
                     {pkg?.cover_image_url && (
                       <img
                         src={pkg.cover_image_url}
                         alt={pkg.title}
-                        className="h-32 w-40 flex-shrink-0 rounded-2xl object-cover"
+                        className="h-36 w-full rounded-2xl object-cover sm:h-32 sm:w-40 sm:shrink-0"
                       />
                     )}
 
                     {/* Booking Details */}
-                    <div className="flex flex-1 flex-col">
+                    <div className="flex min-w-0 flex-1 flex-col">
                       {/* Top Row: Package + Status */}
-                      <div className="mb-4 flex items-start justify-between gap-4">
-                        <div>
+                      <div className="mb-4 flex items-start justify-between gap-3">
+                        <div className="min-w-0">
                           <h3 className="text-xl font-bold text-daet-ink">
                             {pkg?.title || "Package"}
                           </h3>
-                          <p className="mt-1 text-sm font-bold text-daet-forest dark:text-blue-300">
+                          <p className="mt-1 break-words text-sm font-bold text-daet-forest dark:text-blue-300">
                             {booking.booking_reference}
                           </p>
                         </div>
@@ -334,7 +335,7 @@ export default async function OperatorBookingsPage({
                       </div>
 
                       {/* Details Grid */}
-                      <div className="mb-4 grid grid-cols-2 gap-x-8 gap-y-3 text-sm md:grid-cols-4">
+                      <div className="mb-4 grid grid-cols-2 gap-x-4 gap-y-3 text-sm sm:gap-x-8 md:grid-cols-4 [&>div]:min-w-0 [&_p]:break-words">
                         <div>
                           <p className="text-daet-ink/70">Tour Date</p>
                           <p className="font-bold text-daet-ink">

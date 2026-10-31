@@ -45,7 +45,7 @@ test("tourist → guide → admin walkthrough screens", async ({ browser }) => {
   await signInAs(guide, "guide");
   const guidePage = await guide.newPage();
   await guidePage.goto("/tours/guide/dashboard", { waitUntil: "networkidle" });
-  await guidePage.getByRole("link", { name: /open roster/i }).first().click();
+  await guidePage.getByRole("link", { name: /guest list/i }).first().click();
   await expect(guidePage).toHaveURL(/\/roster$/);
   await checkA11y(guidePage, "roster");
   await guide.close();
