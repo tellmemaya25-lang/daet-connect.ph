@@ -27,8 +27,9 @@ test.describe("live tour tracking", () => {
     await page.getByRole("button", { name: "Start live tour" }).click();
     await expect(page.getByText("Live", { exact: true })).toBeVisible();
     await expect(page.getByText(/^Sharing your location\./)).toBeVisible({ timeout: 15_000 });
-    // Tiles are blocked in tests, so the sketch map stands in, with the guide on it.
-    await expect(page.getByRole("img", { name: /Live map for Bagasbas Sunrise Surf Lesson/ })).toBeVisible({ timeout: 15_000 });
+    // The tile map where tiles load (CI), else the sketch that stands in for it.
+    const mapName = /Live map for Bagasbas Sunrise Surf Lesson/;
+    await expect(page.getByRole("region", { name: mapName }).or(page.getByRole("img", { name: mapName })).first()).toBeVisible({ timeout: 15_000 });
     await page.getByRole("button", { name: "Arrived at stop 1" }).click();
     await expect(page.getByRole("button", { name: "Arrived at stop 2" })).toBeVisible();
     await checkA11y(page, "guide live map");

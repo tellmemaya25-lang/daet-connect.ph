@@ -46,6 +46,8 @@ function markerElement(m: FreeMapMarker): HTMLElement {
   el.className = MARKER_CLASSES[m.kind];
   el.textContent = m.label;
   el.title = m.title;
+  // aria-label needs a role on a plain element; a link already has one.
+  if (!m.href) el.setAttribute("role", "img");
   el.setAttribute("aria-label", m.title);
   return el;
 }
