@@ -70,7 +70,8 @@ export async function offScreen(page: Page): Promise<string[]> {
         for (let a = el.parentElement; a && a !== document.body; a = a.parentElement) {
           const s = getComputedStyle(a);
           if (parseFloat(s.borderTopLeftRadius) >= 12 && s.backgroundColor !== "rgba(0, 0, 0, 0)" && a.getBoundingClientRect().width > 200) {
-            if (r.right > a.getBoundingClientRect().right + 1) found.push(`${label} past its card`);
+            const card = a.getBoundingClientRect();
+            if (r.right > card.right + 1 || r.left < card.left - 1) found.push(`${label} past its card`);
             break;
           }
         }

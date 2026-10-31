@@ -20,6 +20,8 @@ export function MobileMenu({ groups }: { groups: Array<{ label: string; links: M
   useEffect(() => {
     if (ref.current) ref.current.open = false;
   }, [pathname]);
+  // Unmounting while open (no toggle event fires then) clears the overlay too.
+  useEffect(() => () => announceOverlay("menu", false), []);
   const visible = groups.filter((g) => g.links.length);
 
   return (

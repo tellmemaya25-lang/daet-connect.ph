@@ -160,9 +160,10 @@ export default async function GuideMyToursPage() {
             { label: "Upcoming", value: upcomingTours.length },
             { label: "Completed", value: completedTours.length },
           ].map((stat) => (
-            <div key={stat.label} className="rounded-2xl bg-surface p-3 text-center sm:p-4">
-              <dd className="text-2xl font-bold tabular-nums text-daet-ink sm:text-3xl">{stat.value}</dd>
+            <div key={stat.label} className="flex flex-col-reverse rounded-2xl bg-surface p-3 text-center sm:p-4">
+              {/* dt before dd for valid markup; flex-col-reverse shows the number on top. */}
               <dt className="text-sm text-daet-ink/70">{stat.label}</dt>
+              <dd className="text-2xl font-bold tabular-nums text-daet-ink sm:text-3xl">{stat.value}</dd>
             </div>
           ))}
         </dl>

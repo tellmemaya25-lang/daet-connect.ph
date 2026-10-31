@@ -71,7 +71,13 @@ export function NotificationBell() {
     };
   }, [open]);
 
-  useEffect(() => announceOverlay("notifications", open), [open]);
+  useEffect(() => {
+    announceOverlay("notifications", open);
+    // Leaving the page with the panel open must not keep the chat button hidden.
+    return () => {
+      if (open) announceOverlay("notifications", false);
+    };
+  }, [open]);
 
   if (!userId) return null;
 
