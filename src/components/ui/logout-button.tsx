@@ -7,7 +7,7 @@ import { cn } from "@/components/ui/cn";
  * Signs out through POST /auth/logout, then loads the home page fresh so no
  * signed-in data (or Realtime subscription) survives in the tab.
  */
-export function LogoutButton({ className, compact = false }: { className?: string; compact?: boolean }) {
+export function LogoutButton({ className, compact = false, menu = false }: { className?: string; compact?: boolean; /** A plain row in the account menu. */ menu?: boolean }) {
   const [pending, setPending] = useState(false);
   const [failed, setFailed] = useState(false);
 
@@ -25,6 +25,26 @@ export function LogoutButton({ className, compact = false }: { className?: strin
       setFailed(true);
       setPending(false);
     }
+  }
+
+  if (menu) {
+    return (
+      <>
+        <button
+          type="button"
+          onClick={signOut}
+          disabled={pending}
+          className={cn("flex min-h-12 w-full items-center rounded-xl px-4 text-left text-base text-daet-ink hover:bg-muted disabled:cursor-wait disabled:opacity-60", className)}
+        >
+          {pending ? "Signing out…" : "Sign out"}
+        </button>
+        {failed ? (
+          <p role="alert" className="mx-2 mb-1 rounded-xl bg-red-50 px-3 py-2 text-sm font-semibold text-red-800 dark:bg-red-950/40 dark:text-red-300">
+            Sign-out failed. Check your connection and try again.
+          </p>
+        ) : null}
+      </>
+    );
   }
 
   return (

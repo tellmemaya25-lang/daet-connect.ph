@@ -10,11 +10,12 @@ import { announceOverlay } from "@/lib/ui-overlay";
 export type MenuLink = { href: string; label: string };
 
 /**
- * The phone menu: a 44px "Menu" button that opens a sheet of links. Built on
- * <details>, so it opens without JavaScript; it closes itself after navigation.
- * It always has the Theme choice at the bottom.
+ * The phone menu: a round 44px Menu button at the start of the bar that opens
+ * a sheet of links. Built on <details>, so it opens without JavaScript; it
+ * closes itself after navigation. Visitors also get the Theme choice; signed-in
+ * users have Dark mode in their account menu.
  */
-export function MobileMenu({ groups }: { groups: Array<{ label: string; links: MenuLink[] }> }) {
+export function MobileMenu({ groups, showTheme = true }: { groups: Array<{ label: string; links: MenuLink[] }>; showTheme?: boolean }) {
   const ref = useRef<HTMLDetailsElement>(null);
   const pathname = usePathname();
   useEffect(() => {
@@ -26,10 +27,12 @@ export function MobileMenu({ groups }: { groups: Array<{ label: string; links: M
 
   return (
     <details ref={ref} className="group md:hidden" onToggle={(event) => announceOverlay("menu", event.currentTarget.open)}>
-      <summary className="flex min-h-11 min-w-11 cursor-pointer list-none items-center justify-center gap-1.5 rounded-full px-3 text-sm font-bold text-daet-ink hover:bg-muted [&::-webkit-details-marker]:hidden">
+      <summary
+        aria-label="Menu"
+        className="mr-1.5 grid h-11 w-11 cursor-pointer list-none place-items-center rounded-full bg-blue-50 text-blue-700 transition active:scale-95 motion-reduce:transition-none dark:bg-blue-950/40 dark:text-blue-300 [&::-webkit-details-marker]:hidden"
+      >
         <LineIcon name="menu" className="h-6 w-6 group-open:hidden" />
         <LineIcon name="close" className="hidden h-6 w-6 group-open:block" />
-        <span>Menu</span>
       </summary>
       <nav
         aria-label="Menu"
@@ -56,7 +59,7 @@ export function MobileMenu({ groups }: { groups: Array<{ label: string; links: M
             </ul>
           </div>
         ))}
-        <ThemeChoices />
+        {showTheme ? <ThemeChoices /> : null}
       </nav>
     </details>
   );

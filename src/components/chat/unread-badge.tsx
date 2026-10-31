@@ -6,11 +6,11 @@ import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 let seq = 0;
 
 /**
- * Unread chat count for the Messages tab and header link. Re-counts when a
- * message arrives in one of the viewer's chats (row-level security limits
- * the feed) or when a chat is read in this tab.
+ * Unread chats for the signed-in viewer. Re-counts when a message arrives in
+ * one of their chats (row-level security limits the feed) or when a chat is
+ * read in this tab.
  */
-export function UnreadMessagesBadge({ className = "" }: { className?: string }) {
+export function useUnreadChats(): number {
   const [count, setCount] = useState(0);
   useEffect(() => {
     const supabase = createSupabaseBrowserClient();
@@ -33,6 +33,12 @@ export function UnreadMessagesBadge({ className = "" }: { className?: string }) 
       void supabase.removeChannel(channel);
     };
   }, []);
+  return count;
+}
+
+/** Unread chat count for the Messages tab and the account menu. */
+export function UnreadMessagesBadge({ className = "" }: { className?: string }) {
+  const count = useUnreadChats();
   if (count === 0) return null;
   return (
     <span className={`inline-grid min-w-5 place-items-center rounded-full bg-red-600 px-1.5 text-xs font-bold leading-5 text-white ${className}`}>

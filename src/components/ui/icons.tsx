@@ -127,6 +127,8 @@ export const ChevronLeftIcon = (props: IconProps) => (
 
 /** General line icons that replace emoji across the UI. */
 const SHAPES = {
+  "chevron-down": "M6 9l6 6 6-6",
+  sparkle: "M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8zM18 16l.8 2.2L21 19l-2.2.8L18 22l-.8-2.2L15 19l2.2-.8z",
   inbox: "M4 13h4l2 3h4l2-3h4M5 5h14l1 8v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1v-5z",
   check: "M5 12l5 5 9-10",
   cancel: "M6 6l12 12M18 6L6 18",

@@ -20,7 +20,7 @@ test.describe("dark mode", () => {
     await page.goto("/", { waitUntil: "networkidle" });
     expect(await canvas(page)).toBe(LIGHT_CANVAS);
 
-    await page.getByText("Menu", { exact: true }).click();
+    await page.getByRole("banner").locator("summary").click();
     const theme = page.getByRole("group", { name: "Theme" });
     await theme.getByText("Dark", { exact: true }).click();
     await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
@@ -30,7 +30,7 @@ test.describe("dark mode", () => {
     await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
     expect(await canvas(page)).toBe(DARK_CANVAS);
 
-    await page.getByText("Menu", { exact: true }).click();
+    await page.getByRole("banner").locator("summary").click();
     await page.getByRole("group", { name: "Theme" }).getByText("System", { exact: true }).click();
     await expect(page.locator("html")).not.toHaveAttribute("data-theme", /.+/);
     expect(await page.evaluate(() => localStorage.getItem("daet-theme"))).toBeNull();
@@ -52,18 +52,36 @@ test.describe("dark mode", () => {
 
   test("the desktop header button cycles Light, Dark, System", async ({ browser }) => {
     const context = await browser.newContext({ viewport: { width: 1280, height: 800 } });
-    await signInAs(context, "tourist");
     const page = await context.newPage();
-    await page.goto("/tours/me", { waitUntil: "networkidle" });
+    await page.goto("/tours/browse", { waitUntil: "networkidle" });
     const button = page.getByRole("button", { name: /^Theme:/ });
     await expect(button).toHaveAccessibleName("Theme: System. Switch to Light");
     await button.click();
     await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
     await button.click();
     await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
-    await checkA11y(page, "tourist home in dark mode");
+    await checkA11y(page, "trips in dark mode");
     await button.click();
     await expect(page.locator("html")).not.toHaveAttribute("data-theme", /.+/);
+    await context.close();
+  });
+
+  test("signed in, Dark mode is a switch in the account menu", async ({ browser }) => {
+    const context = await browser.newContext({ viewport: { width: 1280, height: 800 } });
+    await signInAs(context, "tourist");
+    const page = await context.newPage();
+    await page.goto("/tours/me", { waitUntil: "networkidle" });
+    await expect(page.getByRole("button", { name: /^Theme:/ })).toHaveCount(0);
+    await page.getByRole("button", { name: /^(You, y|Y)our account/ }).click();
+    const dark = page.getByRole("switch", { name: "Dark mode" });
+    await expect(dark).toHaveAttribute("aria-checked", "false");
+    await dark.click();
+    await expect(dark).toHaveAttribute("aria-checked", "true");
+    await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
+    expect(await canvas(page)).toBe(DARK_CANVAS);
+    await checkA11y(page, "account menu in dark mode");
+    await dark.click();
+    await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
     await context.close();
   });
 });

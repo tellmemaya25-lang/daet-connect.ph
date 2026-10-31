@@ -34,8 +34,8 @@ export function roleTabs(role: string | null): Tab[] {
       ];
     case "tourist":
       return [
+        // The fifth tab, You, is the account menu (nav iteration 3); Trips is in the Menu sheet.
         { href: "/tours/me", label: "Home" },
-        { href: "/tours/browse", label: "Tours" },
         { href: "/tours/plan", label: "Plan" },
         { href: "/tours/my-bookings", label: "Bookings" },
         { href: "/tours/messages", label: "Messages" },
@@ -43,6 +43,20 @@ export function roleTabs(role: string | null): Tab[] {
     default:
       return [];
   }
+}
+
+/**
+ * The signed-in user's own pages for the account menu (nav iteration 3);
+ * Dark mode and Sign out follow them. `tabs` are the role's tabs: the first is
+ * the dashboard.
+ */
+export function accountLinks(role: string | null | undefined, tabs: Tab[]): Tab[] {
+  const links: Tab[] = [];
+  if (role === "operator") links.push({ href: "/tours/operator/settings", label: "Settings" });
+  if (!role || role === "tourist") links.push({ href: "/tours/my-bookings", label: "Bookings" });
+  links.push({ href: "/tours/messages", label: "Messages" });
+  if (tabs[0]) links.push({ href: tabs[0].href, label: "Dashboard" });
+  return links;
 }
 
 /** The tab that owns a path: longest matching prefix, so /tours/admin/reviews is "Reviews", not "Home". */

@@ -25,7 +25,7 @@ test("a chat reads like Messenger: grouped bubbles, Seen, and a live unread badg
   await expect(page.getByRole("heading", { level: 1, name: "Bagasbas Sunrise Surf Lesson" })).toBeVisible();
   await expect(page.getByText("Seen")).toBeVisible();
   // One other chat has unread messages.
-  await expect(page.getByRole("navigation", { name: "Dashboard" }).getByText("1 unread chat")).toBeAttached();
+  await expect(page.getByRole("navigation", { name: "Dashboard" }).getByRole("link", { name: /Messages/ }).getByText("1 unread chat")).toBeAttached();
   await checkA11y(page, "Messenger thread");
 });
 

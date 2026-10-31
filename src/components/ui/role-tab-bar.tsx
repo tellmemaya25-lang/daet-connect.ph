@@ -4,10 +4,14 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { TabIcon } from "@/components/ui/icons";
 import { UnreadMessagesBadge } from "@/components/chat/unread-badge";
+import { AccountMenu } from "@/components/ui/account-menu";
 import { activeTab, type Tab } from "@/lib/tours/dashboards";
 
-/** Bottom tab bar on phones for signed-in users; hidden from sm up, where the header has room. */
-export function RoleTabBar({ tabs }: { tabs: Tab[] }) {
+/**
+ * Bottom tab bar on phones for signed-in users; hidden from sm up, where the
+ * header has room. With `account` the last tab is You, the account menu.
+ */
+export function RoleTabBar({ tabs, account }: { tabs: Tab[]; account?: { initial: string; name: string; links: Tab[] } }) {
   const pathname = usePathname() ?? "";
   const current = activeTab(tabs, pathname);
   if (tabs.length === 0) return null;
@@ -35,6 +39,11 @@ export function RoleTabBar({ tabs }: { tabs: Tab[] }) {
             </li>
           );
         })}
+        {account ? (
+          <li>
+            <AccountMenu variant="tab" initial={account.initial} name={account.name} links={account.links} />
+          </li>
+        ) : null}
       </ul>
     </nav>
   );

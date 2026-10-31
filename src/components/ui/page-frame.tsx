@@ -6,15 +6,20 @@ import { SiteFooter } from "@/components/ui/site-footer";
 import { SiteHeader } from "@/components/ui/site-header";
 import type { PhotoKey } from "@/lib/photo-credits";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
-import { roleTabs } from "@/lib/tours/dashboards";
+import { accountLinks, roleTabs } from "@/lib/tours/dashboards";
 import { getAuthenticatedSession } from "@/lib/tours/server-auth";
 
-async function signedInRole(): Promise<string | null | undefined> {
+type Viewer = { role: string; initial: string; name: string };
+
+async function signedInViewer(): Promise<Viewer | undefined> {
   if (!isSupabaseConfigured()) return undefined;
   try {
-    const session = await getAuthenticatedSession();
-    if (!session.user) return undefined;
-    return session.role ?? "tourist";
+    const { user, role } = await getAuthenticatedSession();
+    if (!user) return undefined;
+    const meta = (user.user_metadata ?? {}) as { full_name?: unknown; name?: unknown };
+    const fullName = [meta.full_name, meta.name].find((v): v is string => typeof v === "string" && v.trim() !== "")?.trim();
+    const name = fullName ?? user.email ?? "Your account";
+    return { role: role ?? "tourist", name, initial: (name.match(/[A-Za-z0-9]/)?.[0] ?? "?").toUpperCase() };
   } catch {
     return undefined;
   }
@@ -36,9 +41,11 @@ export async function PageFrame({
   /** The page lays out its own full-width sections (public pages); no inner padding or max width. */
   bleed?: boolean;
 }) {
-  const role = await signedInRole();
+  const viewer = await signedInViewer();
+  const role = viewer?.role;
   const tabs = role === undefined ? [] : roleTabs(role);
   const staff = isStaffRole(role);
+  const account = viewer ? { initial: viewer.initial, name: viewer.name } : undefined;
   return (
     <div className="min-h-screen">
       <a
@@ -47,7 +54,7 @@ export async function PageFrame({
       >
         Skip to main content
       </a>
-      <SiteHeader showAdminLink={adminNav} signedIn={role !== undefined} role={isStaffRole(role) ? role : undefined} tabs={tabs} />
+      <SiteHeader showAdminLink={adminNav} signedIn={role !== undefined} role={isStaffRole(role) ? role : undefined} tabs={tabs} account={account} />
       <main
         id="main-content"
         tabIndex={-1}
@@ -58,7 +65,7 @@ export async function PageFrame({
       {/* Work screens (signed-in staff) get a one-line footer; everyone else gets the full close. */}
       {/* Room under the footer for the floating chat button (and the tab bar on phones). */}
       <SiteFooter credits={credits} compact={staff} className={tabs.length ? "pb-36 sm:pb-24" : "pb-20 sm:pb-24"} />
-      <RoleTabBar tabs={tabs} />
+      <RoleTabBar tabs={tabs} account={account && !staff ? { ...account, links: accountLinks(role, tabs) } : undefined} />
       <AssistantWidget signedIn={role !== undefined} raised={tabs.length > 0} />
       {role !== undefined ? <ChatDock /> : null}
     </div>
