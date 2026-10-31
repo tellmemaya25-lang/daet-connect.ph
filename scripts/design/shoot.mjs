@@ -1,5 +1,5 @@
 // Screenshots key pages at 1440 / 768 / 390 against the e2e mock (dev server on 3101).
-// Usage: node scripts/design/shoot.mjs <outDir> [pathFilter]
+// Usage: [THEME=dark] node scripts/design/shoot.mjs <outDir> [pathFilter]
 import { chromium } from "playwright";
 import { mkdirSync } from "node:fs";
 
@@ -43,7 +43,7 @@ const session = (role) => ({ access_token: `e2e-${role}`, refresh_token: "e2e-re
 const browser = await chromium.launch(process.env.PW_CHROMIUM_PATH ? { executablePath: process.env.PW_CHROMIUM_PATH } : {});
 for (const [role, path, name] of pages.filter((p) => p[2].includes(filter))) {
   for (const width of [1440, 390]) {
-    const ctx = await browser.newContext({ viewport: { width, height: width > 500 ? 900 : 844 }, deviceScaleFactor: 1, isMobile: width < 500 });
+    const ctx = await browser.newContext({ viewport: { width, height: width > 500 ? 900 : 844 }, deviceScaleFactor: 1, isMobile: width < 500, colorScheme: process.env.THEME === "dark" ? "dark" : "light" });
     if (role !== "visitor") await ctx.addCookies([{ name: "sb-127-auth-token", value: "base64-" + Buffer.from(JSON.stringify(session(role))).toString("base64url"), domain: "localhost", path: "/" }]);
     const page = await ctx.newPage();
     await page.goto(BASE + path, { waitUntil: "networkidle" }).catch(() => {});

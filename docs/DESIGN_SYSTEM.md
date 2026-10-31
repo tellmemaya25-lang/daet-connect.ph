@@ -29,6 +29,29 @@ This is the frontend redesign's rulebook. It follows the team's **UI & Mobile-Fi
   - buttons scale slightly when pressed;
   - everything is static under `prefers-reduced-motion`.
 
+## Theme tokens and dark mode
+
+The app follows the device (light or dark) until someone picks **Light**, **Dark** or **System**:
+- **Desktop:** the sun/moon/monitor button in the header.
+- **Phones:** the Theme row in the Menu.
+
+The choice is saved on the device (`localStorage["daet-theme"]`). A script in `<head>` (`src/lib/theme.ts`) applies it before the first paint.
+
+- **Neutral surfaces use tokens that switch by themselves:**
+
+  | Instead of | Use |
+  |---|---|
+  | `bg-white` | `bg-surface` (cards, sheets, the header) |
+  | `bg-slate-50` | `bg-canvas` (page ground) |
+  | `bg-slate-100` | `bg-muted` |
+  | `bg-slate-200` | `bg-muted-strong` |
+  | `bg-slate-300`, `border-slate-200/300` | `bg-line` / `border-line` |
+
+  `text-daet-ink` and `bg-daet-sand` switch too. `design-rules.test.ts` fails on the old light-only classes.
+- **Coloured tints and text carry a `dark:` partner**, for example `bg-blue-50 dark:bg-blue-950/40 text-blue-800 dark:text-blue-300`. Solid fills (`bg-blue-600`, green and yellow fills) and `text-white` work in both themes and need none.
+- **Always light:** wrap anything that must stay light (a printed badge, a QR code) in `data-theme="light"`. Print is always light.
+- **Checking:** `THEME=dark node scripts/design/shoot.mjs <dir>` takes dark screenshots. `e2e/theme.spec.ts` checks the toggle, the saved choice and dark-mode contrast.
+
 ## Frame
 
 - **Header** (`site-header.tsx`):
