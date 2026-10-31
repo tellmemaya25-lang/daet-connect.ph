@@ -19,6 +19,8 @@ import { FREE_CANCELLATION_HOURS } from "@/lib/tours/cancellation";
 import { CheckIcon, LineIcon, MapPinIcon, ShieldCheckIcon } from "@/components/ui/icons";
 import { mapsDirectionsUrl } from "@/lib/tours/guide/maps";
 import { meetingPointOf, meetingTimeLabel } from "@/lib/tours/guide/meeting";
+import { loadTripDetails } from "@/lib/tours/trip-details";
+import { TripDetailsSections, cancellationLine } from "@/components/tours/trip-details";
 
 export const dynamic = "force-dynamic";
 
@@ -112,6 +114,7 @@ export default async function PackageDetailPage({ params }: PageProps) {
   }
 
   const operatorRow = Array.isArray(pkg.tours_operators) ? pkg.tours_operators[0] : pkg.tours_operators;
+  const details = await loadTripDetails(supabase, pkg.id);
   const [{ data: packageRating }, { data: operatorRating }, { data: reviewRows }] = await Promise.all([
     supabase.from("tours_package_ratings").select("review_count, average_rating").eq("package_id", pkg.id).maybeSingle(),
     operatorRow
@@ -262,6 +265,8 @@ export default async function PackageDetailPage({ params }: PageProps) {
             </section>
           ) : null}
 
+          <TripDetailsSections details={details} variants={(pkg.tours_package_price_variants ?? []) as Parameters<typeof TripDetailsSections>[0]["variants"]} />
+
           {stops.length > 0 ? (
             <section aria-labelledby="itinerary" className="mt-12">
               <h2 id="itinerary" className="text-2xl font-semibold text-daet-ink sm:text-3xl">The route, stop by stop</h2>
@@ -387,7 +392,7 @@ export default async function PackageDetailPage({ params }: PageProps) {
               Book this trip
             </ButtonLink>
             <ul className="mt-6 space-y-3 text-daet-ink">
-              {["Confirmed by the local operator", `Free cancellation up to ${FREE_CANCELLATION_HOURS} hours before`, "Led by an accredited local guide"].map((line) => (
+              {["Confirmed by the local operator", cancellationLine(details, FREE_CANCELLATION_HOURS), "Led by an accredited local guide"].map((line) => (
                 <li key={line} className="flex items-start gap-2">
                   <CheckIcon className="mt-0.5 h-5 w-5 text-blue-600 dark:text-blue-300" />
                   {line}

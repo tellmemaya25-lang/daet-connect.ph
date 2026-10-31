@@ -136,3 +136,14 @@ describe("sessionBookingId / ledgerPaymentMethod", () => {
     expect(ledgerPaymentMethod(null)).toBe("other");
   });
 });
+
+describe("depositDue", () => {
+  it("is what is left of the reservation fee, never above the total", () => {
+    const { depositDue } = jest.requireActual("./checkout") as typeof import("./checkout");
+    expect(depositDue({ deposit_amount: 1000, total_amount: 5598, total_paid: 0 })).toBe(1000);
+    expect(depositDue({ deposit_amount: 1000, total_amount: 5598, total_paid: 400 })).toBe(600);
+    expect(depositDue({ deposit_amount: 1000, total_amount: 5598, total_paid: 1000 })).toBe(0);
+    expect(depositDue({ deposit_amount: 1000, total_amount: 300, total_paid: 0 })).toBe(300);
+    expect(depositDue({ deposit_amount: null, total_amount: 300, total_paid: 0 })).toBe(0);
+  });
+});

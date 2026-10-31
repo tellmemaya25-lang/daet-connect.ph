@@ -4,6 +4,8 @@ import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import { PageFrame } from '@/components/ui/page-frame';
 import { PackageReviewForm } from './package-review-form';
+import { loadTripDetails } from '@/lib/tours/trip-details';
+import { TripDetailsSections } from '@/components/tours/trip-details';
 
 export default async function AdminPackageReviewPage({
   params,
@@ -84,6 +86,9 @@ export default async function AdminPackageReviewPage({
     .select('*')
     .eq('package_id', id)
     .order('min_pax', { ascending: true });
+
+  // Itinerary, extras, price rules and terms (what tourists will see).
+  const tripDetails = await loadTripDetails(supabase, id);
 
   // Get inclusions
   const { data: inclusions } = await supabase
@@ -249,6 +254,13 @@ export default async function AdminPackageReviewPage({
             </div>
           </div>
         )}
+
+        {/* Trip details, rendered as tourists will see them */}
+        {tripDetails.itinerary.length || tripDetails.addons.length || tripDetails.thingsToBring.length || tripDetails.goodToKnow || tripDetails.depositPerPax != null || tripDetails.cancellationPolicy ? (
+          <div className="bg-surface rounded-2xl border border-daet-ink/20 p-6 mb-6 [&>section:first-child]:mt-0">
+            <TripDetailsSections details={tripDetails} variants={(priceVariants ?? []) as Parameters<typeof TripDetailsSections>[0]["variants"]} />
+          </div>
+        ) : null}
 
         {/* Gallery */}
         {gallery && gallery.length > 0 && (

@@ -116,6 +116,10 @@ export interface CreateBookingInput {
   contactEmail: string;
   contactPhone: string;
   specialRequests?: string;
+  /** Guests at the option's child price (only on options that have one). */
+  numberOfChildren?: number;
+  /** Chosen extras; the database prices them from the package's own list. */
+  addons?: Array<{ addonId: string; quantity: number }>;
 }
 
 export interface BookingParticipantInput {
@@ -149,6 +153,19 @@ export function validateCreateBooking(input: CreateBookingInput): string | null 
   
   if (!Number.isInteger(input.numberOfPax) || input.numberOfPax < 1) {
     return "Number of participants must be at least 1.";
+  }
+
+  if (input.numberOfChildren !== undefined && (!Number.isInteger(input.numberOfChildren) || input.numberOfChildren < 0 || input.numberOfChildren > input.numberOfPax)) {
+    return "The number of children must be between 0 and the number of guests.";
+  }
+
+  if (input.addons !== undefined) {
+    if (!Array.isArray(input.addons) || input.addons.length > 20) return "Too many extras.";
+    for (const addon of input.addons) {
+      if (!addon || typeof addon.addonId !== "string" || !/^[0-9a-f-]{36}$/i.test(addon.addonId) || !Number.isInteger(addon.quantity) || addon.quantity < 1 || addon.quantity > 20) {
+        return "An extra is not valid.";
+      }
+    }
   }
   
   if (input.numberOfPax > 50) {

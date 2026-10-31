@@ -6,7 +6,7 @@ import { redirect } from "next/navigation";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { isUuid } from "@/lib/tours/operator-access";
 import { MAX_PENDING_PROOFS_PER_BOOKING, parseProofForm, PROOF_BUCKET } from "@/lib/tours/payment-proof";
-import { buildCheckoutSessionBody, checkPayable, remainingBalance, type PayableBooking } from "@/lib/paymongo/checkout";
+import { buildCheckoutSessionBody, checkPayable, depositDue, MIN_CHARGE_CENTAVOS, pesosToCentavos, remainingBalance, type PayableBooking } from "@/lib/paymongo/checkout";
 import { createCheckoutSession, getPaymongoConfig, PaymongoApiError } from "@/lib/paymongo/client";
 import { checkoutCookieName } from "@/lib/paymongo/return";
 
@@ -41,6 +41,16 @@ export async function startOnlinePayment(_prev: CheckoutActionState, formData: F
   const payable = checkPayable(booking as PayableBooking);
   if (!payable.ok) return { error: payable.reason };
 
+  // "Pay the reservation fee" charges only what is left of the fee, read from the database.
+  let amountPesos = payable.amountPesos;
+  if (formData.get("part") === "deposit") {
+    const { data: fee } = await supabase.from("tours_bookings").select("deposit_amount, total_amount, total_paid").eq("id", booking.id).maybeSingle();
+    const due = fee ? depositDue(fee) : 0;
+    if (due <= 0) return { error: "The reservation fee is already paid. You can pay the balance instead." };
+    if (pesosToCentavos(due) < MIN_CHARGE_CENTAVOS) return { error: "The reservation fee left is below PayMongo's ₱20.00 minimum. Please pay the balance instead." };
+    amountPesos = Math.min(due, payable.amountPesos);
+  }
+
   const pkg = Array.isArray(booking.tours_packages) ? booking.tours_packages[0] : booking.tours_packages;
 
   let checkoutUrl: string | undefined;
@@ -50,7 +60,7 @@ export async function startOnlinePayment(_prev: CheckoutActionState, formData: F
       buildCheckoutSessionBody({
         booking,
         packageTitle: (pkg as { title?: string } | null)?.title ?? "Daet tour booking",
-        amountPesos: payable.amountPesos,
+        amountPesos,
         appUrl: config.appUrl,
         methods: config.methods,
         customer: { name: booking.contact_name, email: booking.contact_email, phone: booking.contact_phone },

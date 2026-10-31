@@ -3,7 +3,7 @@ import { Badge, type BadgeTone } from "@/components/ui/badge";
 import { Card, CardHeader } from "@/components/ui/card";
 import { LineIcon } from "@/components/ui/icons";
 import { Notice } from "@/components/ui/notice";
-import { checkPayable, remainingBalance } from "@/lib/paymongo/checkout";
+import { checkPayable, depositDue, MIN_CHARGE_CENTAVOS, pesosToCentavos, remainingBalance } from "@/lib/paymongo/checkout";
 import { PROOF_METHODS, isProofMethod } from "@/lib/tours/payment-proof";
 import { PaymentInstructions } from "../../my-bookings/payment-instructions";
 import { OnlinePayButton } from "./online-pay-button";
@@ -17,6 +17,9 @@ export type PanelBooking = {
   total_amount: number;
   total_paid: number | null;
   payment_status: string | null;
+  /** Reservation fee for the whole booking, if the package has one. */
+  deposit_amount?: number | null;
+  deposit_refundable?: boolean | null;
 };
 
 export type PanelOperator = {
@@ -102,6 +105,9 @@ export function PaymentNextStep({
   const paid = Number(booking.total_paid ?? 0);
   const online = onlinePaymentEnabled && payable.ok;
   const waiting = proofs.filter((proof) => proof.verification_status === "pending");
+  // A reservation fee still owed is offered first; paying everything stays one tap away.
+  const fee = depositDue(booking);
+  const feeOnline = online && fee > 0 && fee < remaining && pesosToCentavos(fee) >= MIN_CHARGE_CENTAVOS;
 
   return (
     <section id="payment" aria-labelledby="next-step" className="mb-6 scroll-mt-6 rounded-2xl bg-surface p-5 ring-2 ring-blue-600/30 sm:p-6">
@@ -127,8 +133,21 @@ export function PaymentNextStep({
         </Notice>
       ) : null}
 
+      {fee > 0 && fee < remaining ? (
+        <p className="mt-3 text-sm text-daet-ink">
+          A {peso(fee)} reservation fee secures your slot{booking.deposit_refundable === false ? " (not refundable)" : ""}. The rest is due before the trip.
+        </p>
+      ) : null}
+
       <div className="mt-5 space-y-3">
-        {online ? <OnlinePayButton bookingId={booking.id} amountLabel={peso(payable.amountPesos)} /> : null}
+        {feeOnline ? (
+          <>
+            <OnlinePayButton bookingId={booking.id} amountLabel={peso(fee)} part="deposit" label={`Pay the ${peso(fee)} reservation fee online`} />
+            <OnlinePayButton bookingId={booking.id} amountLabel={peso(payable.ok ? payable.amountPesos : remaining)} variant="secondary" note={false} label={`Pay the full ${peso(payable.ok ? payable.amountPesos : remaining)} online`} />
+          </>
+        ) : online ? (
+          <OnlinePayButton bookingId={booking.id} amountLabel={peso(payable.amountPesos)} />
+        ) : null}
         <OpenDetailsButton targetId="pay-manually" variant={online ? "ghost" : "primary"} fullWidth>
           {online ? "I paid by bank transfer or GCash" : "See how to pay the operator"}
         </OpenDetailsButton>
@@ -206,7 +225,7 @@ export function BookingPaymentPanel({
               bookingReference={booking.booking_reference}
               operatorPhone={operator?.contact_phone}
             />
-            <ProofUploadForm bookingId={booking.id} remaining={remaining} />
+            <ProofUploadForm bookingId={booking.id} remaining={depositDue(booking) > 0 ? depositDue(booking) : remaining} />
           </div>
         </details>
       ) : null}

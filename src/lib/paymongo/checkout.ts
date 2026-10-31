@@ -32,6 +32,16 @@ export function remainingBalance(booking: Pick<PayableBooking, "total_amount" | 
   return Math.max(0, Math.round(remaining * 100) / 100);
 }
 
+/**
+ * What is still owed of a booking's reservation fee (0 when it has none or it
+ * is already covered). Paying it is optional: the tourist can pay in full.
+ */
+export function depositDue(booking: { deposit_amount?: number | string | null; total_amount: number | string; total_paid: number | string | null }): number {
+  if (booking.deposit_amount == null) return 0;
+  const deposit = Math.min(Number(booking.deposit_amount), Number(booking.total_amount));
+  return Math.max(0, Math.round((deposit - Number(booking.total_paid ?? 0)) * 100) / 100);
+}
+
 export type PayabilityResult = { ok: true; amountPesos: number } | { ok: false; reason: string };
 
 /** Tourists pay after the operator confirms, and only the remaining balance. */

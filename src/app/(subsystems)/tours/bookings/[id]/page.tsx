@@ -296,6 +296,28 @@ export default async function BookingDetailPage({ params, searchParams }: PagePr
                 <dd className="font-bold">{formatPeso(booking.price_per_pax)}</dd>
               </div>
             ) : null}
+            {Number(booking.number_of_children ?? 0) > 0 ? (
+              <div className="flex justify-between gap-4">
+                <dt>Of these, children</dt>
+                <dd className="font-bold">{booking.number_of_children}</dd>
+              </div>
+            ) : null}
+            {Number(booking.discount_total ?? 0) > 0 ? (
+              <div className="flex justify-between gap-4">
+                <dt>Group deal saving</dt>
+                <dd className="font-bold text-green-700 dark:text-green-300">−{formatPeso(booking.discount_total)}</dd>
+              </div>
+            ) : null}
+            {(Array.isArray(booking.addons) ? (booking.addons as Array<{ name: string; quantity: number; line_total: number; needs_reservation?: boolean }>) : []).map((addon) => (
+              <div key={addon.name} className="flex justify-between gap-4">
+                <dt>
+                  {addon.name}
+                  {addon.quantity > 1 ? ` × ${addon.quantity}` : ""}
+                  {addon.needs_reservation ? <span className="block text-sm text-daet-ink/70">The operator confirms this</span> : null}
+                </dt>
+                <dd className="font-bold">{formatPeso(addon.line_total)}</dd>
+              </div>
+            ))}
             <div className="flex items-baseline justify-between gap-4 rounded-2xl bg-canvas px-4 py-3">
               <dt className="text-lg font-bold">Total</dt>
               <dd className="text-2xl font-bold text-blue-700 dark:text-blue-300">{formatPeso(booking.total_amount)}</dd>

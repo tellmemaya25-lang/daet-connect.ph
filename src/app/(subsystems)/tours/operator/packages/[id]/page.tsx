@@ -256,6 +256,12 @@ export default async function OperatorPackageDetailPage({ params }: PageProps) {
             Edit package
           </Link>
           <Link
+            href={`/tours/operator/packages/${pkg.id}/details`}
+            className="inline-flex min-h-11 items-center justify-center rounded-full border border-daet-forest/30 bg-surface px-6 text-sm font-bold text-daet-leaf dark:text-blue-300 transition hover:bg-daet-forest/5"
+          >
+            Trip details
+          </Link>
+          <Link
             href={`/tours/operator/packages/${pkg.id}/availability`}
             className="inline-flex min-h-11 items-center justify-center rounded-full border border-daet-forest/30 bg-surface px-6 text-sm font-bold text-daet-leaf dark:text-blue-300 transition hover:bg-daet-forest/5"
           >

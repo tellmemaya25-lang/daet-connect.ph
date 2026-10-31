@@ -363,6 +363,26 @@ export default async function OperatorBookingsPage({
                         </div>
                       </div>
 
+                      {/* Extras and children the tourist chose; cabanas and the like need the operator to confirm. */}
+                      {(Array.isArray(booking.addons) && booking.addons.length > 0) || Number(booking.number_of_children ?? 0) > 0 ? (
+                        <div className="mb-4 rounded-2xl bg-canvas p-3 text-sm text-daet-ink">
+                          <p className="text-slate-600 dark:text-slate-400">Extras</p>
+                          <ul className="mt-1 space-y-0.5">
+                            {Number(booking.number_of_children ?? 0) > 0 ? <li>{booking.number_of_children} at the child price</li> : null}
+                            {(booking.addons as Array<{ name: string; quantity: number; line_total: number; needs_reservation?: boolean }>).map((addon) => (
+                              <li key={addon.name} className="flex justify-between gap-3">
+                                <span>
+                                  {addon.name}
+                                  {addon.quantity > 1 ? ` × ${addon.quantity}` : ""}
+                                  {addon.needs_reservation ? <span className="font-bold text-yellow-800 dark:text-yellow-200"> · reserve it</span> : null}
+                                </span>
+                                <span className="font-bold">{formatPeso(addon.line_total)}</span>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      ) : null}
+
                       {/* Special Requests */}
                       {booking.special_requests && (
                         <div className="mb-4 rounded-2xl bg-canvas p-3">

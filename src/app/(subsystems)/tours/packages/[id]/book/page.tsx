@@ -1,3 +1,4 @@
+import { loadTripDetails } from "@/lib/tours/trip-details";
 import { LineIcon } from "@/components/ui/icons";
 import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
@@ -86,6 +87,7 @@ export default async function BookPackagePage({ params }: PageProps) {
     supabase.from("tours_package_availability").select("id", { count: "exact", head: true }).eq("package_id", pkg.id),
   ]);
   const usesOpenDates = (openDateCount ?? 0) > 0;
+  const details = await loadTripDetails(supabase, pkg.id);
 
   return (
     <PageFrame>
@@ -133,6 +135,7 @@ export default async function BookPackagePage({ params }: PageProps) {
           packageId={pkg.id}
           priceVariants={pkg.tours_package_price_variants || []}
           dateOptions={usesOpenDates ? bookableDates((availabilityRows ?? []) as AvailabilityRow[], today) : null}
+          details={details}
           userProfile={{
             fullName: profile?.full_name || "",
             email: user.email ?? "",

@@ -1,0 +1,152 @@
+{
+  "_source": "Kalmado Tour Services' own Calaguas advert, used with the operator's consent. Prices as published; no prices or coordinates were added that the advert does not give.",
+  "operator": {
+    "business_name": "Kalmado Tour Services",
+    "business_description": "Calaguas camping trips to iLOVECalaguas Resort on Mahabang Buhangin's white-sand beach, with pickup at Minaogan port, Vinzons. Published prices, no hidden charges. We also arrange exclusive trips, company tours, day tours and boat rental. Boats by Ayeisha Travel and Tour (boat owner, Kapitan Segundo); tour coordinator Kobe Mago (Bantayog Travel and Tour Services).",
+    "business_address": "Minaogan port, Vinzons, Camarines Norte",
+    "contact_person": "Kobe Mago",
+    "contact_phone": "0985 066 7886",
+    "payment_instructions": "A ₱500 reservation fee per person secures your slot and is taken off the total. Message us for GCash details before you pay.",
+    "accreditation_status": "approved"
+  },
+  "user": { "role": "operator", "full_name": "Kobe Mago" },
+  "shared": {
+    "location_name": "Calaguas Islands (Mahabang Buhangin), Vinzons",
+    "meeting_point_name": "Vinzons Tourism Office, Minaogan port",
+    "meeting_time": "06:00",
+    "deposit_per_pax": 500,
+    "deposit_refundable": false,
+    "cancellation_policy": "A ₱500 reservation fee per person is taken off the total. It isn't refunded if you cancel, but you can pass your slot to someone else or use it on your next tour with us.",
+    "good_to_know": "Electricity on the island comes from a generator from 6 PM to 6 AM only. Morning power can be arranged for a fee per hour.\nThe boat leaves once the coast guard signs the passenger list, so please don't be late. Times depend on the tide and weather.\nKeep valuables safe, and watch out for stray cats and dogs and for sea urchins while island hopping. First aid is available.\nThe itinerary can change because of heavy traffic, bad weather or other things outside our control. Exclusive trips have a flexible itinerary.",
+    "things_to_bring": ["Emergency medicine, especially for allergies", "Pocket money", "Sunblock", "Power bank", "Mosquito coil or insect repellent", "Personal hygiene kit", "Plastic bags for your bag and phone", "Pillow and blanket (comforters and pillows can be rented at the resort)"],
+    "stops": [
+      { "location_name": "Mahabang Buhangin, Tinaga Island (Calaguas)", "latitude": 14.4692, "longitude": 122.945, "description": "Camp site at iLOVECalaguas Resort on the white-sand beach.", "estimated_duration_minutes": null }
+    ],
+    "camping_inclusions": [
+      "Island hopping and snorkelling at Balagbag Island (bring your own snorkel gear, or rent one)",
+      "Trekking up Tinaga Hill",
+      "Round-trip boat transfer",
+      "Boat insurance and individual insurance",
+      "Life vest",
+      "1 tent for 2 people, with tent pitching",
+      "Port, environmental, resort entrance and tourism fees, and the coast guard pass",
+      "Purified drinking water and ice",
+      "Tour coordinator",
+      "Camping, with free use of the toilets and showers",
+      "20 minutes in a crystal kayak for two",
+      "Free souvenir fridge magnet for every guest"
+    ],
+    "camping_exclusions": [
+      "Breakfast on day 1 at Vinzons before the boat (about ₱60 to ₱100)",
+      "Cabana rooms and tent upgrades",
+      "Snorkel gear rental",
+      "Morning electricity"
+    ],
+    "camping_addons": [
+      { "name": "Tent upgrade for 3 people", "price": 200, "unit": "per_booking", "max_guests": 3, "needs_reservation": false, "bookable": true, "note": "Instead of the free 2-person tent." },
+      { "name": "Tent upgrade for 4 people", "price": 300, "unit": "per_booking", "max_guests": 4, "needs_reservation": false, "bookable": true, "note": "Instead of the free 2-person tent." },
+      { "name": "Open-air cabana", "price": 3500, "unit": "per_night", "max_guests": 6, "needs_reservation": true, "bookable": true, "note": "Price changes on holidays." },
+      { "name": "Closed cabana", "price": 4500, "unit": "per_night", "max_guests": 6, "needs_reservation": true, "bookable": true, "note": "Price changes on holidays." },
+      { "name": "Luxury cabana with air conditioning", "price": 9000, "unit": "per_night", "max_guests": 6, "needs_reservation": true, "bookable": true, "note": "Price changes on holidays." },
+      { "name": "Family room", "price": 10000, "unit": "per_night", "max_guests": 8, "needs_reservation": true, "bookable": true, "note": "Price changes on holidays." },
+      { "name": "Two-storey cabana", "price": 15000, "unit": "per_night", "max_guests": 12, "needs_reservation": true, "bookable": true, "note": "Price changes on holidays." },
+      { "name": "Snorkel gear rental", "price": 150, "unit": "per_item", "max_guests": null, "needs_reservation": false, "bookable": true, "note": null },
+      { "name": "Morning electricity (generator)", "price": 500, "unit": "per_hour", "max_guests": null, "needs_reservation": false, "bookable": false, "note": "Arranged and paid on the island." }
+    ],
+    "group_rule": { "group_min_pax": 16, "group_discount_per_pax": 200, "group_free_pax": 1 },
+    "itinerary_day1": [
+      ["6:00 AM", "Arrive at Vinzons Tourism, Camarines Norte. Your tour coordinator meets you. Breakfast at your own cost, register and join the briefing."],
+      ["7:00 AM", "Boat leaves for the Calaguas islands once the coast guard signs the passenger list. Late guests can't be waited for."],
+      ["8:00 AM", "Arrive at Calaguas. The boatmen bring your things to the camp site and pitch your tent. Balong or Jaecer looks after you for the rest of your stay."],
+      ["9:30 AM", "Free time: swimming and photos."],
+      ["12:00 PM", "Lunch (meal 1)."],
+      ["1:00 PM", "Rest, or walk past the rock formations to the other side of the beach and the I LOVE CALAGUAS sign."],
+      ["3:00 PM", "Island hopping and snorkelling at Balagbag Island."],
+      ["5:00 PM", "Back to the camp site, swim and rest."],
+      ["6:30 PM", "Dinner (meal 2)."],
+      ["7:00 PM", "Socials and free time."]
+    ],
+    "itinerary_day2_morning": [
+      ["5:30 AM", "Wake-up call with free coffee."],
+      ["6:00 AM", "Sunrise trek up Tinaga Hill."],
+      ["7:00 AM", "Breakfast (meal 3), then rest, swim and rinse off. Good times for the free kayak: 7 to 8 AM or 2 to 3 PM."]
+    ]
+  },
+  "packages": [
+    {
+      "key": "2d1n",
+      "title": "Calaguas camping, 2 days 1 night",
+      "description": "Two days on Mahabang Buhangin, Calaguas' long white-sand beach, camping at iLOVECalaguas Resort. All in from Minaogan port, Vinzons: 4 hosted meals (lunch, dinner, snacks and breakfast), island hopping at Balagbag, a sunrise trek up Tinaga Hill, boat transfers, insurance, fees and your tent. You can also join with a van from Manila. Published price, no hidden charges.",
+      "duration_value": 2,
+      "duration_type": "days",
+      "camping": true,
+      "meals_note": "4 hosted meals: lunch, dinner, snacks and breakfast",
+      "variants": [
+        { "variant_name": "From Minaogan port, Vinzons", "price_per_pax": 2799, "is_default": true, "group": true },
+        { "variant_name": "With van from Manila and back", "price_per_pax": 4799, "is_default": false, "group": true }
+      ],
+      "itinerary_day2_end": [["9:00 AM", "Pack up and hand back the tent, then the boat back to Minaogan port, Vinzons."]]
+    },
+    {
+      "key": "3d2n",
+      "title": "Calaguas camping, 3 days 2 nights",
+      "description": "Three days on Mahabang Buhangin, Calaguas' long white-sand beach, camping at iLOVECalaguas Resort. All in from Minaogan port, Vinzons: 8 hosted meals, island hopping at Balagbag, a sunrise trek up Tinaga Hill, a walk along the whole beach, boat transfers, insurance, fees and your tent. You can also join with a van from Manila. Published price, no hidden charges.",
+      "duration_value": 3,
+      "duration_type": "days",
+      "camping": true,
+      "meals_note": "8 hosted meals",
+      "variants": [
+        { "variant_name": "From Minaogan port, Vinzons", "price_per_pax": 3799, "is_default": true, "group": true },
+        { "variant_name": "With van from Manila and back", "price_per_pax": 5799, "is_default": false, "group": true }
+      ],
+      "itinerary_day2_end": [
+        ["9:00 AM", "Walk Mahabang Buhangin from one end to the other."],
+        ["12:00 PM", "Lunch (meal 4)."],
+        ["1:00 PM", "Free time."],
+        ["3:00 PM", "Island hopping."],
+        ["6:00 PM", "Dinner (meal 5)."],
+        ["7:00 PM", "Socials, then bedtime or drinks until midnight, it's up to you."]
+      ],
+      "itinerary_day3": [
+        ["6:00 AM", "Breakfast (meal 6)."],
+        ["7:00 AM", "Free time and swimming."],
+        ["8:00 AM", "Pack up and hand back the tent."],
+        ["9:00 AM", "Boat back to Minaogan port, Vinzons."]
+      ]
+    },
+    {
+      "key": "day",
+      "title": "Calaguas day tour",
+      "description": "A day on Mahabang Buhangin, Calaguas' white-sand beach. Includes lunch, the round-trip boat and the resort entrance. Children aged 6 and below pay half.",
+      "duration_value": 1,
+      "duration_type": "days",
+      "camping": false,
+      "variants": [{ "variant_name": "Per person", "price_per_pax": 1999, "is_default": true, "child": { "child_max_age": 6, "child_price_percent": 50 } }],
+      "inclusions": ["Lunch", "Round-trip boat transfer", "Resort entrance fee", "Life vest", "Port, environmental and tourism fees, and the coast guard pass"],
+      "exclusions": ["Breakfast at Vinzons before the boat (about ₱60 to ₱100)", "Snorkel gear rental"],
+      "addons": [{ "name": "Snorkel gear rental", "price": 150, "unit": "per_item", "max_guests": null, "needs_reservation": false, "bookable": true, "note": null }],
+      "itinerary": [
+        [1, "6:00 AM", "Meet your coordinator at Vinzons Tourism, register and join the briefing."],
+        [1, "7:00 AM", "Boat to Calaguas once the coast guard signs the passenger list."],
+        [1, "12:00 PM", "Lunch on the island."],
+        [1, null, "Boat back to Minaogan port, Vinzons, in the afternoon."]
+      ]
+    },
+    {
+      "key": "boat",
+      "title": "Calaguas boat transfer only",
+      "description": "Round-trip boat between Minaogan port, Vinzons and Calaguas, without a tour package. Rent the whole boat for your group (up to 25 people), or book seats on a shared boat.",
+      "duration_value": 1,
+      "duration_type": "days",
+      "camping": false,
+      "variants": [
+        { "variant_name": "Seat on a shared boat, round trip", "price_per_pax": 1100, "is_default": true },
+        { "variant_name": "Whole boat for your group, up to 25, round trip", "flat_price": 20000, "is_default": false, "max_pax": 25 }
+      ],
+      "inclusions": ["Round-trip boat transfer", "Life vest"],
+      "exclusions": ["Meals, tents and resort fees"],
+      "no_deposit": true,
+      "itinerary": [[1, "7:00 AM", "Boat leaves Minaogan port, Vinzons, once the coast guard signs the passenger list."]]
+    }
+  ]
+}

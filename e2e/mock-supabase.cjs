@@ -20,6 +20,33 @@ const LIVE_BID = "e9466de5-4877-47c1-ac14-d86deeb38b9e";
 const freshLive = () => ({ session: null, positions: [], consents: [], flares: [] });
 let live = freshLive();
 
+// Kalmado Tour Services' real Calaguas 2D1N listing (scripts/data/kalmado.json),
+// served only when asked for by id so other pages keep their fixed scenario.
+const KALMADO = require("../scripts/data/kalmado.json");
+const KPKG = "c1000000-0000-4000-8000-000000000001";
+function kalmadoPackage() {
+  const s = KALMADO.shared;
+  const p = KALMADO.packages.find((x) => x.key === "2d1n");
+  const variants = p.variants.map((v, i) => ({
+    id: `c1000000-0000-4000-8000-0000000000a${i + 1}`, package_id: KPKG, variant_name: v.variant_name, price_per_pax: v.price_per_pax, flat_price: null,
+    min_pax: 1, max_pax: null, is_default: v.is_default, child_max_age: null, child_price_percent: null, ...s.group_rule,
+  }));
+  const included = [p.meals_note, ...s.camping_inclusions].map((item_text, i) => ({ id: `ki${i}`, item_text, is_included: true }));
+  const excluded = s.camping_exclusions.map((item_text, i) => ({ id: `ke${i}`, item_text, is_included: false }));
+  const itinerary = [...s.itinerary_day1.map((r) => [1, ...r]), ...s.itinerary_day2_morning.map((r) => [2, ...r]), ...p.itinerary_day2_end.map((r) => [2, ...r])]
+    .map(([day_number, start_time, activity], i) => ({ id: `kit${i}`, package_id: KPKG, day_number, start_time, activity, display_order: i + 1 }));
+  const addons = s.camping_addons.map((a, i) => ({ id: `c1000000-0000-4000-8000-0000000000b${i + 1}`, package_id: KPKG, ...a, display_order: i + 1 }));
+  const pkg = {
+    id: KPKG, status: "published", title: p.title, description: p.description, location_name: s.location_name, duration_value: p.duration_value, duration_type: p.duration_type,
+    cover_image_url: null, operator_id: "op-k", meeting_point_name: s.meeting_point_name, meeting_lat: null, meeting_lng: null, meeting_time: `${s.meeting_time}:00`,
+    things_to_bring: s.things_to_bring, good_to_know: s.good_to_know, deposit_per_pax: s.deposit_per_pax, deposit_refundable: s.deposit_refundable, cancellation_policy: s.cancellation_policy,
+    tours_package_price_variants: variants, tours_package_inclusions: [...included, ...excluded], tours_package_gallery: [],
+    tours_package_stops: s.stops.map((st, i) => ({ id: `ks${i}`, ...st, latitude: String(st.latitude), longitude: String(st.longitude), stop_order: i })),
+    tours_operators: [{ id: "op-k", business_name: KALMADO.operator.business_name }],
+  };
+  return { pkg, variants, itinerary, addons };
+}
+
 function build(role) {
 const BID = "e9466de5-4877-47c1-ac14-d86deeb38b9e";
   const operator = { id: "op-1", profile_id: "9b7e5a5e-0000-4000-8000-000000000001", business_name: "Bagasbas Coast Tours", accreditation_status: "approved", accreditation_notes: null, contact_phone: "0917 555 0101", gcash_number: "0917 555 0101", gcash_name: "Maya Santos", bank_name: "BPI", bank_account_number: "1234-5678-90", bank_account_name: "Bagasbas Coast Tours", payment_instructions: "Please include your booking reference in the notes.", created_at: "2026-01-01T00:00:00Z" };
@@ -195,6 +222,9 @@ const BID = "e9466de5-4877-47c1-ac14-d86deeb38b9e";
     tours_message_reactions: [{ message_id: "dd110000-0000-4000-8000-000000000002", profile_id: OPP, conversation_id: CONV, reaction: "love" }],
     tours_booking_participants: participants, tours_checkins: checkins,
     tours_package_stops: pkg.tours_package_stops,
+    tours_package_itinerary: kalmadoPackage().itinerary,
+    tours_package_addons: kalmadoPackage().addons,
+    tours_package_price_variants: [...pkg.tours_package_price_variants.map((v) => ({ ...v, package_id: PKG })), ...kalmadoPackage().variants],
     tours_live_sessions: live.session ? [live.session] : [],
     tours_live_positions: role === "tourist" ? live.positions.filter((p) => p.role === "guide" || p.profile_id === "tourist") : live.positions,
     tours_live_consents: live.consents,
@@ -298,6 +328,7 @@ http.createServer((req, res) => {
     // The event page asks for availability joined to packages.
     const wantsEventJoin = table === "tours_package_availability" && (url.searchParams.get("select") || "").includes("tours_packages");
     let rows = (wantsEventJoin ? tables._event_availability : tables[table]) || [];
+    if (table === "tours_packages" && url.searchParams.get("id") === `eq.${KPKG}`) rows = [kalmadoPackage().pkg];
     for (const [k, v] of url.searchParams) {
       if (v.startsWith("eq.") && !k.includes(".")) rows = rows.filter((r) => !(k in r) || String(r[k]) === v.slice(3));
       if (v.startsWith("in.(") && !k.includes(".")) {

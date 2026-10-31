@@ -4,6 +4,8 @@ import { formatPeso } from "@/lib/money";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import type { DateOption } from "@/lib/tours/availability";
+import { addonMax, childPriceLabel, groupDealLabel, hasChildPrice, quoteBooking, UNIT_LABEL } from "@/lib/tours/quote";
+import { EMPTY_TRIP_DETAILS, type TripDetails } from "@/lib/tours/trip-details";
 import { createBooking } from "./actions";
 
 interface PriceVariant {
@@ -25,12 +27,14 @@ interface BookingFormProps {
     fullName: string;
     email: string;
   };
+  /** Child and group rules, extras and the reservation fee. */
+  details?: TripDetails;
 }
 
 const formatOpenDate = (dateKey: string) =>
   new Date(`${dateKey}T00:00:00Z`).toLocaleDateString("en-PH", { weekday: "short", month: "short", day: "numeric", year: "numeric", timeZone: "UTC" });
 
-export function BookingForm({ packageId, priceVariants, dateOptions, userProfile }: BookingFormProps) {
+export function BookingForm({ packageId, priceVariants, dateOptions, userProfile, details = EMPTY_TRIP_DETAILS }: BookingFormProps) {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -45,26 +49,21 @@ export function BookingForm({ packageId, priceVariants, dateOptions, userProfile
   const [contactEmail, setContactEmail] = useState(userProfile.email);
   const [contactPhone, setContactPhone] = useState("");
   const [specialRequests, setSpecialRequests] = useState("");
+  const [children, setChildren] = useState(0);
+  const [chosen, setChosen] = useState<Record<string, number>>({});
 
   // Get selected variant
   const selectedVariant = priceVariants.find((v) => v.id === selectedVariantId);
 
-  // Calculate price
-  const calculateTotal = () => {
-    if (!selectedVariant) return 0;
-
-    if (selectedVariant.price_per_pax) {
-      return selectedVariant.price_per_pax * numberOfPax;
-    }
-
-    if (selectedVariant.flat_price) {
-      return selectedVariant.flat_price;
-    }
-
-    return 0;
-  };
-
-  const totalAmount = calculateTotal();
+  // The same maths the database uses when it saves the booking (src/lib/tours/quote.ts).
+  const rules = selectedVariant ? { ...selectedVariant, ...(details.rules[selectedVariant.id] ?? {}) } : null;
+  const childOption = rules ? hasChildPrice(rules) : false;
+  const bookableExtras = details.addons.filter((a) => a.bookable);
+  const onSiteExtras = details.addons.filter((a) => !a.bookable);
+  const quote = rules
+    ? quoteBooking({ variant: rules, guests: numberOfPax, children: childOption ? children : 0, addons: details.addons, chosen, depositPerPax: details.depositPerPax, peso: formatPeso })
+    : null;
+  const totalAmount = quote?.total ?? 0;
 
   // Get min date (tomorrow in Manila, not in the visitor's or the server's zone)
   const getMinDate = () => {
@@ -82,13 +81,16 @@ export function BookingForm({ packageId, priceVariants, dateOptions, userProfile
     const min = selectedVariant.min_pax || 1;
     const max = Math.min(selectedVariant.max_pax || 50, Math.max(seatLimit, min));
 
-    if (value < min) {
-      setNumberOfPax(min);
-    } else if (value > max) {
-      setNumberOfPax(max);
-    } else {
-      setNumberOfPax(value);
-    }
+    const next = Math.min(Math.max(value, min), max);
+    setNumberOfPax(next);
+    setChildren((c) => Math.min(c, next));
+    // Per-person extras can't exceed the guests.
+    setChosen((current) =>
+      Object.fromEntries(Object.entries(current).map(([id, qty]) => {
+        const addon = details.addons.find((a) => a.id === id);
+        return [id, addon?.unit === "per_person" ? Math.min(qty, next) : qty];
+      })),
+    );
   };
 
   // Submit booking
@@ -107,6 +109,8 @@ export function BookingForm({ packageId, priceVariants, dateOptions, userProfile
         contactEmail: contactEmail.trim(),
         contactPhone: contactPhone.trim(),
         specialRequests: specialRequests.trim() || undefined,
+        numberOfChildren: childOption && children > 0 ? children : undefined,
+        addons: Object.entries(chosen).filter(([, qty]) => qty > 0).map(([addonId, quantity]) => ({ addonId, quantity })),
       });
 
       if (!result.success) {
@@ -195,15 +199,15 @@ export function BookingForm({ packageId, priceVariants, dateOptions, userProfile
 
       {/* Number of Pax & Price Variant */}
       <section className="rounded-2xl bg-surface p-6">
-        <h2 className="text-xl font-bold text-daet-ink">Group Size & Pricing</h2>
-        <p className="mt-1 text-sm text-daet-ink/70">Select number of participants</p>
+        <h2 className="text-xl font-bold text-daet-ink">Guests and price</h2>
+        <p className="mt-1 text-sm text-daet-ink/70">Choose how many are coming</p>
 
         <div className="mt-4 space-y-4">
           {/* Price Variant Selection */}
           {priceVariants.length > 1 && (
             <div>
               <label htmlFor="variant" className="block text-sm font-bold text-daet-ink">
-                Price Option *
+                Price option *
               </label>
               <select
                 id="variant"
@@ -268,21 +272,100 @@ export function BookingForm({ packageId, priceVariants, dateOptions, userProfile
                 Only {selectedDate?.seatsLeft} seat(s) left on this date. Choose another date or a smaller group.
               </p>
             ) : null}
+            {rules && groupDealLabel(rules, formatPeso) ? <p className="mt-2 text-sm text-daet-ink/80">Group deal: {groupDealLabel(rules, formatPeso)}.</p> : null}
           </div>
 
-          {/* Price Summary */}
+          {childOption && rules ? (
+            <div>
+              <label htmlFor="children" className="block text-sm font-bold text-daet-ink">
+                Of these, children aged {rules.child_max_age} and below
+              </label>
+              <select
+                id="children"
+                value={children}
+                onChange={(e) => setChildren(Number(e.target.value))}
+                className="mt-1 min-h-11 rounded-2xl border border-daet-ink/20 bg-surface px-4 text-base"
+              >
+                {Array.from({ length: numberOfPax + 1 }, (_, n) => (
+                  <option key={n} value={n}>{n}</option>
+                ))}
+              </select>
+              <p className="mt-1 text-sm text-daet-ink/70">{childPriceLabel(rules)}.</p>
+            </div>
+          ) : null}
+
+          {bookableExtras.length ? (
+            <fieldset>
+              <legend className="text-sm font-bold text-daet-ink">Optional extras</legend>
+              <ul className="mt-2 divide-y divide-daet-ink/10 rounded-2xl border border-daet-ink/15">
+                {bookableExtras.map((addon) => {
+                  const max = addonMax(addon.unit, numberOfPax);
+                  const qty = chosen[addon.id] ?? 0;
+                  const id = `extra-${addon.id}`;
+                  return (
+                    <li key={addon.id} className="flex items-center justify-between gap-3 px-4 py-3">
+                      <label htmlFor={id} className="min-w-0">
+                        <span className="block font-bold text-daet-ink">{addon.name}</span>
+                        <span className="block text-sm text-daet-ink/75">
+                          {formatPeso(addon.price)} {UNIT_LABEL[addon.unit]}
+                          {addon.max_guests ? ` · up to ${addon.max_guests} guests` : ""}
+                          {addon.needs_reservation ? " · the operator confirms it" : ""}
+                        </span>
+                      </label>
+                      <select
+                        id={id}
+                        value={qty}
+                        onChange={(e) => setChosen((c) => ({ ...c, [addon.id]: Number(e.target.value) }))}
+                        className="min-h-11 shrink-0 rounded-2xl border border-daet-ink/20 bg-surface px-3 text-base"
+                      >
+                        <option value={0}>None</option>
+                        {Array.from({ length: max }, (_, n) => n + 1).map((n) => (
+                          <option key={n} value={n}>
+                            {n}
+                            {addon.unit === "per_night" ? (n === 1 ? " night" : " nights") : ""}
+                          </option>
+                        ))}
+                      </select>
+                    </li>
+                  );
+                })}
+              </ul>
+              {onSiteExtras.length ? (
+                <p className="mt-2 text-sm text-daet-ink/70">
+                  Paid on site: {onSiteExtras.map((a) => `${a.name} (${formatPeso(a.price)} ${UNIT_LABEL[a.unit]})`).join(", ")}.
+                </p>
+              ) : null}
+            </fieldset>
+          ) : null}
+
+          {/* Price summary, line by line */}
           <div className="rounded-2xl bg-daet-sand/30 p-4">
+            {quote && quote.lines.length > 1 ? (
+              <dl className="mb-3 space-y-1 text-sm text-daet-ink">
+                {quote.lines.map((line) => (
+                  <div key={line.label} className="flex justify-between gap-3">
+                    <dt>{line.label}</dt>
+                    <dd className={`shrink-0 font-semibold tabular-nums ${line.amount < 0 ? "text-green-700 dark:text-green-300" : ""}`}>{line.amount < 0 ? `−${formatPeso(-line.amount)}` : formatPeso(line.amount)}</dd>
+                  </div>
+                ))}
+              </dl>
+            ) : null}
             <div className="flex items-baseline justify-between">
               <span className="text-sm font-bold text-daet-ink">Total</span>
               <span className="text-3xl font-bold text-daet-forest dark:text-blue-300">
                 {formatPeso(totalAmount)}
               </span>
             </div>
-            {selectedVariant?.price_per_pax && (
+            {quote && quote.lines.length === 1 && selectedVariant?.price_per_pax ? (
               <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
                 {formatPeso(selectedVariant.price_per_pax)} × {numberOfPax} guest{numberOfPax === 1 ? "" : "s"}
               </p>
-            )}
+            ) : null}
+            {quote?.deposit ? (
+              <p className="mt-2 text-sm text-daet-ink">
+                Reservation fee {formatPeso(quote.deposit)}, taken off the total{details.depositRefundable ? "" : " and not refundable"}. You pay once the operator confirms.
+              </p>
+            ) : null}
           </div>
         </div>
       </section>

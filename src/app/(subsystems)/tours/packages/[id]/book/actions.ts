@@ -117,6 +117,9 @@ export async function createBooking(input: CreateBookingInput): Promise<CreateBo
         contact_phone: input.contactPhone,
         special_requests: input.specialRequests || null,
         status: "pending",
+        // Sent only when used, so booking keeps working where the trip-details migration isn't applied.
+        ...(input.numberOfChildren ? { number_of_children: input.numberOfChildren } : {}),
+        ...(input.addons?.length ? { addons: input.addons.map((a) => ({ addon_id: a.addonId, quantity: a.quantity })) } : {}),
       })
       .select("id")
       .single();
