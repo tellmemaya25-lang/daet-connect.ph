@@ -6,7 +6,7 @@ import type { ReactNode } from "react";
 import { cn } from "@/components/ui/cn";
 
 const BASE =
-  "inline-flex min-h-11 shrink-0 items-center whitespace-nowrap rounded-full px-3 text-[15px] font-semibold transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 lg:px-4";
+  "inline-flex min-h-11 shrink-0 items-center whitespace-nowrap rounded-full px-3 text-[15px] font-semibold transition-[background-color,color,scale] duration-150 ease-[ease] active:scale-[0.97] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 lg:px-4";
 
 /** Header link that marks the current page for assistive tech and sighted users. */
 export function SiteNavLink({

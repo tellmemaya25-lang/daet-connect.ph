@@ -28,9 +28,11 @@ export function RoleTabBar({ tabs, account }: { tabs: Tab[]; account?: { initial
               <Link
                 href={tab.href}
                 aria-current={active ? "page" : undefined}
-                className={`flex min-h-14 flex-col items-center justify-center gap-0.5 text-xs font-bold transition active:scale-95 ${active ? "text-blue-600 dark:text-blue-300" : "text-daet-ink/75 hover:text-daet-ink"}`}
+                className={`flex min-h-14 flex-col items-center justify-center gap-0.5 text-xs font-bold transition-[color,scale] duration-150 ease-out active:scale-95 ${active ? "text-blue-600 dark:text-blue-300" : "text-daet-ink/75 hover:text-daet-ink"}`}
               >
-                <span className="relative">
+                <span className="relative isolate">
+                  {/* The active tab's pill fades in behind its icon. */}
+                  {active ? <span aria-hidden="true" className="motion-pop-in absolute -inset-x-3.5 -inset-y-1 -z-10 rounded-full bg-blue-50 dark:bg-blue-950/40" /> : null}
                   <TabIcon label={tab.label} className="h-6 w-6" />
                   {tab.href === "/tours/messages" ? <UnreadMessagesBadge className="absolute -right-3 -top-1.5" /> : null}
                 </span>
