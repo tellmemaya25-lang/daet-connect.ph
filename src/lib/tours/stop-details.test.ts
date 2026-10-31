@@ -4,7 +4,7 @@ import { matchPlacePhoto } from "@/lib/tours/trip-board";
 const attractions: AttractionRef[] = [
   { name: "First José Rizal Monument", slug: "first-rizal-monument", description: "Raised in 1898. It stands in Rizal Park.", latitude: "14.1131", longitude: "122.9545", photo_url: null },
   { name: "Daet Heritage Center and Museum", slug: "daet-heritage-center", description: null, latitude: "14.1132", longitude: "122.9548", photo_url: "https://example.supabase.co/storage/heritage.jpg" },
-  { name: "Bagasbas Beach", slug: "bagasbas-beach", description: "Surf beach.", latitude: "14.1316", longitude: "122.9851", photo_url: null },
+  { name: "Bagasbas Beach", slug: "bagasbas-beach", description: "Surf beach.", latitude: "14.1316", longitude: "122.9851", photo_url: null, category: "beach" },
   { name: "Cathedral of the Most Holy Trinity", slug: "cathedral-most-holy-trinity", description: null, latitude: null, longitude: null, photo_url: null },
 ];
 
@@ -76,6 +76,12 @@ describe("buildStopDetails", () => {
     expect(details[0].photo?.src).toBe("/photos/rizal-monument.jpg");
     expect(details[2].photo?.src).toBe("/photos/bagasbas-beach.jpg");
     expect(details[3].photo).toBeNull();
+  });
+
+  it("names the kind of place for the map label, when the stop is a listed place", () => {
+    expect(details[2].subtitle).toBe("Beach");
+    expect(details[0].subtitle).toBeNull();
+    expect(details[3].subtitle).toBeNull();
   });
 
   it("never shows the St John church photo for the cathedral", () => {

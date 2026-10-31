@@ -18,6 +18,7 @@ export type AttractionRef = {
   latitude: number | string | null;
   longitude: number | string | null;
   photo_url: string | null;
+  category?: string | null;
 };
 
 export type StopDetail = {
@@ -29,6 +30,19 @@ export type StopDetail = {
   photo: { src: string; alt: string } | null;
   /** The place's own page, when the stop is a listed attraction. */
   href: string | null;
+  /** The kind of place, shown under its name on the map ("Heritage site"). */
+  subtitle: string | null;
+};
+
+const CATEGORY_LABEL: Record<string, string> = {
+  beach: "Beach",
+  heritage: "Heritage site",
+  nature: "Nature",
+  food: "Food",
+  adventure: "Adventure",
+  shopping: "Shopping",
+  religious: "Church",
+  park: "Park",
 };
 
 const num = (value: number | string | null): number | null => {
@@ -106,6 +120,7 @@ export function buildStopDetails(stops: PackageStopRow[], attractions: Attractio
         lng: pinned ? lng : null,
         photo,
         href: attraction ? `/tours/attractions/${attraction.slug}` : null,
+        subtitle: (attraction?.category && CATEGORY_LABEL[attraction.category]) || null,
       };
     });
 }

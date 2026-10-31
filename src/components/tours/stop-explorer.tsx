@@ -34,7 +34,7 @@ export function StopExplorer({ stops, legs, meetingPoint, title }: { stops: Stop
         kind: "stop",
         label: String(stops.indexOf(s) + 1),
         title: s.name,
-        detail: { photo: s.photo ?? undefined, text: s.description ?? undefined },
+        subtitle: s.subtitle ?? undefined,
       })),
     [pinned, stops],
   );
@@ -60,7 +60,7 @@ export function StopExplorer({ stops, legs, meetingPoint, title }: { stops: Stop
     const from = openIndex < 0 ? (by > 0 ? -1 : 0) : openIndex;
     choose(stops[(from + by + stops.length) % stops.length].id, true);
   };
-  const showAll = () => {
+  const recenter = () => {
     choose(null);
     setFitKey((k) => k + 1);
   };
@@ -83,20 +83,16 @@ export function StopExplorer({ stops, legs, meetingPoint, title }: { stops: Stop
               fitKey={String(fitKey)}
               animateFit
               focusId={focusId}
+              labels
               onMarkerClick={(id) => choose(id, true)}
-              onFocusClear={() => choose(null)}
             />
-            {open ? (
-              <div className="absolute left-2 top-2 z-10 flex max-w-[calc(100%-4rem)] items-center gap-1 rounded-full bg-surface py-1 pl-3 pr-1 text-sm font-semibold text-daet-ink shadow-[var(--shadow-float)]">
-                <LineIcon name="pin" className="h-4 w-4 shrink-0 text-blue-600 dark:text-blue-300" />
-                <span className="truncate">
-                  Viewing <strong>{open.name}</strong>
-                </span>
-                <button type="button" onClick={() => choose(null)} aria-label={`Close ${open.name}`} className="grid h-8 w-8 shrink-0 place-items-center rounded-full hover:bg-muted">
-                  <LineIcon name="close" className="h-4 w-4" />
-                </button>
-              </div>
-            ) : null}
+            <button
+              type="button"
+              onClick={recenter}
+              className="absolute left-1/2 top-2 z-10 inline-flex min-h-11 -translate-x-1/2 items-center gap-1.5 whitespace-nowrap rounded-full bg-surface px-4 text-sm font-bold text-daet-ink shadow-[var(--shadow-float)] hover:bg-muted"
+            >
+              <LineIcon name="pin" className="h-4 w-4 text-blue-600 dark:text-blue-300" /> Recenter itinerary
+            </button>
           </div>
           <div className="mt-2 flex flex-wrap items-center gap-2">
             <button type="button" onClick={() => step(-1)} aria-label="Previous stop" className="grid h-11 w-11 place-items-center rounded-full bg-daet-ink text-canvas hover:opacity-90">
@@ -107,11 +103,9 @@ export function StopExplorer({ stops, legs, meetingPoint, title }: { stops: Stop
             </button>
             <p className="min-w-0 flex-1 text-sm font-semibold text-daet-ink/80" aria-live="polite">
               {open ? `Stop ${openIndex + 1} of ${stops.length}` : `${stops.length} stops`}
+              {open ? <span className="sr-only">: {open.name}</span> : null}
               {open && !focusId ? " · no map pin for this stop" : ""}
             </p>
-            <button type="button" onClick={showAll} className="inline-flex min-h-11 items-center gap-1.5 rounded-full px-3 font-bold text-blue-700 hover:bg-blue-50 dark:text-blue-300 dark:hover:bg-blue-950/40">
-              Show all stops
-            </button>
           </div>
         </div>
       ) : null}

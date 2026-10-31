@@ -22,18 +22,18 @@ for (const width of [375, 1280]) {
 
     await stopButton(section, "Daet Heritage Center").click();
     await expect(stopButton(section, "Daet Heritage Center")).toHaveAttribute("aria-expanded", "true");
-    await expect(section.getByText(/Viewing/)).toContainText("Viewing Daet Heritage Center");
     await expect(section.getByRole("link", { name: "More about Daet Heritage Center" })).toHaveAttribute("href", "/tours/attractions/daet-heritage-center");
     await expect(section.getByText("Stop 2 of 3")).toBeVisible();
+    await expect(section.locator("[aria-live='polite']")).toContainText("Daet Heritage Center");
 
     await section.getByRole("button", { name: "Next stop", exact: true }).click();
     await expect(stopButton(section, "Bagasbas Beach")).toHaveAttribute("aria-expanded", "true");
     await expect(stopButton(section, "Daet Heritage Center")).toHaveAttribute("aria-expanded", "false");
-    await expect(section.getByText(/Viewing/)).toContainText("Viewing Bagasbas Beach");
+    await expect(section.locator("[aria-live='polite']")).toContainText("Stop 3 of 3");
     await expect(section.getByRole("img", { name: /Bagasbas/ }).first()).toBeVisible();
 
-    await section.getByRole("button", { name: "Show all stops", exact: true }).click();
-    await expect(section.getByText(/Viewing/)).toHaveCount(0);
+    await section.getByRole("button", { name: "Recenter itinerary", exact: true }).click();
+    await expect(section.getByText("3 stops")).toBeVisible();
     await expect(stopButton(section, "Bagasbas Beach")).toHaveAttribute("aria-expanded", "false");
 
     const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);

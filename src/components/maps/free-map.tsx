@@ -2,7 +2,7 @@
 
 import "maplibre-gl/dist/maplibre-gl.css";
 import { useEffect, useRef, useState } from "react";
-import type { Map as MapLibreMap, Marker as MapLibreMarker, Popup as MapLibrePopup } from "maplibre-gl";
+import type { Map as MapLibreMap, Marker as MapLibreMarker } from "maplibre-gl";
 import { MARKER_CLASSES, type FreeMapLine, type FreeMapMarker } from "@/components/maps/map-types";
 import { SketchMap } from "@/components/maps/sketch-map";
 import type { LatLng } from "@/lib/maps/geo";
@@ -42,7 +42,15 @@ function addLineLayers(map: MapLibreMap, lines: FreeMapLine[]) {
 
 const reducedMotion = () => window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ?? false;
 
-function markerElement(m: FreeMapMarker, active: boolean, onClick?: (id: string) => void): HTMLElement {
+/** Stops on a labelled map (the itinerary): dark dots, and a white pin for the picked one. */
+const STOP_DOT = "grid h-7 w-7 place-items-center rounded-full border-2 border-white bg-slate-900 text-xs font-extrabold text-white";
+const STOP_PIN = "grid h-8 w-8 place-items-center rounded-full border-2 border-slate-900 bg-white text-sm font-extrabold text-slate-900";
+const LABEL_HALO = "text-slate-900 [text-shadow:0_0_2px_#fff,0_0_4px_#fff,0_0_6px_#fff] dark:text-slate-100 dark:[text-shadow:0_0_2px_#0f172a,0_0_4px_#0f172a]";
+
+/** Names on the map stay short; the full name is in the label for screen readers. */
+export const shortLabel = (text: string, max = 16) => (text.length > max ? `${text.slice(0, max - 1).trimEnd()}…` : text);
+
+function markerElement(m: FreeMapMarker, active: boolean, labels: boolean, onClick?: (id: string) => void): HTMLElement {
   // With a click handler the marker is a button that picks the stop; otherwise a link or a picture.
   const el = document.createElement(onClick ? "button" : m.href ? "a" : "div");
   if (onClick) {
@@ -53,43 +61,53 @@ function markerElement(m: FreeMapMarker, active: boolean, onClick?: (id: string)
     });
     if (active) el.setAttribute("aria-current", "true");
   } else if (m.href) (el as HTMLAnchorElement).href = m.href;
-  el.className = MARKER_CLASSES[active && m.kind === "stop" ? "stopActive" : m.kind];
-  el.textContent = m.label;
   el.title = m.title;
   // aria-label needs a role on a plain element; links and buttons already have one.
   if (!m.href && !onClick) el.setAttribute("role", "img");
   el.setAttribute("aria-label", m.title);
+
+  if (!(labels && m.kind === "stop")) {
+    el.className = MARKER_CLASSES[active && m.kind === "stop" ? "stopActive" : m.kind];
+    el.textContent = m.label;
+    return el;
+  }
+  // Labelled stop: the badge (a pin with a stem and a dot when picked), then its name and kind beside it.
+  el.className = "relative flex flex-col items-center";
+  const badge = document.createElement("span");
+  badge.className = active ? STOP_PIN : STOP_DOT;
+  badge.textContent = m.label;
+  el.append(badge);
+  if (active) {
+    const stem = document.createElement("span");
+    stem.className = "h-1.5 w-0.5 bg-slate-900";
+    const dot = document.createElement("span");
+    dot.className = "h-2 w-2 rounded-full border border-white bg-slate-900";
+    el.append(stem, dot);
+  }
+  const label = document.createElement("span");
+  label.setAttribute("aria-hidden", "true");
+  label.className = `pointer-events-none absolute left-full top-0 ml-1.5 flex w-max max-w-[10rem] flex-col text-left leading-tight ${LABEL_HALO}`;
+  const name = document.createElement("span");
+  name.className = "text-xs font-bold";
+  name.textContent = shortLabel(m.title);
+  label.append(name);
+  if (m.subtitle) {
+    const sub = document.createElement("span");
+    sub.className = "text-[11px] font-medium opacity-75";
+    sub.textContent = m.subtitle;
+    label.append(sub);
+  }
+  el.append(label);
   return el;
 }
 
-const signature = (m: FreeMapMarker, active: boolean, clickable: boolean) => `${m.kind}|${m.label}|${m.title}|${m.href ?? ""}|${active}|${clickable}`;
+const signature = (m: FreeMapMarker, active: boolean, clickable: boolean, labels: boolean) =>
+  `${m.kind}|${m.label}|${m.title}|${m.subtitle ?? ""}|${m.href ?? ""}|${active}|${clickable}|${labels}`;
 
-/** The popup over a focused marker. Text only (textContent): operators write these strings. */
-function popupContent(m: FreeMapMarker): HTMLElement {
-  const box = document.createElement("div");
-  box.className = "w-60";
-  if (m.detail?.photo) {
-    const img = document.createElement("img");
-    img.src = m.detail.photo.src;
-    img.alt = m.detail.photo.alt;
-    img.className = "h-28 w-full object-cover";
-    box.append(img);
-  }
-  const body = document.createElement("div");
-  body.className = "p-3";
-  const name = document.createElement("p");
-  name.className = "font-bold text-daet-ink";
-  name.textContent = m.title;
-  body.append(name);
-  if (m.detail?.text) {
-    const text = document.createElement("p");
-    text.className = "mt-1 line-clamp-3 text-sm text-daet-ink/80";
-    text.textContent = m.detail.text;
-    body.append(text);
-  }
-  box.append(body);
-  return box;
-}
+/** The camera after a flight lands: a slow push in, like a drone settling. */
+const DRIFT_ZOOM = 0.6;
+const DRIFT_MS = 5000;
+const easeOutCubic = (t: number) => 1 - Math.pow(1 - t, 3);
 
 function fit(map: MapLibreMap, points: LatLng[], animate = false) {
   if (points.length === 0) return;
@@ -117,9 +135,10 @@ function fit(map: MapLibreMap, points: LatLng[], animate = false) {
  * `fitKey`: the map frames all markers and lines on load and again whenever
  * this value changes; otherwise it stays where the viewer left it.
  *
- * `focusId`: fly to that marker, mark it active and open its popup (`detail`).
- * `onMarkerClick` makes markers buttons; `onFocusClear` runs when the viewer
- * closes the popup. `animateFit` eases reframes after the first one.
+ * `focusId`: fly to that marker (pulling back, gliding over, diving in, then
+ * a slow drift closer) and mark it active. `labels` names stop markers on the
+ * map. `onMarkerClick` makes markers buttons. `animateFit` eases reframes
+ * after the first one.
  */
 export function FreeMap({
   markers,
@@ -129,7 +148,7 @@ export function FreeMap({
   className = "h-72 sm:h-96",
   focusId = null,
   onMarkerClick,
-  onFocusClear,
+  labels = false,
   animateFit = false,
 }: {
   markers: FreeMapMarker[];
@@ -139,7 +158,7 @@ export function FreeMap({
   className?: string;
   focusId?: string | null;
   onMarkerClick?: (id: string) => void;
-  onFocusClear?: () => void;
+  labels?: boolean;
   animateFit?: boolean;
 }) {
   const container = useRef<HTMLDivElement>(null);
@@ -147,15 +166,14 @@ export function FreeMap({
   const libRef = useRef<MapLibre | null>(null);
   const markerRefs = useRef(new Map<string, { marker: MapLibreMarker; sig: string }>());
   const latest = useRef({ markers, lines });
-  const popupRef = useRef<MapLibrePopup | null>(null);
   const clickRef = useRef(onMarkerClick);
-  const clearRef = useRef(onFocusClear);
+  // Bumped whenever a drift should not start (or should stop): a new focus, the viewer moving the map.
+  const driftToken = useRef(0);
   const firstFit = useRef(true);
   const [mode, setMode] = useState<"map" | "sketch">("map");
   const [ready, setReady] = useState(false);
   latest.current = { markers, lines };
   clickRef.current = onMarkerClick;
-  clearRef.current = onFocusClear;
   const clickable = Boolean(onMarkerClick);
 
   // Create the map once.
@@ -196,6 +214,13 @@ export function FreeMap({
           return;
         }
         mapRef.current = map;
+        // The viewer taking over the camera stops the drift.
+        const stopDrift = () => {
+          driftToken.current += 1;
+        };
+        map.on("dragstart", stopDrift);
+        map.on("wheel", stopDrift);
+        map.on("touchstart", stopDrift);
         map.addControl(new lib.NavigationControl({ showCompass: false }), "top-right");
         timer = window.setTimeout(() => !loaded && giveUp(), MAP_LOAD_TIMEOUT_MS);
 
@@ -242,7 +267,6 @@ export function FreeMap({
       window.clearTimeout(timer);
       markersMap.forEach(({ marker }) => marker.remove());
       markersMap.clear();
-      popupRef.current = null;
       map?.remove();
       mapRef.current = null;
     };
@@ -257,15 +281,17 @@ export function FreeMap({
     for (const m of markers) {
       seen.add(m.id);
       const active = m.id === focusId;
-      const sig = signature(m, active, clickable);
+      const sig = signature(m, active, clickable, labels);
       const existing = markerRefs.current.get(m.id);
       if (existing && existing.sig === sig) {
         existing.marker.setLngLat([m.lng, m.lat]);
         continue;
       }
       existing?.marker.remove();
-      const element = markerElement(m, active, clickable ? (id) => clickRef.current?.(id) : undefined);
-      const marker = new lib.Marker({ element }).setLngLat([m.lng, m.lat]).addTo(map);
+      const element = markerElement(m, active, labels, clickable ? (id) => clickRef.current?.(id) : undefined);
+      // A picked, labelled stop is a pin: its tip (the bottom) sits on the spot.
+      const anchor = labels && active && m.kind === "stop" ? "bottom" : "center";
+      const marker = new lib.Marker({ element, anchor }).setLngLat([m.lng, m.lat]).addTo(map);
       markerRefs.current.set(m.id, { marker, sig });
     }
     for (const [id, { marker }] of markerRefs.current) {
@@ -274,38 +300,26 @@ export function FreeMap({
         markerRefs.current.delete(id);
       }
     }
-  }, [markers, ready, focusId, clickable]);
+  }, [markers, ready, focusId, clickable, labels]);
 
-  // Focus: fly to the picked marker and open its popup.
+  // Focus: pull back, glide over and dive in to the picked marker, then drift slowly closer.
   useEffect(() => {
     const map = mapRef.current;
-    const lib = libRef.current;
-    const previous = popupRef.current;
-    popupRef.current = null;
-    previous?.remove(); // Not a viewer close: the ref is already cleared, so onFocusClear doesn't run.
-    if (!ready || !map || !lib || !focusId) return;
+    const token = ++driftToken.current;
+    if (!ready || !map || !focusId) return;
     const m = latest.current.markers.find((marker) => marker.id === focusId);
     if (!m) return;
-    const camera = { center: [m.lng, m.lat] as [number, number], zoom: Math.max(map.getZoom(), 15) };
-    if (reducedMotion()) map.jumpTo(camera);
-    else map.flyTo({ ...camera, speed: 1.2, curve: 1.42, essential: true });
-    const popup = new lib.Popup({ offset: 26, maxWidth: "none", className: "free-map-popup", focusAfterOpen: false })
-      .setLngLat([m.lng, m.lat])
-      .setDOMContent(popupContent(m))
-      .addTo(map);
-    popup.on("close", () => {
-      if (popupRef.current !== popup) return;
-      popupRef.current = null;
-      clearRef.current?.();
+    const center: [number, number] = [m.lng, m.lat];
+    if (reducedMotion()) {
+      map.jumpTo({ center, zoom: 15.5 });
+      return;
+    }
+    map.flyTo({ center, zoom: 15.5, curve: 1.9, speed: 0.9, essential: true });
+    map.once("moveend", () => {
+      if (driftToken.current !== token) return;
+      map.easeTo({ zoom: map.getZoom() + DRIFT_ZOOM, duration: DRIFT_MS, easing: easeOutCubic, essential: true });
     });
-    popupRef.current = popup;
   }, [focusId, ready]);
-
-  // Lines.
-  useEffect(() => {
-    const source = ready ? mapRef.current?.getSource(LINE_SOURCE) : undefined;
-    if (source && "setData" in source) (source as { setData: (d: unknown) => void }).setData(lineData(lines));
-  }, [lines, ready]);
 
   // Reframe when asked.
   useEffect(() => {
@@ -315,7 +329,7 @@ export function FreeMap({
   }, [fitKey, ready, animateFit]);
 
   if (markers.length === 0 && lines.length === 0) return null;
-  if (mode === "sketch") return <SketchMap markers={markers} lines={lines} title={title} focusId={focusId} />;
+  if (mode === "sketch") return <SketchMap markers={markers} lines={lines} title={title} focusId={focusId} pins={labels} />;
 
   return (
     <figure>

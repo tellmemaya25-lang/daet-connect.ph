@@ -127,7 +127,7 @@ export default async function PackageDetailPage({ params }: PageProps) {
       .limit(20),
     // Listed places, so a stop that is one gets its photo and a link (a short table).
     (pkg.tours_package_stops?.length ?? 0) > 0
-      ? supabase.from("tours_attractions").select("name, slug, description, latitude, longitude, photo_url").eq("is_active", true)
+      ? supabase.from("tours_attractions").select("name, slug, description, latitude, longitude, photo_url, category").eq("is_active", true)
       : Promise.resolve({ data: [] }),
   ]);
   const rating = toSummary(packageRating);

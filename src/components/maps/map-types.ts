@@ -15,8 +15,8 @@ export type FreeMapMarker = LatLng & {
   /** Read by screen readers and shown on hover. */
   title: string;
   href?: string;
-  /** Shown in a popup above the marker when it's focused (FreeMap focusId). */
-  detail?: { photo?: { src: string; alt: string }; text?: string };
+  /** A second line under the name on a labelled map, e.g. "Heritage site". */
+  subtitle?: string;
 };
 
 export type FreeMapLine = { id: string; path: LatLng[]; dashed?: boolean };

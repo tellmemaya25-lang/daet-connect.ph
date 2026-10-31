@@ -295,33 +295,6 @@
   }
 }
 
-/* Map popups (FreeMap focusId): a card that follows the theme, flush photo on top. */
-.free-map-popup .maplibregl-popup-content {
-  padding: 0;
-  overflow: hidden;
-  border-radius: 1rem;
-  background: var(--color-surface);
-  color: var(--color-daet-ink);
-  box-shadow: var(--shadow-float);
-}
-.free-map-popup.maplibregl-popup-anchor-bottom .maplibregl-popup-tip {
-  border-top-color: var(--color-surface);
-}
-.free-map-popup.maplibregl-popup-anchor-top .maplibregl-popup-tip {
-  border-bottom-color: var(--color-surface);
-}
-.free-map-popup .maplibregl-popup-close-button {
-  width: 2rem;
-  height: 2rem;
-  border-radius: 9999px;
-  background: rgb(15 23 42 / 0.6);
-  color: #fff;
-  font-size: 1.25rem;
-  line-height: 1;
-  top: 0.375rem;
-  right: 0.375rem;
-}
-
 /* A stop's details opening in the itinerary (StopExplorer). */
 @keyframes stop-open {
   from {
