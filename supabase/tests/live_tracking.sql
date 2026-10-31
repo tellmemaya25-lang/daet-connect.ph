@@ -1,7 +1,7 @@
 -- Live tour tracking rules (20261114_live_tracking.sql).
 -- One DO block that ALWAYS rolls back (it ends by raising the report), so it
 -- is safe on a live project. Read "REPORT pass=N fail=M [failures]".
--- Needs a booking with an approved assigned guide, plus another tourist,
+-- Needs a confirmed booking with an approved assigned guide, plus another tourist,
 -- another approved guide and another operator to act as strangers.
 
 DO $suite$
@@ -15,6 +15,7 @@ DECLARE
   v_package uuid;
   v_tourist uuid;
   v_guide uuid;
+  v_guide_id uuid;
   v_operator uuid;
   v_stranger uuid;
   v_other_guide uuid;
@@ -24,23 +25,27 @@ DECLARE
   v_flare uuid;
   v_pos record;
 BEGIN
-  SELECT b.id, b.package_id, b.user_id, g.profile_id, o.profile_id
-    INTO v_booking, v_package, v_tourist, v_guide, v_operator
+  SELECT b.id, b.package_id, b.user_id, g.profile_id, o.profile_id, g.id
+    INTO v_booking, v_package, v_tourist, v_guide, v_operator, v_guide_id
     FROM tours_bookings b
     JOIN tours_guides g ON g.id = b.assigned_guide_id AND g.accreditation_status = 'approved'
     JOIN tours_packages p ON p.id = b.package_id
     JOIN tours_operators o ON o.id = p.operator_id
-   WHERE b.user_id IS NOT NULL AND b.user_id <> g.profile_id AND b.user_id <> o.profile_id
+   WHERE b.status = 'confirmed' AND b.user_id IS NOT NULL AND b.user_id <> g.profile_id AND b.user_id <> o.profile_id
    LIMIT 1;
   IF v_booking IS NULL THEN
     RAISE EXCEPTION 'REPORT setup incomplete: no booking with an approved assigned guide';
   END IF;
   SELECT id INTO v_stranger FROM profiles WHERE id NOT IN (v_tourist, v_guide, v_operator) AND coalesce(role, 'tourist') = 'tourist' LIMIT 1;
-  SELECT profile_id INTO v_other_guide FROM tours_guides WHERE accreditation_status = 'approved' AND profile_id <> v_guide LIMIT 1;
-  SELECT profile_id INTO v_other_operator FROM tours_operators WHERE profile_id <> v_operator LIMIT 1;
+  SELECT profile_id INTO v_other_guide FROM tours_guides WHERE accreditation_status = 'approved' AND profile_id NOT IN (v_guide, v_tourist, v_operator) LIMIT 1;
+  SELECT profile_id INTO v_other_operator FROM tours_operators WHERE profile_id NOT IN (v_operator, v_tourist, v_guide) LIMIT 1;
 
-  -- The tour runs today: met an hour ago, 4 hours long.
-  UPDATE tours_bookings SET tour_date = v_start::date, status = 'confirmed' WHERE id = v_booking;
+  -- The tour runs today: met an hour ago, 4 hours long. The guide-schedule
+  -- rule needs the guide marked available on the day the booking moves to.
+  -- Run after 05:00 Manila time so the window-closed check can close it.
+  DELETE FROM tours_guide_availability WHERE guide_id = v_guide_id AND available_date = v_start::date;
+  INSERT INTO tours_guide_availability (guide_id, available_date, is_available) VALUES (v_guide_id, v_start::date, true);
+  UPDATE tours_bookings SET tour_date = v_start::date WHERE id = v_booking;
   UPDATE tours_packages SET meeting_time = v_start::time, duration_type = 'hours', duration_value = 4 WHERE id = v_package;
   DELETE FROM tours_live_sessions WHERE booking_id = v_booking;
   DELETE FROM tours_live_consents WHERE booking_id = v_booking;
@@ -106,9 +111,10 @@ BEGIN
   IF tours_realtime_live_allowed('tour-live:' || v_booking) THEN pass := pass + 1; ELSE fails := fails || 'tourist refused on the live channel; '; END IF;
 
   -- 6. No direct writes, even to your own row.
-  UPDATE tours_live_positions SET lat = 0 WHERE booking_id = v_booking;
-  GET DIAGNOSTICS n = ROW_COUNT;
-  IF n = 0 THEN pass := pass + 1; ELSE fails := fails || 'direct update of positions; '; END IF;
+  BEGIN
+    UPDATE tours_live_positions SET lat = 0 WHERE booking_id = v_booking;
+    fails := fails || 'direct update of positions; ';
+  EXCEPTION WHEN insufficient_privilege THEN pass := pass + 1; END;
   BEGIN
     INSERT INTO tours_live_positions (booking_id, profile_id, role, lat, lng, precision) VALUES (v_booking, v_tourist, 'guide', 1, 1, 'exact');
     fails := fails || 'direct insert of a position; ';
@@ -150,7 +156,9 @@ BEGIN
 
   -- 11. After the tour window closes, pings are refused and locations deleted.
   RESET ROLE;
-  UPDATE tours_bookings SET tour_date = v_start::date - 2 WHERE id = v_booking;
+  -- Close the window without moving the date (the guide may have another tour then):
+  -- a 1-hour tour that met at midnight closed at 04:00 today.
+  UPDATE tours_packages SET meeting_time = time '00:00', duration_value = 1 WHERE id = v_package;
   SET LOCAL ROLE authenticated;
   r := tours_live_ping(v_booking, 13.9500, 122.1200, 15);
   RESET ROLE;
