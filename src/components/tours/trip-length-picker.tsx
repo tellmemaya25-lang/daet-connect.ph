@@ -60,22 +60,25 @@ export function TripLengthPicker({ trips }: { trips: BoardTrip[] }) {
 
   return (
     <div>
-      <div role="group" aria-label="Trip length" className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1 sm:mx-0 sm:px-0">
+      {/* Chips wrap on phones so none is cut off; a length with no trips can't be chosen. */}
+      <div role="group" aria-label="Trip length" className="flex flex-wrap gap-2">
         {TRIP_LENGTHS.map((item) => {
           const on = item.id === selected;
           const count = trips.filter((t) => t.length === item.id).length;
+          const empty = count === 0;
           return (
             <button
               key={item.id}
               type="button"
               aria-pressed={on}
+              disabled={empty && !on}
               onClick={() => setSelected(item.id)}
-              className={`inline-flex min-h-12 shrink-0 items-center gap-2 rounded-full px-5 text-base font-bold transition active:scale-[0.98] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 ${
-                on ? "bg-blue-600 text-white" : "bg-surface text-daet-ink hover:bg-blue-50 dark:hover:bg-blue-950/40"
+              className={`inline-flex min-h-12 items-center gap-2 rounded-full px-5 text-base font-bold transition active:scale-[0.98] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 disabled:cursor-not-allowed disabled:active:scale-100 ${
+                on ? "bg-blue-600 text-white" : empty ? "bg-surface text-daet-ink/60" : "bg-surface text-daet-ink hover:bg-blue-50 dark:hover:bg-blue-950/40"
               }`}
             >
               {item.label}
-              <span className={`rounded-full px-2 text-sm ${on ? "bg-white/20" : "bg-muted"}`}>{count}</span>
+              <span className={`rounded-full px-2 text-sm font-semibold ${on ? "bg-white/20" : "bg-muted"}`}>{empty ? "None yet" : count}</span>
             </button>
           );
         })}

@@ -32,8 +32,18 @@ test("visitors are asked to sign in for their bookings", async ({ page }) => {
   await expect(dialog.getByText(/Sign in to see your bookings/).first()).toBeVisible();
 });
 
+test("signed in on a phone, the assistant is reached from Messages instead of a floating button", async ({ context, page }) => {
+  await signInAs(context, "tourist");
+  await page.goto("/tours/me", { waitUntil: "networkidle" });
+  await expect(page.getByRole("button", { name: "Daet AI assistant" })).toBeHidden();
+  await page.getByRole("navigation", { name: "Dashboard" }).getByRole("link", { name: /Messages/ }).click();
+  await expect(page.getByRole("link", { name: /^Daet AI assistant Pinned/ })).toBeVisible();
+});
+
 test("a signed-in tourist sees their booking with ticket and booking links", async ({ context, page }) => {
   await signInAs(context, "tourist");
+  // Tablets keep the floating button (phones use Messages, desktops the chat dock).
+  await page.setViewportSize({ width: 768, height: 1024 });
   const dialog = await openAssistant(page, "/tours/me");
   await dialog.getByRole("button", { name: "Where is my ticket?" }).click();
   await expect(dialog.getByText(/BK-20261023-7F3K2Q/).first()).toBeVisible();
@@ -45,6 +55,7 @@ test("a signed-in tourist sees their booking with ticket and booking links", asy
 
 test("asking for a person offers an editable message to send", async ({ context, page }) => {
   await signInAs(context, "tourist");
+  await page.setViewportSize({ width: 768, height: 1024 });
   const dialog = await openAssistant(page, "/tours/me");
   await dialog.getByLabel("Ask the Daet AI assistant").fill("I want to talk to a person about my booking BK-20261023-7F3K2Q");
   await dialog.getByRole("button", { name: "Send" }).click();

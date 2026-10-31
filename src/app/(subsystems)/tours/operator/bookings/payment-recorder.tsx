@@ -79,7 +79,7 @@ export function PaymentRecorder({
       <div className="mb-3 flex items-center justify-between">
         <div>
           <p className="text-sm text-slate-600 dark:text-slate-400">
-            Payment Status
+            Payment status
           </p>
           <span
             className={`mt-1 inline-block rounded-full px-3 py-1 text-xs font-bold ${
@@ -94,18 +94,18 @@ export function PaymentRecorder({
             onClick={() => setIsOpen(!isOpen)}
             className="inline-flex min-h-11 items-center rounded-full bg-daet-forest px-4 text-sm font-bold text-white transition hover:bg-blue-700"
           >
-            {isOpen ? "Cancel" : "Record Payment"}
+            {isOpen ? "Cancel" : "Record payment"}
           </button>
         )}
       </div>
 
       <div className="grid grid-cols-3 gap-3 text-sm">
         <div>
-          <p className="text-daet-ink/70">Total Amount</p>
+          <p className="text-daet-ink/70">Total</p>
           <p className="font-bold text-daet-ink">{formatPeso(totalAmount)}</p>
         </div>
         <div>
-          <p className="text-daet-ink/70">Total Paid</p>
+          <p className="text-daet-ink/70">Paid</p>
           <p className="font-bold text-green-700 dark:text-green-300">{formatPeso(totalPaid)}</p>
         </div>
         <div>
@@ -196,7 +196,7 @@ export function PaymentRecorder({
             disabled={isSubmitting}
             className="inline-flex min-h-11 items-center justify-center w-full rounded-full bg-daet-forest px-4 py-2 text-sm font-bold text-white transition hover:bg-blue-700 disabled:opacity-50"
           >
-            {isSubmitting ? "Recording..." : "Record Payment"}
+            {isSubmitting ? "Recording…" : "Record payment"}
           </button>
         </form>
       )}

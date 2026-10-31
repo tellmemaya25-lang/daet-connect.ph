@@ -5,7 +5,6 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import { PageFrame } from "@/components/ui/page-frame";
 import { Notice } from "@/components/ui/notice";
-import { DashboardHeader } from "@/components/ui/dashboard-header";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { FREE_CANCELLATION_HOURS } from "@/lib/tours/cancellation";
@@ -248,7 +247,6 @@ export default async function OperatorBookingsPage({
 
   return (
     <PageFrame>
-      <DashboardHeader role="operator" />
 
       <div className="mx-auto max-w-7xl">
         <header className="mb-6">
@@ -337,7 +335,7 @@ export default async function OperatorBookingsPage({
                       {/* Details Grid */}
                       <div className="mb-4 grid grid-cols-2 gap-x-4 gap-y-3 text-sm sm:gap-x-8 md:grid-cols-4 [&>div]:min-w-0 [&_p]:break-words">
                         <div>
-                          <p className="text-daet-ink/70">Tour Date</p>
+                          <p className="text-daet-ink/70">Tour date</p>
                           <p className="font-bold text-daet-ink">
                             {new Date(booking.tour_date).toLocaleDateString("en-US", {
                               month: "short",
@@ -356,7 +354,7 @@ export default async function OperatorBookingsPage({
                           <p className="text-sm text-slate-600 dark:text-slate-400">{booking.contact_phone}</p>
                         </div>
                         <div>
-                          <p className="text-daet-ink/70">Total Amount</p>
+                          <p className="text-daet-ink/70">Total</p>
                           <p className="text-lg font-bold text-daet-forest dark:text-blue-300">
                             {formatPeso(booking.total_amount)}
                           </p>
@@ -366,7 +364,7 @@ export default async function OperatorBookingsPage({
                       {/* Special Requests */}
                       {booking.special_requests && (
                         <div className="mb-4 rounded-2xl bg-canvas p-3">
-                          <p className="text-sm text-slate-600 dark:text-slate-400">Special Requests:</p>
+                          <p className="text-sm text-slate-600 dark:text-slate-400">Special requests</p>
                           <p className="mt-1 text-sm text-daet-ink">{booking.special_requests}</p>
                         </div>
                       )}
@@ -376,7 +374,7 @@ export default async function OperatorBookingsPage({
                         <>
                           <div className="mb-4 rounded-2xl bg-canvas p-4">
                             <p className="mb-3 text-sm text-slate-600 dark:text-slate-400">
-                              Guide Assignment
+                              Guide
                             </p>
                             {swapByBooking.get(booking.id) ? (
                               <SwapReview swap={swapByBooking.get(booking.id)!} guides={pickerFor(booking.tour_date)} />
@@ -428,23 +426,25 @@ export default async function OperatorBookingsPage({
                         <RefundPanel bookingId={booking.id} refundable={refundableByBooking.get(booking.id)!} />
                       ) : null}
 
-                      {booking.status !== "cancelled" && booking.status !== "rejected" ? (
-                        <div className="mb-3 flex flex-wrap gap-2">
-                          <OpenChatButton bookingId={booking.id} label="Message tourist" variant="ghost" />
-                          {booking.assigned_guide_id ? (
-                            <OpenChatButton target={{ kind: "operator_guide", guideId: booking.assigned_guide_id }} label="Message guide" variant="ghost" />
-                          ) : null}
-                        </div>
-                      ) : null}
-
-                      {/* Actions */}
+                      {/* The next step first, messages beside it, Decline and Cancel under More. */}
                       <BookingActionButtons
                         bookingId={booking.id}
                         currentStatus={booking.status}
                         tourDate={booking.tour_date}
                         totalPaid={Number(booking.total_paid ?? 0)}
                         today={today}
-                      />
+                        bookingReference={booking.booking_reference}
+                        contactName={booking.contact_name}
+                      >
+                        {booking.status !== "cancelled" && booking.status !== "rejected" ? (
+                          <>
+                            <OpenChatButton bookingId={booking.id} label="Message tourist" variant="ghost" />
+                            {booking.assigned_guide_id ? (
+                              <OpenChatButton target={{ kind: "operator_guide", guideId: booking.assigned_guide_id }} label="Message guide" variant="ghost" />
+                            ) : null}
+                          </>
+                        ) : null}
+                      </BookingActionButtons>
                     </div>
                   </div>
                 </div>

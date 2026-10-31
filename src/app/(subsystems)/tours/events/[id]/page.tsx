@@ -135,7 +135,7 @@ export default async function EventDetailPage({ params }: { params: Promise<{ id
                 Open in Google Maps
               </a>
               <Link href="/tours/browse" className="inline-flex min-h-11 items-center justify-center rounded-full px-6 font-bold text-daet-ink hover:bg-muted">
-                Find a tour nearby
+                Find a trip nearby
               </Link>
             </div>
           </div>

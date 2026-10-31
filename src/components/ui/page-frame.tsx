@@ -62,9 +62,9 @@ export async function PageFrame({
       >
         {children}
       </main>
-      {/* Work screens (signed-in staff) get a one-line footer; everyone else gets the full close. */}
+      {/* Signed-in work pages get a one-line footer; public pages (and visitors) get the full close. */}
       {/* Room under the footer for the floating chat button (and the tab bar on phones). */}
-      <SiteFooter credits={credits} compact={staff} className={tabs.length ? "pb-36 sm:pb-24" : "pb-20 sm:pb-24"} />
+      <SiteFooter credits={credits} compact={role !== undefined && !bleed} className={tabs.length ? "pb-24" : "pb-20 sm:pb-24"} />
       <RoleTabBar tabs={tabs} account={account && !staff ? { ...account, links: accountLinks(role, tabs) } : undefined} />
       <AssistantWidget signedIn={role !== undefined} raised={tabs.length > 0} />
       {role !== undefined ? <ChatDock /> : null}

@@ -121,10 +121,11 @@ export function occupancy(rows: Array<{ capacity_total: number | null; capacity_
   return { seats, booked, openDays, percent: seats > 0 ? Math.round((booked / seats) * 100) : null };
 }
 
-/** Guide availability cycles: not set → available → unavailable → not set. */
+/** A guide's day: not set, available or not available. */
 export type AvailabilityState = "unset" | "available" | "unavailable";
-export function nextAvailability(state: AvailabilityState): AvailabilityState {
-  return state === "unset" ? "available" : state === "available" ? "unavailable" : "unset";
+/** Tapping a day with the chosen mark: it gets the mark, or loses it if it already had it. */
+export function markDay(state: AvailabilityState, mark: Exclude<AvailabilityState, "unset">): AvailabilityState {
+  return state === mark ? "unset" : mark;
 }
 
 // ---------------------------------------------------------------------------

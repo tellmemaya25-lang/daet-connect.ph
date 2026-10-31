@@ -4,9 +4,10 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { MonthCalendar } from "@/components/tours/month-calendar";
 import { Notice } from "@/components/ui/notice";
-import { nextAvailability, type AvailabilityState } from "@/lib/tours/dashboards";
+import { markDay, type AvailabilityState } from "@/lib/tours/dashboards";
 import { formatDayHeading, type CalendarMonth } from "@/lib/tours/events-calendar";
 import { Button } from "@/components/ui/button";
+import { LineIcon } from "@/components/ui/icons";
 import { markWeekendsAvailable, setGuideAvailability } from "./availability-actions";
 
 const STYLE: Record<AvailabilityState, string> = {
@@ -16,7 +17,12 @@ const STYLE: Record<AvailabilityState, string> = {
 };
 const LABEL: Record<AvailabilityState, string> = { unset: "not set", available: "available", unavailable: "not available" };
 
-/** Tap a day to cycle: available → not available → not set. Assigned tours are marked with a dot. */
+type Mark = Exclude<AvailabilityState, "unset">;
+
+/**
+ * Pick what a tap marks (Available or Not available), then tap days. Tapping
+ * a day that already has that mark clears it. Assigned tours get a ring.
+ */
 export function AvailabilityCalendar({
   month,
   today,
@@ -38,11 +44,12 @@ export function AvailabilityCalendar({
   const [error, setError] = useState<string | null>(null);
   const [saved, setSaved] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
+  const [mark, setMark] = useState<Mark>("available");
   const router = useRouter();
 
   const toggle = (day: string) => {
     const previous = states[day] ?? "unset";
-    const next = nextAvailability(previous);
+    const next = markDay(previous, mark);
     setStates((s) => ({ ...s, [day]: next }));
     startTransition(async () => {
       const result = await setGuideAvailability(day, next);
@@ -69,6 +76,28 @@ export function AvailabilityCalendar({
           {error}
         </Notice>
       ) : null}
+      <div role="radiogroup" aria-label="A tap marks the day" className="mb-3 inline-flex rounded-full bg-muted p-1">
+        {(
+          [
+            ["available", "Available"],
+            ["unavailable", "Not available"],
+          ] as const
+        ).map(([value, label]) => (
+          <button
+            key={value}
+            type="button"
+            role="radio"
+            aria-checked={mark === value}
+            onClick={() => setMark(value)}
+            className={`inline-flex min-h-11 items-center gap-1.5 rounded-full px-4 text-sm font-bold transition-colors ${
+              mark === value ? (value === "available" ? "bg-green-500 text-slate-950" : "bg-red-600 text-white") : "text-daet-ink hover:bg-muted-strong"
+            }`}
+          >
+            {mark === value ? <LineIcon name="check" className="h-4 w-4" /> : null}
+            {label}
+          </button>
+        ))}
+      </div>
       <MonthCalendar
         month={month}
         today={today}

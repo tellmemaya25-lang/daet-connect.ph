@@ -148,12 +148,12 @@ export function BookingForm({ packageId, priceVariants, dateOptions, userProfile
 
       {/* Tour Date */}
       <section className="rounded-2xl bg-surface p-6">
-        <h2 className="text-xl font-bold text-daet-ink">Select Date</h2>
+        <h2 className="text-xl font-bold text-daet-ink">Pick a date</h2>
         <p className="mt-1 text-sm text-daet-ink/70">Choose your preferred tour date</p>
 
         <div className="mt-4">
           <label htmlFor="tourDate" className="block text-sm font-bold text-daet-ink">
-            Tour Date *
+            Tour date *
           </label>
           {dateOptions === null ? (
             <>
@@ -260,7 +260,7 @@ export function BookingForm({ packageId, priceVariants, dateOptions, userProfile
                 <span aria-hidden="true">+</span>
               </button>
               <span className="text-sm text-daet-ink/70">
-                ({minPax} - {maxPax} pax)
+                ({minPax} to {maxPax} guests)
               </span>
             </div>
             {notEnoughSeats ? (
@@ -273,14 +273,14 @@ export function BookingForm({ packageId, priceVariants, dateOptions, userProfile
           {/* Price Summary */}
           <div className="rounded-2xl bg-daet-sand/30 p-4">
             <div className="flex items-baseline justify-between">
-              <span className="text-sm font-bold text-daet-ink">Total Amount:</span>
+              <span className="text-sm font-bold text-daet-ink">Total</span>
               <span className="text-3xl font-bold text-daet-forest dark:text-blue-300">
                 {formatPeso(totalAmount)}
               </span>
             </div>
             {selectedVariant?.price_per_pax && (
               <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
-                {formatPeso(selectedVariant.price_per_pax)} × {numberOfPax} pax
+                {formatPeso(selectedVariant.price_per_pax)} × {numberOfPax} guest{numberOfPax === 1 ? "" : "s"}
               </p>
             )}
           </div>
@@ -346,7 +346,7 @@ export function BookingForm({ packageId, priceVariants, dateOptions, userProfile
 
           <div>
             <label htmlFor="specialRequests" className="block text-sm font-bold text-daet-ink">
-              Special Requests (Optional)
+              Special requests (optional)
             </label>
             <textarea
               id="specialRequests"

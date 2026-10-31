@@ -10,7 +10,8 @@ import { cn } from "@/components/ui/cn";
 const VARIANTS = {
   primary: "bg-blue-600 text-white hover:bg-blue-700 active:bg-blue-800",
   secondary: "bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-900/40 active:bg-blue-200 dark:active:bg-blue-800/60",
-  ghost: "text-daet-ink hover:bg-muted active:bg-muted-strong",
+  // Quiet, but still shaped like a button at rest: phones have no hover to reveal it.
+  ghost: "text-daet-ink ring-1 ring-inset ring-daet-ink/20 hover:bg-muted active:bg-muted-strong",
   danger: "bg-red-600 text-white hover:bg-red-700 active:bg-red-800",
   accent: "bg-yellow-500 text-slate-950 hover:bg-yellow-400 active:bg-yellow-600",
   // For use on a blue-600 panel.
