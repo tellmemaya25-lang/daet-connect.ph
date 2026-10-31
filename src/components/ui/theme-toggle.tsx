@@ -84,3 +84,40 @@ export function ThemeChoices() {
     </fieldset>
   );
 }
+
+/** Whether the page is dark right now: an explicit choice, else the device setting. */
+function useDarkNow(theme: ThemeChoice): boolean {
+  const [deviceDark, setDeviceDark] = useState(false);
+  useEffect(() => {
+    const media = window.matchMedia("(prefers-color-scheme: dark)");
+    const sync = () => setDeviceDark(media.matches);
+    sync();
+    media.addEventListener("change", sync);
+    return () => media.removeEventListener("change", sync);
+  }, []);
+  return theme === "dark" || (theme === "system" && deviceDark);
+}
+
+/** Account menu row: one switch between light and dark (saved as an explicit choice). */
+export function DarkModeSwitch({ className = "" }: { className?: string }) {
+  const [theme, setTheme] = useTheme();
+  const dark = useDarkNow(theme);
+  return (
+    <button
+      type="button"
+      role="switch"
+      aria-checked={dark}
+      onClick={() => setTheme(dark ? "light" : "dark")}
+      className={`flex min-h-12 w-full items-center justify-between gap-3 rounded-xl px-4 text-left text-base text-daet-ink hover:bg-muted ${className}`}
+    >
+      Dark mode
+      <span aria-hidden="true" className={`relative h-7 w-[3.25rem] shrink-0 rounded-full transition-colors motion-reduce:transition-none ${dark ? "bg-blue-600" : "bg-slate-500"}`}>
+        <span
+          className={`absolute left-0.5 top-0.5 grid h-6 w-6 place-items-center rounded-full bg-surface text-blue-700 dark:bg-white transition-transform motion-reduce:transition-none ${dark ? "translate-x-6" : "translate-x-0"}`}
+        >
+          <LineIcon name={dark ? "moon" : "sun"} className="h-4 w-4" />
+        </span>
+      </span>
+    </button>
+  );
+}

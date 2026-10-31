@@ -6,7 +6,7 @@ test.use({ viewport: { width: 375, height: 812 }, isMobile: true });
 
 /** At phone width the links live in the Menu sheet; open it and return its nav. */
 const mainNav = async (page: import("@playwright/test").Page) => {
-  await page.getByRole("banner").getByText("Menu", { exact: true }).click();
+  await page.getByRole("banner").locator("summary").click();
   return page.getByRole("navigation", { name: "Menu" });
 };
 

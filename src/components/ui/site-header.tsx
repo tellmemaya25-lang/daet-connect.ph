@@ -1,17 +1,19 @@
+import { AccountMenu } from "@/components/ui/account-menu";
 import { BrandMark } from "@/components/ui/brand-mark";
 import { ButtonLink } from "@/components/ui/button";
-import { LogoutButton } from "@/components/ui/logout-button";
+import { ExploreMenu } from "@/components/ui/explore-menu";
+import { LineIcon } from "@/components/ui/icons";
 import { MobileMenu, type MenuLink } from "@/components/ui/mobile-menu";
-import { UnreadMessagesBadge } from "@/components/chat/unread-badge";
 import { SiteNavLink } from "@/components/ui/site-nav-link";
 import { NotificationBell } from "@/components/tours/notification-bell";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
-import type { DashboardRole, Tab } from "@/lib/tours/dashboards";
+import { accountLinks, type DashboardRole, type Tab } from "@/lib/tours/dashboards";
+
+const PLAN_LINK: MenuLink = { href: "/tours/plan", label: "Plan a trip" };
 
 /** What a visitor or tourist came for. Staff don't get it (adviser revision R1). */
-const PUBLIC_LINKS: MenuLink[] = [
+const DESTINATION_LINKS: MenuLink[] = [
   { href: "/tours/browse", label: "Trips" },
-  { href: "/tours/plan", label: "Plan a trip" },
   { href: "/tours/attractions", label: "Places" },
   { href: "/tours/events", label: "Events" },
   { href: "/tours/merch", label: "Souvenirs" },
@@ -30,63 +32,95 @@ const ADMIN_LINKS: MenuLink[] = [
 ];
 
 /**
- * Mobile first: on phones the bar holds the wordmark, the account control and
- * a Menu sheet; signed-in users also have the bottom tab bar. From md up the
- * links sit in the bar.
+ * Nav iteration 3. Wide screens: plain links in the bar (Plan a trip first),
+ * then the bell and a round avatar that opens the account menu. Tablets fold
+ * the destinations into one Explore menu. Phones: Menu, the wordmark and the
+ * bell; tourists reach their account from the You tab, staff from the avatar.
  */
 export function SiteHeader({
   showAdminLink = false,
   signedIn = false,
   role,
   tabs = [],
+  account,
 }: {
   showAdminLink?: boolean;
   signedIn?: boolean;
   /** Signed-in role. Staff (operator, guide, admin) don't get the tourist exploration menu (R1). */
   role?: DashboardRole;
-  /** The signed-in user's role tabs. Phones get them in the bottom bar; from md up they show here. */
+  /** The signed-in user's role tabs (the bottom bar on phones). */
   tabs?: Tab[];
+  /** Who is signed in, for the avatar. */
+  account?: { initial: string; name: string };
 }) {
-  const publicLinks = !signedIn || !role || role === "tourist" ? PUBLIC_LINKS : [];
-  const publicHrefs = new Set(publicLinks.map((link) => link.href));
-  const roleLinks = tabs
-    .filter((tab) => !publicHrefs.has(tab.href))
-    .map((tab) => ({ href: tab.href, label: tab.label === "Home" ? "My dashboard" : tab.label }));
+  const explorer = !signedIn || !role || role === "tourist";
+  const destinations = explorer ? DESTINATION_LINKS : [];
+  // Home and Messages live in the account menu; the bar keeps the work sections.
+  const roleLinks = signedIn && !explorer ? tabs.filter((tab) => tab.label !== "Home" && tab.href !== "/tours/messages") : [];
   const adminLinks = showAdminLink ? ADMIN_LINKS : [];
+  const menuLinks = explorer ? [DESTINATION_LINKS[0], PLAN_LINK, ...DESTINATION_LINKS.slice(1)] : [];
+  const workLinks = signedIn && !explorer ? tabs.map((tab) => ({ href: tab.href, label: tab.label === "Home" ? "Dashboard" : tab.label })) : [];
 
   return (
     <header className="relative z-40 bg-surface print:hidden">
-      <div className="mx-auto flex min-h-16 max-w-7xl items-center justify-between gap-3 px-4 sm:min-h-20 sm:px-6 lg:px-8">
-        <BrandMark />
-        <nav aria-label="Main navigation" className="hidden min-w-0 flex-1 items-center gap-1 md:flex lg:gap-2">
-          {publicLinks.map((link) => (
+      <div className="mx-auto flex min-h-16 max-w-7xl items-center gap-1 px-3 sm:min-h-20 sm:px-6 lg:px-8">
+        <MobileMenu
+          showTheme={!signedIn}
+          groups={[
+            { label: "Explore Daet", links: menuLinks },
+            { label: "Your work", links: workLinks },
+            { label: "Tourism Office", links: adminLinks },
+            { label: "Join CONNECT-Daet", links: signedIn ? [] : JOIN_LINKS },
+          ]}
+        />
+        <div className="flex min-w-0 flex-1 items-center">
+          <BrandMark />
+        </div>
+        <nav aria-label="Main navigation" className="hidden min-w-0 items-center gap-1 md:flex">
+          {explorer ? (
+            <>
+              <SiteNavLink href={PLAN_LINK.href} className="text-blue-700! dark:text-blue-300!">
+                <LineIcon name="sparkle" className="mr-2 h-5 w-5" />
+                {PLAN_LINK.label}
+              </SiteNavLink>
+              {/* A wrapper hides them; on the links themselves "hidden" would fight their inline-flex. */}
+              <span className="hidden lg:contents">
+                {destinations.map((link) => (
+                  <SiteNavLink key={link.href} href={link.href}>
+                    {link.label}
+                  </SiteNavLink>
+                ))}
+              </span>
+              <ExploreMenu links={destinations} className="lg:hidden" />
+            </>
+          ) : null}
+          {roleLinks.map((link) => (
             <SiteNavLink key={link.href} href={link.href}>
               {link.label}
             </SiteNavLink>
           ))}
-          {signedIn
-            ? roleLinks.map((link) => (
-                <SiteNavLink key={link.href} href={link.href}>
-                  {link.label}
-                  {link.href === "/tours/messages" ? <UnreadMessagesBadge className="ml-1.5" /> : null}
-                </SiteNavLink>
-              ))
-            : null}
-          {adminLinks.map((link) => (
-            <SiteNavLink key={link.href} href={link.href} className="hidden xl:inline-flex">
-              {link.label}
-            </SiteNavLink>
-          ))}
+          <span className="hidden xl:contents">
+            {adminLinks.map((link) => (
+              <SiteNavLink key={link.href} href={link.href}>
+                {link.label}
+              </SiteNavLink>
+            ))}
+          </span>
         </nav>
-        <div className="flex items-center gap-1 sm:gap-2">
-          <ThemeToggle className="hidden md:grid" />
+        <div className="flex shrink-0 items-center justify-end gap-1 sm:gap-2 md:flex-1">
           {signedIn ? (
             <>
               <NotificationBell />
-              <LogoutButton compact />
+              {account ? (
+                // Tourists on phones use the You tab instead.
+                <span className={explorer ? "hidden sm:contents" : "contents"}>
+                  <AccountMenu initial={account.initial} name={account.name} links={accountLinks(role, tabs)} />
+                </span>
+              ) : null}
             </>
           ) : (
             <>
+              <ThemeToggle className="hidden md:grid" />
               <ButtonLink href="/login" variant="secondary" className="whitespace-nowrap px-4!">
                 Sign in
               </ButtonLink>
@@ -98,14 +132,6 @@ export function SiteHeader({
               </span>
             </>
           )}
-          <MobileMenu
-            groups={[
-              { label: "Explore Daet", links: publicLinks },
-              { label: "Your work", links: signedIn ? roleLinks : [] },
-              { label: "Tourism Office", links: adminLinks },
-              { label: "Join CONNECT-Daet", links: signedIn ? [] : JOIN_LINKS },
-            ]}
-          />
         </div>
       </div>
     </header>

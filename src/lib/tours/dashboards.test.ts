@@ -19,7 +19,9 @@ describe("roleTabs / activeTab", () => {
     expect(roleTabs("guide")[0].href).toBe("/tours/guide/dashboard");
     expect(roleTabs("admin")[0].href).toBe("/tours/admin");
     expect(roleTabs("tourist")[0].href).toBe("/tours/me");
-    for (const role of ["operator", "guide", "admin", "tourist"]) expect(roleTabs(role)).toHaveLength(5);
+    for (const role of ["operator", "guide", "admin"]) expect(roleTabs(role)).toHaveLength(5);
+    // Tourists' fifth tab is You, the account menu.
+    expect(roleTabs("tourist")).toHaveLength(4);
     expect(roleTabs(null)).toEqual([]);
   });
   it("picks the longest matching tab", () => {
