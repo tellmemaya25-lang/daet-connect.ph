@@ -7,7 +7,9 @@ import type { EditGalleryImage, EditPackageStatus, ValidationErrors, StepProps }
 import { uploadPackageImage, deletePackageImage } from "./actions";
 import { EDIT_LIMITS, ALLOWED_IMAGE_EXTENSIONS, ALLOWED_IMAGE_TYPES } from "./edit-constants";
 import { getEditPermissions } from "./permissions";
-import { withDisplayOrder } from "./edit-order";
+import { moveItem, withDisplayOrder } from "./edit-order";
+import { useFileDrop } from "./use-file-drop";
+import { useSortableList } from "./use-sortable-list";
 
 type GalleryStepProps = StepProps<EditGalleryImage[]> & { packageId: string };
 
@@ -69,11 +71,8 @@ export function GalleryStep({
     return null;
   };
 
-  const handleImageUpload = useCallback(
-    async (event: React.ChangeEvent<HTMLInputElement>) => {
-      const file = event.target.files?.[0];
-      if (!file) return;
-
+  const uploadFile = useCallback(
+    async (file: File) => {
       if (data.length >= EDIT_LIMITS.maxGalleryImages) {
         setUploadError(`Maximum ${EDIT_LIMITS.maxGalleryImages} images allowed`);
         return;
@@ -110,11 +109,35 @@ export function GalleryStep({
         setUploadError("An error occurred during upload");
       } finally {
         setUploadLoading(false);
-        event.target.value = "";
       }
     },
     [data, sortedImages, onUpdate, packageId]
   );
+
+  const handleImageUpload = useCallback(
+    (event: React.ChangeEvent<HTMLInputElement>) => {
+      const file = event.target.files?.[0];
+      event.target.value = "";
+      if (file) void uploadFile(file);
+    },
+    [uploadFile]
+  );
+
+  const canAcceptMore = canAddImages && data.length < EDIT_LIMITS.maxGalleryImages;
+  const busy = uploadLoading || loading;
+
+  // Drop a photo anywhere on this card to upload it...
+  const fileDrop = useFileDrop({
+    onFile: (file) => void uploadFile(file),
+    enabled: canAcceptMore && !busy,
+  });
+
+  // ...and drag one photo onto another to reorder. The arrows stay for
+  // keyboard and touch, which HTML drag-and-drop cannot serve.
+  const sortable = useSortableList({
+    enabled: canReorder,
+    onMove: (from, to) => onUpdate(withDisplayOrder(moveItem(sortedImages, from, to))),
+  });
 
   const handleDeleteImage = useCallback(
     async (imageId: string | undefined, imageUrl: string) => {
@@ -170,13 +193,23 @@ export function GalleryStep({
   const galleryErrors = getGalleryErrors();
 
   return (
-    <div className="border rounded-2xl p-6 bg-surface">
+    <div
+      {...fileDrop.dropProps}
+      className={`border rounded-2xl p-6 bg-surface transition ${
+        fileDrop.isDragging ? "border-daet-forest ring-2 ring-daet-forest/40" : ""
+      }`}
+    >
       <div className="flex items-center justify-between mb-6">
         <div>
           <h2 className="text-xl font-bold text-daet-ink">Gallery Images</h2>
           <p className="text-sm text-daet-ink/80 mt-1">
             {data.length}/{EDIT_LIMITS.maxGalleryImages} images
           </p>
+          {canAddImages && (
+            <p className="text-xs text-daet-ink/70 mt-1">
+              Drag a photo here to upload it{sortedImages.length > 1 && canReorder ? ", or drag a photo onto another to reorder" : ""}.
+            </p>
+          )}
         </div>
         {canAddImages && data.length < EDIT_LIMITS.maxGalleryImages && (
           <label htmlFor="gallery-upload" className="cursor-pointer">
@@ -201,6 +234,12 @@ export function GalleryStep({
         )}
       </div>
 
+      {fileDrop.isDragging && (
+        <p className="mb-4 rounded-2xl border-2 border-dashed border-daet-forest/60 p-3 text-sm font-medium text-daet-forest">
+          Drop the photo to upload it.
+        </p>
+      )}
+
       {/* Upload Error */}
       {uploadError && (
         <div className="mb-4 p-3 bg-red-50 dark:bg-red-950/40 rounded-2xl text-sm text-red-800 dark:text-red-300 flex items-start gap-2">
@@ -217,7 +256,14 @@ export function GalleryStep({
           {sortedImages.map((image, index) => (
             <div
               key={image.id}
-              className="border rounded-2xl overflow-hidden bg-canvas transition"
+              {...sortable.getItemProps(index)}
+              className={`border rounded-2xl overflow-hidden bg-canvas transition ${
+                canReorder ? "cursor-grab active:cursor-grabbing" : ""
+              } ${sortable.draggingIndex === index ? "opacity-40" : ""} ${
+                sortable.overIndex === index && sortable.draggingIndex !== index
+                  ? "ring-2 ring-daet-forest ring-offset-2 ring-offset-canvas"
+                  : ""
+              }`}
             >
               {/* Image Thumbnail */}
               <div className="relative h-40 w-full bg-muted">
