@@ -279,7 +279,7 @@ export function PlaceFan({ places, signedIn }: { places: FanPlace[]; signedIn: b
       onPointerDown={onPointerDown}
       onPointerUp={onPointerUp}
       style={sheet && isOpen ? { touchAction: "none" } : undefined}
-      className="relative h-[calc(100svh-var(--header-h))] max-h-[1000px] min-h-[520px] w-full overflow-hidden overscroll-contain bg-slate-950"
+      className="relative -mt-[var(--header-h)] h-[100svh] max-h-[1080px] min-h-[520px] w-full overflow-hidden overscroll-contain bg-slate-950"
     >
       <div role="group" aria-label="Places in Daet" className="absolute inset-0 z-0">
         {places.map((place, index) => (

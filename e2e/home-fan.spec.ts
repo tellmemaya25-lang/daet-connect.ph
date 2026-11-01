@@ -27,6 +27,38 @@ const panel = (page: import("@playwright/test").Page, name: string) =>
 
 const inPanel = (page: import("@playwright/test").Page) => page.locator("#place-detail");
 
+/**
+ * Where the header is and how it looks, plus where the hero starts.
+ *
+ * The alpha is read from either serialisation: an opacity modifier is emitted
+ * as `color-mix(...)`, which Chrome computes to `color(srgb … / 0.8)`, while a
+ * plain fill comes back as `rgba(...)`.
+ */
+async function readHeader(page: import("@playwright/test").Page) {
+  return page.evaluate(() => {
+    const header = document.querySelector("header") as HTMLElement;
+    const hero = document.querySelector("section[aria-labelledby='home-title']") as HTMLElement;
+    const brand = header.querySelector("a") as HTMLElement;
+    const style = getComputedStyle(header);
+    const value = style.backgroundColor;
+    const alpha = value.startsWith("color(")
+      ? Number(value.match(/\/\s*([\d.]+)\s*\)$/)?.[1] ?? 1)
+      : Number(value.match(/rgba\([^)]*,\s*([\d.]+)\s*\)$/)?.[1] ?? 1);
+
+    return {
+      top: Math.round(header.getBoundingClientRect().top),
+      height: Math.round(header.getBoundingClientRect().height),
+      background: value,
+      alpha,
+      backdrop: style.backdropFilter,
+      position: style.position,
+      scrollY: Math.round(window.scrollY),
+      heroTop: Math.round(hero.getBoundingClientRect().top),
+      brandSize: parseFloat(getComputedStyle(brand).fontSize),
+    };
+  });
+}
+
 type Spot = { x: number; y: number };
 
 /**
@@ -118,6 +150,15 @@ test.describe("home fan on a phone", () => {
     await expect(band.getByText(/\[placeholder/)).toHaveCount(0);
   });
 
+  test("keeps a slim, see-through bar over the photos", async ({ page }) => {
+    await visit(page, "/");
+
+    const header = await readHeader(page);
+    expect(header.height, "a phone header, not the 80px desktop bar").toBeLessThanOrEqual(60);
+    expect(header.alpha, "the photos show through it").toBeLessThan(1);
+    expect(header.heroTop, "the hero starts at the top of the page").toBeLessThanOrEqual(0);
+  });
+
   test("hands off to the places below it", async ({ page }) => {
     await visit(page, "/");
 
@@ -171,6 +212,26 @@ test.describe("home fan on a desktop", () => {
 
     await expect(page.getByRole("heading", { level: 2, name: "Bagasbas Beach" })).toHaveCount(0);
     await expect(wedge).toHaveAttribute("aria-expanded", "false");
+  });
+
+  test("holds a slim, see-through header over the photos, and keeps it there", async ({ page }) => {
+    await visit(page, "/");
+
+    const atRest = await readHeader(page);
+    expect(atRest.position, "pinned, not scrolled away").toBe("sticky");
+    expect(atRest.top).toBe(0);
+    expect(atRest.height, "slimmer than the 80px bar in the screenshot").toBeLessThanOrEqual(73);
+    expect(atRest.brandSize, "a smaller wordmark than the 24px one").toBeLessThanOrEqual(20);
+    expect(atRest.alpha, "semi-transparent, like the mock").toBeLessThan(1);
+    expect(atRest.backdrop, "blurred behind the bar").toContain("blur");
+    expect(atRest.heroTop, "the photos run up behind it").toBeLessThanOrEqual(0);
+
+    await page.evaluate(() => window.scrollTo(0, 1200));
+    await expect.poll(async () => (await readHeader(page)).scrollY).toBeGreaterThan(1000);
+
+    const scrolled = await readHeader(page);
+    expect(scrolled.top, "still at the top of the screen").toBe(0);
+    expect(scrolled.background, "same scrim while scrolling").toBe(atRest.background);
   });
 
   test("never scrolls sideways", async ({ page }) => {
