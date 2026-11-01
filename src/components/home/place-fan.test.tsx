@@ -205,6 +205,20 @@ describe("PlaceFan opening a place", () => {
     expect(screen.queryByRole("heading", { level: 2 })).not.toBeInTheDocument();
   });
 
+  it("opens the place a map pin names, without a click on the fan", async () => {
+    renderFan();
+
+    // The map further down the page sets the same hash the fan reads.
+    act(() => {
+      window.location.hash = "#place-first-rizal-monument";
+    });
+
+    await waitFor(() =>
+      expect(screen.getByRole("heading", { level: 2, name: "First Rizal Monument" })).toBeInTheDocument(),
+    );
+    expect(screen.getByRole("status")).toHaveTextContent("First Rizal Monument, 4 of 6");
+  });
+
   it("opens straight onto the place a shared link names", () => {
     window.history.replaceState(null, "", "/#place-cathedral-most-holy-trinity");
     renderFan();

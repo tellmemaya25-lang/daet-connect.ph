@@ -29,7 +29,10 @@ export function PlaceFan({ places, signedIn }: { places: FanPlace[]; signedIn: b
   const headingRef = useRef<HTMLHeadingElement>(null);
   const wedgeRefs = useRef<Array<HTMLButtonElement | null>>([]);
   const lastOpen = useRef<number | null>(null);
-  const announcedOnMount = useRef(false);
+  // The index this component has already animated open, so a hash it set
+  // itself is not opened a second time by the effect below.
+  const driven = useRef<number | null>(null);
+  const firstPaint = useRef(true);
   const swipeFrom = useRef<{ x: number; y: number } | null>(null);
 
   const [size, setSize] = useState<{ width: number; height: number }>({
@@ -107,14 +110,25 @@ export function PlaceFan({ places, signedIn }: { places: FanPlace[]; signedIn: b
     },
   });
 
-  // A link that names a place opens straight onto it, with no fold-in.
+  // The URL is the truth: a link on first load, Back and Forward, and a pin on
+  // the map further down the page all arrive here. The first one opens
+  // instantly, with no fold-in; the rest fold in like a click would.
   useEffect(() => {
-    if (announcedOnMount.current || openIndex < 0) return;
-    announcedOnMount.current = true;
+    if (openIndex < 0) {
+      driven.current = -1;
+      return;
+    }
+    if (driven.current === openIndex) return;
+
+    driven.current = openIndex;
     lastOpen.current = openIndex;
-    openAt(openIndex, { instant: true });
     setAnnouncement(describe(openIndex));
+    openAt(openIndex, { instant: firstPaint.current });
   }, [openIndex, openAt, describe]);
+
+  useEffect(() => {
+    firstPaint.current = false;
+  }, []);
 
   // Re-measuring (a rotation, a resize) rebuilds the shapes, so an open place
   // has to be put back on top of them.
@@ -126,6 +140,7 @@ export function PlaceFan({ places, signedIn }: { places: FanPlace[]; signedIn: b
   const open = useCallback(
     (index: number) => {
       lastOpen.current = index;
+      driven.current = index;
       openInUrl(places[index].slug);
       setAnnouncement(describe(index));
       hover(null);
@@ -135,6 +150,7 @@ export function PlaceFan({ places, signedIn }: { places: FanPlace[]; signedIn: b
   );
 
   const close = useCallback(() => {
+    driven.current = -1;
     closeInUrl();
     setAnnouncement("");
     // lastOpen stays put: the fan's close animation reads it to put focus back
@@ -148,6 +164,7 @@ export function PlaceFan({ places, signedIn }: { places: FanPlace[]; signedIn: b
       if (openIndex < 0) return;
       const next = (openIndex + delta + places.length) % places.length;
       lastOpen.current = next;
+      driven.current = next;
       openInUrl(places[next].slug);
       setAnnouncement(describe(next));
       swapTo(next);

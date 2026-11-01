@@ -8,6 +8,11 @@ import { MerchCard } from "@/components/tours/merch-card";
 import { PlacePanels, type PlacePanel } from "@/components/home/place-panels";
 import { PlaceFan } from "@/components/home/place-fan";
 import { FAN_PLACES } from "@/components/home/fan-places";
+import { AskBand } from "@/components/home/ask-band";
+import { GettingHere } from "@/components/home/getting-here";
+import { HomeMap, type MapPlace } from "@/components/home/home-map";
+import { TripCard, type HomeTrip } from "@/components/home/trip-card";
+import { durationLabel } from "@/lib/tours/trip-board";
 import { PHOTOS, type PhotoKey } from "@/lib/photo-credits";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { EVENT_COLUMNS, MERCH_COLUMNS, type MerchItem, type TourEvent } from "@/lib/tours/promo-validation";
@@ -68,17 +73,106 @@ const PANELS: PlacePanel[] = (
   ] satisfies Array<Omit<PlacePanel, "photo"> & { photo: PhotoKey }>
 ).map((panel) => ({ ...panel, photo: { src: PHOTOS[panel.photo].src, alt: PHOTOS[panel.photo].alt } }));
 
-const HOME_PHOTOS: PhotoKey[] = ["calaguasBeach", "apuao", "mercedesPort", "rizal", "bagasbas", "church"];
+const HOME_PHOTOS: PhotoKey[] = [
+  "calaguasBeach",
+  "apuao",
+  "mercedesPort",
+  "rizal",
+  "bagasbas",
+  "church",
+  // The fan's own copies of the six, credited while they are placeholders.
+  "calaguasHillside",
+  "rizalMonumentPark",
+  "daetHeritageCenter",
+  "cathedralHolyTrinity",
+];
+
+type PackageRow = {
+  id: string;
+  title: string;
+  location_name: string;
+  duration_value: number;
+  duration_type: string;
+  // PostgREST types the embed as a list even though the FK makes it one row.
+  tours_operators?: { business_name: string | null } | Array<{ business_name: string | null }> | null;
+  tours_package_price_variants?: Array<{ price_per_pax: number | null; flat_price: number | null; is_default: boolean | null }>;
+};
+
+/** The cheapest price on any variant, and whether that price is per person. */
+function cheapestPrice(variants: PackageRow["tours_package_price_variants"]) {
+  const priced = (variants ?? [])
+    .map((variant) => ({
+      amount: Number(variant.price_per_pax ?? variant.flat_price),
+      perPerson: Number(variant.price_per_pax) > 0,
+    }))
+    .filter((variant) => Number.isFinite(variant.amount) && variant.amount > 0);
+
+  if (priced.length === 0) return { price: null, perPerson: true };
+  const cheapest = priced.reduce((lowest, variant) => (variant.amount < lowest.amount ? variant : lowest));
+  return { price: cheapest.amount, perPerson: cheapest.perPerson };
+}
 
 export default async function HomePage() {
   const supabase = await createSupabaseServerClient();
-  const [{ data: { user } }, eventsResult, merchResult] = await Promise.all([
+  const [
+    { data: { user } },
+    eventsResult,
+    merchResult,
+    tripsResult,
+    placesResult,
+    operatorCount,
+    guideCount,
+  ] = await Promise.all([
     supabase.auth.getUser(),
     supabase.from("tours_events").select(EVENT_COLUMNS).eq("is_published", true).gte("ends_at", new Date().toISOString()).order("starts_at", { ascending: true }).limit(4),
     supabase.from("tours_merchandise").select(MERCH_COLUMNS).eq("is_active", true).eq("is_featured", true).order("created_at", { ascending: false }).limit(4),
+    // Trips on the home page: the newest published ones, cheapest price included.
+    supabase
+      .from("tours_packages")
+      .select(
+        "id, title, location_name, duration_value, duration_type, tours_operators(business_name), tours_package_price_variants(price_per_pax, flat_price, is_default)",
+      )
+      .eq("status", "published")
+      .order("created_at", { ascending: false })
+      .limit(3),
+    // Only the places that actually have coordinates can be pinned.
+    supabase
+      .from("tours_attractions")
+      .select("slug, name, latitude, longitude")
+      .eq("is_active", true)
+      .not("latitude", "is", null)
+      .not("longitude", "is", null),
+    supabase.from("tours_operators").select("id", { count: "exact", head: true }).eq("accreditation_status", "approved"),
+    supabase.from("tours_guides").select("id", { count: "exact", head: true }).eq("accreditation_status", "approved"),
   ]);
   const upcomingEvents = (eventsResult.data ?? []) as TourEvent[];
   const featuredMerch = (merchResult.data ?? []) as MerchItem[];
+  const trips: HomeTrip[] = ((tripsResult.data ?? []) as unknown as PackageRow[]).map((row) => {
+    const { price, perPerson } = cheapestPrice(row.tours_package_price_variants);
+    const operator = Array.isArray(row.tours_operators) ? row.tours_operators[0] : row.tours_operators;
+    return {
+      id: row.id,
+      title: row.title,
+      locationName: row.location_name,
+      duration: durationLabel(row.duration_value, row.duration_type),
+      price,
+      perPerson,
+      operator: operator?.business_name ?? null,
+    };
+  });
+
+  // Attractions carry their own slugs; a pin only makes sense for a place the
+  // fan knows, because tapping it opens that wedge.
+  const fanSlugs = new Set(FAN_PLACES.map((place) => place.slug));
+  const mapPlaces: MapPlace[] = ((placesResult.data ?? []) as Array<{ slug: string; name: string; latitude: number | null; longitude: number | null }>)
+    .filter((row) => fanSlugs.has(row.slug) && Number.isFinite(Number(row.latitude)) && Number.isFinite(Number(row.longitude)))
+    .map((row) => ({ slug: row.slug, name: row.name, lat: Number(row.latitude), lng: Number(row.longitude) }));
+
+  // Anonymous readers cannot select tours_operators or tours_guides (see
+  // 20261101_f8_reviews.sql), so these are null for a visitor who is not signed
+  // in until a public count function exists; the band says so instead of guessing.
+  const operators = operatorCount.count;
+  const guides = guideCount.count;
 
   return (
     <PageFrame bleed credits={HOME_PHOTOS}>
@@ -95,6 +189,35 @@ export default async function HomePage() {
           Islands out by boat, the surf beach, and the old town where Rizal got his first monument.
         </p>
         <PlacePanels panels={PANELS} />
+      </section>
+
+      {/* Trips you can book: the newest published packages, with the cheapest
+          price on each and the operator's name. */}
+      <section aria-labelledby="home-trips" className={`${WRAP} pt-20 sm:pt-32`}>
+        <div className="flex flex-wrap items-end justify-between gap-3">
+          <h2 id="home-trips" data-reveal className="display-2 text-daet-ink">
+            Trips you can book
+          </h2>
+          <Link href="/tours/browse" className="inline-flex min-h-11 items-center gap-1 font-bold text-blue-700 dark:text-blue-300 hover:underline">
+            All trips <LineIcon name="arrowRight" className="h-5 w-5" />
+          </Link>
+        </div>
+        <p data-reveal style={{ "--reveal-index": 1 } as React.CSSProperties} className="mb-6 mt-3 max-w-2xl text-lg text-daet-ink">
+          Every operator is verified by the Daet Tourism Office.
+        </p>
+        {trips.length > 0 ? (
+          <ul className="grid gap-3 md:grid-cols-3">
+            {trips.map((trip) => (
+              <li key={trip.id} data-reveal className="flex">
+                <TripCard trip={trip} />
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p className="rounded-2xl bg-surface p-6 text-lg text-daet-ink">
+            [placeholder: no trips are published yet] — <Link href="/tours/browse" className="font-bold text-blue-700 dark:text-blue-300 underline">browse the trips that are</Link>.
+          </p>
+        )}
       </section>
 
       {/* What's on: dated rows. */}
@@ -146,6 +269,64 @@ export default async function HomePage() {
           </ol>
         </div>
       </section>
+
+      {/* All on one map: only the places that have coordinates are pinned, and
+          a pin opens that place in the fan at the top of the page. */}
+      <section aria-labelledby="home-map" className={`${WRAP} pt-20 sm:pt-32`}>
+        <h2 id="home-map" data-reveal className="display-2 text-daet-ink">
+          All on one map
+        </h2>
+        <p data-reveal style={{ "--reveal-index": 1 } as React.CSSProperties} className="mb-6 mt-3 max-w-2xl text-lg text-daet-ink">
+          {mapPlaces.length > 1
+            ? "Tap a pin to see that place at the top of the page."
+            : "The map grows as the Tourism Office pins each place."}
+        </p>
+        {mapPlaces.length > 0 ? (
+          <HomeMap places={mapPlaces} />
+        ) : (
+          <p className="rounded-2xl bg-surface p-6 text-lg text-daet-ink">[placeholder: no place has coordinates yet]</p>
+        )}
+      </section>
+
+      {/* The one place the page says "just ask". */}
+      <AskBand />
+
+      {/* Who runs the tours: an ink band with the Tourism Office's own counts. */}
+      <section aria-labelledby="home-people" className="mt-20 bg-daet-ink py-14 text-white sm:mt-32 sm:py-16">
+        <div className={`${WRAP} flex flex-col gap-6 md:flex-row md:items-center md:justify-between`}>
+          <div>
+            <h2 id="home-people" data-reveal className="display-2">
+              Travel with people from here
+            </h2>
+            <p className="mt-2 max-w-xl text-lg text-white/85">
+              Operators and guides in Daet are checked by the Tourism Office before their trips go live.
+            </p>
+          </div>
+          <div className="flex flex-wrap items-end gap-8">
+            {operators !== null && guides !== null ? (
+              <>
+                <p>
+                  <span className="block text-4xl font-bold leading-none">{operators}</span>
+                  <span className="text-sm text-white/80">{operators === 1 ? "approved operator" : "approved operators"}</span>
+                </p>
+                <p>
+                  <span className="block text-4xl font-bold leading-none">{guides}</span>
+                  <span className="text-sm text-white/80">{guides === 1 ? "approved guide" : "approved guides"}</span>
+                </p>
+              </>
+            ) : (
+              <p className="text-sm text-white/70">[placeholder: approved operator and guide counts]</p>
+            )}
+            {/* The handoff asks for "Find a guide"; the site has no public guide
+                directory yet, so this points at the trips those guides run. */}
+            <ButtonLink href="/tours/browse" variant="onBlue" size="lg">
+              See the trips
+            </ButtonLink>
+          </div>
+        </div>
+      </section>
+
+      <GettingHere />
 
       {featuredMerch.length > 0 ? (
         <section aria-labelledby="home-merch" className={`${WRAP} pt-20 sm:pt-32`}>
