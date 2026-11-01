@@ -2,7 +2,7 @@
 
 import { LineIcon } from "@/components/ui/icons";
 import { useEffect, useRef, useState } from "react";
-import { OVERLAY_EVENT, type OverlayDetail } from "@/lib/ui-overlay";
+import { OPEN_ASSISTANT_EVENT, OVERLAY_EVENT, type OverlayDetail } from "@/lib/ui-overlay";
 import { usePathname } from "next/navigation";
 import { AssistantChat } from "@/components/assistant/assistant-chat";
 import { openInDock } from "@/components/chat-dock/dock-bus";
@@ -32,6 +32,17 @@ export function AssistantWidget({ signedIn, raised }: { signedIn: boolean; raise
     window.addEventListener(OVERLAY_EVENT, onOverlay);
     return () => window.removeEventListener(OVERLAY_EVENT, onOverlay);
   }, []);
+  // Pages raise this event instead of reaching into the dialog themselves.
+  useEffect(() => {
+    const onOpen = () => {
+      if (signedIn && openInDock("ai")) return;
+      dialogRef.current?.showModal();
+      setOpen(true);
+    };
+    window.addEventListener(OPEN_ASSISTANT_EVENT, onOpen);
+    return () => window.removeEventListener(OPEN_ASSISTANT_EVENT, onOpen);
+  }, [signedIn]);
+
   if (HIDDEN.some((pattern) => pattern.test(pathname))) return null;
 
   const close = () => dialogRef.current?.close();

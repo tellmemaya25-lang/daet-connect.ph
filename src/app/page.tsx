@@ -6,6 +6,8 @@ import { PageFrame } from "@/components/ui/page-frame";
 import { EventCard } from "@/components/tours/event-card";
 import { MerchCard } from "@/components/tours/merch-card";
 import { PlacePanels, type PlacePanel } from "@/components/home/place-panels";
+import { PlaceFan } from "@/components/home/place-fan";
+import { FAN_PLACES } from "@/components/home/fan-places";
 import { PHOTOS, type PhotoKey } from "@/lib/photo-credits";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { EVENT_COLUMNS, MERCH_COLUMNS, type MerchItem, type TourEvent } from "@/lib/tours/promo-validation";
@@ -80,41 +82,9 @@ export default async function HomePage() {
 
   return (
     <PageFrame bleed credits={HOME_PHOTOS}>
-      {/* First screen: what this is, one plain sentence, one action, and the beach itself. */}
-      <section aria-labelledby="home-title" className="bg-surface">
-        <div className={`${WRAP} grid gap-8 pb-10 pt-6 sm:pt-10 lg:grid-cols-[1fr_1.2fr] lg:items-center lg:gap-14 lg:pb-16`}>
-          <div className="flex flex-col gap-5">
-            <h1 id="home-title" data-reveal className="display-1 max-w-[10ch] text-daet-ink">
-              Daet, by the tide.
-            </h1>
-            <p data-reveal style={{ "--reveal-index": 1 } as React.CSSProperties} className="max-w-xl text-lg leading-relaxed text-daet-ink sm:text-xl">
-              Book small trips with Daet&apos;s own operators and guides: Bagasbas surf at sunrise, the Mercedes sandbar at low tide, a night on
-              Calaguas.
-            </p>
-            <div data-reveal style={{ "--reveal-index": 2 } as React.CSSProperties} className="flex flex-wrap gap-3">
-              <ButtonLink href="/tours/browse" size="lg">
-                Find a trip
-              </ButtonLink>
-              <ButtonLink href={user ? "/dashboard" : "/tours/plan"} size="lg" variant="secondary">
-                {user ? "My dashboard" : "Plan my days"}
-              </ButtonLink>
-            </div>
-          </div>
-          <figure className="relative -mx-4 aspect-[4/3] overflow-hidden sm:mx-0 sm:rounded-2xl lg:aspect-auto lg:h-[min(78vh,44rem)] lg:w-full">
-            <Image
-              src={PHOTOS.calaguasBeach.src}
-              alt={PHOTOS.calaguasBeach.alt}
-              fill
-              priority
-              sizes="(min-width: 1024px) 55vw, 100vw"
-              className="drift object-cover"
-            />
-            <figcaption className="absolute bottom-3 left-3 rounded-full bg-slate-950/80 px-4 py-2 text-sm font-semibold text-white">
-              Calaguas, two hours out by boat
-            </figcaption>
-          </figure>
-        </div>
-      </section>
+      {/* First screen: six photos of Daet fanned out, the headline in the dark
+          under the point they radiate from. */}
+      <PlaceFan places={FAN_PLACES} signedIn={!!user} />
 
       {/* Places: one panel open at a time, the rest narrow and grey. */}
       <section aria-labelledby="home-places" className={`${WRAP} pt-16 sm:pt-24`}>
