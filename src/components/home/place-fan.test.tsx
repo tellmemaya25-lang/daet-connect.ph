@@ -232,21 +232,31 @@ describe("PlaceFan opening a place", () => {
       const element = container.querySelector(`[data-wedge="${index}"] [data-nudge]`) as HTMLElement;
       return { x: Number(element.dataset.nudgeX), y: Number(element.dataset.nudgeY) };
     };
+    /**
+     * Wait for the open/close tweens, turning GSAP's clock as we go: jsdom's
+     * frame callbacks arrive unreliably, and a timeline that never ticked is a
+     * flaky test rather than a broken fan.
+     */
+    const until = (assert: () => void) =>
+      waitFor(() => {
+        gsap.ticker.tick();
+        assert();
+      });
 
     // Each photo looks down its own wedge while the fan is closed.
     const rest = restOf(2);
     expect(Math.abs(rest.x)).toBeGreaterThan(1);
-    await waitFor(() => expect(Math.abs(offsetOf(2).x)).toBeGreaterThan(1));
+    await until(() => expect(Math.abs(offsetOf(2).x)).toBeGreaterThan(1));
 
     fireEvent.click(screen.getByRole("button", { name: "Bagasbas Beach: open photo and details" }));
 
     // A photo still pushed out along its old wedge leaves a corner of the hero
     // empty — the opened one has to sit dead centre, filling the screen.
-    await waitFor(() => expect(offsetOf(2)).toEqual({ x: 0, y: 0 }));
+    await until(() => expect(offsetOf(2)).toEqual({ x: 0, y: 0 }));
 
     fireEvent.click(screen.getByRole("button", { name: "Close" }));
 
-    await waitFor(() => expect(offsetOf(2).x).toBeCloseTo(rest.x, 0));
+    await until(() => expect(offsetOf(2).x).toBeCloseTo(rest.x, 0));
   });
 
   it("tells a screen reader which place just opened", () => {

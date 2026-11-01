@@ -109,14 +109,26 @@ export function useFanAnimation({
 
   /**
    * Take the offset over from the server's inline transform, once per element.
-   * It is only there for the first paint (and for a visitor without scripts);
-   * clearing it lets GSAP write the whole transform itself, rather than adding
-   * to a value it would otherwise have to read back.
+   * It is only there for the first paint (and for a visitor without scripts).
+   * The clear goes through GSAP so its cached idea of this element's transform
+   * goes with it: otherwise a later write could be skipped as "unchanged" while
+   * the element had no transform on it at all.
    */
   const takeOver = (element: HTMLElement) => {
     if (element.dataset.owned) return;
     element.dataset.owned = "1";
-    element.style.transform = "";
+    gsap.set(element, { clearProps: "all" });
+  };
+
+  /**
+   * Put a photo's offset on the element, and on the element's own style.
+   *
+   * `translate3d`, not `translate`, because that is the form GSAP reads back
+   * when it starts a tween from here.
+   */
+  const setNudge = (element: HTMLElement, x: number, y: number) => {
+    gsap.set(element, { x, y });
+    element.style.transform = `translate3d(${x}px, ${y}px, 0px)`;
   };
 
   /**
@@ -175,7 +187,8 @@ export function useFanAnimation({
     photos.forEach((element) => gsap.set(element, { x: 0, y: 0, scale: 1.15 }));
     nudges.forEach((element) => {
       takeOver(element);
-      gsap.set(element, restNudge(element));
+      const rest = restNudge(element);
+      setNudge(element, rest.x, rest.y);
     });
 
     // One owner for the name tags (GSAP, not CSS): a phone shows all of them,
@@ -294,7 +307,8 @@ export function useFanAnimation({
       // corner where it was still pushed out along its wedge.
       nudges.forEach((element, i) => {
         takeOver(element);
-        gsap.set(element, i === index ? { x: 0, y: 0 } : restNudge(element));
+        const rest = restNudge(element);
+        setNudge(element, i === index ? 0 : rest.x, i === index ? 0 : rest.y);
       });
       // The open place fills the hero, so no name tag belongs on top of it.
       chips.forEach((element) => gsap.set(element, { autoAlpha: 0, y: 6 }));
@@ -350,7 +364,7 @@ export function useFanAnimation({
       // Settle it exactly, whatever touched these while the fold-in ran: the
       // open view is the hero filled edge to edge by this one photo.
       gsap.set(photos[index], { x: 0, y: 0, scale: 1 });
-      if (nudges[index]) gsap.set(nudges[index], { x: 0, y: 0 });
+      if (nudges[index]) setNudge(nudges[index], 0, 0);
       onOpened?.();
     });
   });
@@ -393,7 +407,8 @@ export function useFanAnimation({
     gsap.set(wedges[index], { zIndex: 5, filter: "brightness(1)" });
     nudges.forEach((element, i) => {
       takeOver(element);
-      gsap.set(element, i === index ? { x: 0, y: 0 } : restNudge(element));
+      const rest = restNudge(element);
+      setNudge(element, i === index ? 0 : rest.x, i === index ? 0 : rest.y);
     });
     gsap.to(wedges[index], { autoAlpha: 1, duration: SWAP, ease: "power2.inOut", overwrite: "auto" });
     gsap.to(photos[index], { x: 0, y: 0, scale: 1, duration: SWAP, ease: "power2.inOut" });

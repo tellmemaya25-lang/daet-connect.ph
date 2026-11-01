@@ -350,13 +350,14 @@ export function PlaceFan({ places, signedIn }: { places: FanPlace[]; signedIn: b
                   the open view is full-bleed instead of leaving the corner its
                   wedge pointed at empty. One owner, so nothing has to cancel
                   anything else out. */}
+              {/* The inline transform is for the server's first paint (and for a
+                  visitor without scripts) only: from hydration the motion layer
+                  owns it, and can take it back to nought. */}
               <span
                 data-nudge
                 data-nudge-x={nudge.x}
                 data-nudge-y={nudge.y}
                 className="absolute inset-0 block"
-                /* The server's first paint only: from hydration the motion
-                   layer owns this transform, so it can take it back to nought. */
                 style={{ transform: `translate(${nudge.x}px, ${nudge.y}px)` }}
               >
                 <Image
