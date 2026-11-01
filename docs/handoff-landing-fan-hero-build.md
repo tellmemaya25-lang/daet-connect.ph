@@ -157,9 +157,6 @@ Descriptions 1–4 are the existing `PANELS` copy in `src/app/page.tsx`. Descrip
     with `creator: "[replace before launch]"` and empty licence fields.
   - Keep every hero photo reference going through `PHOTOS`, so swapping a photo later is a
     one-line change per place.
-  - Add a launch check, e.g. a unit test or a build-time warning, that fails or warns while
-    any `PHOTOS` entry still says "[replace before launch]". That way the placeholders
-    can't reach production unnoticed.
 - **Bagasbas:** decided. It uses the existing credited `PHOTOS.bagasbas`. The AI-looking
   aerial and the "Alay sa Bayan" building photo were dropped.
 - **Resize** each photo to at most 1600 px on the long side and compress (JPEG quality
