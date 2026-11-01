@@ -4,7 +4,7 @@ import { useCallback, useRef, useState } from "react";
 import type React from "react";
 
 /**
- * Drop a photo onto a region to upload it.
+ * Drop photos onto a region to upload them.
  *
  * Only reacts to files dragged in from the OS: an internal drag (reordering a
  * gallery card) carries no "Files" entry in dataTransfer.types, so it falls
@@ -14,10 +14,10 @@ import type React from "react";
  * drops are disabled — because the default is "navigate the tab to the image".
  */
 export function useFileDrop({
-  onFile,
+  onFiles,
   enabled = true,
 }: {
-  onFile: (file: File) => void;
+  onFiles: (files: File[]) => void;
   enabled?: boolean;
 }) {
   const [isDragging, setIsDragging] = useState(false);
@@ -55,10 +55,12 @@ export function useFileDrop({
       setIsDragging(false);
       if (!enabled) return;
 
-      const file = event.dataTransfer?.files?.[0];
-      if (file) onFile(file);
+      // Every photo in the drop, not just the first: dragging a selection of
+      // files from the desktop should upload all of them.
+      const files = Array.from(event.dataTransfer?.files ?? []);
+      if (files.length > 0) onFiles(files);
     },
-    [enabled, onFile],
+    [enabled, onFiles],
   );
 
   return { isDragging, dropProps: { onDragEnter, onDragOver, onDragLeave, onDrop } };
