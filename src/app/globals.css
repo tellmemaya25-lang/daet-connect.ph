@@ -38,6 +38,9 @@
   --color-line: #cbd5e1;
   /* Only for things that float above the page: menus, dialogs, the bottom booking bar. */
   --shadow-float: 0 12px 32px rgba(15, 23, 42, 0.18);
+  /* The one resting shadow: the header, which is pinned over the page's content
+     and needs to separate from it (owner's note on the light-mode bar). */
+  --shadow-header: 0 1px 3px rgba(15, 23, 42, 0.08);
   /* Motion. Strong curves (the built-in ones are too weak): ease-out for
      things entering or leaving, ease-in-out for on-screen movement, the
      drawer curve for sheets. These replace Tailwind's ease-out/ease-in-out. */
@@ -58,6 +61,16 @@
     color-scheme: light;
     background: var(--color-canvas);
     color: var(--color-daet-ink);
+    /* The header's own height, so the hero can run up under it and still end
+       exactly at the fold. Keep in step with site-header.tsx's
+       min-h-14 / sm:min-h-[3.8rem]. */
+    --header-h: 3.5rem;
+  }
+
+  @media (min-width: 40rem) {
+    :root {
+      --header-h: 3.8rem;
+    }
   }
 
   * {
@@ -181,27 +194,26 @@
   letter-spacing: -0.025em;
 }
 
-/* Section entrance: parts marked data-reveal rise into place as they scroll
-   into view (heading, then text, then picture via --reveal-index). Pure CSS,
-   scroll-driven; browsers without view timelines simply show the content, so
-   nothing can stay hidden. */
-@keyframes daet-reveal {
-  from {
-    opacity: 0;
-    transform: translateY(24px);
-  }
-  to {
-    opacity: 1;
-    transform: none;
-  }
+/* Section entrance: a part marked data-reveal rises into place once, the first
+   time it reaches the viewport, and then stays put (heading, then text, then
+   picture, via --reveal-index). The observer in reveal-observer.tsx sets
+   data-revealed and stops watching. It used to be a scroll-linked animation,
+   which left whatever was part-way into the view part-way transparent — a
+   half-faded ghost that also failed contrast.
+
+   The hidden state needs `html.js`, which the root layout adds before the first
+   paint, so a visitor without JavaScript is never given content that only a
+   script could bring back. */
+html.js [data-reveal]:not([data-revealed]) {
+  opacity: 0;
+  transform: translateY(16px);
 }
 
-@supports (animation-timeline: view()) {
-  [data-reveal] {
-    animation: daet-reveal linear both;
-    animation-timeline: view();
-    animation-range: entry calc(var(--reveal-index, 0) * 6%) entry calc(45% + var(--reveal-index, 0) * 6%);
-  }
+[data-reveal] {
+  transition:
+    opacity 300ms var(--ease-out),
+    transform 300ms var(--ease-out);
+  transition-delay: calc(var(--reveal-index, 0) * 60ms);
 }
 
 @keyframes daet-drift {
@@ -277,8 +289,13 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+  /* The reveal still happens, it just doesn't move: opacity only, and at once. */
+  html.js [data-reveal]:not([data-revealed]) {
+    transform: none;
+  }
+
   [data-reveal] {
-    animation: none !important;
+    transition-delay: 0s;
   }
 
   .drift {
