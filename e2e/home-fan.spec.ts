@@ -245,7 +245,8 @@ test.describe("home fan on a desktop", () => {
     expect(card.x + card.width, "clear of the arrows on the right").toBeLessThan(viewport.width * 0.7);
 
     // ✕ over the photo's top right, ‹ › over its bottom right.
-    const close = (await page.getByRole("button", { name: "Close" }).boundingBox())!;
+    // `exact`: an open wedge is labelled "Bagasbas Beach: close photo and details".
+    const close = (await page.getByRole("button", { name: "Close", exact: true }).boundingBox())!;
     expect(close.x, "the ✕ on the right").toBeGreaterThan(viewport.width * 0.85);
     expect(close.y, "and at the top, under the bar").toBeLessThan(hero.y + hero.height * 0.25);
 
