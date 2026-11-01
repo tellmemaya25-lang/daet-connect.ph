@@ -114,6 +114,7 @@ export function GalleryStep({
       setUploadProgress({ done: 0, total: valid.length });
 
       let added = 0;
+      let processed = 0;
       let index = 0;
 
       // One at a time: the action takes a single file, and uploading in
@@ -146,7 +147,8 @@ export function GalleryStep({
           problems.push(valid.length > 1 ? `${file.name}: upload failed` : "An error occurred during upload");
         }
 
-        setUploadProgress({ done: added, total: valid.length });
+        processed += 1;
+        setUploadProgress({ done: processed, total: valid.length });
       }
 
       setUploadLoading(false);
@@ -258,19 +260,41 @@ export function GalleryStep({
           )}
         </div>
         {canAddImages && data.length < EDIT_LIMITS.maxGalleryImages && (
-          <label htmlFor="gallery-upload" className="cursor-pointer">
+          <label htmlFor="gallery-upload" className={uploadLoading ? "cursor-default" : "cursor-pointer"}>
             <div
-              className={`px-4 py-2 rounded-2xl font-medium transition text-center ${
-                uploadLoading || loading
-                  ? "bg-muted text-daet-ink/70 cursor-not-allowed"
-                  : "bg-daet-forest text-white hover:bg-daet-leaf"
+              role={uploadLoading ? "status" : undefined}
+              aria-live={uploadLoading ? "polite" : undefined}
+              className={`relative overflow-hidden px-4 py-2 rounded-2xl font-medium transition text-center ${
+                uploadLoading
+                  ? "bg-daet-forest text-white"
+                  : loading
+                    ? "bg-muted text-daet-ink/70 cursor-not-allowed"
+                    : "bg-daet-forest text-white hover:bg-daet-leaf"
               }`}
             >
-              {uploadLoading
-                ? uploadProgress && uploadProgress.total > 1
-                  ? `Uploading ${Math.min(uploadProgress.done + 1, uploadProgress.total)} of ${uploadProgress.total}...`
-                  : "Uploading..."
-                : "+ Add Image"}
+              {/* Light-blue fill that grows as the batch uploads: the action
+                  reports no byte progress, but the count is real. */}
+              {uploadLoading && uploadProgress && uploadProgress.total > 0 && (
+                <span
+                  aria-hidden
+                  className="absolute inset-y-0 left-0 bg-blue-300/40 transition-[width] duration-300"
+                  style={{ width: `${Math.round((uploadProgress.done / uploadProgress.total) * 100)}%` }}
+                />
+              )}
+
+              <span className="relative inline-flex items-center justify-center gap-2">
+                {uploadLoading && (
+                  <span
+                    aria-hidden
+                    className="h-3.5 w-3.5 rounded-full border-2 border-blue-200/50 border-t-blue-200 animate-spin motion-reduce:animate-none"
+                  />
+                )}
+                {uploadLoading
+                  ? uploadProgress && uploadProgress.total > 1
+                    ? `Uploading ${Math.min(uploadProgress.done + 1, uploadProgress.total)} of ${uploadProgress.total}...`
+                    : "Uploading..."
+                  : "+ Add Image"}
+              </span>
             </div>
             <input
               id="gallery-upload"
