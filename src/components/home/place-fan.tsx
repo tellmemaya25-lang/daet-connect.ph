@@ -282,6 +282,17 @@ export function PlaceFan({ places, signedIn }: { places: FanPlace[]; signedIn: b
             onPointerLeave={(event) => {
               if (event.pointerType === "mouse" && !onPhone) hover(null);
             }}
+            // A keyboard visitor gets the same name a mouse visitor does. Only
+            // for `:focus-visible`, so a click that happens to focus a wedge
+            // doesn't pin a tag on after the pointer has gone.
+            onFocus={(event) => {
+              if (onPhone || openIndex >= 0 || !focusVisible(event.currentTarget)) return;
+              hover(index);
+            }}
+            onBlur={() => {
+              if (onPhone || openIndex >= 0) return;
+              hover(null);
+            }}
             onPointerMove={(event) => {
               if (event.pointerType !== "mouse" || onPhone || openIndex >= 0) return;
               const box = sectionRef.current?.getBoundingClientRect();
@@ -309,18 +320,18 @@ export function PlaceFan({ places, signedIn }: { places: FanPlace[]; signedIn: b
             {/* The chip is the wedge's label: clip-path eats outlines, so focus
                 shows here instead. Always on for phones, on hover/focus for a
                 mouse, and not at all on a landscape phone. */}
+            {/* GSAP owns this tag's visibility and nothing else does: the CSS
+                hover/focus classes used to fight its inline style, which left
+                the last name stuck on screen after the pointer left. */}
             {!shortHero && (
               <span
                 data-chip={index}
                 aria-hidden="true"
-                style={chipPosition(index)}
-                className={`absolute -translate-x-1/2 -translate-y-1/2 rounded-full bg-slate-950/80 px-3 py-1.5 text-sm font-semibold text-white transition-opacity duration-200 group-focus-visible:ring-2 group-focus-visible:ring-blue-300 ${
-                  isOpen
-                    ? "opacity-0"
-                    : onPhone
-                      ? "opacity-100"
-                      : "opacity-0 group-hover:opacity-100 group-focus-visible:opacity-100"
-                }`}
+                style={{
+                  ...chipPosition(index),
+                  ...(onPhone ? {} : { opacity: 0, visibility: "hidden" as const }),
+                }}
+                className="absolute -translate-x-1/2 -translate-y-1/2 rounded-full bg-slate-950/80 px-3 py-1.5 text-sm font-semibold text-white group-focus-visible:ring-2 group-focus-visible:ring-blue-300"
               >
                 {onPhone ? place.shortName : place.name}
               </span>
@@ -409,6 +420,15 @@ export function PlaceFan({ places, signedIn }: { places: FanPlace[]; signedIn: b
       </p>
     </section>
   );
+}
+
+/** Does this element match `:focus-visible`? Older jsdom builds don't say. */
+function focusVisible(element: HTMLElement) {
+  try {
+    return element.matches(":focus-visible");
+  } catch {
+    return true;
+  }
 }
 
 /** The no-JS list is built as a string, so its two dynamic fields are escaped. */

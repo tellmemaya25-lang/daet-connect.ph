@@ -133,6 +133,47 @@ describe("PlaceFan", () => {
       "Cathedral of the Most Holy Trinity",
     ]);
   });
+
+  it("shows no name at all on load, since nothing is hovered", () => {
+    const { container } = renderFan();
+
+    container.querySelectorAll("[data-chip]").forEach((chip) => expect(chip).not.toBeVisible());
+  });
+
+  it("names only the wedge under the mouse, and drops the name when it leaves", async () => {
+    gsap.globalTimeline.timeScale(40);
+    const { container } = renderFan();
+    const wedge = screen.getByRole("button", { name: "Bagasbas Beach: open photo and details" });
+
+    fireEvent.pointerOver(wedge, { pointerType: "mouse" });
+
+    await waitFor(() => {
+      const showing = Array.from(container.querySelectorAll("[data-chip]")).filter((chip) =>
+        (chip as HTMLElement).style.visibility !== "hidden",
+      );
+      expect(showing.map((chip) => chip.textContent)).toEqual(["Bagasbas Beach"]);
+    });
+
+    fireEvent.pointerOut(wedge, { pointerType: "mouse" });
+
+    await waitFor(() =>
+      container.querySelectorAll("[data-chip]").forEach((chip) => expect(chip).not.toBeVisible()),
+    );
+  });
+
+  it("names the wedge a keyboard visitor has tabbed to", async () => {
+    gsap.globalTimeline.timeScale(40);
+    const { container } = renderFan();
+    const wedge = screen.getByRole("button", { name: "Calaguas: open photo and details" });
+
+    act(() => wedge.focus());
+
+    await waitFor(() => expect(container.querySelector('[data-chip="0"]')).toBeVisible());
+
+    act(() => wedge.blur());
+
+    await waitFor(() => expect(container.querySelector('[data-chip="0"]')).not.toBeVisible());
+  });
 });
 
 describe("PlaceFan opening a place", () => {
@@ -345,7 +386,9 @@ describe("PlaceFan on a phone", () => {
       "Heritage",
       "Cathedral",
     ]);
-    chips.forEach((chip) => expect(chip).toHaveClass("opacity-100"));
+    // GSAP owns the tags, so they are visible through their inline style, not
+    // through a CSS class a hover rule could outrank.
+    chips.forEach((chip) => expect(chip).toBeVisible());
   });
 
   it("keeps the headline band to the headline and a hint", () => {

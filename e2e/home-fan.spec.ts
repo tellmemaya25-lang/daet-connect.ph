@@ -153,7 +153,7 @@ test.describe("home fan on a desktop", () => {
  * The suite above runs with `prefers-reduced-motion: reduce`, which skips every
  * shape morph, so nothing has ever animated a wedge's `clip-path` in a test.
  * These do, at desktop width, and they are the tests that catch a fan that
- * comes apart mid-hover.
+ * comes apart mid-hover, a name tag that sticks, and a hero that doesn't fit.
  */
 test.describe("home fan, motion on", () => {
   test.use({
@@ -213,6 +213,35 @@ test.describe("home fan, motion on", () => {
       return wedge?.style.clipPath ?? "";
     }, index);
 
+  /** Which name tags a visitor can see right now, by wedge index. */
+  const tagsOnShow = (page: import("@playwright/test").Page) =>
+    page.evaluate(() =>
+      Array.from(document.querySelectorAll<HTMLElement>("[data-chip]"))
+        .filter((chip) => {
+          const style = getComputedStyle(chip);
+          return style.visibility !== "hidden" && Number(style.opacity) > 0.5;
+        })
+        .map((chip) => Number(chip.dataset.chip)),
+    );
+
+  /** A spot inside the given wedge that currently hits a photo. */
+  const spotInWedge = async (page: import("@playwright/test").Page, index: number) => {
+    const spot = await page.evaluate((index) => {
+      const hero = document.querySelector("section[aria-labelledby='home-title']");
+      if (!hero) return null;
+      const box = hero.getBoundingClientRect();
+      for (let y = box.top + 12; y < box.bottom - 12; y += 16) {
+        for (let x = box.left + 12; x < box.right - 12; x += 16) {
+          if (document.elementFromPoint(x, y)?.closest(`[data-wedge="${index}"]`)) return { x, y };
+        }
+      }
+      return null;
+    }, index);
+
+    expect(spot, `a spot inside wedge ${index}`).not.toBeNull();
+    return spot!;
+  };
+
   test("keeps the fan whole while a wedge is hovered", async ({ page }) => {
     await visit(page, "/");
 
@@ -220,7 +249,7 @@ test.describe("home fan, motion on", () => {
     expect(photos.length, "spots that start on a photo").toBeGreaterThan(20);
 
     // Where each wedge is, so the hover can be aimed at one rather than guessed.
-    const spotInWedge = (index: number) =>
+    const inWedge = (index: number) =>
       page.evaluate(
         ({ photos, index }) =>
           photos.find((spot) =>
@@ -230,7 +259,7 @@ test.describe("home fan, motion on", () => {
       );
 
     for (const index of [0, 3]) {
-      const spot = await spotInWedge(index);
+      const spot = await inWedge(index);
       expect(spot, `a spot inside wedge ${index}`).not.toBeNull();
 
       const before = await clipPathOf(page, index);
@@ -246,5 +275,37 @@ test.describe("home fan, motion on", () => {
 
       expect(await clipPathOf(page, index), `wedge ${index} widened`).not.toBe(before);
     }
+  });
+
+  test("shows one name tag, for the wedge under the mouse or the keyboard", async ({ page }) => {
+    await visit(page, "/");
+
+    // Nothing hovered, nothing focused: no tag at all.
+    expect(await tagsOnShow(page)).toEqual([]);
+
+    const spot = await spotInWedge(page, 2);
+    await page.mouse.move(spot.x, spot.y, { steps: 4 });
+
+    await expect.poll(() => tagsOnShow(page)).toEqual([2]);
+
+    // Off the fan — onto the header, which sits above the hero — and the tag
+    // has to go with it rather than stick to the last wedge it saw.
+    await page.mouse.move(640, 8);
+    await page.waitForTimeout(300);
+    expect(await tagsOnShow(page)).toEqual([]);
+
+    // A keyboard visitor gets the same name, from focus alone.
+    let focused = -1;
+    for (let press = 0; press < 24 && focused < 0; press += 1) {
+      await page.keyboard.press("Tab");
+      focused = await page.evaluate(() => {
+        const active = document.activeElement;
+        const wedge = active?.closest?.("[data-wedge]") as HTMLElement | null;
+        return wedge ? Number(wedge.dataset.wedge) : -1;
+      });
+    }
+
+    expect(focused, "a wedge reached by Tab").toBeGreaterThanOrEqual(0);
+    await expect.poll(() => tagsOnShow(page)).toEqual([focused]);
   });
 });

@@ -224,7 +224,7 @@ export function useFanAnimation({
 
   /** Growing one wedge to fill the hero. `instant` is for a URL that names a place. */
   const openAt = contextSafe((index: number, { instant = false }: { instant?: boolean } = {}) => {
-    const { wedges, photos } = parts();
+    const { wedges, photos, chips } = parts();
     if (wedges.length === 0) {
       onOpened?.();
       return;
@@ -249,6 +249,8 @@ export function useFanAnimation({
       });
       gsap.set(wedges[index], { filter: "brightness(1)" });
       gsap.set(photos[index], { x: 0, y: 0, scale: 1 });
+      // The open place fills the hero, so no name tag belongs on top of it.
+      chips.forEach((element) => gsap.set(element, { autoAlpha: 0, y: 6 }));
       if (headline) gsap.set(headline, { opacity: 0 });
     };
 
