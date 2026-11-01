@@ -70,6 +70,9 @@ export function useFanAnimation({
     });
     photos.forEach((element) => gsap.set(element, { x: 0, y: 0, scale: 1.15 }));
     chips.forEach((element) => gsap.set(element, { y: 0 }));
+
+    const headline = root.current?.querySelector("[data-headline]");
+    if (headline) gsap.set(headline, { autoAlpha: 1 });
   }, [geometry, parts]);
 
   // The geometry changes when the hero is re-measured: re-apply the rest shapes.
@@ -138,16 +141,18 @@ export function useFanAnimation({
     timeline.current?.kill();
     timeline.current = null;
 
+    const headline = root.current?.querySelector("[data-headline]");
+
     if (instant || reduced.current) {
       gsap.set(wedges, { autoAlpha: (i: number) => (i === index ? 1 : 0), x: 0, y: 0, zIndex: (i: number) => (i === index ? 5 : 0) });
       gsap.set(wedges[index], { clipPath: geometry.open, filter: "brightness(1)" });
       gsap.set(photos[index], { x: 0, y: 0, scale: 1 });
+      if (headline) gsap.set(headline, { autoAlpha: 0 });
       if (!instant) gsap.to(wedges, { autoAlpha: (i: number) => (i === index ? 1 : 0), duration: REDUCED_FADE });
       onOpened?.();
       return;
     }
 
-    const headline = root.current?.querySelector("[data-headline]");
     const slides = wedges.map((_, i) => {
       const [ux, uy] = midVector(geometry.wedges[i].mid);
       return { x: ux * SLIDE, y: uy * SLIDE };

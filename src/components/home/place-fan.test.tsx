@@ -139,7 +139,8 @@ describe("PlaceFan opening a place", () => {
     openThird();
 
     expect(screen.getByRole("heading", { level: 2, name: "Bagasbas Beach" })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Bagasbas Beach: open photo and details" })).toHaveAttribute(
+    // Open, the wedge's own action is to close, and its label says so.
+    expect(screen.getByRole("button", { name: "Bagasbas Beach: close photo and details" })).toHaveAttribute(
       "aria-expanded",
       "true",
     );
@@ -268,5 +269,163 @@ describe("PlaceFan opening a place", () => {
 
     await new Promise((resolve) => setTimeout(resolve, 60));
     expect(wedge.style.clipPath).toBe(geometry.wedges[4].rest);
+  });
+});
+
+describe("PlaceFan on a phone", () => {
+  /** jsdom has no layout, so the hero is told how big it is. */
+  const setHeroSize = (width: number, height: number) =>
+    jest.spyOn(HTMLElement.prototype, "getBoundingClientRect").mockReturnValue({
+      width,
+      height,
+      top: 0,
+      left: 0,
+      right: width,
+      bottom: height,
+      x: 0,
+      y: 0,
+      toJSON: () => ({}),
+    } as DOMRect);
+
+  afterEach(() => {
+    jest.restoreAllMocks();
+  });
+
+  it("always shows the short names, since a finger cannot hover", () => {
+    setHeroSize(390, 844);
+    const { container } = renderFan();
+
+    const chips = Array.from(container.querySelectorAll("[data-chip]"));
+    expect(chips.map((chip) => chip.textContent)).toEqual([
+      "Calaguas",
+      "Apuao",
+      "Bagasbas",
+      "Rizal",
+      "Heritage",
+      "Cathedral",
+    ]);
+    chips.forEach((chip) => expect(chip).toHaveClass("opacity-100"));
+  });
+
+  it("keeps the headline band to the headline and a hint", () => {
+    setHeroSize(390, 844);
+    renderFan();
+
+    expect(screen.getByText("Tap a place to see it")).toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: "Find a tour" })).not.toBeInTheDocument();
+    expect(screen.queryByText(/Beaches, islands and old-town walks/)).not.toBeInTheDocument();
+  });
+
+  it("drops the chips and keeps one fan of six on a landscape phone", () => {
+    setHeroSize(844, 390);
+    const { container } = renderFan();
+
+    expect(container.querySelectorAll("[data-chip]")).toHaveLength(0);
+    expect(container.querySelectorAll("[data-wedge]")).toHaveLength(6);
+    expect(screen.getByRole("link", { name: "Find a tour" })).toBeInTheDocument();
+  });
+
+  it("opens the place as a sheet on a phone", () => {
+    setHeroSize(390, 844);
+    const { container } = renderFan();
+
+    fireEvent.click(screen.getByRole("button", { name: "Bagasbas Beach: open photo and details" }));
+
+    const sheet = container.querySelector("[data-detail]") as HTMLElement;
+    expect(sheet.className).toContain("inset-x-0");
+    expect(sheet.className).toContain("bottom-0");
+  });
+
+  it("opens full screen on a landscape phone too", () => {
+    setHeroSize(844, 390);
+    const { container } = renderFan();
+
+    fireEvent.click(screen.getByRole("button", { name: "Bagasbas Beach: open photo and details" }));
+
+    expect((container.querySelector("[data-detail]") as HTMLElement).className).toContain("bottom-0");
+  });
+
+  it("moves to the next place on a sideways flick", () => {
+    setHeroSize(390, 844);
+    const { container } = renderFan();
+    fireEvent.click(screen.getByRole("button", { name: "Bagasbas Beach: open photo and details" }));
+
+    const section = container.querySelector("section") as HTMLElement;
+    fireEvent.pointerDown(section, { clientX: 300, clientY: 400 });
+    fireEvent.pointerUp(section, { clientX: 120, clientY: 410 });
+
+    expect(screen.getByRole("heading", { level: 2, name: "First Rizal Monument" })).toBeInTheDocument();
+    expect(window.location.hash).toBe("#place-first-rizal-monument");
+  });
+
+  it("ignores a mostly-vertical drag, which belongs to the sheet", () => {
+    setHeroSize(390, 844);
+    const { container } = renderFan();
+    fireEvent.click(screen.getByRole("button", { name: "Bagasbas Beach: open photo and details" }));
+
+    const section = container.querySelector("section") as HTMLElement;
+    fireEvent.pointerDown(section, { clientX: 200, clientY: 500 });
+    fireEvent.pointerUp(section, { clientX: 220, clientY: 200 });
+
+    expect(screen.getByRole("heading", { level: 2, name: "Bagasbas Beach" })).toBeInTheDocument();
+  });
+
+  it("ignores a flick while nothing is open", () => {
+    setHeroSize(390, 844);
+    const { container } = renderFan();
+
+    const section = container.querySelector("section") as HTMLElement;
+    fireEvent.pointerDown(section, { clientX: 300, clientY: 400 });
+    fireEvent.pointerUp(section, { clientX: 100, clientY: 400 });
+
+    expect(window.location.hash).toBe("");
+  });
+});
+
+describe("PlaceFan without JavaScript", () => {
+  it("leaves a plain list of the six places for a browser that can't run it", () => {
+    const { container } = renderFan();
+    const fallback = container.querySelector("noscript");
+
+    expect(fallback).not.toBeNull();
+    FAN_PLACES.forEach((place) => {
+      expect(fallback?.textContent).toContain(place.name);
+      expect(fallback?.textContent).toContain(place.href);
+    });
+  });
+});
+
+describe("PlaceFan with reduced motion", () => {
+  const original = window.matchMedia;
+
+  beforeEach(() => {
+    Object.defineProperty(window, "matchMedia", {
+      configurable: true,
+      writable: true,
+      value: (query: string) => ({
+        matches: query.includes("prefers-reduced-motion"),
+        media: query,
+        onchange: null,
+        addEventListener() {},
+        removeEventListener() {},
+        addListener() {},
+        removeListener() {},
+        dispatchEvent: () => false,
+      }),
+    });
+  });
+
+  afterEach(() => {
+    Object.defineProperty(window, "matchMedia", { configurable: true, writable: true, value: original });
+  });
+
+  it("still opens the place, but snaps to it instead of folding the fan", () => {
+    const { container } = renderFan();
+
+    fireEvent.click(screen.getByRole("button", { name: "Bagasbas Beach: open photo and details" }));
+
+    expect(screen.getByRole("heading", { level: 2, name: "Bagasbas Beach" })).toBeInTheDocument();
+    const wedge = container.querySelector('[data-wedge="2"]') as HTMLElement;
+    expect(wedge.style.clipPath).toBe(geometry.open);
   });
 });

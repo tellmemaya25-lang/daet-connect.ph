@@ -125,6 +125,7 @@ function Harness({ onOpened, onClosed, api }: { onOpened?: () => void; onClosed?
 
   return (
     <div ref={root}>
+      <div data-headline />
       {geometry.wedges.map((_, index) => (
         <button type="button" key={index} data-wedge={index}>
           <span data-photo={index} />
@@ -140,7 +141,8 @@ function mount(options: { onOpened?: () => void; onClosed?: () => void } = {}) {
   const view = render(<Harness api={api} onOpened={options.onOpened} onClosed={options.onClosed} />);
   const wedges = Array.from(view.container.querySelectorAll<HTMLElement>("[data-wedge]"));
   const photos = Array.from(view.container.querySelectorAll<HTMLElement>("[data-photo]"));
-  return { view, api, wedges, photos };
+  const headline = view.container.querySelector<HTMLElement>("[data-headline]") as HTMLElement;
+  return { view, api, wedges, photos, headline };
 }
 
 const tweensOn = (call: Call[], target: Element) =>
@@ -201,7 +203,7 @@ describe("useFanAnimation", () => {
 
   it("morphs an opening wedge to the full hero over 450ms, and the others outward", () => {
     const onOpened = jest.fn();
-    const { api, wedges, photos } = mount({ onOpened });
+    const { api, wedges, photos, headline } = mount({ onOpened });
 
     act(() => api.current?.openAt(2));
 
@@ -215,7 +217,11 @@ describe("useFanAnimation", () => {
     expect(shrink?.vars).toMatchObject({ x: 0, y: 0, scale: 1 });
 
     const fadeOut = timeline.steps.filter(
-      (step) => step.vars.autoAlpha === 0 && step.targets !== photos[2] && step.targets !== wedges[2],
+      (step) =>
+        step.vars.autoAlpha === 0 &&
+        step.targets !== photos[2] &&
+        step.targets !== wedges[2] &&
+        step.targets !== headline,
     );
     expect(fadeOut).toHaveLength(geometry.wedges.length - 1);
     fadeOut.forEach((step) => {
@@ -286,6 +292,28 @@ describe("useFanAnimation", () => {
     expect(records.timelines).toHaveLength(0);
     expect(records.set.some((call) => call.targets === wedges[1] && call.vars.clipPath === geometry.open)).toBe(true);
     expect(onOpened).toHaveBeenCalledTimes(1);
+  });
+
+  it("hides the headline whether the fan folds or cross-fades", () => {
+    const instant = mount();
+    act(() => instant.api.current?.openAt(0, { instant: true }));
+    expect(records.set.some((call) => call.targets === instant.headline && call.vars.autoAlpha === 0)).toBe(true);
+
+    records.set.length = 0;
+    records.conditions.reduce = true;
+    const reduced = mount();
+    act(() => reduced.api.current?.openAt(0));
+    expect(records.set.some((call) => call.targets === reduced.headline && call.vars.autoAlpha === 0)).toBe(true);
+  });
+
+  it("brings the headline back when the fan closes", () => {
+    const { api, headline } = mount();
+
+    act(() => api.current?.openAt(0));
+    records.set.length = 0;
+    act(() => api.current?.close());
+
+    expect(records.set.some((call) => call.targets === headline && call.vars.autoAlpha === 1)).toBe(true);
   });
 
   it("nudges the photo through one reused tween per wedge", () => {
