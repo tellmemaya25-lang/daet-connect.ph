@@ -334,6 +334,22 @@ test.describe("home fan, motion on", () => {
     }
   });
 
+  test("keeps the assistant pill off the hero's own buttons", async ({ page }) => {
+    await visit(page, "/");
+    const pill = page.getByRole("button", { name: "Daet AI assistant" });
+
+    // The headline has "Ask the travel guide"; a floating duplicate would sit
+    // on top of it.
+    await expect(pill).toBeHidden();
+    await expect(page.getByRole("button", { name: "Ask the travel guide" })).toBeVisible();
+
+    await page.evaluate(() => window.scrollTo(0, window.innerHeight * 1.2));
+    await expect(pill).toBeVisible();
+
+    await page.evaluate(() => window.scrollTo(0, 0));
+    await expect(pill).toBeHidden();
+  });
+
   test("keeps the hero full-bleed as it folds away", async ({ page }) => {
     await visit(page, "/");
 
