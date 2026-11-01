@@ -1,5 +1,7 @@
 # Build plan for Arena: the "place fan" landing hero (GSAP)
 
+> **Built in PR 44.** The bugs found in that build, and how to fix them, are in `docs/handoff-landing-fixes-arena.md`.
+
 You are **Arena**, an AI coding agent. This file is everything you need to build the new
 landing page hero for **CONNECT-Daet**, `tellmemaya25-lang/daet-connect.ph`:
 - the stack and every library involved;
