@@ -139,7 +139,7 @@ export function CoverImageStep({
         ) : (
           <div
             className={`w-full h-64 rounded-2xl bg-muted border-2 border-dashed flex items-center justify-center transition ${
-              fileDrop.isDragging ? "border-daet-forest bg-blue-50 dark:bg-blue-950/40" : "border-daet-ink/20"
+              fileDrop.isDragging ? "border-daet-forest bg-daet-sand" : "border-daet-ink/20"
             }`}
           >
             <div className="text-center">

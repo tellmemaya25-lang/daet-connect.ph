@@ -1,6 +1,6 @@
 /** @jest-environment jsdom */
 
-import { fireEvent, render, waitFor } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import "@testing-library/jest-dom";
 import { FeedbackProvider } from "@/components/ui/feedback";
 import { GalleryStep } from "./GalleryStep";
@@ -97,6 +97,30 @@ describe("GalleryStep multi-photo upload", () => {
 
     const last = onUpdate.mock.calls.at(-1)?.[0] as EditGalleryImage[];
     expect(last).toHaveLength(1);
+  });
+
+  it("shows a light-blue progress fill inside the button while uploading", async () => {
+    let release: () => void = () => {};
+    const gate = new Promise<void>((resolve) => {
+      release = () => resolve();
+    });
+    mockedUpload.mockImplementation(async () => {
+      await gate;
+      return { success: true, imageUrl: "https://example.supabase.co/storage/v1/object/public/tours-package-media/slow.jpg" };
+    });
+
+    const { section } = renderGallery();
+    fireEvent(section, dropEvent([photo("a.jpg"), photo("b.jpg")]));
+
+    const status = await screen.findByRole("status");
+    expect(status).toHaveTextContent("Uploading 1 of 2");
+
+    const fill = status.querySelector("span[aria-hidden]") as HTMLElement;
+    expect(fill.className).toContain("bg-blue-300/40");
+    expect(fill.style.width).toBe("0%");
+
+    release();
+    await waitFor(() => expect(mockedUpload).toHaveBeenCalledTimes(2));
   });
 
   it("stops at 20 images and says how many it skipped", async () => {
