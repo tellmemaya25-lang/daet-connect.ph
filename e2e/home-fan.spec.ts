@@ -238,7 +238,7 @@ test.describe("home fan on a desktop", () => {
     expect(light.background, "white, not a scrim").toBe("rgb(255, 255, 255)");
     expect(light.alpha).toBe(1);
     expect(light.color, "ink on white").toBe("rgb(15, 23, 42)");
-    expect(light.shadow, "a subtle drop shadow under it").not.toBe("none");
+    expect(light.shadow, "a subtle drop shadow under it").toContain("rgba(15, 23, 42, 0.08)");
     expect(light.heroTop, "the hero still starts at the top of the page").toBeLessThanOrEqual(0);
 
     await page.evaluate(() => window.scrollTo(0, 1200));
@@ -255,7 +255,8 @@ test.describe("home fan on a desktop", () => {
     expect(dark.alpha, `the photos show through the scrim: ${dark.background}`).toBeLessThan(1);
     expect(dark.backdrop, "blurred behind the scrim").toContain("blur");
     expect(dark.color, "white on the scrim").toBe("rgb(255, 255, 255)");
-    expect(dark.shadow, "no shadow on the scrim").toBe("none");
+    // Tailwind's shadow-none is a list of zero shadows, not the string "none".
+    expect(dark.shadow, "no elevation on the scrim").not.toContain("rgba(15, 23, 42");
   });
 
   test("never scrolls sideways", async ({ page }) => {
