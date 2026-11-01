@@ -330,6 +330,18 @@ describe("useFanAnimation", () => {
     expect(records.quickTo[0].move.mock.calls).toEqual([[12], [-8]]);
   });
 
+  it("still shows the name under reduced motion, just without the easing", () => {
+    records.conditions.reduce = true;
+    const { api } = mount();
+
+    act(() => api.current?.hover(2));
+
+    const chips = records.set.filter((call) => (call.targets as HTMLElement).hasAttribute?.("data-chip"));
+    const shown = chips.filter((call) => call.vars.autoAlpha === 1);
+    expect(shown).toHaveLength(1);
+    expect((shown[0].targets as HTMLElement).getAttribute("data-chip")).toBe("2");
+  });
+
   it("leaves the photo alone under reduced motion", () => {
     records.conditions.reduce = true;
     const { api } = mount();

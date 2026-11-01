@@ -96,12 +96,15 @@ export function useFanAnimation({
     if (wedges.length === 0) return;
 
     if (reduced.current) {
+      // No width, no scale, no drift: the name simply appears, and the dimming
+      // is instant rather than eased.
       gsap.to(wedges, {
         filter: index === null ? "brightness(1)" : (i: number) => (i === index ? "brightness(1)" : "brightness(0.78)"),
-        duration: HOVER,
-        ease: "power3.out",
+        duration: REDUCED_FADE,
+        ease: "none",
         overwrite: "auto",
       });
+      chips.forEach((element, i) => gsap.set(element, { autoAlpha: index === null ? 0 : i === index ? 1 : 0 }));
       return;
     }
 
