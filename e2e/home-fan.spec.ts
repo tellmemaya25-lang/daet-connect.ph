@@ -167,8 +167,8 @@ test.describe("home fan on a phone", () => {
 
     const header = await readHeader(page);
     expect(header.height, "a phone header, not the 80px desktop bar").toBeLessThanOrEqual(57);
-    expect(header.background, "white in light mode").toBe("rgb(255, 255, 255)");
-    expect(header.alpha).toBe(1);
+    expect(header.alpha, `white but see-through: ${header.background}`).toBeLessThan(1);
+    expect(header.alpha, "still mostly white, so ink stays readable").toBeGreaterThanOrEqual(0.6);
     expect(header.heroTop, "the hero starts at the top of the page").toBeLessThanOrEqual(0);
   });
 
@@ -227,7 +227,7 @@ test.describe("home fan on a desktop", () => {
     await expect(wedge).toHaveAttribute("aria-expanded", "false");
   });
 
-  test("is a slim white bar in light mode, and the dark scrim in dark mode", async ({ page }) => {
+  test("is a slim white scrim in light mode, and the dark one in dark mode", async ({ page }) => {
     await visit(page, "/");
 
     const light = await readHeader(page);
@@ -235,9 +235,9 @@ test.describe("home fan on a desktop", () => {
     expect(light.top).toBe(0);
     expect(light.height, "slimmer than the 80px bar in the screenshot").toBeLessThanOrEqual(62);
     expect(light.brandSize, "a smaller wordmark than the 24px one").toBeLessThanOrEqual(20);
-    expect(light.background, "white, not a scrim").toBe("rgb(255, 255, 255)");
-    expect(light.alpha).toBe(1);
+    expect(light.alpha, `a white scrim: ${light.background}`).toBeCloseTo(0.8, 2);
     expect(light.color, "ink on white").toBe("rgb(15, 23, 42)");
+    expect(light.backdrop, "blurred behind the white scrim").toContain("blur");
     expect(light.shadow, "a subtle drop shadow under it").toContain("rgba(15, 23, 42, 0.08)");
     expect(light.heroTop, "the hero still starts at the top of the page").toBeLessThanOrEqual(0);
 
