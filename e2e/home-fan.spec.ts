@@ -38,7 +38,7 @@ async function readHeader(page: import("@playwright/test").Page) {
   return page.evaluate(() => {
     const header = document.querySelector("header") as HTMLElement;
     const hero = document.querySelector("section[aria-labelledby='home-title']") as HTMLElement;
-    const brand = header.querySelector("a") as HTMLElement;
+    const brand = header.querySelector("a[href='/']") as HTMLElement;
     const style = getComputedStyle(header);
     const value = style.backgroundColor;
     const alpha = value.startsWith("color(")
