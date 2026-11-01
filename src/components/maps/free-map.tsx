@@ -40,24 +40,81 @@ function addLineLayers(map: MapLibreMap, lines: FreeMapLine[]) {
   map.addLayer({ id: `${LINE_SOURCE}-dashed`, type: "line", source: LINE_SOURCE, filter: ["==", ["get", "dashed"], true], layout: { "line-cap": "round" }, paint: { ...paint, "line-dasharray": [2, 1.5] } });
 }
 
-function markerElement(m: FreeMapMarker): HTMLElement {
-  const el = document.createElement(m.href ? "a" : "div");
-  if (m.href) (el as HTMLAnchorElement).href = m.href;
-  el.className = MARKER_CLASSES[m.kind];
-  el.textContent = m.label;
+const reducedMotion = () => window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ?? false;
+
+/** Stops on a labelled map (the itinerary): dark dots, and a white pin for the picked one. */
+const STOP_DOT = "grid h-7 w-7 place-items-center rounded-full border-2 border-white bg-slate-900 text-xs font-extrabold text-white";
+const STOP_PIN = "grid h-8 w-8 place-items-center rounded-full border-2 border-slate-900 bg-white text-sm font-extrabold text-slate-900";
+const LABEL_HALO = "text-slate-900 [text-shadow:0_0_2px_#fff,0_0_4px_#fff,0_0_6px_#fff] dark:text-slate-100 dark:[text-shadow:0_0_2px_#0f172a,0_0_4px_#0f172a]";
+
+function markerElement(m: FreeMapMarker, active: boolean, labels: boolean, onClick?: (id: string) => void): HTMLElement {
+  // With a click handler the marker is a button that picks the stop; otherwise a link or a picture.
+  const el = document.createElement(onClick ? "button" : m.href ? "a" : "div");
+  if (onClick) {
+    (el as HTMLButtonElement).type = "button";
+    el.addEventListener("click", (event) => {
+      event.stopPropagation();
+      onClick(m.id);
+    });
+    if (active) el.setAttribute("aria-current", "true");
+  } else if (m.href) (el as HTMLAnchorElement).href = m.href;
   el.title = m.title;
-  // aria-label needs a role on a plain element; a link already has one.
-  if (!m.href) el.setAttribute("role", "img");
+  // aria-label needs a role on a plain element; links and buttons already have one.
+  if (!m.href && !onClick) el.setAttribute("role", "img");
   el.setAttribute("aria-label", m.title);
+
+  if (!(labels && m.kind === "stop")) {
+    el.className = MARKER_CLASSES[active && m.kind === "stop" ? "stopActive" : m.kind];
+    el.textContent = m.label;
+    return el;
+  }
+  // Labelled stop: the badge (a pin with a stem and a dot when picked), then its name and kind beside it.
+  // The accessible name holds every visible word in order (number, name, kind), so "click 2" or
+  // "click Bagasbas Beach" works by voice (WCAG 2.5.3, axe label-content-name-mismatch).
+  el.setAttribute("aria-label", `Stop ${m.label}: ${m.title}${m.subtitle ? `, ${m.subtitle}` : ""}`);
+  el.className = "relative flex flex-col items-center";
+  const badge = document.createElement("span");
+  badge.className = active ? STOP_PIN : STOP_DOT;
+  badge.textContent = m.label;
+  el.append(badge, document.createTextNode(" "));
+  if (active) {
+    const stem = document.createElement("span");
+    stem.className = "h-1.5 w-0.5 bg-slate-900";
+    const dot = document.createElement("span");
+    dot.className = "h-2 w-2 rounded-full border border-white bg-slate-900";
+    el.append(stem, dot);
+  }
+  const label = document.createElement("span");
+  label.setAttribute("aria-hidden", "true");
+  label.className = `pointer-events-none absolute left-full top-0 ml-1.5 flex w-max max-w-[10rem] flex-col text-left leading-tight ${LABEL_HALO}`;
+  // The whole name is in the page and CSS shortens it, so the visible words match the accessible name.
+  const name = document.createElement("span");
+  name.className = "block max-w-[9rem] truncate text-xs font-bold";
+  name.textContent = m.title;
+  label.append(name);
+  if (m.subtitle) {
+    const sub = document.createElement("span");
+    sub.className = "text-[11px] font-medium opacity-75";
+    sub.textContent = ` ${m.subtitle}`;
+    label.append(sub);
+  }
+  el.append(label);
   return el;
 }
 
-const signature = (m: FreeMapMarker) => `${m.kind}|${m.label}|${m.title}|${m.href ?? ""}`;
+const signature = (m: FreeMapMarker, active: boolean, clickable: boolean, labels: boolean) =>
+  `${m.kind}|${m.label}|${m.title}|${m.subtitle ?? ""}|${m.href ?? ""}|${active}|${clickable}|${labels}`;
 
-function fit(map: MapLibreMap, points: LatLng[]) {
+/** The camera after a flight lands: a slow push in, like a drone settling. */
+const DRIFT_ZOOM = 0.6;
+const DRIFT_MS = 5000;
+const easeOutCubic = (t: number) => 1 - Math.pow(1 - t, 3);
+
+function fit(map: MapLibreMap, points: LatLng[], animate = false) {
   if (points.length === 0) return;
+  const duration = animate && !reducedMotion() ? 800 : 0;
   if (points.length === 1) {
-    map.jumpTo({ center: [points[0].lng, points[0].lat], zoom: 15 });
+    map.easeTo({ center: [points[0].lng, points[0].lat], zoom: 15, duration });
     return;
   }
   const lngs = points.map((p) => p.lng);
@@ -67,7 +124,7 @@ function fit(map: MapLibreMap, points: LatLng[]) {
       [Math.min(...lngs), Math.min(...lats)],
       [Math.max(...lngs), Math.max(...lats)],
     ],
-    { padding: 56, maxZoom: 16, duration: 0 },
+    { padding: 56, maxZoom: 16, duration },
   );
 }
 
@@ -78,6 +135,11 @@ function fit(map: MapLibreMap, points: LatLng[]) {
  *
  * `fitKey`: the map frames all markers and lines on load and again whenever
  * this value changes; otherwise it stays where the viewer left it.
+ *
+ * `focusId`: fly to that marker (pulling back, gliding over, diving in, then
+ * a slow drift closer) and mark it active. `labels` names stop markers on the
+ * map. `onMarkerClick` makes markers buttons. `animateFit` eases reframes
+ * after the first one.
  */
 export function FreeMap({
   markers,
@@ -85,21 +147,35 @@ export function FreeMap({
   title,
   fitKey = "",
   className = "h-72 sm:h-96",
+  focusId = null,
+  onMarkerClick,
+  labels = false,
+  animateFit = false,
 }: {
   markers: FreeMapMarker[];
   lines?: FreeMapLine[];
   title: string;
   fitKey?: string;
   className?: string;
+  focusId?: string | null;
+  onMarkerClick?: (id: string) => void;
+  labels?: boolean;
+  animateFit?: boolean;
 }) {
   const container = useRef<HTMLDivElement>(null);
   const mapRef = useRef<MapLibreMap | null>(null);
   const libRef = useRef<MapLibre | null>(null);
   const markerRefs = useRef(new Map<string, { marker: MapLibreMarker; sig: string }>());
   const latest = useRef({ markers, lines });
+  const clickRef = useRef(onMarkerClick);
+  // Bumped whenever a drift should not start (or should stop): a new focus, the viewer moving the map.
+  const driftToken = useRef(0);
+  const firstFit = useRef(true);
   const [mode, setMode] = useState<"map" | "sketch">("map");
   const [ready, setReady] = useState(false);
   latest.current = { markers, lines };
+  clickRef.current = onMarkerClick;
+  const clickable = Boolean(onMarkerClick);
 
   // Create the map once.
   useEffect(() => {
@@ -139,6 +215,13 @@ export function FreeMap({
           return;
         }
         mapRef.current = map;
+        // The viewer taking over the camera stops the drift.
+        const stopDrift = () => {
+          driftToken.current += 1;
+        };
+        map.on("dragstart", stopDrift);
+        map.on("wheel", stopDrift);
+        map.on("touchstart", stopDrift);
         map.addControl(new lib.NavigationControl({ showCompass: false }), "top-right");
         timer = window.setTimeout(() => !loaded && giveUp(), MAP_LOAD_TIMEOUT_MS);
 
@@ -198,14 +281,19 @@ export function FreeMap({
     const seen = new Set<string>();
     for (const m of markers) {
       seen.add(m.id);
+      const active = m.id === focusId;
+      const sig = signature(m, active, clickable, labels);
       const existing = markerRefs.current.get(m.id);
-      if (existing && existing.sig === signature(m)) {
+      if (existing && existing.sig === sig) {
         existing.marker.setLngLat([m.lng, m.lat]);
         continue;
       }
       existing?.marker.remove();
-      const marker = new lib.Marker({ element: markerElement(m) }).setLngLat([m.lng, m.lat]).addTo(map);
-      markerRefs.current.set(m.id, { marker, sig: signature(m) });
+      const element = markerElement(m, active, labels, clickable ? (id) => clickRef.current?.(id) : undefined);
+      // A picked, labelled stop is a pin: its tip (the bottom) sits on the spot.
+      const anchor = labels && active && m.kind === "stop" ? "bottom" : "center";
+      const marker = new lib.Marker({ element, anchor }).setLngLat([m.lng, m.lat]).addTo(map);
+      markerRefs.current.set(m.id, { marker, sig });
     }
     for (const [id, { marker }] of markerRefs.current) {
       if (!seen.has(id)) {
@@ -213,22 +301,36 @@ export function FreeMap({
         markerRefs.current.delete(id);
       }
     }
-  }, [markers, ready]);
+  }, [markers, ready, focusId, clickable, labels]);
 
-  // Lines.
+  // Focus: pull back, glide over and dive in to the picked marker, then drift slowly closer.
   useEffect(() => {
-    const source = ready ? mapRef.current?.getSource(LINE_SOURCE) : undefined;
-    if (source && "setData" in source) (source as { setData: (d: unknown) => void }).setData(lineData(lines));
-  }, [lines, ready]);
+    const map = mapRef.current;
+    const token = ++driftToken.current;
+    if (!ready || !map || !focusId) return;
+    const m = latest.current.markers.find((marker) => marker.id === focusId);
+    if (!m) return;
+    const center: [number, number] = [m.lng, m.lat];
+    if (reducedMotion()) {
+      map.jumpTo({ center, zoom: 15.5 });
+      return;
+    }
+    map.flyTo({ center, zoom: 15.5, curve: 1.9, speed: 0.9, essential: true });
+    map.once("moveend", () => {
+      if (driftToken.current !== token) return;
+      map.easeTo({ zoom: map.getZoom() + DRIFT_ZOOM, duration: DRIFT_MS, easing: easeOutCubic, essential: true });
+    });
+  }, [focusId, ready]);
 
   // Reframe when asked.
   useEffect(() => {
     if (!ready || !mapRef.current) return;
-    fit(mapRef.current, [...latest.current.markers, ...latest.current.lines.flatMap((l) => l.path)]);
-  }, [fitKey, ready]);
+    fit(mapRef.current, [...latest.current.markers, ...latest.current.lines.flatMap((l) => l.path)], animateFit && !firstFit.current);
+    firstFit.current = false;
+  }, [fitKey, ready, animateFit]);
 
   if (markers.length === 0 && lines.length === 0) return null;
-  if (mode === "sketch") return <SketchMap markers={markers} lines={lines} title={title} />;
+  if (mode === "sketch") return <SketchMap markers={markers} lines={lines} title={title} focusId={focusId} pins={labels} />;
 
   return (
     <figure>

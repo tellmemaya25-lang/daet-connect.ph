@@ -294,3 +294,11 @@
     transition-duration: 0.01ms !important;
   }
 }
+
+/* A stop's details opening in the itinerary (StopExplorer). */
+@keyframes stop-open {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+}

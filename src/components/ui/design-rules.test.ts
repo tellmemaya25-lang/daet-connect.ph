@@ -30,6 +30,12 @@ const offenders = (test: (line: string) => boolean) =>
 // Pictographic emoji only; typographic marks (★ ✓ ✕ → ·) are fine.
 const EMOJI = /[\u{1F300}-\u{1FAFF}☕⚙⚠⛔✅⭐⏰-⏳✈✏✉❌]/u;
 
+// The one line in free-map.tsx allowed a white background: the picked-stop pin (STOP_PIN).
+const PIN_LINE =
+  readFileSync(join(process.cwd(), "src/components/maps/free-map.tsx"), "utf8")
+    .split("\n")
+    .findIndex((line) => line.startsWith("const STOP_PIN =")) + 1;
+
 describe("design rules", () => {
   it("uses line icons, not emoji", () => {
     // Message reactions are emoji by nature; src/lib/tours/messenger.ts names them as escapes.
@@ -49,7 +55,11 @@ describe("design rules", () => {
     // White stays white only on print and inside a data-theme="light" island.
     const LIGHT_ONLY = /(?<![\w:-])(?:[a-z-]+:)*bg-(?:white|slate-(?:50|100|200|300))(?![\w/-])/;
     const screenOnly = (line: string) => line.replace(/\b(?:print|dark):\S+/g, "");
-    expect(offenders((line) => LIGHT_ONLY.test(screenOnly(line)) && !line.includes('data-theme="light"')).filter((at) => !at.startsWith("src/app/(subsystems)/tours/guide/guide-qr-badge.tsx"))).toEqual([]);
+    expect(offenders((line) => LIGHT_ONLY.test(screenOnly(line)) && !line.includes('data-theme="light"')).filter(
+        // The QR badge is printed white; the itinerary's picked-stop pin sits on the map tiles, white on purpose.
+        (at) => !at.startsWith("src/app/(subsystems)/tours/guide/guide-qr-badge.tsx") && at !== `src/components/maps/free-map.tsx:${PIN_LINE}`,
+      ),
+    ).toEqual([]);
   });
 
   it("has no eyebrow labels and no rounded-3xl cards", () => {
