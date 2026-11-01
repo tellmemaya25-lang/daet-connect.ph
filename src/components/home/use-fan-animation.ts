@@ -79,14 +79,42 @@ export function useFanAnimation({
 
   const parts = useCallback(() => {
     const element = root.current;
-    if (!element) return { wedges: [] as HTMLElement[], photos: [] as HTMLElement[], chips: [] as HTMLElement[] };
+    if (!element) {
+      return {
+        wedges: [] as HTMLElement[],
+        photos: [] as HTMLElement[],
+        nudges: [] as HTMLElement[],
+        chips: [] as HTMLElement[],
+      };
+    }
 
     return {
       wedges: gsap.utils.toArray<HTMLElement>("[data-wedge]", element),
       photos: gsap.utils.toArray<HTMLElement>("[data-photo]", element),
+      nudges: gsap.utils.toArray<HTMLElement>("[data-nudge]", element),
       chips: gsap.utils.toArray<HTMLElement>("[data-chip]", element),
     };
   }, [root]);
+
+  /**
+   * The offset a wedge's photo rests at, out along its own angle, kept on the
+   * element as `data-nudge-x`/`-y` by the fan.
+   *
+   * The photo is translated there by a layer the motion layer never touches; the
+   * element it does own carries the opposite offset while a place is open, so
+   * the open photo sits dead centre of the hero instead of leaving the corner
+   * where its wedge used to be pointing empty.
+   */
+  const restNudge = (element: HTMLElement) => ({
+    x: Number(element.dataset.nudgeX ?? 0),
+    y: Number(element.dataset.nudgeY ?? 0),
+  });
+
+  /** The offset that cancels a photo's rest offset: 0 while the fan is closed. */
+  const centred = (element: HTMLElement) => {
+    const rest = restNudge(element);
+    return { x: -rest.x, y: -rest.y };
+  };
 
   /**
    * Write every wedge's `clip-path` from the current numbers. The only place a
@@ -125,7 +153,7 @@ export function useFanAnimation({
 
   /** Put everything back the way the server rendered it. */
   const reset = useCallback(() => {
-    const { wedges, photos, chips } = parts();
+    const { wedges, photos, nudges, chips } = parts();
     const geo = current.current;
     const state = live.current;
 
@@ -142,6 +170,7 @@ export function useFanAnimation({
       gsap.set(element, { autoAlpha: 1, x: 0, y: 0, zIndex: 0, filter: "brightness(1)" });
     });
     photos.forEach((element) => gsap.set(element, { x: 0, y: 0, scale: 1.15 }));
+    nudges.forEach((element) => gsap.set(element, { x: 0, y: 0 }));
 
     // One owner for the name tags (GSAP, not CSS): a phone shows all of them,
     // a desktop shows none until a pointer or focus arrives.
@@ -224,7 +253,7 @@ export function useFanAnimation({
 
   /** Growing one wedge to fill the hero. `instant` is for a URL that names a place. */
   const openAt = contextSafe((index: number, { instant = false }: { instant?: boolean } = {}) => {
-    const { wedges, photos, chips } = parts();
+    const { wedges, photos, nudges, chips } = parts();
     if (wedges.length === 0) {
       onOpened?.();
       return;
@@ -249,6 +278,9 @@ export function useFanAnimation({
       });
       gsap.set(wedges[index], { filter: "brightness(1)" });
       gsap.set(photos[index], { x: 0, y: 0, scale: 1 });
+      // Dead centre and covering: the photo fills the hero, with no empty
+      // corner where it was still pushed out along its wedge.
+      nudges.forEach((element, i) => gsap.set(element, i === index ? centred(element) : { x: 0, y: 0 }));
       // The open place fills the hero, so no name tag belongs on top of it.
       chips.forEach((element) => gsap.set(element, { autoAlpha: 0, y: 6 }));
       if (headline) gsap.set(headline, { opacity: 0 });
@@ -288,6 +320,7 @@ export function useFanAnimation({
 
     tl.to(wedges[index], { filter: "brightness(1)", duration: OPEN }, 0);
     tl.to(photos[index], { x: 0, y: 0, scale: 1, duration: OPEN }, 0);
+    if (nudges[index]) tl.to(nudges[index], { ...centred(nudges[index]), duration: OPEN }, 0);
 
     wedges.forEach((element, i) => {
       if (i === index) return;
@@ -317,7 +350,7 @@ export function useFanAnimation({
 
   /** Next or previous while open: cross-fade, no folding back first. */
   const swapTo = contextSafe((index: number) => {
-    const { wedges, photos } = parts();
+    const { wedges, photos, nudges } = parts();
     if (wedges.length === 0) return;
 
     timeline.current?.kill();
@@ -334,6 +367,7 @@ export function useFanAnimation({
     });
 
     gsap.set(wedges[index], { zIndex: 5, filter: "brightness(1)" });
+    nudges.forEach((element, i) => gsap.set(element, i === index ? centred(element) : { x: 0, y: 0 }));
     gsap.to(wedges[index], { autoAlpha: 1, duration: SWAP, ease: "power2.inOut", overwrite: "auto" });
     gsap.to(photos[index], { x: 0, y: 0, scale: 1, duration: SWAP, ease: "power2.inOut" });
   });

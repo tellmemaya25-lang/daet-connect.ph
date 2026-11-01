@@ -270,7 +270,9 @@ export default async function HomePage() {
       {/* All on one map: only the places that have coordinates are pinned, and
           a pin opens that place in the fan at the top of the page. */}
       <section aria-labelledby="home-map" className={`${WRAP} pt-20 sm:pt-32`}>
-        <h2 id="home-map" data-reveal className="display-2 text-daet-ink">
+        {/* The hero's "Open on the map" jumps here; scroll-margin keeps the
+            heading clear of the sticky header when it lands. */}
+        <h2 id="home-map" data-reveal className="display-2 scroll-mt-[calc(var(--header-h)+1.5rem)] text-daet-ink">
           All on one map
         </h2>
         <p data-reveal style={{ "--reveal-index": 1 } as React.CSSProperties} className="mb-6 mt-3 max-w-2xl text-lg text-daet-ink">

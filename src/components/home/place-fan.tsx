@@ -252,11 +252,18 @@ export function PlaceFan({ places, signedIn }: { places: FanPlace[]; signedIn: b
     step(dx < 0 ? 1 : -1);
   };
 
-  /** Rest offset for a wedge's photo: out along its mid angle, then scaled up. */
+  /**
+   * Rest offset for a wedge's photo: out along its mid angle, then scaled up.
+   *
+   * Numbers, and also written onto the element as `data-nudge-x`/`-y`, because
+   * the motion layer has to be able to put the photo *back* here: an open place
+   * fills the hero, and a photo still pushed out along its old wedge leaves the
+   * corner of the screen empty.
+   */
   const photoNudge = (index: number) => {
     const [ux, uy] = midVector(geometry.wedges[index].mid);
     const offset = 0.18 * Math.min(size.width, size.height);
-    return `translate(${(ux * offset).toFixed(2)}px, ${(uy * offset).toFixed(2)}px)`;
+    return { x: Number((ux * offset).toFixed(2)), y: Number((uy * offset).toFixed(2)) };
   };
 
   /** Chip position: a short way out from the apex, along the same mid angle. */
@@ -285,10 +292,12 @@ export function PlaceFan({ places, signedIn }: { places: FanPlace[]; signedIn: b
       onPointerDown={onPointerDown}
       onPointerUp={onPointerUp}
       style={sheet && isOpen ? { touchAction: "none" } : undefined}
-      className="relative -mt-[var(--header-h)] h-[100svh] max-h-[1080px] min-h-[520px] w-full overflow-hidden bg-slate-900"
+      className="relative -mt-[var(--header-h)] h-[100svh] max-h-[1080px] min-h-[520px] w-full overflow-hidden bg-canvas dark:bg-slate-900"
     >
       <div role="group" aria-label="Places in Daet" className="absolute inset-0 z-0">
-        {places.map((place, index) => (
+        {places.map((place, index) => {
+          const nudge = photoNudge(index);
+          return (
           <button
             key={place.slug}
             ref={(element) => {
@@ -324,21 +333,27 @@ export function PlaceFan({ places, signedIn }: { places: FanPlace[]; signedIn: b
               if (!box) return;
               parallax(index, ((event.clientX - box.left) / box.width - 0.5) * 0.02 * box.width);
             }}
-            className="group absolute inset-0 m-0 block cursor-pointer border-0 bg-slate-900 p-0 text-left"
+            className="group absolute inset-0 m-0 block cursor-pointer border-0 bg-canvas p-0 text-left dark:bg-slate-900"
           >
             {/* Two layers: the outer one is GSAP's (scale, and the parallax
                 nudge), the inner one holds the still radial offset that keeps
                 each photo looking down its own wedge. */}
             <span data-photo={index} className="absolute inset-0 block" style={{ transform: "scale(1.15)" }}>
-              <span className="absolute inset-0 block" style={{ transform: photoNudge(index) }}>
-                <Image
-                  src={place.photo.src}
-                  alt={place.photo.alt}
-                  fill
-                  priority={index < 2}
-                  sizes="100vw"
-                  className="object-cover"
-                />
+              {/* The rest offset, React's: the photo looks down its own wedge. */}
+              <span className="absolute inset-0 block" style={{ transform: `translate(${nudge.x}px, ${nudge.y}px)` }}>
+                {/* The counter-offset, the motion layer's: while the place is
+                    open this cancels the line above, so the photo sits dead
+                    centre of the hero instead of leaving a corner of it empty. */}
+                <span data-nudge data-nudge-x={nudge.x} data-nudge-y={nudge.y} className="absolute inset-0 block">
+                  <Image
+                    src={place.photo.src}
+                    alt={place.photo.alt}
+                    fill
+                    priority={index < 2}
+                    sizes="100vw"
+                    className="object-cover"
+                  />
+                </span>
               </span>
             </span>
 
@@ -362,7 +377,8 @@ export function PlaceFan({ places, signedIn }: { places: FanPlace[]; signedIn: b
               </span>
             )}
           </button>
-        ))}
+          );
+        })}
       </div>
 
       {/* Headline: below the apex on a desktop fan, in the band between the two
@@ -376,7 +392,11 @@ export function PlaceFan({ places, signedIn }: { places: FanPlace[]; signedIn: b
       >
         <h1
           id="home-title"
-          className={onPhone || tight ? "display-2 text-white" : "display-1 text-white"}
+          className={
+            onPhone || tight
+              ? "display-2 text-daet-ink dark:text-white"
+              : "display-1 text-daet-ink dark:text-white"
+          }
         >
           {/* The lead-in runs a step smaller than the statement under it, as in
               the mock (owner's note on image-2: "make this smaller"). */}
@@ -387,11 +407,11 @@ export function PlaceFan({ places, signedIn }: { places: FanPlace[]; signedIn: b
         {onPhone ? (
           // The band between the two fans is only about 150px tall: the
           // headline and the hint fit, the long subline and the buttons do not.
-          <p className="mt-2 text-sm text-white/80">Tap a place to see it</p>
+          <p className="mt-2 text-sm text-daet-ink/80 dark:text-white/80">Tap a place to see it</p>
         ) : (
           <>
             {!tight && (
-              <p className="mx-auto mt-3 max-w-xl text-sm leading-relaxed text-white/90 sm:text-base">
+              <p className="mx-auto mt-3 max-w-xl text-sm leading-relaxed text-daet-ink/80 dark:text-white/90 sm:text-base">
                 Beaches, islands and old-town walks, with operators and guides verified by the Daet Tourism
                 Office.
               </p>
@@ -410,7 +430,7 @@ export function PlaceFan({ places, signedIn }: { places: FanPlace[]; signedIn: b
                 <button
                   type="button"
                   onClick={() => openAssistant()}
-                  className="inline-flex min-h-12 items-center justify-center rounded-full px-7 text-base font-bold text-white ring-1 ring-inset ring-white/60 transition hover:bg-white/10 active:bg-white/20"
+                  className="inline-flex min-h-12 items-center justify-center rounded-full px-7 text-base font-bold text-daet-ink ring-1 ring-inset ring-daet-ink/30 transition hover:bg-muted active:bg-muted-strong dark:text-white dark:ring-white/60 dark:hover:bg-white/10 dark:active:bg-white/20"
                 >
                   Ask the travel guide
                 </button>

@@ -39,11 +39,36 @@ describe("PlaceDetail", () => {
     expect(screen.getByText(FAN_PLACES[2].text)).toBeInTheDocument();
   });
 
-  it("links to the place page and to the trips near it", () => {
+  it("links to the map, and to the trips near it", () => {
     renderDetail();
 
-    expect(screen.getByRole("link", { name: "See the place" })).toHaveAttribute("href", FAN_PLACES[2].href);
+    // "See the place" became "Open on the map" at the owner's request: the photo
+    // already shows the place, and the map is where the pins open it again.
+    expect(screen.getByRole("link", { name: "Open on the map" })).toHaveAttribute("href", "#home-map");
     expect(screen.getByRole("link", { name: "Trips near here" })).toHaveAttribute("href", FAN_PLACES[2].toursHref);
+  });
+
+  it("scrolls to the map without dropping the place it is showing", () => {
+    const original = Element.prototype.scrollIntoView;
+    const scrollIntoView = jest.fn();
+    Element.prototype.scrollIntoView = scrollIntoView;
+    // jsdom lays nothing out, so give the page the element the card points at.
+    const map = document.createElement("h2");
+    map.id = "home-map";
+    document.body.appendChild(map);
+
+    try {
+      renderDetail();
+      fireEvent.click(screen.getByRole("link", { name: "Open on the map" }));
+
+      expect(scrollIntoView).toHaveBeenCalledTimes(1);
+      // The hash is what holds this card open: changing it would close the
+      // place on the way to the map.
+      expect(window.location.hash).toBe("");
+    } finally {
+      map.remove();
+      Element.prototype.scrollIntoView = original;
+    }
   });
 
   it("reports the close and step buttons to the handlers", () => {

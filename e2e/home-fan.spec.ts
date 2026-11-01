@@ -226,9 +226,9 @@ test.describe("home fan on a desktop", () => {
     await page.keyboard.press("Enter");
 
     await expect(page.getByRole("heading", { level: 2, name: "Bagasbas Beach" })).toBeVisible();
-    await expect(inPanel(page).getByRole("link", { name: "See the place" })).toHaveAttribute(
+    await expect(inPanel(page).getByRole("link", { name: "Open on the map" })).toHaveAttribute(
       "href",
-      "/tours/attractions/bagasbas-beach",
+      "#home-map",
     );
     await expect(page).toHaveURL(/#place-bagasbas-beach/);
     await checkA11y(page, "home, a place open, desktop");
@@ -239,10 +239,22 @@ test.describe("home fan on a desktop", () => {
     const viewport = page.viewportSize()!;
     const hero = (await page.locator("section[aria-labelledby='home-title']").boundingBox())!;
     const card = (await page.locator("[data-detail]").boundingBox())!;
-    expect(card.x, "against the left edge").toBeLessThanOrEqual(64);
+
+    // The card, the ✕ and the arrows hang off the page's own 7xl column — the
+    // same left edge the sections below start from — rather than the screen's.
+    const column = (await page.locator("#home-places").boundingBox())!.x;
+    expect(Math.abs(card.x - column), "on the page's column").toBeLessThanOrEqual(1);
     expect(hero.y + hero.height - (card.y + card.height), "its foot near the photo's").toBeLessThanOrEqual(80);
     expect(card.width, "a card, not a column").toBeLessThanOrEqual(470);
     expect(card.x + card.width, "clear of the arrows on the right").toBeLessThan(viewport.width * 0.7);
+
+    // The photo fills the hero dead centre: pushed out along its own wedge it
+    // left a slab of the hero's own ground showing in the corner.
+    const photo = (await page.locator("[data-wedge][aria-expanded='true'] img").boundingBox())!;
+    expect(Math.abs(photo.x + photo.width / 2 - (hero.x + hero.width / 2)), "centred across").toBeLessThanOrEqual(2);
+    expect(Math.abs(photo.y + photo.height / 2 - (hero.y + hero.height / 2)), "centred down").toBeLessThanOrEqual(2);
+    expect(photo.width, "edge to edge").toBeGreaterThanOrEqual(hero.width - 1);
+    expect(photo.height, "top to bottom").toBeGreaterThanOrEqual(hero.height - 1);
 
     // ✕ over the photo's top right, ‹ › over its bottom right.
     // `exact`: an open wedge is labelled "Bagasbas Beach: close photo and details".
@@ -290,6 +302,48 @@ test.describe("home fan on a desktop", () => {
     expect(dark.color, "white on the scrim").toBe("rgb(255, 255, 255)");
     // Tailwind's shadow-none is a list of zero shadows, not the string "none".
     expect(dark.shadow, "no elevation on the scrim").not.toContain("rgba(15, 23, 42");
+  });
+
+  test("is a white page with an ink headline in light mode, ink with a white one in dark", async ({ page }) => {
+    await visit(page, "/");
+
+    const readHero = () =>
+      page.evaluate(() => {
+        const hero = document.querySelector("section[aria-labelledby='home-title']") as HTMLElement;
+        return {
+          ground: getComputedStyle(hero).backgroundColor,
+          headline: getComputedStyle(document.getElementById("home-title") as HTMLElement).color,
+          guide: getComputedStyle(
+            (hero.querySelector("[data-headline] button") as HTMLElement) ?? hero,
+          ).color,
+        };
+      });
+
+    const light = await readHero();
+    expect(light.ground, "the page's own ground, with no dark band").toBe("rgb(248, 250, 252)");
+    expect(light.headline, "ink on white").toBe("rgb(15, 23, 42)");
+    // White-on-white was the bug in the mock: this button has to carry ink here.
+    expect(light.guide, "the guide button keeps its own edge on white").toBe("rgb(15, 23, 42)");
+
+    await page.addInitScript(() => localStorage.setItem("daet-theme", "dark"));
+    await visit(page, "/");
+
+    const dark = await readHero();
+    expect(dark.ground, "the dark ground the fan had").toBe("rgb(15, 23, 42)");
+    expect(dark.headline, "white on it").toBe("rgb(255, 255, 255)");
+  });
+
+  test("takes 'Open on the map' to the map, leaving the place open", async ({ page }) => {
+    await visit(page, "/");
+    await page.getByRole("button", { name: "Bagasbas Beach: open photo and details" }).focus();
+    await page.keyboard.press("Enter");
+
+    await page.getByRole("link", { name: "Open on the map" }).click();
+
+    await expect.poll(() => page.evaluate(() => window.scrollY)).toBeGreaterThan(500);
+    // The hash still holds the place, so scrolling back up finds it open.
+    await expect(page).toHaveURL(/#place-bagasbas-beach/);
+    await expect(page.getByRole("heading", { level: 2, name: "Bagasbas Beach" })).toBeVisible();
   });
 
   test("never scrolls sideways", async ({ page }) => {

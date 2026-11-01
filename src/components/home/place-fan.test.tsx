@@ -217,6 +217,36 @@ describe("PlaceFan opening a place", () => {
     expect(container.querySelector("[data-headline]")).not.toBeNull();
   });
 
+  it("centres the open photo, and puts it back on its own angle when it closes", async () => {
+    hurry();
+    const { container } = renderFan();
+
+    // How far the photo sits from the middle of its own box: the rest offset
+    // the fan sets, plus the counter-offset the motion layer adds on top.
+    const offsetOf = (index: number) => {
+      const element = container.querySelector(`[data-wedge="${index}"] [data-nudge]`) as HTMLElement;
+      const read = /translate3?d?\((-?[\d.]+)px, *(-?[\d.]+)px/.exec(element.style.transform);
+      // No transform written yet is no counter-offset, not an unknown one.
+      return {
+        x: (read ? Number(read[1]) : 0) + Number(element.dataset.nudgeX),
+        y: (read ? Number(read[2]) : 0) + Number(element.dataset.nudgeY),
+      };
+    };
+
+    // Each photo looks down its own wedge while the fan is closed.
+    expect(Math.abs(offsetOf(2).x)).toBeGreaterThan(1);
+
+    fireEvent.click(screen.getByRole("button", { name: "Bagasbas Beach: open photo and details" }));
+
+    // A photo still pushed out along its old wedge leaves a corner of the hero
+    // empty — the opened one has to sit dead centre, covering the screen.
+    await waitFor(() => expect(offsetOf(2)).toMatchObject({ x: 0, y: 0 }));
+
+    fireEvent.click(screen.getByRole("button", { name: "Close" }));
+
+    await waitFor(() => expect(Math.abs(offsetOf(2).x)).toBeGreaterThan(1));
+  });
+
   it("tells a screen reader which place just opened", () => {
     openThird();
 
@@ -402,18 +432,28 @@ describe("PlaceFan's hero", () => {
     expect(lines[1].className).not.toContain("text-[0.85em]");
   });
 
-  it("stays dark under its white headline in either theme", () => {
-    // `daet-ink` is the *text* colour and turns pale in dark mode; the hero's
-    // ground has to stay a dark ground, or white on it fails contrast and the
-    // seams between wedges come out as white lines.
+  it("is a white page under an ink headline in light mode, and dark under a white one in dark mode", () => {
+    // Rewritten from "stays dark under its white headline in either theme": the
+    // owner's mock (image-4) shows the light hero as a white page with the
+    // headline in ink, so the ground follows the theme now. The seams between
+    // wedges are the ground showing through, so they come out white on white
+    // and slate on slate rather than as stray lines. `bg-canvas` is the page's own
+    // ground in light mode, so the hero has no seam against the sections below.
     const { container } = renderFan();
     const section = container.querySelector("section") as HTMLElement;
 
-    expect(section.className).toContain("bg-slate-900");
+    expect(section.className).toContain("bg-canvas");
+    expect(section.className).toContain("dark:bg-slate-900");
     expect(section.className).not.toContain("bg-daet-ink");
     container.querySelectorAll("[data-wedge]").forEach((wedge) => {
-      expect(wedge.className).toContain("bg-slate-900");
+      expect(wedge.className).toContain("bg-canvas");
+      expect(wedge.className).toContain("dark:bg-slate-900");
     });
+
+    const title = container.querySelector("#home-title") as HTMLElement;
+    // Ink on a white page; white on the dark one.
+    expect(title.className).toContain("text-daet-ink");
+    expect(title.className).toContain("dark:text-white");
   });
 
   it("keeps the full headline and its subline on a roomy desktop", () => {
