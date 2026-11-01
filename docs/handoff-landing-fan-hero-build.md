@@ -138,7 +138,7 @@ gain. Don't add `framer-motion`, `motion`, `lenis` or a carousel library either.
 |---|---|---|---|---|---|---|---|
 | 1 | Calaguas | `docs/hero-photos/calaguas-hillside.jpg` (1500×2000) | `public/photos/hero/calaguas-hillside.jpg` | A grassy hilltop path on Calaguas above a turquoise bay, white beaches and nipa huts | A long white-sand beach on Tinaga Island, with no roads and no hotels. Two to three hours by boat from Paracale or Vinzons. | Beach | `/tours/attractions/tinaga-island-calaguas` |
 | 2 | Apuao sandbar | existing `PHOTOS.apuao` (`/photos/apuao-sandbar.jpg`, Wikimedia, credited) | (unchanged) | (from `PHOTOS.apuao`) | Apuao's sandbar rises out of the sea at low tide, about an hour by boat from Mercedes port. | Beach | `/tours/attractions/apuao-grande-island` |
-| 3 | Bagasbas Beach | `docs/hero-photos/bagasbas-aerial.jpg` (1400×788) | `public/photos/hero/bagasbas-aerial.jpg` | Bagasbas Beach from the air, a long sandy shore with rolling surf | Daet's wide, flat surf beach, ten minutes from the plaza by tricycle. Come for the sunrise waves. | Beach | `/tours/attractions/bagasbas-beach` |
+| 3 | Bagasbas Beach | existing `PHOTOS.bagasbas` (`/photos/bagasbas-beach.jpg`, Wikimedia, credited) | (unchanged) | (from `PHOTOS.bagasbas`) | Daet's wide, flat surf beach, ten minutes from the plaza by tricycle. Come for the sunrise waves. | Beach | `/tours/attractions/bagasbas-beach` |
 | 4 | First Rizal Monument | `docs/hero-photos/rizal-monument-park.jpg` (1400×788) | `public/photos/hero/rizal-monument-park.jpg` | The white Rizal monument in Daet, a pylon topped with a gold star, inside a red and white balustrade under shade trees | The first monument to José Rizal, raised in Daet in 1898. Start a walk of the old town here. | Heritage site | `/tours/attractions/first-rizal-monument` |
 | 5 | Daet Heritage Center | `docs/hero-photos/daet-heritage-center.jpg` (1280×964) | `public/photos/hero/daet-heritage-center.jpg` | The green-trimmed Daet Heritage Center, with a giant painted pineapple and woven baskets in front | A museum in the old municipal hall facing the Rizal Monument, with displays and relics on the history of Daet. | Museum | `/tours/attractions/daet-heritage-center` |
 | 6 | Cathedral of the Most Holy Trinity | `docs/hero-photos/cathedral-holy-trinity.jpg` (1024×768) | `public/photos/hero/cathedral-holy-trinity.jpg` | The Cathedral of the Holy Trinity in Daet, a red and stone facade beside a crowned rotunda | The cathedral church of Daet. | Church | `/tours/attractions/cathedral-most-holy-trinity` |
@@ -147,28 +147,28 @@ Descriptions 1–4 are the existing `PANELS` copy in `src/app/page.tsx`. Descrip
 6 are from the `tours_attractions` table, slugs `daet-heritage-center` and
 `cathedral-most-holy-trinity`. Don't rewrite them.
 
-Also in `docs/hero-photos/`: `alay-sa-bayan-building.jpg`, a white government building with
-"Alay sa Bayan" on the roof. Its **name is unknown**, so use it only in the "Places to
-start" cards, as `[Building name]`, if the owner confirms.
-
 ### 4.2 Photo rules
 
-- **Credits:** add each new photo to `PHOTOS` in `src/lib/photo-credits.ts`, with `title`,
-  `creator`, `licence`, `licenceUrl` and `sourceUrl`.
-  - The owner hasn't supplied these yet, so ask.
-  - Until then, keep the files in `docs/hero-photos/` and build against them through a
-    dev-only import, or ask the owner whether to move them now with a "[credit to come]"
-    entry.
-- **Possibly AI-generated:** `bagasbas-aerial.jpg` has a garbled "TRAGUS" sign, and
-  `alay-sa-bayan-building.jpg` also looks AI-generated. A tourism site must not show those
-  as the real place. Raise it with the owner, and offer `PHOTOS.bagasbas` (real,
-  credited) as the Bagasbas fallback.
+- **Where the owner's photos come from:** the owner found the four photos in
+  `docs/hero-photos/` (Calaguas, Rizal Monument, Heritage Center, Cathedral) on
+  https://daetfeedback.vercel.app/spots.
+  - A page that displays a photo is not a licence.
+  - Before moving any of them into `public/photos/hero/`, open that page and find each
+    photo's **original photographer, source URL and licence**.
+  - Record them in `PHOTOS` in `src/lib/photo-credits.ts` (`title`, `creator`, `licence`,
+    `licenceUrl`, `sourceUrl`).
+  - If a photo's licence isn't clear, keep it out of `public/` and ask the owner. Until
+    then, the fan falls back to the existing credited photo for that place:
+    `PHOTOS.calaguasBeach`, `PHOTOS.rizal`, or a `brand-deep` block with the place name
+    (Heritage Center, Cathedral).
+- **Bagasbas:** decided. It uses the existing credited `PHOTOS.bagasbas`. The AI-looking
+  aerial and the "Alay sa Bayan" building photo were dropped.
 - **Resize** each photo to at most 1600 px on the long side and compress (JPEG quality
   about 80). `next/image` handles the responsive sizes.
 
 ### 4.3 Headline and copy
 
-- **Hero headline:** two lines, owner to approve:
+- **Hero headline (approved by the owner):** two lines:
   - "Start in Daet."
   - "Go anywhere in Camarines Norte."
 
@@ -522,8 +522,8 @@ the open view covers the viewport, so add `touch-action: none` on it and let
 - Hero height `h-[100svh]` with `min-h-[560px]` and `max-h-[1000px]`. The site header
   overlaps it (flat `rgba(15,23,42,0.8)` bar). Check how `PageFrame bleed` positions the
   header and keep that.
-- **Landscape phones** (height < 500 px): fall back to a single fan of six without labels,
-  or the plain photo hero. Pick one and tell the owner.
+- **Landscape phones** (height < 500 px): **one fan of six** (owner's decision), using
+  the desktop geometry. No name tags; tap opens the place full screen.
 
 ## 11. Below the hero (scroll)
 
@@ -536,9 +536,10 @@ the open view covers the viewport, so add `touch-action: none` on it and let
    - **simplest acceptable version:** pin plus a fade, with the cards rising in;
    - call `ScrollTrigger.refresh()` after images load (`onLoadingComplete` of the first
      two images).
-2. **Places to start:** the existing `PlacePanels`, with the same six places plus the
-   Mercedes port panel if the owner wants to keep it. Card hover: lift 4 px and photo
-   scale 1.04, CSS only.
+2. **Places to start:** the **existing `PlacePanels` section, unchanged** (owner's
+   decision). It keeps its six panels: Calaguas, Apuao sandbar, Mercedes port, Bagasbas
+   Beach, First Rizal Monument, St John the Baptist Church. Don't redesign it or swap in
+   cards; the scroll fold just hands off to it.
 3. **Trips you can book:**
    - published `tours_packages` with the minimum `price_per_pax` from
      `tours_package_price_variants`;
@@ -557,8 +558,29 @@ the open view covers the viewport, so add `touch-action: none` on it and let
    - an ink band showing counts of approved operators and guides, using `count` queries
      on `tours_operators` / `tours_guides` where `accreditation_status = 'approved'`;
    - a "Find a guide" link.
-8. **Getting to Daet:** placeholder card "[Bus, plane and van routes, supplied by the
-   Tourism Office]" until the owner gives the text.
+8. **Getting to Daet:** three short cards using this copy, researched on 2026-11-01 from
+   the sources listed. Show **no fares or exact times as fact**, and end with the
+   check-before-you-travel line.
+   - **By bus:** "Direct buses run from Metro Manila, from Cubao and from PITX, to the
+     Daet Integrated Terminal in Lag-on. Plan on about 7 to 10 hours, depending on
+     traffic. Changing buses at Lucena is often cheaper."
+   - **By plane:** "There are no scheduled flights to Daet. Fly from Manila to Naga
+     Airport in Pili, Camarines Sur, then take a van or bus to Daet, about 2 to 3 hours
+     more."
+   - **By van:** "Vans leave Naga's westbound van terminal for Daet Central Terminal
+     through the day, roughly 5 AM to 5 PM. The ride takes about 2 hours."
+   - **Closing line:** "Check schedules and fares with the bus company or terminal before
+     you travel."
+   - **Sources** (link them in the footer credits line):
+     [Pamasahe: DLTB Manila–Camarines Norte](https://pamasahe.com/routes/manila-camarines-norte-dltb-co-schedule-fares),
+     [Rome2rio Cubao–Daet](https://www.rome2rio.com/s/Cubao/Daet),
+     [Rome2rio Manila–Daet](https://www.rome2rio.com/s/Manila/Daet),
+     [Wikipedia: Bagasbas Airport](https://en.wikipedia.org/wiki/Bagasbas_Airport),
+     [Wikipedia: Philippine Airlines destinations](https://en.wikipedia.org/wiki/List_of_Philippine_Airlines_destinations) (Daet route terminated),
+     [Flights from Naga (WNP)](https://www.flightconnections.com/flights-from-naga-camarines-sur-wnp),
+     [Wikivoyage: Daet (2025 snapshot)](https://kwx.liehendr.com/content/wikivoyage_en_all_maxi_2025-02/A/Daet).
+   - Keep this copy in one constant (e.g. `src/lib/getting-here.ts`), so the Tourism Office
+     can correct it in one place.
 9. **Footer credits:** through `PageFrame credits`. Add the new `PHOTOS` keys.
 
 **Section reveals:**
@@ -660,16 +682,18 @@ the open view covers the viewport, so add `touch-action: none` on it and let
       to the owner.
 - [ ] **No pull request** until the owner says "make PR".
 
-## 16. Questions to ask the owner before or while building
+## 16. Owner decisions and what's still open
 
-1. **Photo credits:** photographer, source and licence for each photo in
-   `docs/hero-photos/`. Is it OK to ship with "[credit to come]" in the meantime?
-2. **Bagasbas aerial and the "Alay sa Bayan" building:** both look AI-generated. Should
-   Bagasbas use the credited `PHOTOS.bagasbas` instead? What is the building's real name,
-   and should it appear at all?
-3. **Headline copy:** approve "Start in Daet. Go anywhere in Camarines Norte.", or supply
-   different copy.
-4. **Places to start:** keep the Mercedes port panel there, in addition to the six fan
-   places?
-5. **Landscape phones:** a single fan of six, or the plain photo hero?
-6. **Getting to Daet:** the routes text, or leave the placeholder for now.
+**Decided (2026-11-01):**
+- **Bagasbas:** uses the credited `PHOTOS.bagasbas`. The aerial and the "Alay sa Bayan"
+  building photo were dropped.
+- **Headline:** "Start in Daet. Go anywhere in Camarines Norte." is approved.
+- **Places to start:** keep the original `PlacePanels` section unchanged, Mercedes port
+  and church included.
+- **Landscape phones:** one fan of six.
+- **Getting to Daet:** use the researched copy in §11, item 8.
+
+**Still open (ask the owner):**
+1. The original photographer and licence for each photo in `docs/hero-photos/`, from
+   https://daetfeedback.vercel.app/spots (see §4.2).
+2. Whether the Tourism Office has confirmed the "Getting to Daet" text before launch.

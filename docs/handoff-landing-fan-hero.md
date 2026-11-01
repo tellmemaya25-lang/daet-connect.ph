@@ -1,5 +1,7 @@
 # Handoff: landing hero "fan" of Daet places (GSAP)
 
+> **Source of truth:** the full build plan in `docs/handoff-landing-fan-hero-build.md` supersedes this file where they differ.
+
 ## Context
 
 The owner shared a hotel advert from Kodaikanal (Poppys Hotel): photos of local places
