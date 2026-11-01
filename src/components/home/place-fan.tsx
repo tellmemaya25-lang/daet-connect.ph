@@ -8,6 +8,7 @@ import { DEFAULT_HERO_SIZE, fanGeometry, midVector, type FanLayout } from "./fan
 import type { FanPlace } from "./fan-places";
 import { PlaceDetail } from "./place-detail";
 import { useFanAnimation } from "./use-fan-animation";
+import { useHeroFold } from "./use-hero-fold";
 import { usePlaceHash } from "./use-place-hash";
 
 /** A horizontal drag longer than this, on a phone, moves to the next place. */
@@ -72,6 +73,8 @@ export function PlaceFan({ places, signedIn }: { places: FanPlace[]; signedIn: b
     () => fanGeometry(size.width, size.height, layout),
     [size.width, size.height, layout],
   );
+
+  useHeroFold(sectionRef);
 
   const slugs = useMemo(() => places.map((place) => place.slug), [places]);
   const { openSlug, open: openInUrl, close: closeInUrl } = usePlaceHash(slugs);
@@ -151,6 +154,19 @@ export function PlaceFan({ places, signedIn }: { places: FanPlace[]; signedIn: b
     },
     [openIndex, places, openInUrl, describe, swapTo],
   );
+
+  // A wheel over an open place is someone trying to leave the hero: close
+  // first, then let the page scroll as it normally would.
+  useEffect(() => {
+    if (openIndex < 0) return;
+
+    const onWheel = (event: WheelEvent) => {
+      if (event.deltaY > 0) close();
+    };
+
+    window.addEventListener("wheel", onWheel, { passive: true });
+    return () => window.removeEventListener("wheel", onWheel);
+  }, [openIndex, close]);
 
   const onKeyDown = (event: React.KeyboardEvent<HTMLElement>) => {
     if (event.key === "Escape" && openIndex >= 0) {
