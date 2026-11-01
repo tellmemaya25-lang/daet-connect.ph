@@ -81,15 +81,13 @@ describe("polygons", () => {
     expect(wedge).toHaveLength(9);
   });
 
-  it("puts the apex on the hero's point, give or take the seam", () => {
+  it("puts every wedge's apex on the fan's own point, so they meet", () => {
     const vp: Point = [720, 520];
     const wedge = wedgePolygon(vp, 178, 208, 3600);
 
-    // The apex is where the two inset edges meet: half a seam out along the
-    // bisector, divided by the sine of half the 30° wedge. Pinned to that
-    // formula rather than to a pixel bound, so a wider seam is not a failure.
-    const expected = SEAM_PX.desktop / 2 / Math.sin((15 * Math.PI) / 180);
-    expect(Math.hypot(wedge[0][0] - vp[0], wedge[0][1] - vp[1])).toBeCloseTo(expected, 6);
+    // The seam tapers to nothing at the point: no inset, no notch between the
+    // wedges. (This used to be half a seam over sin 15° of clearance.)
+    expect(wedge[0]).toEqual(vp);
   });
 
   it("gives the open rectangle the same nine points, so the two can be blended", () => {
@@ -100,7 +98,7 @@ describe("polygons", () => {
     expect(rectPoints(DESKTOP.width, DESKTOP.height)).toEqual(rect);
   });
 
-  it("keeps the seam the same width 50px from the point and 800px away", () => {
+  it("tapers the seam to nothing at the point, and to SEAM_PX at the far edge", () => {
     const geo = fanGeometry(DESKTOP.width, DESKTOP.height, "desktop");
     const vp = geo.fans[0].vp;
 
@@ -116,9 +114,21 @@ describe("polygons", () => {
       return leftEdge + rightEdge;
     };
 
-    expect(widthAt(50)).toBeCloseTo(SEAM_PX.desktop, 1);
-    expect(widthAt(800)).toBeCloseTo(SEAM_PX.desktop, 1);
-    expect(Math.abs(widthAt(800) - widthAt(50))).toBeLessThanOrEqual(0.5);
+    // The furthest corner of the hero from the fan's point, where the seam is
+    // at its nominal width; from there it is proportional to the distance.
+    const far = Math.max(
+      Math.hypot(vp[0], vp[1]),
+      Math.hypot(DESKTOP.width - vp[0], vp[1]),
+      Math.hypot(vp[0], DESKTOP.height - vp[1]),
+      Math.hypot(DESKTOP.width - vp[0], DESKTOP.height - vp[1]),
+    );
+
+    expect(widthAt(far)).toBeCloseTo(SEAM_PX.desktop, 1);
+    expect(widthAt(far / 2)).toBeCloseTo(SEAM_PX.desktop / 2, 1);
+    expect(widthAt(far / 4)).toBeCloseTo(SEAM_PX.desktop / 4, 1);
+    expect(widthAt(far / 8)).toBeCloseTo(SEAM_PX.desktop / 8, 1);
+    // Nothing left at the point itself.
+    expect(widthAt(2)).toBeLessThan(0.1);
   });
 
   it("uses a thinner seam on a phone", () => {
@@ -127,12 +137,21 @@ describe("polygons", () => {
     const boundary = geo.wedges[0].a1;
     const first = geo.points[0];
     const second = geo.points[1];
-    const point = along(vp, boundary, 40);
 
-    const total =
-      distanceToLine(point, first[0], first[first.length - 1]) + distanceToLine(point, second[0], second[1]);
+    const far = Math.max(
+      Math.hypot(vp[0], vp[1]),
+      Math.hypot(PHONE.width - vp[0], vp[1]),
+      Math.hypot(vp[0], PHONE.height - vp[1]),
+      Math.hypot(PHONE.width - vp[0], PHONE.height - vp[1]),
+    );
+    const at = (share: number) => {
+      const point = along(vp, boundary, far * share);
+      return distanceToLine(point, first[0], first[first.length - 1]) + distanceToLine(point, second[0], second[1]);
+    };
 
-    expect(total).toBeCloseTo(SEAM_PX.phone, 1);
+    expect(at(1)).toBeCloseTo(SEAM_PX.phone, 1);
+    expect(at(0.5)).toBeCloseTo(SEAM_PX.phone / 2, 1);
+    expect(SEAM_PX.phone).toBeLessThan(SEAM_PX.desktop);
   });
 
   it("writes clip-paths as percentages", () => {

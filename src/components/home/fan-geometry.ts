@@ -46,7 +46,6 @@ const toDeg = (radians: number) => (radians * 180) / Math.PI;
 const unitAt = (degrees: number): Point => [Math.cos(toRad(degrees)), Math.sin(toRad(degrees))];
 
 /** The unit vector 90° on from `degrees`, towards increasing angles. */
-const normalAt = (degrees: number): Point => [-Math.sin(toRad(degrees)), Math.cos(toRad(degrees))];
 
 const pointAt = (from: Point, direction: Point, distance: number): Point => [
   from[0] + direction[0] * distance,
@@ -65,23 +64,30 @@ export function fanWidths(n: number, span: number, focus: number | null, bump = 
   return Array.from({ length: n }, (_, i) => (i === focus ? base + extra : base - extra / (n - 1)));
 }
 
-/** Where two rays cross; the midpoint when they are parallel, which they never quite are. */
-function intersect(a: Point, u: Point, b: Point, v: Point): Point {
-  const determinant = u[0] * -v[1] + v[0] * u[1];
-  if (Math.abs(determinant) < 1e-9) return [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2];
-
-  const dx = b[0] - a[0];
-  const dy = b[1] - a[1];
-  const t = (dx * -v[1] + v[0] * dy) / determinant;
-  return pointAt(a, u, t);
+/**
+ * One wedge: the fan's own point, then eight points along the outer arc.
+ *
+ * The seam between two wedges is a *taper*, not a band of one width: each edge
+ * is turned inward by the angle that leaves `gapPx` between neighbours at
+ * `taperAt` — the hero's diagonal, so the seam measures `gapPx` where the photos
+ * leave the screen — and that gap narrows in proportion to the distance from the
+ * point, reaching nothing where all the wedges meet. A constant offset instead
+ * leaves a navy hole at the point and a uniform stripe all the way out, which is
+ * what the owner marked up on image-2 ("taper this down to 0px").
+ */
+/**
+ * How far the hero's box reaches from a fan's point — the distance at which a
+ * seam measures its full `SEAM_PX`, and beyond which nothing can be drawn.
+ */
+function reachFrom(vp: Point, width: number, height: number): number {
+  return Math.max(
+    Math.hypot(vp[0], vp[1]),
+    Math.hypot(width - vp[0], vp[1]),
+    Math.hypot(vp[0], height - vp[1]),
+    Math.hypot(width - vp[0], height - vp[1]),
+  );
 }
 
-/**
- * One wedge: the apex the two edge rays meet at, then eight points along the
- * outer arc. Each edge ray is pushed `gapPx / 2` into the wedge along its
- * normal, so the seam it leaves with its neighbour is `gapPx` wide at every
- * distance from the point — not just at the rim.
- */
 export function wedgePolygon(
   vp: Point,
   a0: number,
@@ -89,29 +95,20 @@ export function wedgePolygon(
   radius: number,
   gapPx: number = SEAM_PX.desktop,
   n = ARC_POINTS,
+  taperAt: number = radius,
 ): Point[] {
-  const half = gapPx / 2;
-  const u0 = unitAt(a0);
-  const u1 = unitAt(a1);
-
-  // The two edge rays, each moved into the wedge.
-  const from: Point = pointAt(vp, normalAt(a0), half);
-  const to: Point = pointAt(vp, normalAt(a1), -half);
-
-  const apex = intersect(from, u0, to, u1);
-  // Where each edge ray leaves the circle of `radius`, which is the wedge's rim.
-  const reach = Math.sqrt(Math.max(radius * radius - half * half, 0));
-  const first = pointAt(from, u0, reach);
-  const last = pointAt(to, u1, reach);
+  // Half the seam, as the angle it subtends at `taperAt` — in degrees, which is
+  // what the angles around it are in.
+  const half = (Math.atan2(gapPx / 2, Math.max(taperAt, 1)) * 180) / Math.PI;
+  const start = a0 + half;
+  const end = a1 - half;
 
   const samples = Array.from({ length: n }, (_, k) => {
-    if (k === 0) return first;
-    if (k === n - 1) return last;
-    const angle = a0 + ((a1 - a0) * k) / (n - 1);
+    const angle = start + ((end - start) * k) / (n - 1);
     return pointAt(vp, unitAt(angle), radius);
   });
 
-  return [apex, ...samples];
+  return [vp, ...samples];
 }
 
 /**
@@ -241,9 +238,12 @@ export function fanAngles(fan: FanSpan, widths: number[]): Array<{ a0: number; a
 export function fanWedgePoints(geometry: FanGeometry, fanIndex: number, widths: number[]): Point[][] {
   const fan = geometry.fans[fanIndex];
   const gap = SEAM_PX[geometry.layout];
+  const far = reachFrom(fan.vp, geometry.width, geometry.height);
   const radius = RADIUS_FACTOR * Math.hypot(geometry.width, geometry.height);
 
-  return fanAngles(fan, widths).map(({ a0, a1 }) => wedgePolygon(fan.vp, a0, a1, radius, gap));
+  return fanAngles(fan, widths).map(({ a0, a1 }) =>
+    wedgePolygon(fan.vp, a0, a1, radius, gap, ARC_POINTS, far),
+  );
 }
 
 /**
@@ -271,6 +271,8 @@ export function fanGeometry(
   const radius = RADIUS_FACTOR * Math.hypot(width, height);
   const gap = SEAM_PX[layout];
 
+  const far = new Map(fans.map((fan) => [fan, reachFrom(fan.vp, width, height)]));
+
   const wedges: Wedge[] = fans.flatMap((fan, fanIndex) =>
     fanAngles(fan, fanWidths(fan.count, fan.a1 - fan.a0, null)).map(({ a0, a1 }) => ({
       vp: fan.vp,
@@ -278,7 +280,7 @@ export function fanGeometry(
       a0,
       a1,
       mid: (a0 + a1) / 2,
-      rest: toClipPath(wedgePolygon(fan.vp, a0, a1, radius, gap), width, height),
+      rest: toClipPath(wedgePolygon(fan.vp, a0, a1, radius, gap, ARC_POINTS, far.get(fan)), width, height),
     })),
   );
 
@@ -290,7 +292,7 @@ export function fanGeometry(
     wedges,
     points: fans.flatMap((fan, fanIndex) =>
       fanAngles(fan, fanWidths(fan.count, fan.a1 - fan.a0, null)).map(({ a0, a1 }) =>
-        wedgePolygon(fan.vp, a0, a1, radius, gap),
+        wedgePolygon(fan.vp, a0, a1, radius, gap, ARC_POINTS, far.get(fan)),
       ),
     ),
     openPoints: rectPolygon(width, height),
