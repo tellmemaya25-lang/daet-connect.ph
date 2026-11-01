@@ -28,7 +28,7 @@ const ARC_POINTS = 8;
  * thin at the point, tens of pixels at the edge — and the poster's lines are
  * the same weight all the way out.
  */
-export const SEAM_PX: Record<FanLayout, number> = { desktop: 5, phone: 3 };
+export const SEAM_PX: Record<FanLayout, number> = { desktop: 8, phone: 4 };
 
 /** Long enough to leave the box from any apex; short enough to keep numbers sane. */
 const RADIUS_FACTOR = 1.5;
