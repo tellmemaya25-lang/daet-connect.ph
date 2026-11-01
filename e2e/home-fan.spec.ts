@@ -73,6 +73,14 @@ test.describe("home fan on a phone", () => {
     await expect(page.getByText("6 of 6")).toBeVisible();
   });
 
+  test("shows the Tourism Office's own counts, not a placeholder", async ({ page }) => {
+    await visit(page, "/");
+    const band = page.locator("section[aria-labelledby='home-people']");
+
+    await expect(band.getByText(/approved (operator|guide)s?/).first()).toBeVisible();
+    await expect(band.getByText(/\[placeholder/)).toHaveCount(0);
+  });
+
   test("hands off to the places below it", async ({ page }) => {
     await visit(page, "/");
 

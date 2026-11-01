@@ -13,6 +13,7 @@ import { GettingHere } from "@/components/home/getting-here";
 import { HomeMap, type MapPlace } from "@/components/home/home-map";
 import { TripCard, type HomeTrip } from "@/components/home/trip-card";
 import { durationLabel } from "@/lib/tours/trip-board";
+import { readAccreditationCounts } from "@/lib/tours/accreditation";
 import { PHOTOS, type PhotoKey } from "@/lib/photo-credits";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { EVENT_COLUMNS, MERCH_COLUMNS, type MerchItem, type TourEvent } from "@/lib/tours/promo-validation";
@@ -120,8 +121,7 @@ export default async function HomePage() {
     merchResult,
     tripsResult,
     placesResult,
-    operatorCount,
-    guideCount,
+    countsResult,
   ] = await Promise.all([
     supabase.auth.getUser(),
     supabase.from("tours_events").select(EVENT_COLUMNS).eq("is_published", true).gte("ends_at", new Date().toISOString()).order("starts_at", { ascending: true }).limit(4),
@@ -142,8 +142,8 @@ export default async function HomePage() {
       .eq("is_active", true)
       .not("latitude", "is", null)
       .not("longitude", "is", null),
-    supabase.from("tours_operators").select("id", { count: "exact", head: true }).eq("accreditation_status", "approved"),
-    supabase.from("tours_guides").select("id", { count: "exact", head: true }).eq("accreditation_status", "approved"),
+    // One function, two integers: anonymous readers cannot select the tables.
+    supabase.rpc("tours_accreditation_counts"),
   ]);
   const upcomingEvents = (eventsResult.data ?? []) as TourEvent[];
   const featuredMerch = (merchResult.data ?? []) as MerchItem[];
@@ -168,11 +168,9 @@ export default async function HomePage() {
     .filter((row) => fanSlugs.has(row.slug) && Number.isFinite(Number(row.latitude)) && Number.isFinite(Number(row.longitude)))
     .map((row) => ({ slug: row.slug, name: row.name, lat: Number(row.latitude), lng: Number(row.longitude) }));
 
-  // Anonymous readers cannot select tours_operators or tours_guides (see
-  // 20261101_f8_reviews.sql), so these are null for a visitor who is not signed
-  // in until a public count function exists; the band says so instead of guessing.
-  const operators = operatorCount.count;
-  const guides = guideCount.count;
+  // Null until the count function is deployed (or if it fails): the band then
+  // shows a visible placeholder rather than a made-up number.
+  const counts = countsResult.error ? null : readAccreditationCounts(countsResult.data);
 
   return (
     <PageFrame bleed credits={HOME_PHOTOS}>
@@ -303,15 +301,19 @@ export default async function HomePage() {
             </p>
           </div>
           <div className="flex flex-wrap items-end gap-8">
-            {operators !== null && guides !== null ? (
+            {counts ? (
               <>
                 <p>
-                  <span className="block text-4xl font-bold leading-none">{operators}</span>
-                  <span className="text-sm text-white/80">{operators === 1 ? "approved operator" : "approved operators"}</span>
+                  <span className="block text-4xl font-bold leading-none">{counts.operators}</span>
+                  <span className="text-sm text-white/80">
+                    {counts.operators === 1 ? "approved operator" : "approved operators"}
+                  </span>
                 </p>
                 <p>
-                  <span className="block text-4xl font-bold leading-none">{guides}</span>
-                  <span className="text-sm text-white/80">{guides === 1 ? "approved guide" : "approved guides"}</span>
+                  <span className="block text-4xl font-bold leading-none">{counts.guides}</span>
+                  <span className="text-sm text-white/80">
+                    {counts.guides === 1 ? "approved guide" : "approved guides"}
+                  </span>
                 </p>
               </>
             ) : (
