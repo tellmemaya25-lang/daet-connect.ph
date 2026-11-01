@@ -358,7 +358,14 @@ export function GalleryStep({
 
       {!canAddImages && (
         <div className="mt-4 p-3 rounded-2xl bg-blue-50 dark:bg-blue-950/40 text-sm text-blue-900 dark:text-blue-300">
-          ℹ️ Gallery images cannot be modified for this package status.
+          Gallery images cannot be modified for this package status.
+        </div>
+      )}
+
+      {packageStatus === "published" && canAddImages && (
+        <div className="mt-4 p-3 rounded-2xl bg-yellow-50 dark:bg-yellow-950/40 text-sm text-yellow-900 dark:text-yellow-200">
+          Adding, removing or reordering photos sends this package back to the Tourism Office for review. Until
+          they approve it, the package is hidden from tourists. Caption edits stay live.
         </div>
       )}
     </div>
