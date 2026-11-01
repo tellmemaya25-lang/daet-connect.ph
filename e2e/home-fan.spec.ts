@@ -146,3 +146,105 @@ test.describe("home fan on a desktop", () => {
     expect(overflow).toBeLessThanOrEqual(0);
   });
 });
+
+/**
+ * The fan with motion on.
+ *
+ * The suite above runs with `prefers-reduced-motion: reduce`, which skips every
+ * shape morph, so nothing has ever animated a wedge's `clip-path` in a test.
+ * These do, at desktop width, and they are the tests that catch a fan that
+ * comes apart mid-hover.
+ */
+test.describe("home fan, motion on", () => {
+  test.use({
+    reducedMotion: "no-preference",
+    viewport: { width: 1280, height: 800 },
+    isMobile: false,
+    hasTouch: false,
+  });
+
+  type Spot = { x: number; y: number };
+
+  /** A 12 × 6 grid of pointer spots across the hero, kept off its edges. */
+  const gridAcrossHero = (page: import("@playwright/test").Page) =>
+    page.evaluate(() => {
+      const hero = document.querySelector("section[aria-labelledby='home-title']");
+      if (!hero) return [];
+      const box = hero.getBoundingClientRect();
+      const left = box.left + 8;
+      const right = box.right - 8;
+      const top = box.top + 8;
+      const bottom = box.bottom - 8;
+      const spots: { x: number; y: number }[] = [];
+      for (let column = 0; column < 12; column += 1) {
+        for (let row = 0; row < 6; row += 1) {
+          spots.push({
+            x: Math.round(left + ((right - left) * (column + 0.5)) / 12),
+            y: Math.round(top + ((bottom - top) * (row + 0.5)) / 6),
+          });
+        }
+      }
+      return spots;
+    });
+
+  /** The spots where a photo is what the visitor would hit, right now. */
+  const photoSpots = (page: import("@playwright/test").Page, spots: Spot[]) =>
+    page.evaluate(
+      (spots) =>
+        spots.filter((spot) => Boolean(document.elementFromPoint(spot.x, spot.y)?.closest("[data-wedge]"))),
+      spots,
+    );
+
+  /** Spots where a photo was, that are no longer a wedge: the holes. */
+  const holes = (page: import("@playwright/test").Page, spots: Spot[]) =>
+    page.evaluate(
+      (spots) =>
+        spots.flatMap((spot) => {
+          const hit = document.elementFromPoint(spot.x, spot.y);
+          if (hit?.closest("[data-wedge]")) return [];
+          return [`${spot.x},${spot.y} → ${hit ? hit.tagName.toLowerCase() : "nothing"}`];
+        }),
+      spots,
+    );
+
+  const clipPathOf = (page: import("@playwright/test").Page, index: number) =>
+    page.evaluate((index) => {
+      const wedge = document.querySelector<HTMLElement>(`[data-wedge="${index}"]`);
+      return wedge?.style.clipPath ?? "";
+    }, index);
+
+  test("keeps the fan whole while a wedge is hovered", async ({ page }) => {
+    await visit(page, "/");
+
+    const photos = await photoSpots(page, await gridAcrossHero(page));
+    expect(photos.length, "spots that start on a photo").toBeGreaterThan(20);
+
+    // Where each wedge is, so the hover can be aimed at one rather than guessed.
+    const spotInWedge = (index: number) =>
+      page.evaluate(
+        ({ photos, index }) =>
+          photos.find((spot) =>
+            Boolean(document.elementFromPoint(spot.x, spot.y)?.closest(`[data-wedge="${index}"]`)),
+          ) ?? null,
+        { photos, index },
+      );
+
+    for (const index of [0, 3]) {
+      const spot = await spotInWedge(index);
+      expect(spot, `a spot inside wedge ${index}`).not.toBeNull();
+
+      const before = await clipPathOf(page, index);
+      await page.mouse.move(spot!.x, spot!.y, { steps: 4 });
+
+      // 100ms and 175ms land mid-morph; 400ms is after the 350ms hover tween.
+      let elapsed = 0;
+      for (const at of [100, 175, 400]) {
+        await page.waitForTimeout(at - elapsed);
+        elapsed = at;
+        expect(await holes(page, photos), `holes in the fan ${at}ms into hovering wedge ${index}`).toEqual([]);
+      }
+
+      expect(await clipPathOf(page, index), `wedge ${index} widened`).not.toBe(before);
+    }
+  });
+});
