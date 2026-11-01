@@ -18,6 +18,8 @@ const stopButton = (section: ReturnType<Page["locator"]>, name: string) => secti
 for (const width of [375, 1280]) {
   test(`opening stops focuses the map, one at a time (${width}px)`, async ({ page }) => {
     await page.setViewportSize({ width, height: width < 768 ? 812 : 900 });
+    // Jump instead of fly (and no drift), so map pins are still when tapped.
+    await page.emulateMedia({ reducedMotion: "reduce" });
     const section = await itinerary(page);
     await expect(section.getByText("Meet at")).toBeVisible();
 
@@ -33,15 +35,19 @@ for (const width of [375, 1280]) {
     await expect(section.locator("[aria-live='polite']")).toContainText("Stop 3 of 3");
     await expect(section.getByRole("img", { name: /Bagasbas/ }).first()).toBeVisible();
 
-    // With the tile map (CI has network), tapping a marker opens its stop in the list.
-    const marker = section.getByRole("button", { name: /^Stop 1: First José Rizal Monument/ });
+    const recenter = section.getByRole("button", { name: "Recenter itinerary", exact: true });
+    await recenter.click();
+    await expect(section.getByText("3 stops")).toBeVisible();
+
+    // With the tile map (CI has network), tapping a pin opens its stop in the list. With the whole
+    // route in view, stop 3 is clear of stops 1 and 2 (35 m apart, so they overlap at this zoom).
+    const marker = section.getByRole("button", { name: /^Stop 3: Bagasbas Beach/ });
     if (await marker.count()) {
       await marker.click();
-      await expect(stopButton(section, "First José Rizal Monument")).toHaveAttribute("aria-expanded", "true");
+      await expect(stopButton(section, "Bagasbas Beach")).toHaveAttribute("aria-expanded", "true");
+      await recenter.click();
+      await expect(section.getByText("3 stops")).toBeVisible();
     }
-
-    await section.getByRole("button", { name: "Recenter itinerary", exact: true }).click();
-    await expect(section.getByText("3 stops")).toBeVisible();
     await expect(stopButton(section, "Bagasbas Beach")).toHaveAttribute("aria-expanded", "false");
 
     const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
