@@ -58,6 +58,16 @@
     color-scheme: light;
     background: var(--color-canvas);
     color: var(--color-daet-ink);
+    /* The header's own height, so a full-height hero can sit under it instead
+       of sliding 64–80px of itself below the fold. Keep in step with
+       site-header.tsx's min-h-16 / sm:min-h-20. */
+    --header-h: 4rem;
+  }
+
+  @media (min-width: 40rem) {
+    :root {
+      --header-h: 5rem;
+    }
   }
 
   * {

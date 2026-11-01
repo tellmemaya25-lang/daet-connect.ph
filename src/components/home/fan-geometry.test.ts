@@ -7,6 +7,7 @@ import {
   fanWidths,
   lerpPoints,
   midVector,
+  pointAboveHeadline,
   rectPolygon,
   rectPoints,
   restWidths,
@@ -255,6 +256,21 @@ describe("phone layout", () => {
       const highest = Math.min(...points.map(([, y]) => y));
       expect(highest).toBeGreaterThanOrEqual(middleBottom - 0.001);
     });
+  });
+});
+
+describe("pointAboveHeadline", () => {
+  it("puts the point 16px above the headline", () => {
+    expect(pointAboveHeadline(500, 900)).toBe(484);
+  });
+
+  it("keeps it in the middle band when the headline is very low", () => {
+    // 62% of 900 is 558: a headline at the very bottom can't drag the fan with it.
+    expect(pointAboveHeadline(860, 900)).toBeCloseTo(0.62 * 900, 6);
+  });
+
+  it("keeps it out of the photos when the headline is very high", () => {
+    expect(pointAboveHeadline(120, 900)).toBeCloseTo(0.45 * 900, 6);
   });
 });
 

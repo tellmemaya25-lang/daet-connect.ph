@@ -4,7 +4,13 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import Image from "next/image";
 import { ButtonLink } from "@/components/ui/button";
 import { openAssistant } from "@/lib/ui-overlay";
-import { DEFAULT_HERO_SIZE, fanGeometry, midVector, type FanLayout } from "./fan-geometry";
+import {
+  DEFAULT_HERO_SIZE,
+  fanGeometry,
+  midVector,
+  pointAboveHeadline,
+  type FanLayout,
+} from "./fan-geometry";
 import type { FanPlace } from "./fan-places";
 import { PlaceDetail } from "./place-detail";
 import { useFanAnimation } from "./use-fan-animation";
@@ -27,6 +33,7 @@ const SWIPE_AFTER = 40;
 export function PlaceFan({ places, signedIn }: { places: FanPlace[]; signedIn: boolean }) {
   const sectionRef = useRef<HTMLElement>(null);
   const headingRef = useRef<HTMLHeadingElement>(null);
+  const headlineRef = useRef<HTMLDivElement>(null);
   const wedgeRefs = useRef<Array<HTMLButtonElement | null>>([]);
   const lastOpen = useRef<number | null>(null);
   // The index this component has already animated open, so a hash it set
@@ -40,6 +47,9 @@ export function PlaceFan({ places, signedIn }: { places: FanPlace[]; signedIn: b
     height: DEFAULT_HERO_SIZE.height,
   });
   const [layout, setLayout] = useState<FanLayout>("desktop");
+  // Where the fan's point should be. Null until the headline has been measured,
+  // which leaves the server's standing value in place.
+  const [pointY, setPointY] = useState<number | null>(null);
   const [announcement, setAnnouncement] = useState("");
 
   useEffect(() => {
@@ -54,6 +64,12 @@ export function PlaceFan({ places, signedIn }: { places: FanPlace[]; signedIn: b
       const width = element.clientWidth;
       const height = element.clientHeight;
       if (!width || !height) return;
+
+      // The fan's point goes just above the headline, so the headline stands in
+      // the dark below the fan instead of on a photo. Clamped, so a very short
+      // screen can't push the point past the middle of the hero.
+      const headlineTop = headlineRef.current?.offsetTop ?? 0;
+      setPointY(Math.round(pointAboveHeadline(headlineTop, height)));
 
       setSize({ width, height });
       // A landscape phone keeps one fan of six; anything else under 768 is two.
@@ -77,8 +93,9 @@ export function PlaceFan({ places, signedIn }: { places: FanPlace[]; signedIn: b
   }, []);
 
   const geometry = useMemo(
-    () => fanGeometry(size.width, size.height, layout),
-    [size.width, size.height, layout],
+    () =>
+      fanGeometry(size.width, size.height, layout, pointY === null ? {} : { vpY: pointY }),
+    [size.width, size.height, layout, pointY],
   );
 
   useHeroFold(sectionRef);
@@ -90,6 +107,8 @@ export function PlaceFan({ places, signedIn }: { places: FanPlace[]; signedIn: b
   const openPlace = openIndex >= 0 ? places[openIndex] : null;
 
   const onPhone = layout === "phone";
+  // 520–640px of hero has no room for the subline as well as the buttons.
+  const tight = !onPhone && size.height < 640;
   // A landscape phone keeps the desktop fan but has no chips and wants its
   // place full screen, so it borrows the phone's sheet.
   const shortHero = size.height < 500;
@@ -260,7 +279,7 @@ export function PlaceFan({ places, signedIn }: { places: FanPlace[]; signedIn: b
       onPointerDown={onPointerDown}
       onPointerUp={onPointerUp}
       style={sheet && isOpen ? { touchAction: "none" } : undefined}
-      className="relative h-[100svh] max-h-[1000px] min-h-[560px] w-full overflow-hidden overscroll-contain bg-daet-ink"
+      className="relative h-[calc(100svh-var(--header-h))] max-h-[1000px] min-h-[520px] w-full overflow-hidden overscroll-contain bg-daet-ink"
     >
       <div role="group" aria-label="Places in Daet" className="absolute inset-0 z-0">
         {places.map((place, index) => (
@@ -344,11 +363,15 @@ export function PlaceFan({ places, signedIn }: { places: FanPlace[]; signedIn: b
           phone fans. Pointer events pass through to the wedges except on the
           buttons themselves. */}
       <div
+        ref={headlineRef}
         data-headline
         className={`pointer-events-none absolute inset-x-0 z-10 px-4 text-center ${isOpen ? "opacity-0" : ""}`}
         style={onPhone ? { top: "49%" } : { bottom: "7%" }}
       >
-        <h1 id="home-title" className={onPhone ? "display-2 text-white" : "display-1 text-white"}>
+        <h1
+          id="home-title"
+          className={onPhone || tight ? "display-2 text-white" : "display-1 text-white"}
+        >
           Start in Daet.
           <span className="block">Go anywhere in Camarines Norte.</span>
         </h1>
@@ -359,9 +382,12 @@ export function PlaceFan({ places, signedIn }: { places: FanPlace[]; signedIn: b
           <p className="mt-2 text-sm text-white/80">Tap a place to see it</p>
         ) : (
           <>
-            <p className="mx-auto mt-3 max-w-xl text-sm leading-relaxed text-white/90 sm:text-base">
-              Beaches, islands and old-town walks, with operators and guides verified by the Daet Tourism Office.
-            </p>
+            {!tight && (
+              <p className="mx-auto mt-3 max-w-xl text-sm leading-relaxed text-white/90 sm:text-base">
+                Beaches, islands and old-town walks, with operators and guides verified by the Daet Tourism
+                Office.
+              </p>
+            )}
             {/* Behind an open place this row is invisible, so it must not be
                 tabbable either — the heading above it stays readable. */}
             <div className="pointer-events-auto mt-4 flex flex-wrap justify-center gap-3" inert={isOpen}>

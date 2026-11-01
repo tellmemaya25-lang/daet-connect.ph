@@ -277,6 +277,62 @@ test.describe("home fan, motion on", () => {
     }
   });
 
+  test("fits under the header at every size the owner checked", async ({ page }) => {
+    await visit(page, "/");
+
+    const sizes = [
+      { width: 1280, height: 720 },
+      { width: 1366, height: 768 },
+      { width: 1440, height: 900 },
+      { width: 1920, height: 1080 },
+      { width: 1920, height: 994 },
+    ];
+
+    for (const size of sizes) {
+      await page.setViewportSize(size);
+      await page.waitForTimeout(250);
+      const label = `${size.width}x${size.height}`;
+
+      const fit = await page.evaluate(() => {
+        const hero = document.querySelector("section[aria-labelledby='home-title']") as HTMLElement;
+        const title = document.getElementById("home-title") as HTMLElement;
+        const heroBox = hero.getBoundingClientRect();
+
+        // The fan's point is the apex of its first wedge, in percentages of the
+        // hero's own box — so read it back rather than trusting a formula.
+        const apex = (document.querySelector("[data-wedge]") as HTMLElement).style.clipPath.match(
+          /^polygon\(\s*(-?[\d.]+)%\s+(-?[\d.]+)%/,
+        );
+        const apexY = apex ? heroBox.top + (Number(apex[2]) / 100) * heroBox.height : Number.NaN;
+
+        const buttons = Array.from(
+          document.querySelectorAll<HTMLElement>("[data-headline] a, [data-headline] button"),
+        ).filter((element) => element.getClientRects().length > 0);
+
+        return {
+          apexY,
+          titleTop: title.getBoundingClientRect().top,
+          heroBottom: heroBox.bottom,
+          buttonBottoms: buttons.map((button) => button.getBoundingClientRect().bottom),
+          viewportHeight: window.innerHeight,
+        };
+      });
+
+      expect(fit.heroBottom, `${label}: the hero ends at the fold`).toBeLessThanOrEqual(
+        fit.viewportHeight + 1,
+      );
+      expect(fit.titleTop, `${label}: the headline sits under the fan's point`).toBeGreaterThanOrEqual(
+        fit.apexY - 1,
+      );
+      expect(fit.buttonBottoms.length, `${label}: both buttons are showing`).toBeGreaterThanOrEqual(2);
+      fit.buttonBottoms.forEach((bottom) =>
+        expect(bottom, `${label}: a button is cut off by the fold`).toBeLessThanOrEqual(
+          fit.viewportHeight - 16,
+        ),
+      );
+    }
+  });
+
   test("shows one name tag, for the wedge under the mouse or the keyboard", async ({ page }) => {
     await visit(page, "/");
 

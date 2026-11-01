@@ -206,6 +206,16 @@ function fansFor(layout: FanLayout, width: number, height: number, vpY?: number)
 }
 
 /**
+ * Where the fan's point goes, given the top of the headline: just above it, so
+ * the headline stands in the dark below the fan rather than on a photo. The
+ * clamp keeps a very tall hero from dropping the point into the buttons and a
+ * very short one from pushing it up into the photos.
+ */
+export function pointAboveHeadline(headlineTop: number, height: number, clearance = 16): number {
+  return Math.min(Math.max(headlineTop - clearance, 0.45 * height), 0.62 * height);
+}
+
+/**
  * The angles of every wedge in `fanIndex`, given one angular width per wedge.
  * The widths are scaled to the fan's span, so the fan neither grows nor drifts
  * when hover widths arrive rounded.

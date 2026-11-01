@@ -356,6 +356,52 @@ describe("PlaceFan opening a place", () => {
   });
 });
 
+describe("PlaceFan's hero", () => {
+  /** jsdom has no layout, so the hero is told how big it is. */
+  const setHeroSize = (width: number, height: number) => {
+    Object.defineProperty(Element.prototype, "clientWidth", { configurable: true, get: () => width });
+    Object.defineProperty(Element.prototype, "clientHeight", { configurable: true, get: () => height });
+  };
+
+  afterEach(() => {
+    delete (Element.prototype as unknown as Record<string, unknown>).clientWidth;
+    delete (Element.prototype as unknown as Record<string, unknown>).clientHeight;
+  });
+
+  it("takes the header's height out of its own, so it ends at the fold", () => {
+    const { container } = renderFan();
+    const section = container.querySelector("section") as HTMLElement;
+
+    expect(section.className).toContain("h-[calc(100svh-var(--header-h))]");
+    expect(section.className).toContain("min-h-[520px]");
+    expect(section.className).not.toContain("min-h-[560px]");
+  });
+
+  it("keeps the full headline and its subline on a roomy desktop", () => {
+    setHeroSize(1280, 800);
+    renderFan();
+
+    expect(screen.getByRole("heading", { level: 1 }).className).toContain("display-1");
+    expect(screen.getByText(/Beaches, islands and old-town walks/)).toBeInTheDocument();
+  });
+
+  it("steps the headline down and drops the subline on a short screen", () => {
+    setHeroSize(1280, 600);
+    renderFan();
+
+    expect(screen.getByRole("heading", { level: 1 }).className).toContain("display-2");
+    expect(screen.queryByText(/Beaches, islands and old-town walks/)).not.toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Find a tour" })).toBeInTheDocument();
+  });
+
+  it("still offers the assistant on a short screen", () => {
+    setHeroSize(1280, 600);
+    renderFan();
+
+    expect(screen.getByRole("button", { name: "Ask the travel guide" })).toBeInTheDocument();
+  });
+});
+
 describe("PlaceFan on a phone", () => {
   /**
    * jsdom has no layout, so the hero is told how big it is. The fan measures
