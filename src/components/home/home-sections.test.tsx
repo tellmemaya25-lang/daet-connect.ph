@@ -3,7 +3,7 @@
  */
 
 import React from "react";
-import { fireEvent, render, screen } from "@testing-library/react";
+import { act, fireEvent, render, screen } from "@testing-library/react";
 import "@testing-library/jest-dom";
 import { AskBand } from "./ask-band";
 import { GettingHere } from "./getting-here";
@@ -112,6 +112,32 @@ describe("HomeMap", () => {
     expect(mockMapProps?.markers.map((marker) => marker.id)).toEqual(["bagasbas-beach", "first-rizal-monument"]);
     expect(mockMapProps?.markers[0]).toMatchObject({ lat: 14.1155, lng: 122.9685, title: "Bagasbas Beach" });
     expect(mockMapProps?.fitKey).toContain("bagasbas-beach:14.1155,122.9685");
+  });
+
+  it("holds the map back until the section is nearly on screen", () => {
+    const seen: IntersectionObserverCallback[] = [];
+    class FakeObserver {
+      constructor(callback: IntersectionObserverCallback) {
+        seen.push(callback);
+      }
+      observe() {}
+      unobserve() {}
+      disconnect() {}
+    }
+    Object.defineProperty(global, "IntersectionObserver", { configurable: true, writable: true, value: FakeObserver });
+
+    try {
+      render(<HomeMap places={places} />);
+      expect(mockMapProps).toBeNull();
+
+      act(() => {
+        seen[0]([{ isIntersecting: true }] as unknown as IntersectionObserverEntry[], {} as IntersectionObserver);
+      });
+
+      expect(mockMapProps).not.toBeNull();
+    } finally {
+      Object.defineProperty(global, "IntersectionObserver", { configurable: true, writable: true, value: undefined });
+    }
   });
 
   it("opens the tapped place in the fan and takes the page back up to it", () => {
