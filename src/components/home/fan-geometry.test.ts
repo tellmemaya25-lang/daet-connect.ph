@@ -269,8 +269,10 @@ describe("pointAboveHeadline", () => {
     expect(pointAboveHeadline(860, 900)).toBeCloseTo(0.62 * 900, 6);
   });
 
-  it("keeps it out of the photos when the headline is very high", () => {
-    expect(pointAboveHeadline(120, 900)).toBeCloseTo(0.45 * 900, 6);
+  it("follows the headline even when that puts the point high up", () => {
+    // A tall headline on a short screen: it still gets the dark, not the photos.
+    expect(pointAboveHeadline(120, 900)).toBe(104);
+    expect(pointAboveHeadline(210, 656)).toBe(194);
   });
 });
 

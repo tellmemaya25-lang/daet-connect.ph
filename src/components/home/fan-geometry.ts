@@ -207,12 +207,16 @@ function fansFor(layout: FanLayout, width: number, height: number, vpY?: number)
 
 /**
  * Where the fan's point goes, given the top of the headline: just above it, so
- * the headline stands in the dark below the fan rather than on a photo. The
- * clamp keeps a very tall hero from dropping the point into the buttons and a
- * very short one from pushing it up into the photos.
+ * the headline stands in the dark below the fan rather than on a photo.
+ *
+ * The headline has the last word. Holding a floor at 45% as well looked safer,
+ * but on a short desktop screen the headline block is taller than that — the
+ * floor won, the point sank to 45%, and the headline's own first line landed on
+ * the photos again. The 62% ceiling stays: a headline that low would otherwise
+ * drag the fan down into the buttons.
  */
 export function pointAboveHeadline(headlineTop: number, height: number, clearance = 16): number {
-  return Math.min(Math.max(headlineTop - clearance, 0.45 * height), 0.62 * height);
+  return Math.min(headlineTop - clearance, 0.62 * height);
 }
 
 /**
