@@ -393,6 +393,15 @@ describe("PlaceFan's hero", () => {
     expect(container.querySelector("#place-detail")?.className ?? "").not.toContain("overscroll-contain");
   });
 
+  it("sets the lead-in smaller than the line under it", () => {
+    const { container } = renderFan();
+    const lines = Array.from(container.querySelectorAll("#home-title > span"));
+
+    expect(lines).toHaveLength(2);
+    expect(lines[0].className).toContain("text-[0.85em]");
+    expect(lines[1].className).not.toContain("text-[0.85em]");
+  });
+
   it("stays dark under its white headline in either theme", () => {
     // `daet-ink` is the *text* colour and turns pale in dark mode; the hero's
     // ground has to stay a dark ground, or white on it fails contrast and the

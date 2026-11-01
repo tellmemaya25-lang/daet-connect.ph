@@ -378,7 +378,9 @@ export function PlaceFan({ places, signedIn }: { places: FanPlace[]; signedIn: b
           id="home-title"
           className={onPhone || tight ? "display-2 text-white" : "display-1 text-white"}
         >
-          Start in Daet.
+          {/* The lead-in runs a step smaller than the statement under it, as in
+              the mock (owner's note on image-2: "make this smaller"). */}
+          <span className="block text-[0.85em]">Start in Daet.</span>
           <span className="block">Go anywhere in Camarines Norte.</span>
         </h1>
 
