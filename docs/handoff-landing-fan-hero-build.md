@@ -59,10 +59,9 @@ Animations use **GSAP** (with `@gsap/react` and ScrollTrigger). Photos are real
    - Never skip, disable or quarantine a test.
    - Don't invent prices, facts, photos or coordinates. Anything missing ships as a
      visible `[placeholder]` and goes on the owner's list.
-6. **Photos:** see section 4. The owner's own photos have **no licence or credit yet**.
-   - They live in `docs/hero-photos/` for now, which is not served.
-   - Move them into `public/photos/hero/` only after the owner confirms the credit, or
-     says to go ahead with a placeholder credit.
+6. **Photos:** see section 4. The four photos in `docs/hero-photos/` are temporary; the owner
+   will replace them later. Build with them, marked "[replace before launch]" in `PHOTOS`,
+   and don't search for their photographers.
 7. End every commit message with:
    ```
    Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
@@ -646,8 +645,8 @@ the open view covers the viewport, so add `touch-action: none` on it and let
 1. Add `gsap` and `@gsap/react` (exact versions) and the lockfile. Register the plugins in
    a tiny `src/lib/gsap.ts` that client code imports.
 2. Write `fan-geometry.ts` and its tests.
-3. Write `fan-places.ts`. Move and resize the photos (after the owner's answer on
-   credits), and update `photo-credits.ts`.
+3. Write `fan-places.ts`. Copy and resize the temporary photos into `public/photos/hero/`,
+   and add them to `photo-credits.ts` as "[replace before launch]".
 4. Build `place-fan.tsx`, static only: server-rendered fan with clip-paths, headline,
    buttons, labels. Wire it into `page.tsx` in place of the current hero. Add a snapshot or
    DOM test.
