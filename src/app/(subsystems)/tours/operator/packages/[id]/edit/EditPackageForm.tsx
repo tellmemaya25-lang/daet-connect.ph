@@ -220,7 +220,8 @@ export function EditPackageForm({ packageData }: EditPackageFormProps) {
           originalData: state.formData,
           hasChanges: false,
           isSubmitting: false,
-          successMessage: EDIT_MESSAGES.saved,
+          successMessage:
+            response.data?.status === "pending_review" ? EDIT_MESSAGES.sentForReview : EDIT_MESSAGES.saved,
           submissionError: null,
           concurrencyError: null,
         }));
@@ -456,7 +457,7 @@ export function EditPackageForm({ packageData }: EditPackageFormProps) {
           disabled={isButtonDisabled}
           className="inline-flex min-h-11 items-center justify-center px-6 py-2 border border-daet-ink/20 text-daet-ink/80 rounded-2xl font-medium hover:bg-canvas transition disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          Save as Draft
+          {packageData.status === "published" ? "Save changes" : "Save as Draft"}
         </button>
         {hasPermissionToSubmit && (
           <button

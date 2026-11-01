@@ -1399,10 +1399,18 @@ export async function updatePackageCore(
       const result = rpcResult[0];
       
       if (result.success) {
+        const newStatus = result.new_status as EditPackageStatus | null;
         return {
           success: true,
-          message: "Package updated successfully.",
+          message:
+            newStatus === "pending_review"
+              ? "Photos saved. The package is back with the Tourism Office for review."
+              : "Package updated successfully.",
           updatedAt: result.new_updated_at,
+          data: {
+            packageId,
+            status: newStatus ?? packageStatus,
+          },
         };
       } else {
         // RPC returned success=false

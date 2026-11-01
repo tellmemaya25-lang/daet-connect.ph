@@ -118,16 +118,27 @@ describe("Image Handling Server Actions", () => {
       expect(result.imageUrl).toBeDefined();
     });
 
-    it("refuses a new gallery image on a published package", async () => {
+    it("accepts a new gallery image on a published package; review happens at save", async () => {
       signInAsApprovedOperator();
       mockPackageLookup("published");
+      mockUploadSuccess();
+
+      const result = await uploadPackageImage(PACKAGE_ID, imageForm(), "gallery");
+
+      // The file may be uploaded; update_package_and_relations is what sends the
+      // package back to pending_review when the gallery actually changes.
+      expect(result.success).toBe(true);
+      expect(result.imageUrl).toBeDefined();
+    });
+
+    it("still refuses a gallery image on a pending-review package", async () => {
+      signInAsApprovedOperator();
+      mockPackageLookup("pending_review");
 
       const result = await uploadPackageImage(PACKAGE_ID, imageForm(), "gallery");
 
       expect(result.success).toBe(false);
-      expect(result.error?.message).toBe(
-        "Gallery images cannot be modified for this package status.",
-      );
+      expect(result.error?.message).toBe("This package is under review and cannot be edited.");
       expect(mockStorage.upload).not.toHaveBeenCalled();
     });
 
