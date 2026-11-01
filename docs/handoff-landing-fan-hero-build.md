@@ -161,6 +161,19 @@ Descriptions 1–4 are the existing `PANELS` copy in `src/app/page.tsx`. Descrip
     then, the fan falls back to the existing credited photo for that place:
     `PHOTOS.calaguasBeach`, `PHOTOS.rizal`, or a `brand-deep` block with the place name
     (Heritage Center, Cathedral).
+- **Checked 2026-11-01:**
+  - daetfeedback.vercel.app/spots shows **no photo credits at all**, and its six images
+    carry no metadata.
+  - Those images look AI-generated and don't show the real places: the "First Rizal
+    Monument" there is a stone pyramid, not Daet's white pylon, and the "Cathedral of St.
+    John" is a baroque stone church.
+  - **None of the owner's four photos match that site's images**, so they came from
+    somewhere else.
+  - Wikimedia Commons has likely originals (search "Cathedral Holy Trinity Daet",
+    "Rizal monument Daet", "Calaguas", "Daet heritage"), but they weren't confirmed,
+    because Commons rate-limited the check.
+  - Confirm each photo's original by reverse image search, or with the owner, before
+    serving it.
 - **Bagasbas:** decided. It uses the existing credited `PHOTOS.bagasbas`. The AI-looking
   aerial and the "Alay sa Bayan" building photo were dropped.
 - **Resize** each photo to at most 1600 px on the long side and compress (JPEG quality
