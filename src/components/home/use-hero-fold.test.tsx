@@ -65,7 +65,10 @@ function Harness({ onCleanup }: { onCleanup?: () => void }) {
   useHeroFold(root);
   return (
     <div ref={root} data-hero>
-      hero
+      <div role="group" aria-label="Places in Daet" data-fan>
+        wedges
+      </div>
+      <div data-headline>headline</div>
       <button type="button" onClick={onCleanup}>
         noop
       </button>
@@ -88,14 +91,33 @@ describe("useHeroFold", () => {
     expect(records.queries[0]).toContain("prefers-reduced-motion: no-preference");
   });
 
-  it("scrubs the hero smaller as it leaves, starting at the very top of the page", () => {
+  it("leaves the hero itself at full width, and scrubs its insides instead", () => {
     const { container } = render(<Harness />);
 
-    const [tween] = records.tweens;
-    expect(tween.target).toBe(container.querySelector("[data-hero]"));
-    expect(tween.vars).toMatchObject({ scale: 0.92, ease: "none" });
-    expect(tween.vars.scrollTrigger).toMatchObject({ start: "top top", end: "bottom top", scrub: true });
-    expect(tween.vars.scrollTrigger).not.toMatchObject({ pin: true });
+    const hero = container.querySelector("[data-hero]");
+    records.tweens.forEach((tween) => expect(tween.target).not.toBe(hero));
+    records.tweens.forEach((tween) => expect(tween.vars).not.toHaveProperty("scale"));
+  });
+
+  it("lifts the fan's group as it leaves, starting at the very top of the page", () => {
+    const { container } = render(<Harness />);
+
+    const tween = records.tweens.find((candidate) => candidate.target === container.querySelector("[data-fan]"));
+    expect(tween).toBeDefined();
+    expect(tween!.vars).toMatchObject({ yPercent: -8, ease: "none" });
+    expect(tween!.vars.scrollTrigger).toMatchObject({ start: "top top", end: "bottom top", scrub: true });
+    expect(tween!.vars.scrollTrigger).not.toMatchObject({ pin: true });
+  });
+
+  it("fades the headline out over the first 60% of the fold", () => {
+    const { container } = render(<Harness />);
+
+    const tween = records.tweens.find(
+      (candidate) => candidate.target === container.querySelector("[data-headline]"),
+    );
+    expect(tween).toBeDefined();
+    expect(tween!.vars).toMatchObject({ opacity: 0, ease: "none" });
+    expect(tween!.vars.scrollTrigger).toMatchObject({ start: "top top", end: "60% top", scrub: true });
   });
 
   it("refreshes the triggers once the photos and fonts have landed", async () => {

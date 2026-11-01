@@ -46,6 +46,10 @@ export default function RootLayout({ children }: { children: ReactNode }) {
       <head>
         {/* Applies a saved Light/Dark choice before the first paint (no flash). */}
         <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
+        {/* Marks the document as scripted before the first paint, so the
+            one-time section reveal can hide a section without ever hiding it
+            from a visitor whose browser runs no JavaScript. */}
+        <script dangerouslySetInnerHTML={{ __html: "document.documentElement.classList.add('js')" }} />
       </head>
       <body>
         <FeedbackProvider>{children}</FeedbackProvider>

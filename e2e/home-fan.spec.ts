@@ -1,3 +1,4 @@
+import AxeBuilder from "@axe-core/playwright";
 import { expect, test } from "@playwright/test";
 import { checkA11y, visit } from "./fixtures";
 
@@ -331,6 +332,30 @@ test.describe("home fan, motion on", () => {
         ),
       );
     }
+  });
+
+  test("keeps the hero full-bleed as it folds away", async ({ page }) => {
+    await visit(page, "/");
+
+    await page.mouse.wheel(0, 400);
+    await page.waitForTimeout(500);
+
+    const fold = await page.evaluate(() => {
+      const hero = document.querySelector("section[aria-labelledby='home-title']") as HTMLElement;
+      const headline = hero.querySelector("[data-headline]") as HTMLElement;
+      return {
+        heroWidth: hero.getBoundingClientRect().width,
+        heroTransform: getComputedStyle(hero).transform,
+        headlineOpacity: Number(getComputedStyle(headline).opacity),
+        viewportWidth: window.innerWidth,
+      };
+    });
+
+    // No shrunken card with white margins: the section keeps the screen's width.
+    expect(fold.heroTransform).toBe("none");
+    expect(Math.round(fold.heroWidth)).toBe(fold.viewportWidth);
+    // …and the parts inside it are the things that move.
+    expect(fold.headlineOpacity).toBeLessThan(1);
   });
 
   test("shows one name tag, for the wedge under the mouse or the keyboard", async ({ page }) => {

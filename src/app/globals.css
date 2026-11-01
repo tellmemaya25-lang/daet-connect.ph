@@ -191,27 +191,26 @@
   letter-spacing: -0.025em;
 }
 
-/* Section entrance: parts marked data-reveal rise into place as they scroll
-   into view (heading, then text, then picture via --reveal-index). Pure CSS,
-   scroll-driven; browsers without view timelines simply show the content, so
-   nothing can stay hidden. */
-@keyframes daet-reveal {
-  from {
-    opacity: 0;
-    transform: translateY(24px);
-  }
-  to {
-    opacity: 1;
-    transform: none;
-  }
+/* Section entrance: a part marked data-reveal rises into place once, the first
+   time it reaches the viewport, and then stays put (heading, then text, then
+   picture, via --reveal-index). The observer in reveal-observer.tsx sets
+   data-revealed and stops watching. It used to be a scroll-linked animation,
+   which left whatever was part-way into the view part-way transparent — a
+   half-faded ghost that also failed contrast.
+
+   The hidden state needs `html.js`, which the root layout adds before the first
+   paint, so a visitor without JavaScript is never given content that only a
+   script could bring back. */
+html.js [data-reveal]:not([data-revealed]) {
+  opacity: 0;
+  transform: translateY(16px);
 }
 
-@supports (animation-timeline: view()) {
-  [data-reveal] {
-    animation: daet-reveal linear both;
-    animation-timeline: view();
-    animation-range: entry calc(var(--reveal-index, 0) * 6%) entry calc(45% + var(--reveal-index, 0) * 6%);
-  }
+[data-reveal] {
+  transition:
+    opacity 300ms var(--ease-out),
+    transform 300ms var(--ease-out);
+  transition-delay: calc(var(--reveal-index, 0) * 60ms);
 }
 
 @keyframes daet-drift {
@@ -287,8 +286,13 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+  /* The reveal still happens, it just doesn't move: opacity only, and at once. */
+  html.js [data-reveal]:not([data-revealed]) {
+    transform: none;
+  }
+
   [data-reveal] {
-    animation: none !important;
+    transition-delay: 0s;
   }
 
   .drift {
