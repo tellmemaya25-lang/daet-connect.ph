@@ -12,7 +12,8 @@ async function itinerary(page: Page) {
   return section;
 }
 
-const stopButton = (section: ReturnType<Page["locator"]>, name: string) => section.getByRole("button", { name: new RegExp(`^${name}`) });
+// Rows in the timeline only: when tiles load (CI), map markers are buttons too ("Stop 2: …").
+const stopButton = (section: ReturnType<Page["locator"]>, name: string) => section.locator("ol").getByRole("button", { name: new RegExp(`^${name}`) });
 
 for (const width of [375, 1280]) {
   test(`opening stops focuses the map, one at a time (${width}px)`, async ({ page }) => {
@@ -31,6 +32,13 @@ for (const width of [375, 1280]) {
     await expect(stopButton(section, "Daet Heritage Center")).toHaveAttribute("aria-expanded", "false");
     await expect(section.locator("[aria-live='polite']")).toContainText("Stop 3 of 3");
     await expect(section.getByRole("img", { name: /Bagasbas/ }).first()).toBeVisible();
+
+    // With the tile map (CI has network), tapping a marker opens its stop in the list.
+    const marker = section.getByRole("button", { name: /^Stop 1: First José Rizal Monument/ });
+    if (await marker.count()) {
+      await marker.click();
+      await expect(stopButton(section, "First José Rizal Monument")).toHaveAttribute("aria-expanded", "true");
+    }
 
     await section.getByRole("button", { name: "Recenter itinerary", exact: true }).click();
     await expect(section.getByText("3 stops")).toBeVisible();

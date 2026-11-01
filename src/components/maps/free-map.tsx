@@ -47,9 +47,6 @@ const STOP_DOT = "grid h-7 w-7 place-items-center rounded-full border-2 border-w
 const STOP_PIN = "grid h-8 w-8 place-items-center rounded-full border-2 border-slate-900 bg-white text-sm font-extrabold text-slate-900";
 const LABEL_HALO = "text-slate-900 [text-shadow:0_0_2px_#fff,0_0_4px_#fff,0_0_6px_#fff] dark:text-slate-100 dark:[text-shadow:0_0_2px_#0f172a,0_0_4px_#0f172a]";
 
-/** Names on the map stay short; the full name is in the label for screen readers. */
-export const shortLabel = (text: string, max = 16) => (text.length > max ? `${text.slice(0, max - 1).trimEnd()}…` : text);
-
 function markerElement(m: FreeMapMarker, active: boolean, labels: boolean, onClick?: (id: string) => void): HTMLElement {
   // With a click handler the marker is a button that picks the stop; otherwise a link or a picture.
   const el = document.createElement(onClick ? "button" : m.href ? "a" : "div");
@@ -72,11 +69,14 @@ function markerElement(m: FreeMapMarker, active: boolean, labels: boolean, onCli
     return el;
   }
   // Labelled stop: the badge (a pin with a stem and a dot when picked), then its name and kind beside it.
+  // The accessible name holds every visible word in order (number, name, kind), so "click 2" or
+  // "click Bagasbas Beach" works by voice (WCAG 2.5.3, axe label-content-name-mismatch).
+  el.setAttribute("aria-label", `Stop ${m.label}: ${m.title}${m.subtitle ? `, ${m.subtitle}` : ""}`);
   el.className = "relative flex flex-col items-center";
   const badge = document.createElement("span");
   badge.className = active ? STOP_PIN : STOP_DOT;
   badge.textContent = m.label;
-  el.append(badge);
+  el.append(badge, document.createTextNode(" "));
   if (active) {
     const stem = document.createElement("span");
     stem.className = "h-1.5 w-0.5 bg-slate-900";
@@ -87,14 +87,15 @@ function markerElement(m: FreeMapMarker, active: boolean, labels: boolean, onCli
   const label = document.createElement("span");
   label.setAttribute("aria-hidden", "true");
   label.className = `pointer-events-none absolute left-full top-0 ml-1.5 flex w-max max-w-[10rem] flex-col text-left leading-tight ${LABEL_HALO}`;
+  // The whole name is in the page and CSS shortens it, so the visible words match the accessible name.
   const name = document.createElement("span");
-  name.className = "text-xs font-bold";
-  name.textContent = shortLabel(m.title);
+  name.className = "block max-w-[9rem] truncate text-xs font-bold";
+  name.textContent = m.title;
   label.append(name);
   if (m.subtitle) {
     const sub = document.createElement("span");
     sub.className = "text-[11px] font-medium opacity-75";
-    sub.textContent = m.subtitle;
+    sub.textContent = ` ${m.subtitle}`;
     label.append(sub);
   }
   el.append(label);

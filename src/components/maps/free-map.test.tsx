@@ -138,9 +138,11 @@ describe("FreeMap", () => {
     await waitFor(() => expect(mockState.markerEls).toHaveLength(2));
     const beach = mockState.markerEls[1];
     expect(beach.tagName).toBe("BUTTON");
-    expect(beach.getAttribute("aria-label")).toBe("Bagasbas Beach");
-    expect(beach.textContent).toBe("2Bagasbas BeachBeach");
-    expect(mockState.markerEls[0].textContent).toBe("1First José Riza…");
+    expect(beach.getAttribute("aria-label")).toBe("Stop 2: Bagasbas Beach, Beach");
+    expect(beach.textContent).toBe("2 Bagasbas Beach Beach");
+    // The full name is in the page (CSS shortens it), so its words match the accessible name.
+    expect(mockState.markerEls[0].getAttribute("aria-label")).toBe("Stop 1: First José Rizal Monument");
+    expect(mockState.markerEls[0].textContent).toBe("1 First José Rizal Monument");
     rerender(<FreeMap markers={labelled} title="Route map" labels focusId="b" onMarkerClick={() => {}} />);
     await waitFor(() => expect(mockState.markerEls.at(-1)?.getAttribute("aria-current")).toBe("true"));
     expect(mockState.anchors.at(-1)).toBe("bottom");
