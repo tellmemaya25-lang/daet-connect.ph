@@ -12,7 +12,7 @@ import { AskBand } from "@/components/home/ask-band";
 import { GettingHere } from "@/components/home/getting-here";
 import { HomeMap, type MapPlace } from "@/components/home/home-map";
 import { TripCard, type HomeTrip } from "@/components/home/trip-card";
-import { durationLabel } from "@/lib/tours/trip-board";
+import { cheapestPrice, durationLabel } from "@/lib/tours/trip-board";
 import { readAccreditationCounts } from "@/lib/tours/accreditation";
 import { PHOTOS, type PhotoKey } from "@/lib/photo-credits";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
@@ -99,20 +99,6 @@ type PackageRow = {
   tours_package_price_variants?: Array<{ price_per_pax: number | null; flat_price: number | null; is_default: boolean | null }>;
 };
 
-/** The cheapest price on any variant, and whether that price is per person. */
-function cheapestPrice(variants: PackageRow["tours_package_price_variants"]) {
-  const priced = (variants ?? [])
-    .map((variant) => ({
-      amount: Number(variant.price_per_pax ?? variant.flat_price),
-      perPerson: Number(variant.price_per_pax) > 0,
-    }))
-    .filter((variant) => Number.isFinite(variant.amount) && variant.amount > 0);
-
-  if (priced.length === 0) return { price: null, perPerson: true };
-  const cheapest = priced.reduce((lowest, variant) => (variant.amount < lowest.amount ? variant : lowest));
-  return { price: cheapest.amount, perPerson: cheapest.perPerson };
-}
-
 export default async function HomePage() {
   const supabase = await createSupabaseServerClient();
   const [
@@ -148,15 +134,15 @@ export default async function HomePage() {
   const upcomingEvents = (eventsResult.data ?? []) as TourEvent[];
   const featuredMerch = (merchResult.data ?? []) as MerchItem[];
   const trips: HomeTrip[] = ((tripsResult.data ?? []) as unknown as PackageRow[]).map((row) => {
-    const { price, perPerson } = cheapestPrice(row.tours_package_price_variants);
+    const cheapest = cheapestPrice(row.tours_package_price_variants);
     const operator = Array.isArray(row.tours_operators) ? row.tours_operators[0] : row.tours_operators;
     return {
       id: row.id,
       title: row.title,
       locationName: row.location_name,
       duration: durationLabel(row.duration_value, row.duration_type),
-      price,
-      perPerson,
+      price: cheapest?.price ?? null,
+      perPerson: cheapest?.perPerson ?? true,
       operator: operator?.business_name ?? null,
     };
   });
