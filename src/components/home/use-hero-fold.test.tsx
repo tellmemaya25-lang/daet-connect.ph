@@ -60,9 +60,9 @@ const { __records: records } = jest.requireMock("@/lib/gsap") as {
   __records: { queries: string[]; tweens: ToCall[]; refresh: jest.Mock; killed: number };
 };
 
-function Harness({ onCleanup }: { onCleanup?: () => void }) {
+function Harness({ onCleanup, paused = false }: { onCleanup?: () => void; paused?: boolean }) {
   const root = useRef<HTMLDivElement>(null);
-  useHeroFold(root);
+  useHeroFold(root, { paused });
   return (
     <div ref={root} data-hero>
       <div role="group" aria-label="Places in Daet" data-fan>
@@ -118,6 +118,15 @@ describe("useHeroFold", () => {
     expect(tween).toBeDefined();
     expect(tween!.vars).toMatchObject({ opacity: 0, ease: "none" });
     expect(tween!.vars.scrollTrigger).toMatchObject({ start: "top top", end: "60% top", scrub: true });
+  });
+
+  it("does not fold at all while a place is open", () => {
+    // An open place is the hero filled by one photo: lifting the fan there would
+    // uncover a band of the hero's own ground along the bottom edge.
+    render(<Harness paused />);
+
+    expect(records.queries).toHaveLength(0);
+    expect(records.tweens).toHaveLength(0);
   });
 
   it("refreshes the triggers once the photos and fonts have landed", async () => {

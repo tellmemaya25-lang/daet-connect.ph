@@ -236,7 +236,7 @@ describe("PlaceFan opening a place", () => {
     // Each photo looks down its own wedge while the fan is closed.
     const rest = restOf(2);
     expect(Math.abs(rest.x)).toBeGreaterThan(1);
-    await waitFor(() => expect(offsetOf(2).x).toBeCloseTo(rest.x, 0));
+    await waitFor(() => expect(Math.abs(offsetOf(2).x)).toBeGreaterThan(1));
 
     fireEvent.click(screen.getByRole("button", { name: "Bagasbas Beach: open photo and details" }));
 

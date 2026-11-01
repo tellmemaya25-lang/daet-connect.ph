@@ -86,7 +86,9 @@ export function useHeroFold(root: RefObject<HTMLElement | null>, { paused = fals
 
       return () => media.revert();
     },
-    { scope: root, dependencies: [paused] },
+    // revertOnUpdate: without it the previous context — and the scroll trigger
+    // inside it — is left alive, which is exactly the fold that has to stop.
+    { scope: root, dependencies: [paused], revertOnUpdate: true },
   );
 
   // Photos land after the first paint and change the height of everything below.
