@@ -294,7 +294,12 @@ export default async function PackageDetailPage({ params }: PageProps) {
           {gallery.length > 0 ? (
             <section aria-labelledby="gallery" className="mt-12">
               <h2 id="gallery" className="text-2xl font-semibold text-daet-ink sm:text-3xl">Photos</h2>
-              <ul className="-mx-4 mt-4 flex snap-x gap-3 overflow-x-auto px-4 pb-2 sm:mx-0 sm:grid sm:grid-cols-2 sm:overflow-visible sm:px-0">
+              {/* On phones the strip scrolls sideways, so it takes keyboard focus to be scrolled with the arrow keys. */}
+              <ul
+                tabIndex={0}
+                aria-label={`Photos of ${pkg.title}`}
+                className="-mx-4 mt-4 flex snap-x gap-3 overflow-x-auto px-4 pb-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 sm:mx-0 sm:grid sm:grid-cols-2 sm:overflow-visible sm:px-0"
+              >
                 {gallery.map((img: any) => (
                   <li key={img.id} className="w-[80%] shrink-0 snap-start sm:w-auto">
                     <img src={img.image_url} alt={img.caption || `Photo of ${pkg.title}`} loading="lazy" className="aspect-[4/3] w-full rounded-2xl object-cover" />

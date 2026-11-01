@@ -19,8 +19,25 @@ async function captionAt(page: Page, position: number) {
   return (await card(page, position).innerText()).trim();
 }
 
+/**
+ * Brings the photo grid into the viewport. The gallery sits low on the edit
+ * page, and both a real pointer and dnd-kit's keyboard moves work from
+ * on-screen geometry, as a person scrolling to it would.
+ */
+async function showGrid(page: Page) {
+  await card(page, 3).scrollIntoViewIfNeeded();
+  await card(page, 1).scrollIntoViewIfNeeded();
+}
+
+/**
+ * dnd-kit's screen-reader live region. Keyboard steps wait on what it
+ * announces, so each key lands only once the previous one has taken effect.
+ */
+const announcer = (page: Page) => page.locator('[id^="DndLiveRegion"]');
+
 /** Drags one card onto another with a real pointer, in small steps. */
 async function dragOnto(page: Page, from: number, to: number) {
+  await showGrid(page);
   const source = await card(page, from).boundingBox();
   const target = await card(page, to).boundingBox();
   if (!source || !target) throw new Error("cards are not laid out");
@@ -42,19 +59,24 @@ test.describe("gallery at phone width", () => {
     await expect(card(page, 1)).toBeVisible();
     await expect(card(page, 3)).toBeVisible();
     await expect(page.getByText("3 of 20 photos")).toBeVisible();
-    await expect(page.getByText("First photo")).toBeVisible();
+    await expect(page.getByText("First photo", { exact: true })).toBeVisible();
     expect(await captionAt(page, 1)).toContain("Surf at sunrise");
   });
 
   test("reorders with the keyboard: space, arrow, space", async ({ page }) => {
     await visit(page, EDIT);
     await expect(card(page, 1)).toBeVisible();
+    await showGrid(page);
 
     const grip = page.getByRole("button", { name: "Move photo 1" });
     await grip.focus();
     await page.keyboard.press("Space");
+    // Picking up announces "Picked up photo 1", then at once where it hovers.
+    await expect(announcer(page)).toContainText("Photo 1 is over position 1");
     await page.keyboard.press("ArrowRight");
+    await expect(announcer(page)).toContainText("over position 2");
     await page.keyboard.press("Space");
+    await expect(announcer(page)).toContainText("swapped with position 2");
 
     // Photo 1 moved one place later; the second photo took its spot.
     await expect(card(page, 1)).toContainText("Calaguas sandbar");
@@ -63,12 +85,17 @@ test.describe("gallery at phone width", () => {
 
   test("cancels a keyboard move with Escape", async ({ page }) => {
     await visit(page, EDIT);
+    await showGrid(page);
 
     const grip = page.getByRole("button", { name: "Move photo 1" });
     await grip.focus();
     await page.keyboard.press("Space");
+    // Picking up announces "Picked up photo 1", then at once where it hovers.
+    await expect(announcer(page)).toContainText("Photo 1 is over position 1");
     await page.keyboard.press("ArrowRight");
+    await expect(announcer(page)).toContainText("over position 2");
     await page.keyboard.press("Escape");
+    await expect(announcer(page)).toContainText("cancelled");
 
     await expect(card(page, 1)).toContainText("Surf at sunrise");
   });

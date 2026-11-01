@@ -179,6 +179,7 @@ export function PricingStep({
                 <td className="px-4 py-3">
                   <input
                     type="checkbox"
+                    aria-label={`Default price option: ${variant.variantName}`}
                     checked={variant.isDefault}
                     onChange={() => handleSetDefault(variant.id)}
                     disabled={!canEditVariants || loading}
