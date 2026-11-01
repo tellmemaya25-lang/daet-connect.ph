@@ -22,7 +22,7 @@ export function ExploreMenu({ links, className = "" }: { links: MenuLink[]; clas
         aria-expanded={open}
         aria-controls="explore-panel"
         onClick={toggle}
-        className={`inline-flex min-h-11 items-center gap-1 rounded-full pl-3.5 pr-3 text-[15px] font-semibold transition-[background-color,color,scale] duration-150 ease-out active:scale-[0.97] ${inside || open ? "bg-white/15 text-white" : "text-white/85 hover:bg-white/10 hover:text-white"}`}
+        className={`inline-flex min-h-11 items-center gap-1 rounded-full pl-3.5 pr-3 text-[15px] font-semibold transition-[background-color,color,scale] duration-150 ease-out active:scale-[0.97] ${inside || open ? "bg-blue-50 text-blue-700 dark:bg-white/15 dark:text-white" : "text-daet-ink hover:bg-muted dark:text-white/85 dark:hover:bg-white/10 dark:hover:text-white"}`}
       >
         Explore
         <LineIcon name="chevron-down" className={`h-4 w-4 transition-transform duration-200 ease-out ${open ? "rotate-180" : ""}`} />

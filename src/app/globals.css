@@ -38,6 +38,9 @@
   --color-line: #cbd5e1;
   /* Only for things that float above the page: menus, dialogs, the bottom booking bar. */
   --shadow-float: 0 12px 32px rgba(15, 23, 42, 0.18);
+  /* The one resting shadow: the header, which is pinned over the page's content
+     and needs to separate from it (owner's note on the light-mode bar). */
+  --shadow-header: 0 1px 3px rgba(15, 23, 42, 0.08);
   /* Motion. Strong curves (the built-in ones are too weak): ease-out for
      things entering or leaving, ease-in-out for on-screen movement, the
      drawer curve for sheets. These replace Tailwind's ease-out/ease-in-out. */
@@ -60,13 +63,13 @@
     color: var(--color-daet-ink);
     /* The header's own height, so the hero can run up under it and still end
        exactly at the fold. Keep in step with site-header.tsx's
-       min-h-14 / sm:min-h-[4.5rem]. */
+       min-h-14 / sm:min-h-[3.8rem]. */
     --header-h: 3.5rem;
   }
 
   @media (min-width: 40rem) {
     :root {
-      --header-h: 4.5rem;
+      --header-h: 3.8rem;
     }
   }
 

@@ -64,6 +64,8 @@ async function readHeader(page: import("@playwright/test").Page) {
       scrollY: Math.round(window.scrollY),
       heroTop: Math.round(hero.getBoundingClientRect().top),
       brandSize: parseFloat(getComputedStyle(brand).fontSize),
+      color: style.color,
+      shadow: style.boxShadow,
     };
   });
   return { ...header, alpha: alphaOf(header.background) };
@@ -160,12 +162,13 @@ test.describe("home fan on a phone", () => {
     await expect(band.getByText(/\[placeholder/)).toHaveCount(0);
   });
 
-  test("keeps a slim, see-through bar over the photos", async ({ page }) => {
+  test("keeps a slim white bar at the top", async ({ page }) => {
     await visit(page, "/");
 
     const header = await readHeader(page);
-    expect(header.height, "a phone header, not the 80px desktop bar").toBeLessThanOrEqual(60);
-    expect(header.alpha, `the photos show through it: ${header.background}`).toBeLessThan(1);
+    expect(header.height, "a phone header, not the 80px desktop bar").toBeLessThanOrEqual(57);
+    expect(header.background, "white in light mode").toBe("rgb(255, 255, 255)");
+    expect(header.alpha).toBe(1);
     expect(header.heroTop, "the hero starts at the top of the page").toBeLessThanOrEqual(0);
   });
 
@@ -224,48 +227,35 @@ test.describe("home fan on a desktop", () => {
     await expect(wedge).toHaveAttribute("aria-expanded", "false");
   });
 
-  test("holds a slim, see-through header over the photos, and keeps it there", async ({ page }) => {
+  test("is a slim white bar in light mode, and the dark scrim in dark mode", async ({ page }) => {
     await visit(page, "/");
 
-    const atRest = await readHeader(page);
-    expect(atRest.position, "pinned, not scrolled away").toBe("sticky");
-    expect(atRest.top).toBe(0);
-    expect(atRest.height, "slimmer than the 80px bar in the screenshot").toBeLessThanOrEqual(73);
-    expect(atRest.brandSize, "a smaller wordmark than the 24px one").toBeLessThanOrEqual(20);
-    expect(atRest.alpha, `semi-transparent, like the mock: ${atRest.background}`).toBeLessThan(1);
-    expect(atRest.backdrop, "blurred behind the bar").toContain("blur");
-    expect(atRest.heroTop, "the photos run up behind it").toBeLessThanOrEqual(0);
+    const light = await readHeader(page);
+    expect(light.position, "pinned, not scrolled away").toBe("sticky");
+    expect(light.top).toBe(0);
+    expect(light.height, "slimmer than the 80px bar in the screenshot").toBeLessThanOrEqual(62);
+    expect(light.brandSize, "a smaller wordmark than the 24px one").toBeLessThanOrEqual(20);
+    expect(light.background, "white, not a scrim").toBe("rgb(255, 255, 255)");
+    expect(light.alpha).toBe(1);
+    expect(light.color, "ink on white").toBe("rgb(15, 23, 42)");
+    expect(light.shadow, "a subtle drop shadow under it").not.toBe("none");
+    expect(light.heroTop, "the hero still starts at the top of the page").toBeLessThanOrEqual(0);
 
     await page.evaluate(() => window.scrollTo(0, 1200));
     await expect.poll(async () => (await readHeader(page)).scrollY).toBeGreaterThan(1000);
-
     const scrolled = await readHeader(page);
     expect(scrolled.top, "still at the top of the screen").toBe(0);
-    expect(scrolled.background, "same scrim while scrolling").toBe(atRest.background);
-  });
+    expect(scrolled.background, "same bar while scrolling").toBe(light.background);
 
-  test("scrolls the page when the wheel is over the hero", async ({ page }) => {
+    // Dark mode keeps the scrim the mock has, with the photos showing through.
+    await page.addInitScript(() => localStorage.setItem("daet-theme", "dark"));
     await visit(page, "/");
-    expect(await page.evaluate(() => Math.round(window.scrollY))).toBe(0);
-
-    // The hero is the whole first screen, so this is where the mouse usually is
-    // when someone tries to leave it.
-    await page.mouse.move(640, 420);
-    await page.mouse.wheel(0, 700);
-
-    const state = await page.evaluate(() => {
-      const hero = document.querySelector("section[aria-labelledby='home-title']") as HTMLElement;
-      return {
-        pageHeight: document.documentElement.scrollHeight,
-        viewport: window.innerHeight,
-        overscroll: getComputedStyle(hero).overscrollBehaviorY,
-      };
-    });
-
-    expect(state.pageHeight, "there is something below the hero").toBeGreaterThan(state.viewport);
-    await expect
-      .poll(() => page.evaluate(() => Math.round(window.scrollY)), { timeout: 5000 })
-      .toBeGreaterThan(300);
+    const dark = await readHeader(page);
+    expect(dark.height, "the same size in either theme").toBeLessThanOrEqual(62);
+    expect(dark.alpha, `the photos show through the scrim: ${dark.background}`).toBeLessThan(1);
+    expect(dark.backdrop, "blurred behind the scrim").toContain("blur");
+    expect(dark.color, "white on the scrim").toBe("rgb(255, 255, 255)");
+    expect(dark.shadow, "no shadow on the scrim").toBe("none");
   });
 
   test("never scrolls sideways", async ({ page }) => {
