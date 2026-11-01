@@ -22,7 +22,7 @@ export function AskBand() {
         <button
           type="button"
           onClick={() => openAssistant()}
-          className="inline-flex min-h-12 shrink-0 items-center justify-center rounded-full bg-surface px-7 text-base font-bold text-blue-700 transition hover:bg-blue-50 active:bg-blue-100"
+          className="inline-flex min-h-12 shrink-0 items-center justify-center rounded-full bg-surface px-7 text-base font-bold text-blue-700 transition hover:bg-blue-50 active:bg-blue-100 dark:text-blue-300 dark:hover:bg-blue-950/40 dark:active:bg-blue-900/40"
         >
           Ask what to do in one day
         </button>

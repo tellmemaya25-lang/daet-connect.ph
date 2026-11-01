@@ -27,6 +27,32 @@ const panel = (page: import("@playwright/test").Page, name: string) =>
 
 const inPanel = (page: import("@playwright/test").Page) => page.locator("#place-detail");
 
+type Spot = { x: number; y: number };
+
+/**
+ * A point inside the given wedge that currently hits a photo.
+ *
+ * Found by scanning, not by a fixed coordinate: the fan's point follows the
+ * headline, so "250,450" is inside a different wedge — or below the point, on
+ * the dark band — at different window sizes.
+ */
+async function spotInWedge(page: import("@playwright/test").Page, index: number) {
+  const spot = await page.evaluate((index) => {
+    const hero = document.querySelector("section[aria-labelledby='home-title']");
+    if (!hero) return null;
+    const box = hero.getBoundingClientRect();
+    for (let y = box.top + 12; y < box.bottom - 12; y += 16) {
+      for (let x = box.left + 12; x < box.right - 12; x += 16) {
+        if (document.elementFromPoint(x, y)?.closest(`[data-wedge="${index}"]`)) return { x, y };
+      }
+    }
+    return null;
+  }, index);
+
+  expect(spot, `a spot inside wedge ${index}`).not.toBeNull();
+  return spot!;
+}
+
 test.describe("home fan on a phone", () => {
   test("shows six places, one per wedge", async ({ page }) => {
     await visit(page, "/");
@@ -113,8 +139,9 @@ test.describe("home fan on a desktop", () => {
   test("names a wedge when the mouse is over the fan", async ({ page }) => {
     await visit(page, "/");
 
-    // A point inside the leftmost wedge, clear of the apex where they all meet.
-    await page.mouse.move(250, 450);
+    // A point inside a wedge, clear of the point where they all meet.
+    const spot = await spotInWedge(page, 3);
+    await page.mouse.move(spot.x, spot.y);
 
     await expect
       .poll(async () =>
@@ -174,8 +201,6 @@ test.describe("home fan, motion on", () => {
     hasTouch: false,
   });
 
-  type Spot = { x: number; y: number };
-
   /** A 12 × 6 grid of pointer spots across the hero, kept off its edges. */
   const gridAcrossHero = (page: import("@playwright/test").Page) =>
     page.evaluate(() => {
@@ -216,7 +241,15 @@ test.describe("home fan, motion on", () => {
    */
   const coverage = (page: import("@playwright/test").Page, spots: Spot[]) =>
     page.evaluate((spots) => {
-      const lost = spots.filter((spot) => !document.elementFromPoint(spot.x, spot.y)?.closest("[data-wedge]"));
+      // Each spot is a 9px cross, so landing on a 3px seam — which moves as the
+      // wedges widen — doesn't read as a hole. A tear is hundreds of pixels.
+      const reach = [0, -4, 4];
+      const onPhoto = (spot: Spot) =>
+        reach.some((dy) =>
+          reach.some((dx) => Boolean(document.elementFromPoint(spot.x + dx, spot.y + dy)?.closest("[data-wedge]"))),
+        );
+
+      const lost = spots.filter((spot) => !onPhoto(spot));
       return {
         share: spots.length ? (spots.length - lost.length) / spots.length : 1,
         lost: lost.map((spot) => `${spot.x},${spot.y}`).slice(0, 6),
@@ -239,24 +272,6 @@ test.describe("home fan, motion on", () => {
         })
         .map((chip) => Number(chip.dataset.chip)),
     );
-
-  /** A spot inside the given wedge that currently hits a photo. */
-  const spotInWedge = async (page: import("@playwright/test").Page, index: number) => {
-    const spot = await page.evaluate((index) => {
-      const hero = document.querySelector("section[aria-labelledby='home-title']");
-      if (!hero) return null;
-      const box = hero.getBoundingClientRect();
-      for (let y = box.top + 12; y < box.bottom - 12; y += 16) {
-        for (let x = box.left + 12; x < box.right - 12; x += 16) {
-          if (document.elementFromPoint(x, y)?.closest(`[data-wedge="${index}"]`)) return { x, y };
-        }
-      }
-      return null;
-    }, index);
-
-    expect(spot, `a spot inside wedge ${index}`).not.toBeNull();
-    return spot!;
-  };
 
   test("keeps the fan whole while a wedge is hovered", async ({ page }) => {
     await visit(page, "/");
