@@ -106,7 +106,11 @@ export function CoverImageStep({
 
   // Drop a photo straight onto the preview.
   const fileDrop = useFileDrop({
-    onFile: (file) => void uploadFile(file),
+    // The cover is a single image, so only the first file in a drop counts.
+    onFiles: (files) => {
+      const file = files[0];
+      if (file) void uploadFile(file);
+    },
     enabled: !isReadOnly && !uploadLoading && !loading,
   });
 

@@ -35,6 +35,7 @@ export function GalleryStep({
   const permissions = getEditPermissions(packageStatus);
   const { toast, confirm } = useFeedback();
   const [uploadLoading, setUploadLoading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState<{ done: number; total: number } | null>(null);
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [editingCaption, setEditingCaption] = useState<string | undefined>();
   const [deletingId, setDeletingId] = useState<string | undefined>();
@@ -71,56 +72,101 @@ export function GalleryStep({
     return null;
   };
 
-  const uploadFile = useCallback(
-    async (file: File) => {
-      if (data.length >= EDIT_LIMITS.maxGalleryImages) {
-        setUploadError(`Maximum ${EDIT_LIMITS.maxGalleryImages} images allowed`);
-        return;
+  const uploadFiles = useCallback(
+    async (files: File[]) => {
+      if (files.length === 0) return;
+
+      const max = EDIT_LIMITS.maxGalleryImages;
+      const problems: string[] = [];
+
+      // Anything already in the gallery, plus whatever this batch adds.
+      let rolling = [...sortedImages];
+
+      const slots = Math.max(0, max - rolling.length);
+      const accepted = files.slice(0, slots);
+      const skipped = files.length - accepted.length;
+
+      if (skipped > 0) {
+        problems.push(
+          accepted.length === 0
+            ? `Maximum ${max} images allowed.`
+            : `Only ${slots} more image${slots === 1 ? "" : "s"} can be added (maximum ${max}), so ${skipped} ${skipped === 1 ? "file was" : "files were"} skipped.`
+        );
       }
 
-      const validationError = validateImage(file);
-      if (validationError) {
-        setUploadError(validationError);
-        return;
+      // Reject the bad files up front, naming them when there is more than one.
+      const valid: File[] = [];
+      for (const file of accepted) {
+        const error = validateImage(file);
+        if (error) {
+          // Name the file when the operator picked a batch, so the error
+          // points at the right photo.
+          problems.push(accepted.length > 1 ? `${file.name}: ${error}` : error);
+        } else {
+          valid.push(file);
+        }
       }
+
+      setUploadError(problems.length > 0 ? problems.join(" ") : null);
+      if (valid.length === 0) return;
 
       setUploadLoading(true);
-      setUploadError(null);
+      setUploadProgress({ done: 0, total: valid.length });
 
-      try {
-        const formData = new FormData();
-        formData.append("file", file);
+      let added = 0;
+      let index = 0;
 
-        const result = await uploadPackageImage(packageId, formData, "gallery");
+      // One at a time: the action takes a single file, and uploading in
+      // sequence keeps the numbering consistent as each photo lands.
+      for (const file of valid) {
+        try {
+          const formData = new FormData();
+          formData.append("file", file);
 
-        if (result.success && result.imageUrl) {
-          const newImage: EditGalleryImage = {
-            id: `new-${Date.now()}`,
-            imageUrl: result.imageUrl,
-            caption: null,
-            displayOrder: data.length + 1,
-          };
+          const result = await uploadPackageImage(packageId, formData, "gallery");
 
-          onUpdate(withDisplayOrder([...sortedImages, newImage]));
-        } else {
-          setUploadError(result.error?.message ?? "Failed to upload image");
+          if (result.success && result.imageUrl) {
+            index += 1;
+            added += 1;
+            rolling = [
+              ...rolling,
+              {
+                id: `new-${Date.now()}-${index}`,
+                imageUrl: result.imageUrl,
+                caption: null,
+                displayOrder: rolling.length + 1,
+              },
+            ];
+            onUpdate(withDisplayOrder(rolling));
+          } else {
+            const message = result.error?.message ?? "Failed to upload image";
+            problems.push(valid.length > 1 ? `${file.name}: ${message}` : message);
+          }
+        } catch (error) {
+          problems.push(valid.length > 1 ? `${file.name}: upload failed` : "An error occurred during upload");
         }
-      } catch (error) {
-        setUploadError("An error occurred during upload");
-      } finally {
-        setUploadLoading(false);
+
+        setUploadProgress({ done: added, total: valid.length });
+      }
+
+      setUploadLoading(false);
+      setUploadProgress(null);
+      setUploadError(problems.length > 0 ? problems.join(" ") : null);
+
+      if (added > 1) {
+        toast(`${added} photos added. Drag them to set the order.`, "success");
       }
     },
-    [data, sortedImages, onUpdate, packageId]
+    [sortedImages, onUpdate, packageId, toast]
   );
 
   const handleImageUpload = useCallback(
     (event: React.ChangeEvent<HTMLInputElement>) => {
-      const file = event.target.files?.[0];
+      const files = Array.from(event.target.files ?? []);
       event.target.value = "";
-      if (file) void uploadFile(file);
+      if (files.length > 0) void uploadFiles(files);
     },
-    [uploadFile]
+    [uploadFiles]
   );
 
   const canAcceptMore = canAddImages && data.length < EDIT_LIMITS.maxGalleryImages;
@@ -128,7 +174,7 @@ export function GalleryStep({
 
   // Drop a photo anywhere on this card to upload it...
   const fileDrop = useFileDrop({
-    onFile: (file) => void uploadFile(file),
+    onFiles: (files) => void uploadFiles(files),
     enabled: canAcceptMore && !busy,
   });
 
@@ -207,7 +253,7 @@ export function GalleryStep({
           </p>
           {canAddImages && (
             <p className="text-xs text-daet-ink/70 mt-1">
-              Drag a photo here to upload it{sortedImages.length > 1 && canReorder ? ", or drag a photo onto another to reorder" : ""}.
+              Drag photos here to upload them{sortedImages.length > 1 && canReorder ? ", or drag a photo onto another to reorder" : ""}.
             </p>
           )}
         </div>
@@ -220,11 +266,16 @@ export function GalleryStep({
                   : "bg-daet-forest text-white hover:bg-daet-leaf"
               }`}
             >
-              {uploadLoading ? "Uploading..." : "+ Add Image"}
+              {uploadLoading
+                ? uploadProgress && uploadProgress.total > 1
+                  ? `Uploading ${Math.min(uploadProgress.done + 1, uploadProgress.total)} of ${uploadProgress.total}...`
+                  : "Uploading..."
+                : "+ Add Image"}
             </div>
             <input
               id="gallery-upload"
               type="file"
+              multiple
               accept={ALLOWED_IMAGE_TYPES.join(",")}
               onChange={handleImageUpload}
               disabled={uploadLoading || loading}
@@ -236,7 +287,7 @@ export function GalleryStep({
 
       {fileDrop.isDragging && (
         <p className="mb-4 rounded-2xl border-2 border-dashed border-daet-forest/60 p-3 text-sm font-medium text-daet-forest">
-          Drop the photo to upload it.
+          Drop the photos to upload them.
         </p>
       )}
 
@@ -375,7 +426,11 @@ export function GalleryStep({
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
           </svg>
           <p className="text-sm font-medium">No gallery images yet</p>
-          <p className="text-xs mt-1">Upload images to showcase your package</p>
+          <p className="text-xs mt-1">
+            {canAddImages
+              ? "Upload or drag photos here to showcase your package"
+              : "Upload images to showcase your package"}
+          </p>
         </div>
       )}
 
