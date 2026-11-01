@@ -11,8 +11,9 @@ import { FAN_PLACES } from "@/components/home/fan-places";
 import { AskBand } from "@/components/home/ask-band";
 import { GettingHere } from "@/components/home/getting-here";
 import { HomeMap, type MapPlace } from "@/components/home/home-map";
-import { TripCard, type HomeTrip } from "@/components/home/trip-card";
-import { cheapestPrice, durationLabel } from "@/lib/tours/trip-board";
+import { PackageCard } from "@/components/tours/package-card";
+import { placePhoto } from "@/lib/tours/trip-board";
+import { toSummary, type RatingSummary } from "@/lib/tours/reviews";
 import { readAccreditationCounts } from "@/lib/tours/accreditation";
 import { PHOTOS, type PhotoKey } from "@/lib/photo-credits";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
@@ -88,15 +89,15 @@ const HOME_PHOTOS: PhotoKey[] = [
   "cathedralHolyTrinity",
 ];
 
+/** Exactly the columns PackageCard reads. */
 type PackageRow = {
   id: string;
   title: string;
   location_name: string;
   duration_value: number;
   duration_type: string;
-  // PostgREST types the embed as a list even though the FK makes it one row.
-  tours_operators?: { business_name: string | null } | Array<{ business_name: string | null }> | null;
-  tours_package_price_variants?: Array<{ price_per_pax: number | null; flat_price: number | null; is_default: boolean | null }>;
+  cover_image_url: string | null;
+  tours_package_price_variants?: Array<{ price_per_pax: number | null; flat_price: number | null; is_default: boolean }>;
 };
 
 export default async function HomePage() {
@@ -112,11 +113,12 @@ export default async function HomePage() {
     supabase.auth.getUser(),
     supabase.from("tours_events").select(EVENT_COLUMNS).eq("is_published", true).gte("ends_at", new Date().toISOString()).order("starts_at", { ascending: true }).limit(4),
     supabase.from("tours_merchandise").select(MERCH_COLUMNS).eq("is_active", true).eq("is_featured", true).order("created_at", { ascending: false }).limit(4),
-    // Trips on the home page: the newest published ones, cheapest price included.
+    // Trips on the home page: the newest published ones, with the same columns
+    // the browse cards use, so the two read as one list.
     supabase
       .from("tours_packages")
       .select(
-        "id, title, location_name, duration_value, duration_type, tours_operators(business_name), tours_package_price_variants(price_per_pax, flat_price, is_default)",
+        "id, title, location_name, duration_value, duration_type, cover_image_url, tours_package_price_variants(price_per_pax, flat_price, is_default)",
       )
       .eq("status", "published")
       .order("created_at", { ascending: false })
@@ -133,19 +135,30 @@ export default async function HomePage() {
   ]);
   const upcomingEvents = (eventsResult.data ?? []) as TourEvent[];
   const featuredMerch = (merchResult.data ?? []) as MerchItem[];
-  const trips: HomeTrip[] = ((tripsResult.data ?? []) as unknown as PackageRow[]).map((row) => {
-    const cheapest = cheapestPrice(row.tours_package_price_variants);
-    const operator = Array.isArray(row.tours_operators) ? row.tours_operators[0] : row.tours_operators;
-    return {
-      id: row.id,
-      title: row.title,
-      locationName: row.location_name,
-      duration: durationLabel(row.duration_value, row.duration_type),
-      price: cheapest?.price ?? null,
-      perPerson: cheapest?.perPerson ?? true,
-      operator: operator?.business_name ?? null,
-    };
-  });
+  const trips = (tripsResult.data ?? []) as unknown as PackageRow[];
+
+  // Ratings come from a view, so hidden reviews never count — the same source the
+  // browse cards read.
+  const ratingsById = new Map<string, RatingSummary>();
+  if (trips.length > 0) {
+    const { data: ratingRows } = await supabase
+      .from("tours_package_ratings")
+      .select("package_id, review_count, average_rating")
+      .in("package_id", trips.map((trip) => trip.id));
+    for (const row of ratingRows ?? []) {
+      const summary = toSummary(row);
+      if (row.package_id && summary) ratingsById.set(row.package_id, summary);
+    }
+  }
+
+  // A trip with no cover of its own shows a credited photo of the place it goes
+  // to, so the home page has to credit those too.
+  const credits = [
+    ...new Set<PhotoKey>([
+      ...HOME_PHOTOS,
+      ...trips.filter((trip) => !trip.cover_image_url).map((trip) => placePhoto(trip.title, trip.location_name)),
+    ]),
+  ];
 
   // Attractions carry their own slugs; a pin only makes sense for a place the
   // fan knows, because tapping it opens that wedge.
@@ -159,7 +172,7 @@ export default async function HomePage() {
   const counts = countsResult.error ? null : readAccreditationCounts(countsResult.data);
 
   return (
-    <PageFrame bleed credits={HOME_PHOTOS}>
+    <PageFrame bleed credits={credits}>
       {/* First screen: six photos of Daet fanned out, the headline in the dark
           under the point they radiate from. */}
       <PlaceFan places={FAN_PLACES} signedIn={!!user} />
@@ -175,8 +188,8 @@ export default async function HomePage() {
         <PlacePanels panels={PANELS} />
       </section>
 
-      {/* Trips you can book: the newest published packages, with the cheapest
-          price on each and the operator's name. */}
+      {/* Trips you can book: the newest published packages, drawn with the same
+          photo-first card the browse page uses. */}
       <section aria-labelledby="home-trips" className={`${WRAP} pt-20 sm:pt-32`}>
         <div className="flex flex-wrap items-end justify-between gap-3">
           <h2 id="home-trips" data-reveal className="display-2 text-daet-ink">
@@ -190,10 +203,10 @@ export default async function HomePage() {
           Every operator is verified by the Daet Tourism Office.
         </p>
         {trips.length > 0 ? (
-          <ul className="grid gap-3 md:grid-cols-3">
+          <ul className="grid gap-4 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3">
             {trips.map((trip) => (
               <li key={trip.id} data-reveal className="flex">
-                <TripCard trip={trip} />
+                <PackageCard package={trip} rating={ratingsById.get(trip.id) ?? null} headingLevel={3} />
               </li>
             ))}
           </ul>

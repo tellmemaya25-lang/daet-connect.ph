@@ -8,7 +8,6 @@ import "@testing-library/jest-dom";
 import { AskBand } from "./ask-band";
 import { GettingHere } from "./getting-here";
 import { HomeMap, type MapPlace } from "./home-map";
-import { TripCard } from "./trip-card";
 import { GETTING_HERE, GETTING_HERE_CHECK, GETTING_HERE_SOURCES } from "@/lib/getting-here";
 
 let mockMapProps: { markers: Array<{ id: string; lat: number; lng: number; title: string }>; onMarkerClick?: (id: string) => void; fitKey: string } | null =
@@ -59,44 +58,6 @@ describe("GettingHere", () => {
 
     expect(copy).not.toMatch(/₱|\bPHP\b|\bpesos\b/);
     expect(copy).not.toMatch(/\b\d{1,2}:\d{2}\b/);
-  });
-});
-
-describe("TripCard", () => {
-  const trip = {
-    id: "pkg-1",
-    title: "Calaguas Island Day Trip",
-    locationName: "Vinzons",
-    duration: "3 days",
-    price: 3799,
-    perPerson: true,
-    operator: "Bagasbas Coast Tours",
-  };
-
-  it("says how long, how much and who runs it", () => {
-    render(<TripCard trip={trip} />);
-
-    expect(screen.getByRole("heading", { level: 3, name: trip.title })).toBeInTheDocument();
-    expect(screen.getByText("3 days · from ₱3,799.00 per person")).toBeInTheDocument();
-    expect(screen.getByText("Run by Bagasbas Coast Tours")).toBeInTheDocument();
-    expect(screen.getByRole("link")).toHaveAttribute("href", "/tours/packages/pkg-1");
-  });
-
-  it("says for the trip when the price is flat, and drops the price when there is none", () => {
-    const { rerender } = render(<TripCard trip={{ ...trip, perPerson: false }} />);
-    expect(screen.getByText("3 days · from ₱3,799.00 for the trip")).toBeInTheDocument();
-
-    rerender(<TripCard trip={{ ...trip, price: null }} />);
-    expect(screen.getByText("3 days")).toBeInTheDocument();
-    expect(screen.queryByText(/from/)).not.toBeInTheDocument();
-  });
-
-  it("uses the place name, not a photo, and says nothing it was not told", () => {
-    render(<TripCard trip={{ ...trip, operator: null }} />);
-
-    expect(screen.getByText("Vinzons")).toBeInTheDocument();
-    expect(screen.queryByRole("img")).not.toBeInTheDocument();
-    expect(screen.queryByText(/Run by/)).not.toBeInTheDocument();
   });
 });
 
