@@ -149,31 +149,17 @@ Descriptions 1–4 are the existing `PANELS` copy in `src/app/page.tsx`. Descrip
 
 ### 4.2 Photo rules
 
-- **Where the owner's photos come from:** the owner found the four photos in
-  `docs/hero-photos/` (Calaguas, Rizal Monument, Heritage Center, Cathedral) on
-  https://daetfeedback.vercel.app/spots.
-  - A page that displays a photo is not a licence.
-  - Before moving any of them into `public/photos/hero/`, open that page and find each
-    photo's **original photographer, source URL and licence**.
-  - Record them in `PHOTOS` in `src/lib/photo-credits.ts` (`title`, `creator`, `licence`,
-    `licenceUrl`, `sourceUrl`).
-  - If a photo's licence isn't clear, keep it out of `public/` and ask the owner. Until
-    then, the fan falls back to the existing credited photo for that place:
-    `PHOTOS.calaguasBeach`, `PHOTOS.rizal`, or a `brand-deep` block with the place name
-    (Heritage Center, Cathedral).
-- **Checked 2026-11-01:**
-  - daetfeedback.vercel.app/spots shows **no photo credits at all**, and its six images
-    carry no metadata.
-  - Those images look AI-generated and don't show the real places: the "First Rizal
-    Monument" there is a stone pyramid, not Daet's white pylon, and the "Cathedral of St.
-    John" is a baroque stone church.
-  - **None of the owner's four photos match that site's images**, so they came from
-    somewhere else.
-  - Wikimedia Commons has likely originals (search "Cathedral Holy Trinity Daet",
-    "Rizal monument Daet", "Calaguas", "Daet heritage"), but they weren't confirmed,
-    because Commons rate-limited the check.
-  - Confirm each photo's original by reverse image search, or with the owner, before
-    serving it.
+- **The owner's four photos are temporary** (Calaguas, Rizal Monument, Heritage Center,
+  Cathedral, in `docs/hero-photos/`). The owner will replace them later with their own
+  photos and credits.
+  - **Don't search for the photographers.**
+  - Build with these files: copy them to `public/photos/hero/` and add `PHOTOS` entries
+    with `creator: "[replace before launch]"` and empty licence fields.
+  - Keep every hero photo reference going through `PHOTOS`, so swapping a photo later is a
+    one-line change per place.
+  - Add a launch check, e.g. a unit test or a build-time warning, that fails or warns while
+    any `PHOTOS` entry still says "[replace before launch]". That way the placeholders
+    can't reach production unnoticed.
 - **Bagasbas:** decided. It uses the existing credited `PHOTOS.bagasbas`. The AI-looking
   aerial and the "Alay sa Bayan" building photo were dropped.
 - **Resize** each photo to at most 1600 px on the long side and compress (JPEG quality
@@ -707,6 +693,6 @@ the open view covers the viewport, so add `touch-action: none` on it and let
 - **Getting to Daet:** use the researched copy in §11, item 8.
 
 **Still open (ask the owner):**
-1. The original photographer and licence for each photo in `docs/hero-photos/`, from
-   https://daetfeedback.vercel.app/spots (see §4.2).
+1. Replacement photos and their credits for Calaguas, the Rizal Monument, the Heritage
+   Center and the Cathedral. The owner will supply them later (see §4.2).
 2. Whether the Tourism Office has confirmed the "Getting to Daet" text before launch.
