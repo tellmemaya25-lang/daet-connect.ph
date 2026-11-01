@@ -377,6 +377,20 @@ describe("PlaceFan's hero", () => {
     expect(section.className).not.toContain("min-h-[560px]");
   });
 
+  it("stays dark under its white headline in either theme", () => {
+    // `daet-ink` is the *text* colour and turns pale in dark mode; the hero's
+    // ground has to stay a dark ground, or white on it fails contrast and the
+    // seams between wedges come out as white lines.
+    const { container } = renderFan();
+    const section = container.querySelector("section") as HTMLElement;
+
+    expect(section.className).toContain("bg-slate-950");
+    expect(section.className).not.toContain("bg-daet-ink");
+    container.querySelectorAll("[data-wedge]").forEach((wedge) => {
+      expect(wedge.className).toContain("bg-slate-950");
+    });
+  });
+
   it("keeps the full headline and its subline on a roomy desktop", () => {
     setHeroSize(1280, 800);
     renderFan();

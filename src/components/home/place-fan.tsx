@@ -279,7 +279,7 @@ export function PlaceFan({ places, signedIn }: { places: FanPlace[]; signedIn: b
       onPointerDown={onPointerDown}
       onPointerUp={onPointerUp}
       style={sheet && isOpen ? { touchAction: "none" } : undefined}
-      className="relative h-[calc(100svh-var(--header-h))] max-h-[1000px] min-h-[520px] w-full overflow-hidden overscroll-contain bg-daet-ink"
+      className="relative h-[calc(100svh-var(--header-h))] max-h-[1000px] min-h-[520px] w-full overflow-hidden overscroll-contain bg-slate-950"
     >
       <div role="group" aria-label="Places in Daet" className="absolute inset-0 z-0">
         {places.map((place, index) => (
@@ -318,7 +318,7 @@ export function PlaceFan({ places, signedIn }: { places: FanPlace[]; signedIn: b
               if (!box) return;
               parallax(index, ((event.clientX - box.left) / box.width - 0.5) * 0.02 * box.width);
             }}
-            className="group absolute inset-0 m-0 block cursor-pointer border-0 bg-daet-ink p-0 text-left"
+            className="group absolute inset-0 m-0 block cursor-pointer border-0 bg-slate-950 p-0 text-left"
           >
             {/* Two layers: the outer one is GSAP's (scale, and the parallax
                 nudge), the inner one holds the still radial offset that keeps
