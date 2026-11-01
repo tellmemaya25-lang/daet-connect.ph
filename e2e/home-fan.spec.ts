@@ -133,7 +133,7 @@ test.describe("home fan on a desktop", () => {
     await page.keyboard.press("Enter");
 
     await expect(page.getByRole("heading", { level: 2, name: "Bagasbas Beach" })).toBeVisible();
-    await expect(page.getByRole("link", { name: "See the place" })).toHaveAttribute(
+    await expect(inPanel(page).getByRole("link", { name: "See the place" })).toHaveAttribute(
       "href",
       "/tours/attractions/bagasbas-beach",
     );
