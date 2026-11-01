@@ -344,21 +344,29 @@ export function PlaceFan({ places, signedIn }: { places: FanPlace[]; signedIn: b
                 nudge), the inner one holds the still radial offset that keeps
                 each photo looking down its own wedge. */}
             <span data-photo={index} className="absolute inset-0 block" style={{ transform: "scale(1.15)" }}>
-              {/* The rest offset, React's: the photo looks down its own wedge. */}
-              <span className="absolute inset-0 block" style={{ transform: `translate(${nudge.x}px, ${nudge.y}px)` }}>
-                {/* The counter-offset, the motion layer's: while the place is
-                    open this cancels the line above, so the photo sits dead
-                    centre of the hero instead of leaving a corner of it empty. */}
-                <span data-nudge data-nudge-x={nudge.x} data-nudge-y={nudge.y} className="absolute inset-0 block">
-                  <Image
-                    src={place.photo.src}
-                    alt={place.photo.alt}
-                    fill
-                    priority={index < 2}
-                    sizes="100vw"
-                    className="object-cover"
-                  />
-                </span>
+              {/* The photo's rest offset, out along its own wedge. The motion
+                  layer owns this one: it reads the two numbers off the element
+                  and puts the photo back to nought while its place is open, so
+                  the open view is full-bleed instead of leaving the corner its
+                  wedge pointed at empty. One owner, so nothing has to cancel
+                  anything else out. */}
+              <span
+                data-nudge
+                data-nudge-x={nudge.x}
+                data-nudge-y={nudge.y}
+                className="absolute inset-0 block"
+                /* The server's first paint only: from hydration the motion
+                   layer owns this transform, so it can take it back to nought. */
+                style={{ transform: `translate(${nudge.x}px, ${nudge.y}px)` }}
+              >
+                <Image
+                  src={place.photo.src}
+                  alt={place.photo.alt}
+                  fill
+                  priority={index < 2}
+                  sizes="100vw"
+                  className="object-cover"
+                />
               </span>
             </span>
 

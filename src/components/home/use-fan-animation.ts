@@ -98,22 +98,25 @@ export function useFanAnimation({
 
   /**
    * The offset a wedge's photo rests at, out along its own angle, kept on the
-   * element as `data-nudge-x`/`-y` by the fan.
-   *
-   * The photo is translated there by a layer the motion layer never touches; the
-   * element it does own carries the opposite offset while a place is open, so
-   * the open photo sits dead centre of the hero instead of leaving the corner
-   * where its wedge used to be pointing empty.
+   * element as `data-nudge-x`/`-y` by the fan. The fan does not translate the
+   * photo itself: this layer is the only owner, so the closed fan and the open
+   * place can't end up disagreeing about where the photo is.
    */
   const restNudge = (element: HTMLElement) => ({
     x: Number(element.dataset.nudgeX ?? 0),
     y: Number(element.dataset.nudgeY ?? 0),
   });
 
-  /** The offset that cancels a photo's rest offset: 0 while the fan is closed. */
-  const centred = (element: HTMLElement) => {
-    const rest = restNudge(element);
-    return { x: -rest.x, y: -rest.y };
+  /**
+   * Take the offset over from the server's inline transform, once per element.
+   * It is only there for the first paint (and for a visitor without scripts);
+   * clearing it lets GSAP write the whole transform itself, rather than adding
+   * to a value it would otherwise have to read back.
+   */
+  const takeOver = (element: HTMLElement) => {
+    if (element.dataset.owned) return;
+    element.dataset.owned = "1";
+    element.style.transform = "";
   };
 
   /**
@@ -170,7 +173,10 @@ export function useFanAnimation({
       gsap.set(element, { autoAlpha: 1, x: 0, y: 0, zIndex: 0, filter: "brightness(1)" });
     });
     photos.forEach((element) => gsap.set(element, { x: 0, y: 0, scale: 1.15 }));
-    nudges.forEach((element) => gsap.set(element, { x: 0, y: 0 }));
+    nudges.forEach((element) => {
+      takeOver(element);
+      gsap.set(element, restNudge(element));
+    });
 
     // One owner for the name tags (GSAP, not CSS): a phone shows all of them,
     // a desktop shows none until a pointer or focus arrives.
@@ -286,7 +292,10 @@ export function useFanAnimation({
       gsap.set(photos[index], { x: 0, y: 0, scale: 1 });
       // Dead centre and covering: the photo fills the hero, with no empty
       // corner where it was still pushed out along its wedge.
-      nudges.forEach((element, i) => gsap.set(element, i === index ? centred(element) : { x: 0, y: 0 }));
+      nudges.forEach((element, i) => {
+        takeOver(element);
+        gsap.set(element, i === index ? { x: 0, y: 0 } : restNudge(element));
+      });
       // The open place fills the hero, so no name tag belongs on top of it.
       chips.forEach((element) => gsap.set(element, { autoAlpha: 0, y: 6 }));
       if (headline) gsap.set(headline, { opacity: 0 });
@@ -326,7 +335,10 @@ export function useFanAnimation({
 
     tl.to(wedges[index], { filter: "brightness(1)", duration: OPEN }, 0);
     tl.to(photos[index], { x: 0, y: 0, scale: 1, duration: OPEN }, 0);
-    if (nudges[index]) tl.to(nudges[index], { ...centred(nudges[index]), duration: OPEN }, 0);
+    if (nudges[index]) {
+      takeOver(nudges[index]);
+      tl.to(nudges[index], { x: 0, y: 0, duration: OPEN }, 0);
+    }
 
     wedges.forEach((element, i) => {
       if (i === index) return;
@@ -334,7 +346,13 @@ export function useFanAnimation({
     });
 
     if (headline) tl.to(headline, { opacity: 0, duration: 0.25, ease: "power2.out" }, 0);
-    tl.eventCallback("onComplete", () => onOpened?.());
+    tl.eventCallback("onComplete", () => {
+      // Settle it exactly, whatever touched these while the fold-in ran: the
+      // open view is the hero filled edge to edge by this one photo.
+      gsap.set(photos[index], { x: 0, y: 0, scale: 1 });
+      if (nudges[index]) gsap.set(nudges[index], { x: 0, y: 0 });
+      onOpened?.();
+    });
   });
 
   /** Folding back. Reversing the open timeline gives the mock-up's close. */
@@ -373,7 +391,10 @@ export function useFanAnimation({
     });
 
     gsap.set(wedges[index], { zIndex: 5, filter: "brightness(1)" });
-    nudges.forEach((element, i) => gsap.set(element, i === index ? centred(element) : { x: 0, y: 0 }));
+    nudges.forEach((element, i) => {
+      takeOver(element);
+      gsap.set(element, i === index ? { x: 0, y: 0 } : restNudge(element));
+    });
     gsap.to(wedges[index], { autoAlpha: 1, duration: SWAP, ease: "power2.inOut", overwrite: "auto" });
     gsap.to(photos[index], { x: 0, y: 0, scale: 1, duration: SWAP, ease: "power2.inOut" });
   });

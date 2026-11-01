@@ -221,30 +221,32 @@ describe("PlaceFan opening a place", () => {
     hurry();
     const { container } = renderFan();
 
-    // How far the photo sits from the middle of its own box: the rest offset
-    // the fan sets, plus the counter-offset the motion layer adds on top.
+    /** How far a photo sits from the middle of its own box, off its transform. */
     const offsetOf = (index: number) => {
       const element = container.querySelector(`[data-wedge="${index}"] [data-nudge]`) as HTMLElement;
-      const read = /translate3?d?\((-?[\d.]+)px, *(-?[\d.]+)px/.exec(element.style.transform);
-      // No transform written yet is no counter-offset, not an unknown one.
-      return {
-        x: (read ? Number(read[1]) : 0) + Number(element.dataset.nudgeX),
-        y: (read ? Number(read[2]) : 0) + Number(element.dataset.nudgeY),
-      };
+      // GSAP writes `translate(0, 0)`; the server writes `translate(-42px, -9px)`.
+      const read = /translate3?d?\((-?[\d.e+]+)(?:px)?, *(-?[\d.e+]+)(?:px)?/.exec(element.style.transform);
+      return { x: read ? Number(read[1]) : 0, y: read ? Number(read[2]) : 0 };
+    };
+    const restOf = (index: number) => {
+      const element = container.querySelector(`[data-wedge="${index}"] [data-nudge]`) as HTMLElement;
+      return { x: Number(element.dataset.nudgeX), y: Number(element.dataset.nudgeY) };
     };
 
     // Each photo looks down its own wedge while the fan is closed.
-    expect(Math.abs(offsetOf(2).x)).toBeGreaterThan(1);
+    const rest = restOf(2);
+    expect(Math.abs(rest.x)).toBeGreaterThan(1);
+    await waitFor(() => expect(offsetOf(2).x).toBeCloseTo(rest.x, 0));
 
     fireEvent.click(screen.getByRole("button", { name: "Bagasbas Beach: open photo and details" }));
 
     // A photo still pushed out along its old wedge leaves a corner of the hero
-    // empty — the opened one has to sit dead centre, covering the screen.
-    await waitFor(() => expect(offsetOf(2)).toMatchObject({ x: 0, y: 0 }));
+    // empty — the opened one has to sit dead centre, filling the screen.
+    await waitFor(() => expect(offsetOf(2)).toEqual({ x: 0, y: 0 }));
 
     fireEvent.click(screen.getByRole("button", { name: "Close" }));
 
-    await waitFor(() => expect(Math.abs(offsetOf(2).x)).toBeGreaterThan(1));
+    await waitFor(() => expect(offsetOf(2).x).toBeCloseTo(rest.x, 0));
   });
 
   it("tells a screen reader which place just opened", () => {

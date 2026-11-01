@@ -365,8 +365,24 @@ test.describe("home fan on a desktop", () => {
     await expect(page.getByRole("heading", { level: 2, name: "Bagasbas Beach" })).toBeVisible();
   });
 
-  test("keeps the open photo covering the hero, still and after a moment", async ({ page }) => {
-    await page.setViewportSize({ width: 1920, height: 1080 });
+  test("never scrolls sideways", async ({ page }) => {
+    await visit(page, "/");
+    await page.getByRole("button", { name: "Bagasbas Beach: open photo and details" }).focus();
+    await page.keyboard.press("Enter");
+
+    const overflow = await page.evaluate(
+      () => Math.max(document.documentElement.scrollWidth, document.body.scrollWidth) - window.innerWidth,
+    );
+    expect(overflow).toBeLessThanOrEqual(0);
+  });
+});
+
+test.describe("the open place", () => {
+  // Motion on: the file's own default is `reduce`, which settles every shape
+  // instantly and so never exercises the fold-in that fills the screen.
+  test.use({ reducedMotion: "no-preference", viewport: { width: 1920, height: 1080 }, isMobile: false, hasTouch: false });
+
+  test("keeps the open photo covering the hero, while it opens and after it settles", async ({ page }) => {
     await visit(page, "/");
 
     /** The photo's box against the hero's, in pixels, plus what is moving it. */
@@ -417,7 +433,10 @@ test.describe("home fan on a desktop", () => {
 
     await page.getByRole("button", { name: "Calaguas: open photo and details" }).focus();
     await page.keyboard.press("Enter");
-    await page.waitForTimeout(600);
+
+    // Mid fold-in the wedge is still growing, so only the settled state is
+    // judged — but it has to stay put once it is there.
+    await page.waitForTimeout(1200);
     const settled = await measure();
 
     // Nothing else may move it afterwards: a hover that lands late used to zoom
@@ -432,24 +451,23 @@ test.describe("home fan on a desktop", () => {
     await page.waitForTimeout(800);
     const afterScroll = await measure();
 
+    // And it is still the same box a few seconds later, with nothing moving it.
+    await page.waitForTimeout(2500);
+    const late = await measure();
+
     const problems = [
       ...gapsIn(settled).map((gap) => `on open: ${gap}`),
       ...gapsIn(afterPointer).map((gap) => `after the pointer left: ${gap}`),
       ...gapsIn(afterScroll).map((gap) => `after scrolling 80px: ${gap}`),
+      ...gapsIn(late).map((gap) => `a few seconds later: ${gap}`),
+      // A photo that keeps changing size while the visitor looks at it is a bug
+      // of its own: the box has to be the same one it settled on.
+      ...(late.img && settled.img && (Math.abs(late.img.w - settled.img.w) > 1 || Math.abs(late.img.h - settled.img.h) > 1)
+        ? [`the photo changed size on its own: ${settled.img.w}x${settled.img.h} then ${late.img.w}x${late.img.h}`]
+        : []),
     ];
 
-    expect(problems, JSON.stringify({ settled, afterPointer, afterScroll }, null, 1)).toEqual([]);
-  });
-
-  test("never scrolls sideways", async ({ page }) => {
-    await visit(page, "/");
-    await page.getByRole("button", { name: "Bagasbas Beach: open photo and details" }).focus();
-    await page.keyboard.press("Enter");
-
-    const overflow = await page.evaluate(
-      () => Math.max(document.documentElement.scrollWidth, document.body.scrollWidth) - window.innerWidth,
-    );
-    expect(overflow).toBeLessThanOrEqual(0);
+    expect(problems, JSON.stringify({ settled, afterPointer, afterScroll, late }, null, 1)).toEqual([]);
   });
 });
 
