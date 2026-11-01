@@ -389,10 +389,10 @@ describe("PlaceFan's hero", () => {
     const { container } = renderFan();
     const section = container.querySelector("section") as HTMLElement;
 
-    expect(section.className).toContain("bg-slate-950");
+    expect(section.className).toContain("bg-slate-900");
     expect(section.className).not.toContain("bg-daet-ink");
     container.querySelectorAll("[data-wedge]").forEach((wedge) => {
-      expect(wedge.className).toContain("bg-slate-950");
+      expect(wedge.className).toContain("bg-slate-900");
     });
   });
 

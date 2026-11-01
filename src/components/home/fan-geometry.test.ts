@@ -86,8 +86,10 @@ describe("polygons", () => {
     const wedge = wedgePolygon(vp, 178, 208, 3600);
 
     // The apex is where the two inset edges meet: half a seam out along the
-    // bisector, divided by the sine of half the wedge. Under 6px on a 30° wedge.
-    expect(Math.hypot(wedge[0][0] - vp[0], wedge[0][1] - vp[1])).toBeLessThan(6);
+    // bisector, divided by the sine of half the 30° wedge. Pinned to that
+    // formula rather than to a pixel bound, so a wider seam is not a failure.
+    const expected = SEAM_PX.desktop / 2 / Math.sin((15 * Math.PI) / 180);
+    expect(Math.hypot(wedge[0][0] - vp[0], wedge[0][1] - vp[1])).toBeCloseTo(expected, 6);
   });
 
   it("gives the open rectangle the same nine points, so the two can be blended", () => {
