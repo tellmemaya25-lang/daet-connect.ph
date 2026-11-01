@@ -272,6 +272,12 @@ export function PlaceFan({ places, signedIn }: { places: FanPlace[]; signedIn: b
   };
 
   return (
+    // The header is a scrim pinned over the top of the page, so the photos run up
+    // under it: the hero starts at the top of the page and ends at the fold.
+    //
+    // No `overscroll-contain` on it: the hero is the whole first screen, so
+    // containing the wheel there left the page unscrollable from the top. The
+    // place panel keeps its own, which is where it is needed.
     <section
       ref={sectionRef}
       aria-labelledby="home-title"
@@ -279,7 +285,7 @@ export function PlaceFan({ places, signedIn }: { places: FanPlace[]; signedIn: b
       onPointerDown={onPointerDown}
       onPointerUp={onPointerUp}
       style={sheet && isOpen ? { touchAction: "none" } : undefined}
-      className="relative -mt-[var(--header-h)] h-[100svh] max-h-[1080px] min-h-[520px] w-full overflow-hidden overscroll-contain bg-slate-900"
+      className="relative -mt-[var(--header-h)] h-[100svh] max-h-[1080px] min-h-[520px] w-full overflow-hidden bg-slate-900"
     >
       <div role="group" aria-label="Places in Daet" className="absolute inset-0 z-0">
         {places.map((place, index) => (

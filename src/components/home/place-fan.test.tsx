@@ -382,6 +382,17 @@ describe("PlaceFan's hero", () => {
     expect(section.className).not.toContain("h-[calc(100svh-var(--header-h))]");
   });
 
+  it("leaves the wheel alone, so the page scrolls from the hero", () => {
+    // `overscroll-contain` on a full-screen hero swallows the gesture: the wheel
+    // never chains to the page and nothing below the fold can be reached. The
+    // place panel scopes its own, so the hero does not need one.
+    const { container } = renderFan();
+    const section = container.querySelector("section") as HTMLElement;
+
+    expect(section.className).not.toContain("overscroll-contain");
+    expect(container.querySelector("#place-detail")?.className ?? "").not.toContain("overscroll-contain");
+  });
+
   it("stays dark under its white headline in either theme", () => {
     // `daet-ink` is the *text* colour and turns pale in dark mode; the hero's
     // ground has to stay a dark ground, or white on it fails contrast and the
