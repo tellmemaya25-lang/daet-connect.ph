@@ -218,7 +218,7 @@ test.describe("home fan on a desktop", () => {
       .toBeGreaterThan(0.5);
   });
 
-  test("opens the place as a panel beside the photo, and folds it back on Escape", async ({ page }) => {
+  test("opens the place as a card over the photo's bottom left, and folds it back on Escape", async ({ page }) => {
     await visit(page, "/");
     const wedge = page.getByRole("button", { name: "Bagasbas Beach: open photo and details" });
 
@@ -232,6 +232,26 @@ test.describe("home fan on a desktop", () => {
     );
     await expect(page).toHaveURL(/#place-bagasbas-beach/);
     await checkA11y(page, "home, a place open, desktop");
+
+    // The mock (image-2) puts the card in the photo's bottom left corner, not in
+    // a column down the right: it hugs the left edge, its foot sits near the
+    // hero's, and it is one card wide rather than half the screen.
+    const viewport = page.viewportSize()!;
+    const hero = (await page.locator("section[aria-labelledby='home-title']").boundingBox())!;
+    const card = (await page.locator("[data-detail]").boundingBox())!;
+    expect(card.x, "against the left edge").toBeLessThanOrEqual(64);
+    expect(hero.y + hero.height - (card.y + card.height), "its foot near the photo's").toBeLessThanOrEqual(80);
+    expect(card.width, "a card, not a column").toBeLessThanOrEqual(470);
+    expect(card.x + card.width, "clear of the arrows on the right").toBeLessThan(viewport.width * 0.7);
+
+    // ✕ over the photo's top right, ‹ › over its bottom right.
+    const close = (await page.getByRole("button", { name: "Close" }).boundingBox())!;
+    expect(close.x, "the ✕ on the right").toBeGreaterThan(viewport.width * 0.85);
+    expect(close.y, "and at the top, under the bar").toBeLessThan(hero.y + hero.height * 0.25);
+
+    const next = (await page.getByRole("button", { name: "Next place" }).boundingBox())!;
+    expect(next.x, "the arrows on the right").toBeGreaterThan(viewport.width * 0.8);
+    expect(next.y + next.height, "level with the card's foot").toBeGreaterThan(hero.y + hero.height - 120);
 
     await page.keyboard.press("Escape");
 

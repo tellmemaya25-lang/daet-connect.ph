@@ -66,6 +66,27 @@ describe("PlaceDetail", () => {
     });
   });
 
+  it("floats the ✕ and the arrows over the photo, clear of the card", () => {
+    const { container } = renderDetail();
+    const card = container.querySelector("[data-detail]") as HTMLElement;
+
+    // As in the mock: the card holds the words and the two ways on, while the ✕
+    // sits over the photo's top right corner and the ‹ › over its bottom right.
+    expect(card).not.toContainElement(screen.getByRole("button", { name: "Close" }));
+    expect(card).not.toContainElement(screen.getByRole("button", { name: "Previous place" }));
+    expect(card).not.toContainElement(screen.getByRole("button", { name: "Next place" }));
+    expect(screen.getByRole("heading", { level: 2, name: "Bagasbas Beach" })).toBeInTheDocument();
+  });
+
+  it("keeps the arrows with the sheet on a phone, where there is no room beside it", () => {
+    const { container } = renderDetail({ phone: true });
+    const sheet = container.querySelector("[data-detail]") as HTMLElement;
+
+    expect(sheet).toContainElement(screen.getByRole("button", { name: "Next place" }));
+    expect(sheet).toContainElement(screen.getByRole("button", { name: "Previous place" }));
+    expect(sheet).not.toContainElement(screen.getByRole("button", { name: "Close" }));
+  });
+
   it("makes the sheet follow a finger on a phone and dismiss on a long drag", () => {
     const { container, onClose } = renderDetail({ phone: true });
     const sheet = container.querySelector("[data-detail]") as HTMLElement;
