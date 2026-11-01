@@ -28,28 +28,37 @@ const panel = (page: import("@playwright/test").Page, name: string) =>
 const inPanel = (page: import("@playwright/test").Page) => page.locator("#place-detail");
 
 /**
- * Where the header is and how it looks, plus where the hero starts.
+ * The alpha of a computed colour, whatever shape the browser serialises it in.
  *
- * The alpha is read from either serialisation: an opacity modifier is emitted
- * as `color-mix(...)`, which Chrome computes to `color(srgb … / 0.8)`, while a
- * plain fill comes back as `rgba(...)`.
+ * An 80% fill can come back as `rgba(2, 6, 24, 0.8)`, `color(srgb … / 0.8)`,
+ * `oklab(… / 0.8)` or still as `color-mix(in oklab, rgb(…) 80%, transparent)` —
+ * which one depends on the browser, so read all of them rather than guess.
  */
+function alphaOf(value: string): number {
+  const text = value.trim();
+  if (text === "transparent") return 0;
+  const slash = text.match(/\/\s*([\d.]+)(%?)\s*\)$/);
+  if (slash) return Number(slash[1]) / (slash[2] ? 100 : 1);
+  const parts = text.match(/^rgba?\(([^)]*)\)$/)?.[1].split(/[,\s]+/).filter(Boolean) ?? [];
+  if (parts.length === 4) return Number(parts[3]);
+  if (parts.length === 3) return 1;
+  const mix = text.match(/([\d.]+)%\s*,?\s*transparent\s*\)?$/);
+  if (mix) return Number(mix[1]) / 100;
+  return 1;
+}
+
+/** Where the header is and how it looks, plus where the hero starts. */
 async function readHeader(page: import("@playwright/test").Page) {
-  return page.evaluate(() => {
+  const header = await page.evaluate(() => {
     const header = document.querySelector("header") as HTMLElement;
     const hero = document.querySelector("section[aria-labelledby='home-title']") as HTMLElement;
     const brand = header.querySelector("a[href='/']") as HTMLElement;
     const style = getComputedStyle(header);
-    const value = style.backgroundColor;
-    const alpha = value.startsWith("color(")
-      ? Number(value.match(/\/\s*([\d.]+)\s*\)$/)?.[1] ?? 1)
-      : Number(value.match(/rgba\([^)]*,\s*([\d.]+)\s*\)$/)?.[1] ?? 1);
 
     return {
       top: Math.round(header.getBoundingClientRect().top),
       height: Math.round(header.getBoundingClientRect().height),
-      background: value,
-      alpha,
+      background: style.backgroundColor,
       backdrop: style.backdropFilter,
       position: style.position,
       scrollY: Math.round(window.scrollY),
@@ -57,6 +66,7 @@ async function readHeader(page: import("@playwright/test").Page) {
       brandSize: parseFloat(getComputedStyle(brand).fontSize),
     };
   });
+  return { ...header, alpha: alphaOf(header.background) };
 }
 
 type Spot = { x: number; y: number };
@@ -155,7 +165,7 @@ test.describe("home fan on a phone", () => {
 
     const header = await readHeader(page);
     expect(header.height, "a phone header, not the 80px desktop bar").toBeLessThanOrEqual(60);
-    expect(header.alpha, "the photos show through it").toBeLessThan(1);
+    expect(header.alpha, `the photos show through it: ${header.background}`).toBeLessThan(1);
     expect(header.heroTop, "the hero starts at the top of the page").toBeLessThanOrEqual(0);
   });
 
@@ -222,7 +232,7 @@ test.describe("home fan on a desktop", () => {
     expect(atRest.top).toBe(0);
     expect(atRest.height, "slimmer than the 80px bar in the screenshot").toBeLessThanOrEqual(73);
     expect(atRest.brandSize, "a smaller wordmark than the 24px one").toBeLessThanOrEqual(20);
-    expect(atRest.alpha, "semi-transparent, like the mock").toBeLessThan(1);
+    expect(atRest.alpha, `semi-transparent, like the mock: ${atRest.background}`).toBeLessThan(1);
     expect(atRest.backdrop, "blurred behind the bar").toContain("blur");
     expect(atRest.heroTop, "the photos run up behind it").toBeLessThanOrEqual(0);
 
@@ -302,7 +312,7 @@ test.describe("home fan, motion on", () => {
    */
   const coverage = (page: import("@playwright/test").Page, spots: Spot[]) =>
     page.evaluate((spots) => {
-      // Each spot is a 9px cross, so landing on a 3px seam — which moves as the
+      // Each spot is a 9px cross, so landing on a seam — which moves as the
       // wedges widen — doesn't read as a hole. A tear is hundreds of pixels.
       const reach = [0, -4, 4];
       const onPhoto = (spot: Spot) =>
