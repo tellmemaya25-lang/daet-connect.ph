@@ -6,12 +6,9 @@ import { PageFrame } from "@/components/ui/page-frame";
 import { EventCard } from "@/components/tours/event-card";
 import { MerchCard } from "@/components/tours/merch-card";
 import { PlacePanels, type PlacePanel } from "@/components/home/place-panels";
-import { TripLengthPicker, type BoardTrip } from "@/components/tours/trip-length-picker";
 import { PHOTOS, type PhotoKey } from "@/lib/photo-credits";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-import { toManilaDateKey } from "@/lib/tours/events-calendar";
 import { EVENT_COLUMNS, MERCH_COLUMNS, type MerchItem, type TourEvent } from "@/lib/tours/promo-validation";
-import { durationLabel, fromPrice, nextOpenDate, placePhoto, tripLength } from "@/lib/tours/trip-board";
 
 const WRAP = "mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8";
 
@@ -71,46 +68,15 @@ const PANELS: PlacePanel[] = (
 
 const HOME_PHOTOS: PhotoKey[] = ["calaguasBeach", "apuao", "mercedesPort", "rizal", "bagasbas", "church"];
 
-type PackageRow = {
-  id: string;
-  title: string;
-  location_name: string | null;
-  duration_value: number | null;
-  duration_type: string | null;
-  tours_package_price_variants?: Array<{ price_per_pax: number | null; flat_price: number | null; is_default: boolean | null }>;
-  tours_package_availability?: Array<{ available_date: string; capacity_total: number | null; capacity_booked: number | null }>;
-};
-
 export default async function HomePage() {
   const supabase = await createSupabaseServerClient();
-  const today = toManilaDateKey(new Date());
-  const [{ data: { user } }, eventsResult, merchResult, packagesResult] = await Promise.all([
+  const [{ data: { user } }, eventsResult, merchResult] = await Promise.all([
     supabase.auth.getUser(),
     supabase.from("tours_events").select(EVENT_COLUMNS).eq("is_published", true).gte("ends_at", new Date().toISOString()).order("starts_at", { ascending: true }).limit(4),
     supabase.from("tours_merchandise").select(MERCH_COLUMNS).eq("is_active", true).eq("is_featured", true).order("created_at", { ascending: false }).limit(4),
-    supabase
-      .from("tours_packages")
-      .select("id, title, location_name, duration_value, duration_type, tours_package_price_variants(price_per_pax, flat_price, is_default), tours_package_availability(available_date, capacity_total, capacity_booked)")
-      .eq("status", "published")
-      .order("created_at", { ascending: false })
-      .limit(40),
   ]);
   const upcomingEvents = (eventsResult.data ?? []) as TourEvent[];
   const featuredMerch = (merchResult.data ?? []) as MerchItem[];
-  const trips: BoardTrip[] = ((packagesResult.data ?? []) as PackageRow[]).map((pkg) => {
-    const price = fromPrice(pkg.tours_package_price_variants);
-    return {
-      id: pkg.id,
-      title: pkg.title,
-      location: pkg.location_name ?? "Daet",
-      length: tripLength(pkg.duration_value, pkg.duration_type),
-      duration: durationLabel(pkg.duration_value, pkg.duration_type),
-      price: price?.amount ?? null,
-      perPerson: price?.perPerson ?? true,
-      nextDate: nextOpenDate(pkg.tours_package_availability, today),
-      photo: placePhoto(pkg.title, pkg.location_name),
-    };
-  });
 
   return (
     <PageFrame bleed credits={HOME_PHOTOS}>
@@ -150,19 +116,8 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* The live thing: real trips, by the time they take. */}
-      <section aria-labelledby="home-length" className={`${WRAP} pt-16 sm:pt-24`}>
-        <h2 id="home-length" data-reveal className="display-2 text-daet-ink">
-          How long have you got?
-        </h2>
-        <p data-reveal style={{ "--reveal-index": 1 } as React.CSSProperties} className="mb-6 mt-3 max-w-2xl text-lg text-daet-ink">
-          The more time you have, the farther out the boat goes. Pick a length to see the trips that fit and their next open dates.
-        </p>
-        <TripLengthPicker trips={trips} />
-      </section>
-
       {/* Places: one panel open at a time, the rest narrow and grey. */}
-      <section aria-labelledby="home-places" className={`${WRAP} pt-20 sm:pt-32`}>
+      <section aria-labelledby="home-places" className={`${WRAP} pt-16 sm:pt-24`}>
         <h2 id="home-places" data-reveal className="display-2 text-daet-ink">
           Places to start
         </h2>
