@@ -7,6 +7,7 @@ import type { EditGalleryImage, EditPackageStatus, ValidationErrors, StepProps }
 import { uploadPackageImage, deletePackageImage } from "./actions";
 import { EDIT_LIMITS, ALLOWED_IMAGE_EXTENSIONS, ALLOWED_IMAGE_TYPES } from "./edit-constants";
 import { getEditPermissions } from "./permissions";
+import { withDisplayOrder } from "./edit-order";
 
 type GalleryStepProps = StepProps<EditGalleryImage[]> & { packageId: string };
 
@@ -98,10 +99,10 @@ export function GalleryStep({
             id: `new-${Date.now()}`,
             imageUrl: result.imageUrl,
             caption: null,
-            displayOrder: data.length,
+            displayOrder: data.length + 1,
           };
 
-          onUpdate([...data, newImage]);
+          onUpdate(withDisplayOrder([...sortedImages, newImage]));
         } else {
           setUploadError(result.error?.message ?? "Failed to upload image");
         }
@@ -112,7 +113,7 @@ export function GalleryStep({
         event.target.value = "";
       }
     },
-    [data, onUpdate, packageId]
+    [data, sortedImages, onUpdate, packageId]
   );
 
   const handleDeleteImage = useCallback(
@@ -127,8 +128,8 @@ export function GalleryStep({
           await deletePackageImage(packageId, imageUrl);
         }
 
-        // Remove from gallery
-        onUpdate(data.filter((img) => img.id !== imageId));
+        // Remove from gallery, and close the gap the removal leaves behind
+        onUpdate(withDisplayOrder(sortedImages.filter((img) => img.id !== imageId)));
       } catch (error) {
         setUploadError("Failed to delete image");
       } finally {
@@ -161,12 +162,7 @@ export function GalleryStep({
       const [removed] = newOrder.splice(index, 1);
       newOrder.splice(direction === "up" ? index - 1 : index + 1, 0, removed);
 
-      const reordered = newOrder.map((img, i) => ({
-        ...img,
-        displayOrder: i,
-      }));
-
-      onUpdate(reordered);
+      onUpdate(withDisplayOrder(newOrder));
     },
     [sortedImages, onUpdate]
   );

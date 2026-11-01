@@ -6,6 +6,7 @@ import { useFeedback } from "@/components/ui/feedback";
 import type { EditStop, EditPackageStatus, ValidationErrors, StepProps } from "./edit-types";
 import { EDIT_LIMITS, DEFAULT_COORDINATES } from "./edit-constants";
 import { getEditPermissions } from "./permissions";
+import { withStopOrder } from "./edit-order";
 
 type StopsStepProps = StepProps<EditStop[]>;
 
@@ -73,8 +74,8 @@ export function StopsStep({
       longitude: formData.longitude,
       estimatedDurationMinutes: formData.estimatedDurationMinutes ?? null,
       stopOrder: editingId
-        ? data.find((s) => s.id === editingId)?.stopOrder ?? data.length
-        : data.length,
+        ? data.find((s) => s.id === editingId)?.stopOrder ?? data.length + 1
+        : data.length + 1,
     };
 
     let updated: EditStop[];
@@ -84,7 +85,7 @@ export function StopsStep({
       updated = [...data, newStop];
     }
 
-    onUpdate(updated);
+    onUpdate(withStopOrder(updated));
     setShowAddForm(false);
     setEditingId(undefined);
     setFormData({
@@ -109,7 +110,7 @@ export function StopsStep({
         toast("At least one stop is required.", "error");
         return;
       }
-      onUpdate(data.filter((s) => s.id !== id));
+      onUpdate(withStopOrder(data.filter((s) => s.id !== id)));
     },
     [data, onUpdate]
   );
@@ -123,12 +124,7 @@ export function StopsStep({
       const [removed] = newOrder.splice(index, 1);
       newOrder.splice(direction === "up" ? index - 1 : index + 1, 0, removed);
 
-      const reordered = newOrder.map((stop, i) => ({
-        ...stop,
-        stopOrder: i,
-      }));
-
-      onUpdate(reordered);
+      onUpdate(withStopOrder(newOrder));
     },
     [sortedStops, onUpdate]
   );
