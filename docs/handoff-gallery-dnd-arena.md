@@ -1,4 +1,4 @@
-# Prompt for Arena: gallery drag-to-reorder, upload loading tiles, better layout
+# Prompt for Arena: gallery drag-to-reorder, upload loading tiles, animation, better layout
 
 Copy everything below to Arena.
 
@@ -34,7 +34,7 @@ The relevant files are in `src/app/(subsystems)/tours/operator/packages/[id]/edi
 - A box with formats, size and the count limit, and a yellow warning that adding,
   removing or reordering photos on a published package sends it back for review.
 
-### The three things the owner wants
+### The four things the owner wants
 
 #### 1. Drag a photo to rearrange, with the photos moving as you drag
 
@@ -138,6 +138,89 @@ The button spinner exists. Now show the upload **where the photo will appear**:
     eyebrow/uppercase-tracking labels, `rounded-2xl`, no `bg-white` except exempt lines.
   - Support light and dark themes and phone width (375 px) with no horizontal scroll.
 
+#### 4. Animation: make every change feel smooth, and never make anyone wait
+
+Motion here should explain what happened (where the photo went, what got added or
+removed). It isn't decoration. Keep it quick so it doesn't slow down someone sorting
+20 photos.
+
+**Rules for all motion**
+- Animate only `transform` and `opacity`, never `width`, `height`, `top` or `left`, so
+  it stays smooth on mid-range phones.
+- Durations:
+  - **150–200 ms** for small feedback (hover, press, pick-up);
+  - **200–250 ms** for things moving into place;
+  - nothing over **300 ms**.
+- Easing:
+  - things settling into place use `cubic-bezier(0.2, 0, 0, 1)` (fast out, gentle stop);
+  - things leaving use `ease-in`;
+  - no bouncy springs, since this is a work screen.
+- Everything is interruptible: a new drag, upload or click must never wait for an
+  animation to finish.
+- Define the shared values once (duration and easing tokens, e.g. CSS variables or Tailwind
+  theme values in `src/app/globals.css`) and reuse them.
+
+**Drag to reorder**
+
+| Moment | What happens |
+|---|---|
+| Hover over a photo (mouse) | The grip and "⋯" menu fade from reduced opacity to full, 150 ms. The cursor becomes `grab`. |
+| Pick up (drag starts) | The dragged copy in the `DragOverlay` scales to about 1.03 with a 2 px ring in the accent colour, 150 ms. The original slot fades to 40% opacity with a dashed outline. Cursor `grabbing`. |
+| Moving over the grid | The other photos slide to their new spots with dnd-kit's sortable transitions, about 200 ms with the easing above. Use `CSS.Transform.toString` and `transition` from `useSortable`. |
+| Drop | The overlay glides into the open slot and the scale returns to 1. Use dnd-kit's `dropAnimation` (about 200 ms, same easing). Number badges change on drop only, without animating. |
+| Cancel (Esc, or dropped outside the grid) | The photo glides back to where it started, using the same drop animation. |
+| Keyboard move | The same slide as a mouse drag. The focused card keeps a clear focus ring the whole time, and the screen-reader message is sent once the move finishes. |
+| Long-press on a phone | After the ~200 ms hold, the card scales to about 1.03 to show it's picked up. Optionally vibrate briefly with `navigator.vibrate?.(10)`, only where supported. |
+
+**Uploads**
+
+| Moment | What happens |
+|---|---|
+| Files picked or dropped | Each placeholder tile fades in (opacity 0→1, translateY 4px→0), 200 ms, staggered about 40 ms per tile with at most 5 staggered. |
+| While uploading | The preview sits dimmed with a spinner. The spinner is the only thing that moves continuously. |
+| Upload finishes | The real photo cross-fades over the preview (150 ms), and the spinner fades out in the same tile, so nothing jumps. |
+| Upload fails | The tile's overlay changes to the error state with a 150 ms fade. No shake. |
+| Files dragged over the section | The drop highlight (ring and tint) fades in, 150 ms, and fades out when the files leave or are dropped. |
+
+**Delete and undo**
+- **Delete:** the card fades and shrinks slightly (opacity 1→0, scale 1→0.96) over
+  150 ms. The other photos then slide in to fill the gap with the same 200 ms sortable
+  movement. Animate the neighbours moving with transforms (a FLIP approach); don't
+  animate the grid's height.
+- **"Photo removed · Undo" bar:** it slides up and fades in, 200 ms. It fades out after
+  about 5 seconds or when Undo is pressed.
+- **Undo:** the photo fades back in at its old position, and the neighbours slide aside.
+
+**Other small moments**
+- The "⋯" menu opens with a fade and a 0.98→1 scale from its button (150 ms), and closes
+  faster (100 ms).
+- "Make first photo": the photo moves to position 1 with the same slide as a drag.
+- The review warning changing to "Unsaved changes…": a cross-fade of the text, no
+  movement.
+
+**Reduced motion (`prefers-reduced-motion: reduce`)**
+- No sliding, scaling, gliding or staggering. Items appear in their new place at once,
+  and the drop animation is set to `null`.
+- Short opacity fades (100 ms or less) may stay. The spinner becomes a static
+  "Uploading…" label (`motion-reduce:animate-none`).
+- Never rely on motion alone to explain a change: the number badges, the live region and
+  the focus ring still say what happened.
+
+**Animation checks**
+- Unit tests:
+  - with reduced motion emulated, the drop animation is off and no transition classes
+    are applied;
+  - cards being removed are skipped by assistive technology (`aria-hidden` while
+    fading out) and are removed from the DOM afterwards.
+- e2e:
+  - one run with `page.emulateMedia({ reducedMotion: "reduce" })`, checking reorder
+    still works;
+  - wait for the end state (order and badges), never for fixed sleeps.
+- Check in Chrome DevTools Performance with 4× CPU slowdown at 375 px: dragging a photo
+  across 20 photos stays smooth (no long tasks over 50 ms during the drag).
+- Record a short screen capture of drag, upload, delete and undo for the owner, along
+  with the screenshots.
+
 ### Ground rules
 
 - **Plan first.** Send the owner a short plan, including the layout proposal, and wait
@@ -181,5 +264,7 @@ The button spinner exists. Now show the upload **where the photo will appear**:
 - Each uploading photo shows as a tile with its preview and a spinner where it will
   land, and failures can be retried.
 - The new card layout is in place, after the owner's OK.
+- Animations follow section 4: quick, interruptible, transform/opacity only, and fully
+  calmed under reduced motion. A short screen recording of them is sent to the owner.
 - Screenshots at 375 and 1280 px, in light and dark, are sent to the owner. All checks
   pass.
