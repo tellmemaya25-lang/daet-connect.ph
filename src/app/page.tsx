@@ -288,8 +288,10 @@ export default async function HomePage() {
       {/* The one place the page says "just ask". */}
       <AskBand />
 
-      {/* Who runs the tours: an ink band with the Tourism Office's own counts. */}
-      <section aria-labelledby="home-people" className="mt-20 bg-slate-950 py-14 text-white sm:mt-32 sm:py-16">
+      {/* Who runs the tours: an ink band with the Tourism Office's own counts.
+          It butts straight against the blue band above it, so the two read as
+          one block instead of a strip of page showing between them. */}
+      <section aria-labelledby="home-people" className="bg-slate-950 py-14 text-white sm:py-16">
         <div className={`${WRAP} flex flex-col gap-6 md:flex-row md:items-center md:justify-between`}>
           <div>
             <h2 id="home-people" data-reveal className="display-2">
