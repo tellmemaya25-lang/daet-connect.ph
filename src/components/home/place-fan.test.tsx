@@ -3,7 +3,7 @@
 import { act, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import "@testing-library/jest-dom";
 import { gsap } from "@/lib/gsap";
-import { fanGeometry } from "./fan-geometry";
+import { fanGeometry, fanWedgePoints, restWidths, toClipPath, widthsWithFocus } from "./fan-geometry";
 import { PlaceFan } from "./place-fan";
 import { FAN_PLACES } from "./fan-places";
 
@@ -24,7 +24,17 @@ beforeAll(() => {
 const renderFan = (signedIn = false) => render(<PlaceFan places={FAN_PLACES} signedIn={signedIn} />);
 
 // The hero's own geometry at the size the fan renders at before it is measured.
-const geometry = fanGeometry(1440, 900, "desktop");
+const WIDTH = 1440;
+const HEIGHT = 900;
+const geometry = fanGeometry(WIDTH, HEIGHT, "desktop");
+
+/** The clip-path a wedge ends up with once it has finished widening. */
+const widened = (index: number) =>
+  toClipPath(fanWedgePoints(geometry, 0, widthsWithFocus(geometry, index))[index], WIDTH, HEIGHT);
+
+/** …and at rest again, which is the server's own rest string for that wedge. */
+const REST = (index: number) => toClipPath(fanWedgePoints(geometry, 0, restWidths(geometry))[index], WIDTH, HEIGHT);
+const OPEN = toClipPath(geometry.openPoints, WIDTH, HEIGHT);
 
 beforeEach(() => {
   window.history.replaceState(null, "", "/");
@@ -287,10 +297,10 @@ describe("PlaceFan opening a place", () => {
     const wedge = screen.getByRole("button", { name: "Daet Heritage Center: open photo and details" });
 
     fireEvent.pointerOver(wedge, { pointerType: "mouse" });
-    await waitFor(() => expect(wedge.style.clipPath).toBe(geometry.wedges[4].focusVariants[4]));
+    await waitFor(() => expect(wedge.style.clipPath).toBe(widened(4)));
 
     fireEvent.pointerOut(wedge, { pointerType: "mouse" });
-    await waitFor(() => expect(wedge.style.clipPath).toBe(geometry.wedges[4].rest));
+    await waitFor(() => expect(wedge.style.clipPath).toBe(REST(4)));
   });
 
   it("ignores hovering from a finger, which taps instead", async () => {
@@ -306,21 +316,19 @@ describe("PlaceFan opening a place", () => {
 });
 
 describe("PlaceFan on a phone", () => {
-  /** jsdom has no layout, so the hero is told how big it is. */
-  const setHeroSize = (width: number, height: number) =>
-    jest.spyOn(HTMLElement.prototype, "getBoundingClientRect").mockReturnValue({
-      width,
-      height,
-      top: 0,
-      left: 0,
-      right: width,
-      bottom: height,
-      x: 0,
-      y: 0,
-      toJSON: () => ({}),
-    } as DOMRect);
+  /**
+   * jsdom has no layout, so the hero is told how big it is. The fan measures
+   * `clientWidth`/`clientHeight` rather than its bounding box, so that a
+   * transformed hero cannot change the shapes mid-scroll.
+   */
+  const setHeroSize = (width: number, height: number) => {
+    Object.defineProperty(Element.prototype, "clientWidth", { configurable: true, get: () => width });
+    Object.defineProperty(Element.prototype, "clientHeight", { configurable: true, get: () => height });
+  };
 
   afterEach(() => {
+    delete (Element.prototype as unknown as Record<string, unknown>).clientWidth;
+    delete (Element.prototype as unknown as Record<string, unknown>).clientHeight;
     jest.restoreAllMocks();
   });
 
@@ -459,6 +467,6 @@ describe("PlaceFan with reduced motion", () => {
 
     expect(screen.getByRole("heading", { level: 2, name: "Bagasbas Beach" })).toBeInTheDocument();
     const wedge = container.querySelector('[data-wedge="2"]') as HTMLElement;
-    expect(wedge.style.clipPath).toBe(geometry.open);
+    expect(wedge.style.clipPath).toBe(OPEN);
   });
 });

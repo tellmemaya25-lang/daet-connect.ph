@@ -47,14 +47,18 @@ export function PlaceFan({ places, signedIn }: { places: FanPlace[]; signedIn: b
     if (!element || typeof ResizeObserver === "undefined") return;
 
     let frame = 0;
+    // `clientWidth`/`clientHeight`, not `getBoundingClientRect()`: the page fold
+    // slides and, before this, scaled the section, and a transformed box
+    // measures smaller than the element the shapes are written for.
     const measure = () => {
-      const box = element.getBoundingClientRect();
-      if (!box.width || !box.height) return;
+      const width = element.clientWidth;
+      const height = element.clientHeight;
+      if (!width || !height) return;
 
-      setSize({ width: Math.round(box.width), height: Math.round(box.height) });
+      setSize({ width, height });
       // A landscape phone keeps one fan of six; anything else under 768 is two.
-      const landscapePhone = box.height < 500;
-      setLayout(box.width >= 768 || landscapePhone ? "desktop" : "phone");
+      const landscapePhone = height < 500;
+      setLayout(width >= 768 || landscapePhone ? "desktop" : "phone");
     };
 
     const schedule = () => {

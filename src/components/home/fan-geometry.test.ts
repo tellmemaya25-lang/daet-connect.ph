@@ -1,12 +1,18 @@
 import {
   DEFAULT_HERO_SIZE,
   HOVER_BUMP,
+  SEAM_PX,
   fanGeometry,
+  fanWedgePoints,
   fanWidths,
+  lerpPoints,
   midVector,
   rectPolygon,
+  rectPoints,
+  restWidths,
   toClipPath,
   wedgePolygon,
+  widthsWithFocus,
   type Point,
 } from "./fan-geometry";
 
@@ -16,6 +22,19 @@ const SPAN = 184; // 178° → 362°, the desktop fan
 
 /** The numeric pairs inside a clip-path string. */
 const tokens = (clip: string) => clip.match(/-?\d+(\.\d+)?%/g) ?? [];
+
+const rad = (degrees: number) => (degrees * Math.PI) / 180;
+const along = (from: Point, degrees: number, distance: number): Point => [
+  from[0] + distance * Math.cos(rad(degrees)),
+  from[1] + distance * Math.sin(rad(degrees)),
+];
+
+/** Perpendicular distance from a point to the line through `a` and `b`. */
+const distanceToLine = (point: Point, a: Point, b: Point) => {
+  const dx = b[0] - a[0];
+  const dy = b[1] - a[1];
+  return Math.abs(dx * (point[1] - a[1]) - dy * (point[0] - a[0])) / Math.hypot(dx, dy);
+};
 
 describe("fanWidths", () => {
   it("splits the span evenly when nothing is focused", () => {
@@ -59,27 +78,58 @@ describe("polygons", () => {
     const wedge = wedgePolygon([720, 520], 178, 208, 3600);
 
     expect(wedge).toHaveLength(9);
-    expect(wedge[0]).toEqual([720, 520]);
   });
 
-  it("gives the open rectangle the same nine points, so GSAP can morph", () => {
+  it("puts the apex on the hero's point, give or take the seam", () => {
+    const vp: Point = [720, 520];
+    const wedge = wedgePolygon(vp, 178, 208, 3600);
+
+    // The apex is where the two inset edges meet: half a seam out along the
+    // bisector, divided by the sine of half the wedge. Under 6px on a 30° wedge.
+    expect(Math.hypot(wedge[0][0] - vp[0], wedge[0][1] - vp[1])).toBeLessThan(6);
+  });
+
+  it("gives the open rectangle the same nine points, so the two can be blended", () => {
     const rect = rectPolygon(DESKTOP.width, DESKTOP.height);
 
     expect(rect).toHaveLength(9);
     expect(rect[0]).toEqual([DESKTOP.width / 2, DESKTOP.height]);
+    expect(rectPoints(DESKTOP.width, DESKTOP.height)).toEqual(rect);
   });
 
-  it("insets the arc by half a gap at each end", () => {
-    const [, first, ...rest] = wedgePolygon([0, 0], 0, 90, 100, 2);
-    const last = rest[rest.length - 1];
+  it("keeps the seam the same width 50px from the point and 800px away", () => {
+    const geo = fanGeometry(DESKTOP.width, DESKTOP.height, "desktop");
+    const vp = geo.fans[0].vp;
 
-    // 0° is due right; half a degree of gap tips it slightly down.
-    expect(first[0]).toBeGreaterThan(99);
-    expect(first[1]).toBeGreaterThan(0);
-    // 90° is due down; half a degree of gap stops it a hair short of vertical.
-    expect(last[1]).toBeGreaterThan(99);
-    expect(last[0]).toBeGreaterThan(0);
-    expect(last[0]).toBeLessThan(2);
+    // The seam between wedge 2 and wedge 3 runs along wedge 2's `a1`.
+    const boundary = geo.wedges[2].a1;
+    const first = geo.points[2];
+    const second = geo.points[3];
+
+    const widthAt = (distance: number) => {
+      const point = along(vp, boundary, distance);
+      const leftEdge = distanceToLine(point, first[0], first[first.length - 1]);
+      const rightEdge = distanceToLine(point, second[0], second[1]);
+      return leftEdge + rightEdge;
+    };
+
+    expect(widthAt(50)).toBeCloseTo(SEAM_PX.desktop, 1);
+    expect(widthAt(800)).toBeCloseTo(SEAM_PX.desktop, 1);
+    expect(Math.abs(widthAt(800) - widthAt(50))).toBeLessThanOrEqual(0.5);
+  });
+
+  it("uses a thinner seam on a phone", () => {
+    const geo = fanGeometry(PHONE.width, PHONE.height, "phone");
+    const vp = geo.fans[0].vp;
+    const boundary = geo.wedges[0].a1;
+    const first = geo.points[0];
+    const second = geo.points[1];
+    const point = along(vp, boundary, 40);
+
+    const total =
+      distanceToLine(point, first[0], first[first.length - 1]) + distanceToLine(point, second[0], second[1]);
+
+    expect(total).toBeCloseTo(SEAM_PX.phone, 1);
   });
 
   it("writes clip-paths as percentages", () => {
@@ -89,6 +139,34 @@ describe("polygons", () => {
     expect(tokens(clip)).toHaveLength(18); // nine points, x and y
     expect(clip).toContain("%");
     expect(clip).not.toMatch(/\d+px/);
+  });
+});
+
+describe("lerpPoints", () => {
+  const a: Point[] = [
+    [0, 0],
+    [10, 20],
+  ];
+  const b: Point[] = [
+    [100, 50],
+    [30, 40],
+  ];
+
+  it("returns the first shape at 0 and the second at 1", () => {
+    expect(lerpPoints(a, b, 0)).toEqual(a);
+    expect(lerpPoints(a, b, 1)).toEqual(b);
+  });
+
+  it("blends point by point at the halfway mark", () => {
+    expect(lerpPoints(a, b, 0.5)).toEqual([
+      [50, 25],
+      [20, 30],
+    ]);
+  });
+
+  it("clamps outside 0..1 rather than overshooting", () => {
+    expect(lerpPoints(a, b, -2)).toEqual(a);
+    expect(lerpPoints(a, b, 4)).toEqual(b);
   });
 });
 
@@ -104,31 +182,44 @@ describe("fanGeometry", () => {
     expect([...mids].sort((a, b) => a - b)).toEqual(mids);
   });
 
-  it("keeps every polygon string at nine points, rest and focused alike", () => {
+  it("hands the animation nine pixel points per wedge, and one open shape", () => {
     const geo = fanGeometry(DESKTOP.width, DESKTOP.height, "desktop");
 
-    expect(tokens(geo.open)).toHaveLength(18);
-
-    geo.wedges.forEach((wedge) => {
-      expect(tokens(wedge.rest)).toHaveLength(18);
-      expect(wedge.focusVariants).toHaveLength(6);
-      wedge.focusVariants.forEach((clip) => expect(tokens(clip)).toHaveLength(18));
-    });
+    expect(geo.points).toHaveLength(6);
+    geo.points.forEach((points) => expect(points).toHaveLength(9));
+    expect(geo.openPoints).toHaveLength(9);
+    geo.wedges.forEach((wedge) => expect(tokens(wedge.rest)).toHaveLength(18));
   });
 
-  it("moves only the hovered wedge's own fan", () => {
-    const geo = fanGeometry(PHONE.width, PHONE.height, "phone");
-    const topWedgeIndex = 0;
-    const bottomWedgeIndex = 4;
+  it("puts the point where the caller asks on a desktop, and keeps the default otherwise", () => {
+    expect(fanGeometry(DESKTOP.width, DESKTOP.height).wedges[0].vp[1]).toBeCloseTo(0.578 * DESKTOP.height, 6);
+    expect(fanGeometry(DESKTOP.width, DESKTOP.height, "desktop", { vpY: 500 }).wedges[0].vp[1]).toBe(500);
+  });
 
-    // Focusing a top-fan wedge leaves the bottom fan exactly where it was.
-    expect(geo.wedges[bottomWedgeIndex].focusVariants[topWedgeIndex]).toBe(
-      geo.wedges[bottomWedgeIndex].rest,
-    );
-    // …and does change the wedge it belongs to.
-    expect(geo.wedges[topWedgeIndex].focusVariants[topWedgeIndex]).not.toBe(
-      geo.wedges[topWedgeIndex].rest,
-    );
+  it("re-spaces only the hovered wedge's own fan", () => {
+    const geo = fanGeometry(PHONE.width, PHONE.height, "phone");
+    const rest = restWidths(geo);
+    const focused = widthsWithFocus(geo, 0);
+
+    // The bottom fan keeps its widths while the top one re-spaces.
+    expect(focused.slice(3)).toEqual(rest.slice(3));
+    expect(focused.slice(0, 3)).not.toEqual(rest.slice(0, 3));
+  });
+
+  it("gives fanWedgePoints one polygon per width, still nine points each", () => {
+    const geo = fanGeometry(DESKTOP.width, DESKTOP.height, "desktop");
+    const polygons = fanWedgePoints(geo, 0, fanWidths(6, SPAN, 2));
+
+    expect(polygons).toHaveLength(6);
+    polygons.forEach((polygon) => expect(polygon).toHaveLength(9));
+  });
+
+  it("normalises the widths it is handed, so a rounding error cannot move the fan", () => {
+    const geo = fanGeometry(DESKTOP.width, DESKTOP.height, "desktop");
+    const wide = fanWedgePoints(geo, 0, fanWidths(6, SPAN, 1).map((width) => width * 2));
+    const exact = fanWedgePoints(geo, 0, fanWidths(6, SPAN, 1));
+
+    expect(wide[1][1][0]).toBeCloseTo(exact[1][1][0], 6);
   });
 
   it("renders a usable fan for the server's default size", () => {
@@ -153,25 +244,15 @@ describe("phone layout", () => {
     const middleTop = 0.479 * PHONE.height;
     const middleBottom = 0.659 * PHONE.height;
 
-    /** Every polygon point, in pixels. */
-    const pointsOf = (clip: string): Point[] => {
-      const values = clip.match(/-?\d+(\.\d+)?/g)?.map(Number) ?? [];
-      const points: Point[] = [];
-      for (let i = 0; i < values.length; i += 2) {
-        points.push([(values[i] / 100) * PHONE.width, (values[i + 1] / 100) * PHONE.height]);
-      }
-      return points;
-    };
-
-    geo.wedges.slice(0, 3).forEach((wedge) => {
+    geo.points.slice(0, 3).forEach((points) => {
       // The top fan spreads upward: it never reaches below its own apex.
-      const lowest = Math.max(...pointsOf(wedge.rest).map(([, y]) => y));
+      const lowest = Math.max(...points.map(([, y]) => y));
       expect(lowest).toBeLessThanOrEqual(middleTop + 0.001);
     });
 
-    geo.wedges.slice(3).forEach((wedge) => {
+    geo.points.slice(3).forEach((points) => {
       // The bottom fan spreads downward from the lower apex.
-      const highest = Math.min(...pointsOf(wedge.rest).map(([, y]) => y));
+      const highest = Math.min(...points.map(([, y]) => y));
       expect(highest).toBeGreaterThanOrEqual(middleBottom - 0.001);
     });
   });

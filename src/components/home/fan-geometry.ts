@@ -1,14 +1,15 @@
 /**
  * The place fan's geometry: pure maths, no React, no DOM.
  *
- * Every shape is a `clip-path: polygon(...)` with exactly nine points — the
- * apex that all the wedges radiate from, plus eight samples along the outer
- * arc. Nine points everywhere is what lets GSAP interpolate one shape into
- * another: it matches the numbers inside the string token by token.
+ * Every shape is nine points — the apex the wedges radiate from, plus eight
+ * samples along the outer arc — so any two of them can be blended point by
+ * point. Nothing here builds a `clip-path` string except `toClipPath()`: GSAP
+ * is never asked to interpolate one, because it reads the numbers inside the
+ * string as CSS lengths and mangles anything past ±100%.
  *
- * Coordinates are computed in pixels for the hero's real box, then written as
- * percentages of that box, so a string stays correct while the box resizes
- * between frames (or between the server's guess and the first measurement).
+ * Points are in pixels for the hero's real box and are written as percentages
+ * of that box, so a shape stays correct while the box resizes between frames
+ * (or between the server's guess and the first measurement).
  */
 
 export type Point = [number, number];
@@ -19,20 +20,37 @@ export type FanLayout = "desktop" | "phone";
 /** How much one wedge widens on hover, as a fraction of the whole span. */
 export const HOVER_BUMP = 0.05;
 
-/** Dark seam between wedges, in degrees. */
-const GAP_DEGREES = 1.2;
-
 /** Points sampled along each wedge's outer arc; apex + this = 9. */
 const ARC_POINTS = 8;
+
+/**
+ * The seam between two wedges, in pixels. An angle would widen with distance —
+ * thin at the point, tens of pixels at the edge — and the poster's lines are
+ * the same weight all the way out.
+ */
+export const SEAM_PX: Record<FanLayout, number> = { desktop: 3, phone: 2 };
+
+/** Long enough to leave the box from any apex; short enough to keep numbers sane. */
+const RADIUS_FACTOR = 1.5;
 
 /** What the server renders before it can measure the hero. */
 export const DEFAULT_HERO_SIZE = { width: 1440, height: 900 } as const;
 
-const toRad = (degrees: number) => (degrees * Math.PI) / 180;
+/** The fan's standing point, as a fraction of the hero's height. */
+const DEFAULT_VP_Y = 0.578;
 
-const pointAt = (vp: Point, degrees: number, radius: number): Point => [
-  vp[0] + radius * Math.cos(toRad(degrees)),
-  vp[1] + radius * Math.sin(toRad(degrees)),
+const toRad = (degrees: number) => (degrees * Math.PI) / 180;
+const toDeg = (radians: number) => (radians * 180) / Math.PI;
+
+/** A unit vector along `degrees`. 0 = right, 90 = down (screen coordinates). */
+const unitAt = (degrees: number): Point => [Math.cos(toRad(degrees)), Math.sin(toRad(degrees))];
+
+/** The unit vector 90° on from `degrees`, towards increasing angles. */
+const normalAt = (degrees: number): Point => [-Math.sin(toRad(degrees)), Math.cos(toRad(degrees))];
+
+const pointAt = (from: Point, direction: Point, distance: number): Point => [
+  from[0] + direction[0] * distance,
+  from[1] + direction[1] * distance,
 ];
 
 /**
@@ -47,15 +65,53 @@ export function fanWidths(n: number, span: number, focus: number | null, bump = 
   return Array.from({ length: n }, (_, i) => (i === focus ? base + extra : base - extra / (n - 1)));
 }
 
-/** Apex plus N points along the arc from `a0` to `a1`, inset by half a gap each side. */
-export function wedgePolygon(vp: Point, a0: number, a1: number, radius: number, gap = GAP_DEGREES, n = ARC_POINTS): Point[] {
-  const start = a0 + gap / 2;
-  const end = a1 - gap / 2;
+/** Where two rays cross; the midpoint when they are parallel, which they never quite are. */
+function intersect(a: Point, u: Point, b: Point, v: Point): Point {
+  const determinant = u[0] * -v[1] + v[0] * u[1];
+  if (Math.abs(determinant) < 1e-9) return [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2];
 
-  return [
-    vp,
-    ...Array.from({ length: n }, (_, k) => pointAt(vp, start + ((end - start) * k) / (n - 1), radius)),
-  ];
+  const dx = b[0] - a[0];
+  const dy = b[1] - a[1];
+  const t = (dx * -v[1] + v[0] * dy) / determinant;
+  return pointAt(a, u, t);
+}
+
+/**
+ * One wedge: the apex the two edge rays meet at, then eight points along the
+ * outer arc. Each edge ray is pushed `gapPx / 2` into the wedge along its
+ * normal, so the seam it leaves with its neighbour is `gapPx` wide at every
+ * distance from the point — not just at the rim.
+ */
+export function wedgePolygon(
+  vp: Point,
+  a0: number,
+  a1: number,
+  radius: number,
+  gapPx: number = SEAM_PX.desktop,
+  n = ARC_POINTS,
+): Point[] {
+  const half = gapPx / 2;
+  const u0 = unitAt(a0);
+  const u1 = unitAt(a1);
+
+  // The two edge rays, each moved into the wedge.
+  const from: Point = pointAt(vp, normalAt(a0), half);
+  const to: Point = pointAt(vp, normalAt(a1), -half);
+
+  const apex = intersect(from, u0, to, u1);
+  // Where each edge ray leaves the circle of `radius`, which is the wedge's rim.
+  const reach = Math.sqrt(Math.max(radius * radius - half * half, 0));
+  const first = pointAt(from, u0, reach);
+  const last = pointAt(to, u1, reach);
+
+  const samples = Array.from({ length: n }, (_, k) => {
+    if (k === 0) return first;
+    if (k === n - 1) return last;
+    const angle = a0 + ((a1 - a0) * k) / (n - 1);
+    return pointAt(vp, unitAt(angle), radius);
+  });
+
+  return [apex, ...samples];
 }
 
 /**
@@ -77,7 +133,19 @@ export function rectPolygon(width: number, height: number): Point[] {
   ];
 }
 
-/** Percentages, three decimals — short enough for GSAP, precise enough to avoid seams. */
+/** The same box, under the name the animation uses when it blends towards it. */
+export const rectPoints = rectPolygon;
+
+/** Blend two shapes point by point. Both must have the same number of points. */
+export function lerpPoints(a: Point[], b: Point[], t: number): Point[] {
+  const eased = Math.min(1, Math.max(0, t));
+  return a.map((point, i) => [
+    point[0] + (b[i][0] - point[0]) * eased,
+    point[1] + (b[i][1] - point[1]) * eased,
+  ]);
+}
+
+/** Percentages, three decimals — short enough to write every frame, precise enough to avoid seams. */
 export function toClipPath(points: Point[], width: number, height: number): string {
   const tokens = points.map(
     ([x, y]) => `${((x / width) * 100).toFixed(3)}% ${((y / height) * 100).toFixed(3)}%`,
@@ -85,30 +153,8 @@ export function toClipPath(points: Point[], width: number, height: number): stri
   return `polygon(${tokens.join(", ")})`;
 }
 
-export interface Wedge {
-  /** The point this wedge radiates from — two fans on a phone have two. */
-  vp: Point;
-  /** Rest angles, in screen degrees (0 = right, 90 = down). */
-  a0: number;
-  a1: number;
-  /** Middle of the wedge at rest: where its chip and photo offset go. */
-  mid: number;
-  /** The clip-path at rest. */
-  rest: string;
-  /** `focusVariants[j]` is this wedge's clip-path while wedge `j` is hovered. */
-  focusVariants: string[];
-}
-
-export interface FanGeometry {
-  width: number;
-  height: number;
-  layout: FanLayout;
-  wedges: Wedge[];
-  /** The clip-path that fills the hero when a place is open. */
-  open: string;
-}
-
-interface Fan {
+/** One fan of wedges: where it stands, how far it spreads, and which wedges it owns. */
+export interface FanSpan {
   vp: Point;
   a0: number;
   a1: number;
@@ -117,12 +163,38 @@ interface Fan {
   count: number;
 }
 
+export interface Wedge {
+  /** The point this wedge radiates from — two fans on a phone have two. */
+  vp: Point;
+  /** Which fan this wedge belongs to, as an index into `fans`. */
+  fan: number;
+  /** Rest angles, in screen degrees (0 = right, 90 = down). */
+  a0: number;
+  a1: number;
+  /** Middle of the wedge at rest: where its chip and photo offset go. */
+  mid: number;
+  /** The clip-path at rest, for the server render. */
+  rest: string;
+}
+
+export interface FanGeometry {
+  width: number;
+  height: number;
+  layout: FanLayout;
+  fans: FanSpan[];
+  wedges: Wedge[];
+  /** Rest shapes in pixels, in DOM order. */
+  points: Point[][];
+  /** The shape that fills the hero when a place is open, in pixels. */
+  openPoints: Point[];
+}
+
 /**
  * One fan of six (desktop, and landscape phones) or two fans of three (phones),
- * placed as the mock-up has them: the top pair of fans spread upward and the
- * bottom ones downward, leaving the middle band for the headline.
+ * placed as the mock-up has them: the top pair spread upward, the bottom ones
+ * downward, leaving the middle band for the headline.
  */
-function fansFor(layout: FanLayout, width: number, height: number): Fan[] {
+function fansFor(layout: FanLayout, width: number, height: number, vpY?: number): FanSpan[] {
   if (layout === "phone") {
     return [
       { vp: [0.5 * width, 0.479 * height], a0: 188, a1: 352, from: 0, count: 3 },
@@ -130,61 +202,91 @@ function fansFor(layout: FanLayout, width: number, height: number): Fan[] {
     ];
   }
 
-  return [{ vp: [0.5 * width, 0.578 * height], a0: 178, a1: 362, from: 0, count: 6 }];
+  return [{ vp: [0.5 * width, vpY ?? DEFAULT_VP_Y * height], a0: 178, a1: 362, from: 0, count: 6 }];
 }
 
-export function fanGeometry(width: number, height: number, layout: FanLayout = "desktop"): FanGeometry {
-  const fans = fansFor(layout, width, height);
-  const radius = 2.5 * Math.max(width, height);
-  const total = fans.reduce((sum, fan) => sum + fan.count, 0);
+/**
+ * The angles of every wedge in `fanIndex`, given one angular width per wedge.
+ * The widths are scaled to the fan's span, so the fan neither grows nor drifts
+ * when hover widths arrive rounded.
+ */
+export function fanAngles(fan: FanSpan, widths: number[]): Array<{ a0: number; a1: number }> {
+  const total = widths.reduce((sum, width) => sum + width, 0);
+  const scale = total > 0 ? (fan.a1 - fan.a0) / total : 1;
 
-  const restAngles = fans.flatMap((fan) => {
-    const widths = fanWidths(fan.count, fan.a1 - fan.a0, null);
-    return widths.map((wedgeWidth, i) => {
-      const start = fan.a0 + widths.slice(0, i).reduce((sum, w) => sum + w, 0);
-      return { fan, a0: start, a1: start + wedgeWidth };
-    });
+  let cursor = fan.a0;
+  return widths.map((width) => {
+    const span = width * scale;
+    const wedge = { a0: cursor, a1: cursor + span };
+    cursor += span;
+    return wedge;
   });
+}
 
-  const wedgeAt = (fan: Fan, a0: number, a1: number): Point[] =>
-    wedgePolygon(fan.vp, a0, a1, radius, GAP_DEGREES, ARC_POINTS);
+/** Every wedge of one fan, as polygons, for the given angular widths. */
+export function fanWedgePoints(geometry: FanGeometry, fanIndex: number, widths: number[]): Point[][] {
+  const fan = geometry.fans[fanIndex];
+  const gap = SEAM_PX[geometry.layout];
+  const radius = RADIUS_FACTOR * Math.hypot(geometry.width, geometry.height);
 
-  const wedges: Wedge[] = restAngles.map(({ fan, a0, a1 }) => ({
-    vp: fan.vp,
-    a0,
-    a1,
-    mid: (a0 + a1) / 2,
-    rest: toClipPath(wedgeAt(fan, a0, a1), width, height),
-    focusVariants: [],
-  }));
+  return fanAngles(fan, widths).map(({ a0, a1 }) => wedgePolygon(fan.vp, a0, a1, radius, gap));
+}
 
-  // While wedge j is hovered its own fan re-spaces; the other fan doesn't move.
-  for (let j = 0; j < total; j += 1) {
-    const fanOfJ = restAngles[j].fan;
-    const widths = fanWidths(fanOfJ.count, fanOfJ.a1 - fanOfJ.a0, j - fanOfJ.from);
+/**
+ * The rest widths of every wedge, in DOM order: how wide each one is when
+ * nothing is hovered, in degrees.
+ */
+export function restWidths(geometry: FanGeometry): number[] {
+  return geometry.fans.flatMap((fan) => fanWidths(fan.count, fan.a1 - fan.a0, null));
+}
 
-    restAngles.forEach(({ fan }, i) => {
-      if (fan !== fanOfJ) {
-        wedges[i].focusVariants.push(wedges[i].rest);
-        return;
-      }
+/** The widths of every wedge while `focus` is hovered, or all six at rest for null. */
+export function widthsWithFocus(geometry: FanGeometry, focus: number | null): number[] {
+  return geometry.fans.flatMap((fan) =>
+    fanWidths(fan.count, fan.a1 - fan.a0, focus === null ? null : focus - fan.from),
+  );
+}
 
-      const k = i - fan.from;
-      const start = fan.a0 + widths.slice(0, k).reduce((sum, w) => sum + w, 0);
-      wedges[i].focusVariants.push(toClipPath(wedgeAt(fan, start, start + widths[k]), width, height));
-    });
-  }
+export function fanGeometry(
+  width: number,
+  height: number,
+  layout: FanLayout = "desktop",
+  options: { vpY?: number } = {},
+): FanGeometry {
+  const fans = fansFor(layout, width, height, options.vpY);
+  const radius = RADIUS_FACTOR * Math.hypot(width, height);
+  const gap = SEAM_PX[layout];
+
+  const wedges: Wedge[] = fans.flatMap((fan, fanIndex) =>
+    fanAngles(fan, fanWidths(fan.count, fan.a1 - fan.a0, null)).map(({ a0, a1 }) => ({
+      vp: fan.vp,
+      fan: fanIndex,
+      a0,
+      a1,
+      mid: (a0 + a1) / 2,
+      rest: toClipPath(wedgePolygon(fan.vp, a0, a1, radius, gap), width, height),
+    })),
+  );
 
   return {
     width,
     height,
     layout,
+    fans,
     wedges,
-    open: toClipPath(rectPolygon(width, height), width, height),
+    points: fans.flatMap((fan, fanIndex) =>
+      fanAngles(fan, fanWidths(fan.count, fan.a1 - fan.a0, null)).map(({ a0, a1 }) =>
+        wedgePolygon(fan.vp, a0, a1, radius, gap),
+      ),
+    ),
+    openPoints: rectPolygon(width, height),
   };
 }
 
 /** The unit vector pointing along a wedge's mid angle, for chip and slide offsets. */
 export function midVector(midDegrees: number): Point {
-  return [Math.cos(toRad(midDegrees)), Math.sin(toRad(midDegrees))];
+  return unitAt(midDegrees);
 }
+
+/** Exposed for tests that check a seam's width from the angles it spans. */
+export const angleOf = (from: Point, to: Point) => toDeg(Math.atan2(to[1] - from[1], to[0] - from[0]));

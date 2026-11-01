@@ -2,9 +2,19 @@
  * @jest-environment jsdom
  */
 
+import { readdirSync, readFileSync } from "fs";
+import { join } from "path";
 import React, { useRef } from "react";
 import { act, render } from "@testing-library/react";
-import { fanGeometry } from "./fan-geometry";
+import {
+  fanGeometry,
+  fanWedgePoints,
+  rectPolygon,
+  restWidths,
+  toClipPath,
+  widthsWithFocus,
+  type Point,
+} from "./fan-geometry";
 import { useFanAnimation } from "./use-fan-animation";
 
 type Call = { kind: "set" | "to"; targets: unknown; vars: Record<string, unknown>; position?: unknown };
@@ -27,6 +37,7 @@ jest.mock("@/lib/gsap", () => {
     set: [] as Call[],
     timelines: [] as Timeline[],
     quickTo: [] as Array<{ target: Element; prop: string; vars: Record<string, unknown>; move: jest.Mock }>,
+    killed: [] as unknown[],
     conditions: { desktop: true, phone: false, reduce: false },
   };
 
@@ -75,6 +86,9 @@ jest.mock("@/lib/gsap", () => {
       records.set.push({ kind: "set", targets, vars });
       return {};
     },
+    killTweensOf: (targets: unknown) => {
+      records.killed.push(targets);
+    },
     quickTo: (target: Element, prop: string, vars: Record<string, unknown>) => {
       const move = jest.fn();
       records.quickTo.push({ target, prop, vars, move });
@@ -110,11 +124,20 @@ const { __records: records } = jest.requireMock("@/lib/gsap") as {
     set: Call[];
     timelines: Timeline[];
     quickTo: Array<{ target: Element; prop: string; vars: Record<string, unknown>; move: jest.Mock }>;
+    killed: unknown[];
     conditions: { desktop: boolean; phone: boolean; reduce: boolean };
   };
 };
 
-const geometry = fanGeometry(1440, 900, "desktop");
+const WIDTH = 1440;
+const HEIGHT = 900;
+const geometry = fanGeometry(WIDTH, HEIGHT, "desktop");
+
+/** The clip-path a wedge has at the given widths, as the hook would write it. */
+const shapeAt = (widths: number[], index: number): string =>
+  toClipPath(fanWedgePoints(geometry, 0, widths)[index], WIDTH, HEIGHT);
+
+const OPEN = toClipPath(rectPolygon(WIDTH, HEIGHT), WIDTH, HEIGHT);
 
 type Api = ReturnType<typeof useFanAnimation>;
 
@@ -141,67 +164,123 @@ function mount(options: { onOpened?: () => void; onClosed?: () => void } = {}) {
   const view = render(<Harness api={api} onOpened={options.onOpened} onClosed={options.onClosed} />);
   const wedges = Array.from(view.container.querySelectorAll<HTMLElement>("[data-wedge]"));
   const photos = Array.from(view.container.querySelectorAll<HTMLElement>("[data-photo]"));
+  const chips = Array.from(view.container.querySelectorAll<HTMLElement>("[data-chip]"));
   const headline = view.container.querySelector<HTMLElement>("[data-headline]") as HTMLElement;
-  return { view, api, wedges, photos, headline };
+  return { view, api, wedges, photos, chips, headline };
 }
 
-const tweensOn = (call: Call[], target: Element) =>
-  call.filter((entry) => entry.targets === target || (Array.isArray(entry.targets) && entry.targets.includes(target)));
+const tweensOn = (calls: Call[], target: Element) =>
+  calls.filter((entry) => entry.targets === target || (Array.isArray(entry.targets) && entry.targets.includes(target)));
+
+/**
+ * Run one frame of a width tween: the mocked GSAP does not interpolate, so the
+ * targets array is filled in by hand — it is the hook's own state, by reference
+ * — and the tween's `onUpdate` does the rest.
+ */
+const advanceWidths = (call: Call, widths: number[]) => {
+  const state = call.targets as number[];
+  state.splice(0, state.length, ...widths);
+  (call.vars.onUpdate as () => void)();
+};
+
+/** Fill in the object tween that opens a wedge, then render it. */
+const advanceOpen = (step: Call, to: number) => {
+  (step.targets as { t: number }).t = to;
+  (step.vars.onUpdate as () => void)();
+};
 
 beforeEach(() => {
   records.to.length = 0;
   records.set.length = 0;
   records.timelines.length = 0;
   records.quickTo.length = 0;
+  records.killed.length = 0;
   records.conditions.desktop = true;
   records.conditions.phone = false;
   records.conditions.reduce = false;
 });
 
 describe("useFanAnimation", () => {
-  it("lays the rest shapes down as soon as the fan mounts", () => {
+  it("writes the rest shapes straight into the wedges as soon as the fan mounts", () => {
     const { wedges } = mount();
 
-    wedges.forEach((_, index) => {
-      const rest = records.set.find(
-        (call) => call.targets === wedges[index] && call.vars.clipPath === geometry.wedges[index].rest,
-      );
-      expect(rest).toBeDefined();
+    wedges.forEach((wedge, index) => {
+      expect(wedge.style.clipPath).toBe(geometry.wedges[index].rest);
     });
   });
 
-  it("widens the hovered wedge and dims the rest, over 350ms of power3.out", () => {
+  it("tweens the widths as numbers and widens the hovered wedge over 350ms of power3.out", () => {
     const { api, wedges } = mount();
 
     act(() => api.current?.hover(1));
 
-    records.to.forEach((call) => {
-      expect(call.vars.duration).toBeGreaterThanOrEqual(0.2);
-      expect(call.vars.ease).toBe("power3.out");
+    const growth = records.to.find((call) => Array.isArray(call.targets));
+    expect(growth).toBeDefined();
+    expect(growth!.vars).toMatchObject({
+      endArray: widthsWithFocus(geometry, 1),
+      duration: 0.35,
+      ease: "power3.out",
+      overwrite: true,
     });
+    expect(typeof growth!.vars.onUpdate).toBe("function");
 
-    const hovered = tweensOn(records.to, wedges[1]);
-    expect(hovered[0].vars.clipPath).toBe(geometry.wedges[1].focusVariants[1]);
-    expect(hovered.some((call) => call.vars.clipPath === geometry.wedges[1].rest)).toBe(false);
+    advanceWidths(growth!, widthsWithFocus(geometry, 1));
 
-    const other = tweensOn(records.to, wedges[3]);
-    expect(other[0].vars.clipPath).toBe(geometry.wedges[3].focusVariants[1]);
-    expect(other.some((call) => call.vars.filter === "brightness(0.78)")).toBe(true);
-    expect(hovered.some((call) => call.vars.filter === "brightness(1)")).toBe(true);
+    expect(wedges[1].style.clipPath).toBe(shapeAt(widthsWithFocus(geometry, 1), 1));
+    expect(wedges[1].style.clipPath).not.toBe(geometry.wedges[1].rest);
+    expect(wedges[3].style.clipPath).toBe(shapeAt(widthsWithFocus(geometry, 1), 3));
+
+    // One tween dims the others and leaves the hovered one alone, decided per
+    // element, so the fan's brightness never disagrees with its shapes.
+    const dimming = records.to.find((call) => typeof call.vars.filter === "function");
+    const brightness = dimming!.vars.filter as (index: number) => string;
+    expect(brightness(1)).toBe("brightness(1)");
+    expect(brightness(3)).toBe("brightness(0.78)");
   });
 
-  it("gives the wedges their rest shape back when the pointer leaves", () => {
+  it("gives every wedge its rest shape back when the pointer leaves", () => {
     const { api, wedges } = mount();
 
     act(() => api.current?.hover(1));
     records.to.length = 0;
     act(() => api.current?.hover(null));
 
-    expect(tweensOn(records.to, wedges[1])[0].vars.clipPath).toBe(geometry.wedges[1].rest);
-    expect(tweensOn(records.to, wedges[1])[0].vars.filter).toBe("brightness(1)");
+    const growth = records.to.find((call) => Array.isArray(call.targets));
+    expect(growth!.vars.endArray).toEqual(restWidths(geometry));
+
+    advanceWidths(growth!, restWidths(geometry));
+
+    wedges.forEach((wedge, index) => expect(wedge.style.clipPath).toBe(geometry.wedges[index].rest));
   });
 
-  it("morphs an opening wedge to the full hero over 450ms, and the others outward", () => {
+  it("never passes the name tag an undefined opacity, which would leave the last one stuck on", () => {
+    const { api } = mount();
+
+    act(() => api.current?.hover(1));
+    act(() => api.current?.hover(null));
+
+    const tagTweens = records.to.filter((call) =>
+      Boolean((call.targets as HTMLElement).hasAttribute?.("data-chip")),
+    );
+    expect(tagTweens.length).toBeGreaterThan(0);
+
+    tagTweens.forEach((call) => {
+      expect(call.vars).toHaveProperty("autoAlpha");
+      expect(call.vars.autoAlpha).not.toBeUndefined();
+    });
+
+    // The last thing every tag was told, on the way out, is "hidden" — not
+    // "leave that property alone", which is what kept one stuck on screen.
+    const lastPerTag = new Map<string, Call>();
+    tagTweens.forEach((call) => lastPerTag.set((call.targets as HTMLElement).getAttribute("data-chip") ?? "", call));
+    expect(lastPerTag.size).toBe(geometry.wedges.length);
+    lastPerTag.forEach((call) => {
+      expect(call.vars.autoAlpha).toBe(0);
+      expect(call.vars.y).toBe(6);
+    });
+  });
+
+  it("morphs an opening wedge towards the whole hero, and the others outward", () => {
     const onOpened = jest.fn();
     const { api, wedges, photos, headline } = mount({ onOpened });
 
@@ -210,8 +289,13 @@ describe("useFanAnimation", () => {
     const [timeline] = records.timelines;
     expect(timeline.options?.defaults).toMatchObject({ ease: "power3.inOut" });
 
-    const grow = timeline.steps.find((step) => step.targets === wedges[2] && step.vars.clipPath === geometry.open);
-    expect(grow?.vars.duration).toBe(0.45);
+    const grow = timeline.steps.find((step) => step.vars.duration === 0.45 && typeof step.vars.onUpdate === "function");
+    expect(grow).toBeDefined();
+    expect(typeof grow!.targets).toBe("object");
+    expect(grow!.targets).not.toBeInstanceOf(Element);
+
+    advanceOpen(grow!, 1);
+    expect(wedges[2].style.clipPath).toBe(OPEN);
 
     const shrink = timeline.steps.find((step) => step.targets === photos[2]);
     expect(shrink?.vars).toMatchObject({ x: 0, y: 0, scale: 1 });
@@ -233,7 +317,7 @@ describe("useFanAnimation", () => {
     expect(onOpened).toHaveBeenCalledTimes(1);
   });
 
-  it("reverses the open timeline to fold the fan back", () => {
+  it("reverses the open timeline to fold the fan back, and the shapes follow it", () => {
     const onClosed = jest.fn();
     const { api, wedges } = mount({ onClosed });
 
@@ -243,9 +327,8 @@ describe("useFanAnimation", () => {
     const [timeline] = records.timelines;
     expect(timeline.reversed).toBe(true);
     expect(onClosed).toHaveBeenCalledTimes(1);
-    expect(
-      records.set.some((call) => call.targets === wedges[4] && call.vars.clipPath === geometry.wedges[4].rest),
-    ).toBe(true);
+    expect(wedges[4].style.clipPath).toBe(geometry.wedges[4].rest);
+    wedges.forEach((wedge, index) => expect(wedge.style.clipPath).toBe(geometry.wedges[index].rest));
   });
 
   it("closes without a timeline when nothing was open", () => {
@@ -264,8 +347,8 @@ describe("useFanAnimation", () => {
     records.to.length = 0;
     act(() => api.current?.swapTo(3));
 
-    const arrive = records.set.find((call) => call.targets === wedges[3] && call.vars.clipPath === geometry.open);
-    expect(arrive).toBeDefined();
+    expect(wedges[3].style.clipPath).toBe(OPEN);
+    expect(wedges[0].style.clipPath).toBe(geometry.wedges[0].rest);
     expect(tweensOn(records.to, wedges[3])[0].vars.autoAlpha).toBe(1);
     expect(tweensOn(records.to, wedges[0])[0].vars.autoAlpha).toBe(0);
     records.to.forEach((call) => expect(call.vars.duration).toBe(0.3));
@@ -278,7 +361,7 @@ describe("useFanAnimation", () => {
     act(() => api.current?.openAt(5, { instant: true }));
 
     expect(records.timelines).toHaveLength(0);
-    expect(records.set.some((call) => call.targets === wedges[5] && call.vars.clipPath === geometry.open)).toBe(true);
+    expect(wedges[5].style.clipPath).toBe(OPEN);
     expect(onOpened).toHaveBeenCalledTimes(1);
   });
 
@@ -290,7 +373,7 @@ describe("useFanAnimation", () => {
     act(() => api.current?.openAt(1));
 
     expect(records.timelines).toHaveLength(0);
-    expect(records.set.some((call) => call.targets === wedges[1] && call.vars.clipPath === geometry.open)).toBe(true);
+    expect(wedges[1].style.clipPath).toBe(OPEN);
     expect(onOpened).toHaveBeenCalledTimes(1);
   });
 
@@ -341,6 +424,7 @@ describe("useFanAnimation", () => {
     const shown = chips.filter((call) => call.vars.autoAlpha === 1);
     expect(shown).toHaveLength(1);
     expect((shown[0].targets as HTMLElement).getAttribute("data-chip")).toBe("2");
+    expect(records.set.some((call) => "autoAlpha" in call.vars && call.vars.autoAlpha === undefined)).toBe(false);
   });
 
   it("leaves the photo alone under reduced motion", () => {
@@ -350,5 +434,65 @@ describe("useFanAnimation", () => {
     act(() => api.current?.parallax(0, 10));
 
     expect(records.quickTo).toHaveLength(0);
+  });
+});
+
+/**
+ * GSAP's CSS plugin mangles a `clip-path` whose percentages pass ±100%, and
+ * every arc point in this fan does. The fix is to tween numbers and write the
+ * strings ourselves, so no GSAP call may ever be handed a `clipPath` again.
+ */
+describe("the fan's source", () => {
+  const directory = join(process.cwd(), "src", "components", "home");
+
+  /** Each GSAP call in a file: from `gsap.x(` or `tl.x(` to its closing paren. */
+  const gsapCalls = (source: string) => {
+    const calls: string[] = [];
+    const pattern = /\b(?:gsap|tl|timeline(?:\.current)?)\s*\.\s*\w+\s*\(/g;
+
+    for (let match = pattern.exec(source); match; match = pattern.exec(source)) {
+      let depth = 0;
+      let end = match.index + match[0].length - 1;
+      for (; end < source.length; end += 1) {
+        if (source[end] === "(") depth += 1;
+        else if (source[end] === ")") {
+          depth -= 1;
+          if (depth === 0) break;
+        }
+      }
+      calls.push(source.slice(match.index, end + 1));
+    }
+
+    return calls;
+  };
+
+  it("finds the calls it is meant to be guarding", () => {
+    const source = readFileSync(join(directory, "use-fan-animation.ts"), "utf8");
+    expect(gsapCalls(source).length).toBeGreaterThan(10);
+    expect(gsapCalls(`gsap.to(el, { clipPath: "polygon(0 0)" })`)).toHaveLength(1);
+  });
+
+  it("never hands GSAP a clip-path to interpolate", () => {
+    const files = readdirSync(directory).filter((name) => /\.tsx?$/.test(name) && !name.includes(".test."));
+    expect(files.length).toBeGreaterThan(3);
+
+    const offenders = files.flatMap((name) =>
+      gsapCalls(readFileSync(join(directory, name), "utf8"))
+        .filter((call) => /clipPath\s*:/.test(call))
+        .map((call) => `${name}: ${call.split("\n")[0]}`),
+    );
+
+    expect(offenders).toEqual([]);
+  });
+
+  it("keeps every shape string in fan-geometry", () => {
+    const files = readdirSync(directory).filter((name) => /\.tsx?$/.test(name) && !name.includes(".test."));
+    const writers = files.filter((name) =>
+      /polygon\(|style\.clipPath\s*=/.test(readFileSync(join(directory, name), "utf8")),
+    );
+
+    // toClipPath is the only place a polygon is written; the animation only
+    // assigns what it returns.
+    expect(writers.sort()).toEqual(["fan-geometry.ts", "use-fan-animation.ts"]);
   });
 });
