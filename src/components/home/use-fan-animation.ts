@@ -201,7 +201,13 @@ export function useFanAnimation({
     { scope: root, dependencies: [geometry] },
   );
 
-  /** Hovering one wedge widens it and dims the others; null restores the fan. */
+  /**
+   * Hovering one wedge widens it and dims the others; null restores the fan.
+   *
+   * Only ever while the fan is closed: `openAt` owns the open photo's scale, and
+   * a hover that lands afterwards zoomed the full-screen photo up to 1.15 while
+   * the visitor was looking at it.
+   */
   const hover = contextSafe((index: number | null) => {
     const { wedges, photos, chips } = parts();
     if (wedges.length === 0) return;

@@ -21,11 +21,19 @@ import { gsap, ScrollTrigger, useGSAP } from "@/lib/gsap";
  *
  * Image height changes move every trigger below them, so the triggers are
  * refreshed once the page has finished loading.
+ *
+ * `paused` is for an open place. That view is the hero's whole screen filled by
+ * one photo, and lifting the fan by 8% uncovers a band of the hero's own ground
+ * along the bottom edge — which reads as the photo not being full screen. So
+ * opening a place takes the fold away entirely, and closing it puts the fold
+ * back where the scroll position says it should be.
  */
-export function useHeroFold(root: RefObject<HTMLElement | null>) {
+export function useHeroFold(root: RefObject<HTMLElement | null>, { paused = false }: { paused?: boolean } = {}) {
   const refreshQueued = useRef(false);
   const { contextSafe } = useGSAP(
     () => {
+      if (paused) return;
+
       const media = gsap.matchMedia();
 
       media.add("(min-width: 768px) and (prefers-reduced-motion: no-preference)", () => {
@@ -78,7 +86,7 @@ export function useHeroFold(root: RefObject<HTMLElement | null>) {
 
       return () => media.revert();
     },
-    { scope: root },
+    { scope: root, dependencies: [paused] },
   );
 
   // Photos land after the first paint and change the height of everything below.

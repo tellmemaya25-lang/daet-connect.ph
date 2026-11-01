@@ -365,6 +365,82 @@ test.describe("home fan on a desktop", () => {
     await expect(page.getByRole("heading", { level: 2, name: "Bagasbas Beach" })).toBeVisible();
   });
 
+  test("keeps the open photo covering the hero, still and after a moment", async ({ page }) => {
+    await page.setViewportSize({ width: 1920, height: 1080 });
+    await visit(page, "/");
+
+    /** The photo's box against the hero's, in pixels, plus what is moving it. */
+    const measure = () =>
+      page.evaluate(() => {
+        const box = (element: Element | null | undefined) => {
+          if (!element) return null;
+          const rect = element.getBoundingClientRect();
+          return { x: rect.x, y: rect.y, w: rect.width, h: rect.height };
+        };
+        const hero = document.querySelector("section[aria-labelledby='home-title']");
+        const wedge = document.querySelector("[data-wedge][aria-expanded='true']");
+        const photo = wedge?.querySelector("[data-photo]");
+        const nudge = wedge?.querySelector("[data-nudge]");
+        const img = wedge?.querySelector("img");
+        const group = hero?.querySelector("[role='group']");
+        const transform = (element: Element | null | undefined) =>
+          element ? getComputedStyle(element).transform : null;
+
+        return {
+          scrollY: Math.round(window.scrollY),
+          hero: box(hero),
+          img: box(img),
+          clip: (wedge as HTMLElement | null)?.style.clipPath ?? null,
+          transforms: {
+            hero: transform(hero),
+            group: transform(group),
+            photo: transform(photo),
+            nudge: transform(nudge),
+          },
+        };
+      });
+
+    const gapsIn = (state: Awaited<ReturnType<typeof measure>>) => {
+      const { hero, img } = state;
+      if (!hero || !img) return ["the place is not open"];
+      return (
+        [
+          ["top", img.y - hero.y],
+          ["left", img.x - hero.x],
+          ["right", hero.x + hero.w - (img.x + img.w)],
+          ["bottom", hero.y + hero.h - (img.y + img.h)],
+        ] as const
+      )
+        .filter(([, gap]) => gap > 1)
+        .map(([edge, gap]) => `${edge} ${Math.round(gap)}px`);
+    };
+
+    await page.getByRole("button", { name: "Calaguas: open photo and details" }).focus();
+    await page.keyboard.press("Enter");
+    await page.waitForTimeout(600);
+    const settled = await measure();
+
+    // Nothing else may move it afterwards: a hover that lands late used to zoom
+    // the photo up to 1.15 while it was on screen.
+    await page.mouse.move(4, 4);
+    await page.waitForTimeout(800);
+    const afterPointer = await measure();
+
+    // And it has to stay full-bleed with the page nudged, where the scroll fold
+    // used to lift the fan and uncover a band along the bottom edge.
+    await page.evaluate(() => window.scrollTo(0, 80));
+    await page.waitForTimeout(800);
+    const afterScroll = await measure();
+
+    const problems = [
+      ...gapsIn(settled).map((gap) => `on open: ${gap}`),
+      ...gapsIn(afterPointer).map((gap) => `after the pointer left: ${gap}`),
+      ...gapsIn(afterScroll).map((gap) => `after scrolling 80px: ${gap}`),
+    ];
+
+    expect(problems, JSON.stringify({ settled, afterPointer, afterScroll }, null, 1)).toEqual([]);
+  });
+
   test("never scrolls sideways", async ({ page }) => {
     await visit(page, "/");
     await page.getByRole("button", { name: "Bagasbas Beach: open photo and details" }).focus();

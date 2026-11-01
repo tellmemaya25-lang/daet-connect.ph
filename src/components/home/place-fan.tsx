@@ -98,8 +98,6 @@ export function PlaceFan({ places, signedIn }: { places: FanPlace[]; signedIn: b
     [size.width, size.height, layout, pointY],
   );
 
-  useHeroFold(sectionRef);
-
   const slugs = useMemo(() => places.map((place) => place.slug), [places]);
   const { openSlug, open: openInUrl, close: closeInUrl } = usePlaceHash(slugs);
 
@@ -114,6 +112,11 @@ export function PlaceFan({ places, signedIn }: { places: FanPlace[]; signedIn: b
   const shortHero = size.height < 500;
   const sheet = onPhone || shortHero;
   const isOpen = openIndex >= 0;
+
+  // An open place is the hero's whole screen filled by one photo, so the scroll
+  // fold steps out of the way: lifting the fan would uncover a band of the
+  // hero's own ground along the bottom edge.
+  useHeroFold(sectionRef, { paused: isOpen });
 
   const describe = useCallback(
     (index: number) => `${places[index].name}, ${index + 1} of ${places.length}`,
@@ -314,7 +317,9 @@ export function PlaceFan({ places, signedIn }: { places: FanPlace[]; signedIn: b
               if (event.pointerType === "mouse" && !onPhone && openIndex < 0) hover(index);
             }}
             onPointerLeave={(event) => {
-              if (event.pointerType === "mouse" && !onPhone) hover(null);
+              // Not while a place is open: that hover would resize the
+              // full-screen photo under the visitor (it zoomed to 1.15).
+              if (event.pointerType === "mouse" && !onPhone && openIndex < 0) hover(null);
             }}
             // A keyboard visitor gets the same name a mouse visitor does. Only
             // for `:focus-visible`, so a click that happens to focus a wedge
