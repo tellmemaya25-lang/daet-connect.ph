@@ -1,7 +1,9 @@
 /** @jest-environment jsdom */
 
-import { fireEvent, render, screen, within } from "@testing-library/react";
+import { act, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import "@testing-library/jest-dom";
+import { gsap } from "@/lib/gsap";
+import { fanGeometry } from "./fan-geometry";
 import { PlaceFan } from "./place-fan";
 import { FAN_PLACES } from "./fan-places";
 
@@ -20,6 +22,17 @@ beforeAll(() => {
 });
 
 const renderFan = (signedIn = false) => render(<PlaceFan places={FAN_PLACES} signedIn={signedIn} />);
+
+// The hero's own geometry at the size the fan renders at before it is measured.
+const geometry = fanGeometry(1440, 900, "desktop");
+
+beforeEach(() => {
+  window.history.replaceState(null, "", "/");
+});
+
+afterEach(() => {
+  gsap.globalTimeline.timeScale(1);
+});
 
 describe("PlaceFan", () => {
   it("renders one button per place, in order, inside the labelled group", () => {
@@ -109,5 +122,151 @@ describe("PlaceFan", () => {
       "Daet Heritage Center",
       "Cathedral of the Most Holy Trinity",
     ]);
+  });
+});
+
+describe("PlaceFan opening a place", () => {
+  // The fold-in runs on a real timeline; speed the clock up rather than sit
+  // through 450ms of it, and keep every other suite's timing untouched.
+  const hurry = () => gsap.globalTimeline.timeScale(40);
+
+  const openThird = () => {
+    renderFan();
+    fireEvent.click(screen.getByRole("button", { name: "Bagasbas Beach: open photo and details" }));
+  };
+
+  it("opens the panel, marks the wedge expanded and names the place in the URL", () => {
+    openThird();
+
+    expect(screen.getByRole("heading", { level: 2, name: "Bagasbas Beach" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Bagasbas Beach: open photo and details" })).toHaveAttribute(
+      "aria-expanded",
+      "true",
+    );
+    expect(window.location.hash).toBe("#place-bagasbas-beach");
+  });
+
+  it("tells a screen reader which place just opened", () => {
+    openThird();
+
+    expect(screen.getByRole("status")).toHaveTextContent("Bagasbas Beach, 3 of 6");
+  });
+
+  it("closes on the ✕ and takes the hash away with it", () => {
+    openThird();
+    fireEvent.click(screen.getByRole("button", { name: "Close" }));
+
+    expect(screen.queryByRole("heading", { level: 2 })).not.toBeInTheDocument();
+    expect(window.location.hash).toBe("");
+  });
+
+  it("closes on Escape", () => {
+    openThird();
+    fireEvent.keyDown(screen.getByRole("heading", { level: 2 }), { key: "Escape" });
+
+    expect(screen.queryByRole("heading", { level: 2 })).not.toBeInTheDocument();
+    expect(window.location.hash).toBe("");
+  });
+
+  it("steps to the next and previous place with the arrow keys, wrapping", () => {
+    openThird();
+
+    const panel = screen.getByRole("heading", { level: 2 });
+
+    fireEvent.keyDown(panel, { key: "ArrowRight" });
+    expect(screen.getByRole("heading", { level: 2, name: "First Rizal Monument" })).toBeInTheDocument();
+    expect(window.location.hash).toBe("#place-first-rizal-monument");
+
+    fireEvent.keyDown(panel, { key: "ArrowLeft" });
+    fireEvent.keyDown(panel, { key: "ArrowLeft" });
+    expect(screen.getByRole("heading", { level: 2, name: "Apuao sandbar" })).toBeInTheDocument();
+    expect(window.location.hash).toBe("#place-apuao-grande-island");
+  });
+
+  it("steps with the panel's own arrow buttons too", () => {
+    openThird();
+
+    fireEvent.click(screen.getByRole("button", { name: "Previous place" }));
+    expect(screen.getByRole("heading", { level: 2, name: "Apuao sandbar" })).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "Next place" }));
+    expect(screen.getByRole("heading", { level: 2, name: "Bagasbas Beach" })).toBeInTheDocument();
+  });
+
+  it("closes when the Back button strips the hash", () => {
+    openThird();
+
+    act(() => {
+      window.history.replaceState(null, "", "/");
+      window.dispatchEvent(new PopStateEvent("popstate"));
+    });
+
+    expect(screen.queryByRole("heading", { level: 2 })).not.toBeInTheDocument();
+  });
+
+  it("opens straight onto the place a shared link names", () => {
+    window.history.replaceState(null, "", "/#place-cathedral-most-holy-trinity");
+    renderFan();
+
+    expect(
+      screen.getByRole("heading", { level: 2, name: "Cathedral of the Most Holy Trinity" }),
+    ).toBeInTheDocument();
+    expect(screen.getByText("6 of 6")).toBeInTheDocument();
+  });
+
+  it("leaves the panel closed for a hash that names no place", () => {
+    window.history.replaceState(null, "", "/#place-nowhere");
+    renderFan();
+
+    expect(screen.queryByRole("heading", { level: 2 })).not.toBeInTheDocument();
+  });
+
+  it("moves focus into the panel on open, and back to the wedge on close", async () => {
+    hurry();
+    openThird();
+
+    await waitFor(() =>
+      expect(screen.getByRole("heading", { level: 2, name: "Bagasbas Beach" })).toHaveFocus(),
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Previous place" }));
+    fireEvent.click(screen.getByRole("button", { name: "Close" }));
+
+    await waitFor(() =>
+      expect(screen.getByRole("button", { name: "Apuao sandbar: open photo and details", hidden: true })).toHaveFocus(),
+    );
+  });
+
+  it("walks the fan with the arrow keys while it is closed", () => {
+    renderFan();
+    const first = screen.getByRole("button", { name: "Calaguas: open photo and details" });
+    first.focus();
+
+    fireEvent.keyDown(first, { key: "ArrowRight" });
+
+    expect(screen.getByRole("button", { name: "Apuao sandbar: open photo and details" })).toHaveFocus();
+  });
+
+  it("widens the wedge under a mouse and restores it when the pointer leaves", async () => {
+    hurry();
+    renderFan();
+    const wedge = screen.getByRole("button", { name: "Daet Heritage Center: open photo and details" });
+
+    fireEvent.pointerOver(wedge, { pointerType: "mouse" });
+    await waitFor(() => expect(wedge.style.clipPath).toBe(geometry.wedges[4].focusVariants[4]));
+
+    fireEvent.pointerOut(wedge, { pointerType: "mouse" });
+    await waitFor(() => expect(wedge.style.clipPath).toBe(geometry.wedges[4].rest));
+  });
+
+  it("ignores hovering from a finger, which taps instead", async () => {
+    hurry();
+    renderFan();
+    const wedge = screen.getByRole("button", { name: "Daet Heritage Center: open photo and details" });
+
+    fireEvent.pointerOver(wedge, { pointerType: "touch" });
+
+    await new Promise((resolve) => setTimeout(resolve, 60));
+    expect(wedge.style.clipPath).toBe(geometry.wedges[4].rest);
   });
 });
