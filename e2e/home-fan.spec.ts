@@ -244,6 +244,30 @@ test.describe("home fan on a desktop", () => {
     expect(scrolled.background, "same scrim while scrolling").toBe(atRest.background);
   });
 
+  test("scrolls the page when the wheel is over the hero", async ({ page }) => {
+    await visit(page, "/");
+    expect(await page.evaluate(() => Math.round(window.scrollY))).toBe(0);
+
+    // The hero is the whole first screen, so this is where the mouse usually is
+    // when someone tries to leave it.
+    await page.mouse.move(640, 420);
+    await page.mouse.wheel(0, 700);
+
+    const state = await page.evaluate(() => {
+      const hero = document.querySelector("section[aria-labelledby='home-title']") as HTMLElement;
+      return {
+        pageHeight: document.documentElement.scrollHeight,
+        viewport: window.innerHeight,
+        overscroll: getComputedStyle(hero).overscrollBehaviorY,
+      };
+    });
+
+    expect(state.pageHeight, "there is something below the hero").toBeGreaterThan(state.viewport);
+    await expect
+      .poll(() => page.evaluate(() => Math.round(window.scrollY)), { timeout: 5000 })
+      .toBeGreaterThan(300);
+  });
+
   test("never scrolls sideways", async ({ page }) => {
     await visit(page, "/");
     await page.getByRole("button", { name: "Bagasbas Beach: open photo and details" }).focus();
