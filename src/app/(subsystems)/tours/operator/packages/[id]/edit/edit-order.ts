@@ -29,3 +29,13 @@ export function moveItem<T>(items: T[], from: number, to: number): T[] {
   next.splice(to, 0, moved);
   return next;
 }
+
+/** Exchanges two items' positions, leaving everything between them alone. */
+export function swapItems<T>(items: T[], from: number, to: number): T[] {
+  if (from === to) return items;
+  if (from < 0 || to < 0 || from >= items.length || to >= items.length) return items;
+
+  const next = [...items];
+  [next[from], next[to]] = [next[to], next[from]];
+  return next;
+}

@@ -25,6 +25,8 @@ const dropEvent = (files: File[]) => {
   return event;
 };
 
+const dragData = { types: [] as string[], setData: () => {}, dropEffect: "", effectAllowed: "" };
+
 const existing: EditGalleryImage = {
   id: "existing-1",
   imageUrl: "https://example.supabase.co/storage/v1/object/public/tours-package-media/1.jpg",
@@ -97,6 +99,49 @@ describe("GalleryStep multi-photo upload", () => {
 
     const last = onUpdate.mock.calls.at(-1)?.[0] as EditGalleryImage[];
     expect(last).toHaveLength(1);
+  });
+
+  it("swaps two photos when one is dragged onto another", async () => {
+    const three: EditGalleryImage[] = ["a", "b", "c"].map((id, index) => ({
+      id,
+      imageUrl: `https://example.supabase.co/storage/v1/object/public/tours-package-media/${id}.jpg`,
+      caption: null,
+      displayOrder: index + 1,
+    }));
+
+    const { onUpdate, section } = renderGallery(three);
+    const cards = section.querySelectorAll('[draggable="true"]');
+    expect(cards).toHaveLength(3);
+
+    fireEvent.dragStart(cards[0], { dataTransfer: { ...dragData } });
+    fireEvent.dragOver(cards[2], { dataTransfer: { ...dragData } });
+    fireEvent.drop(cards[2], { dataTransfer: { ...dragData } });
+
+    await waitFor(() => expect(onUpdate).toHaveBeenCalled());
+
+    const last = onUpdate.mock.calls.at(-1)?.[0] as EditGalleryImage[];
+    expect(last.map((image) => image.id)).toEqual(["c", "b", "a"]);
+    expect(last.map((image) => image.displayOrder)).toEqual([1, 2, 3]);
+  });
+
+  it("does not reorder when the drag carries files from the computer", async () => {
+    const three: EditGalleryImage[] = ["a", "b", "c"].map((id, index) => ({
+      id,
+      imageUrl: `https://example.supabase.co/storage/v1/object/public/tours-package-media/${id}.jpg`,
+      caption: null,
+      displayOrder: index + 1,
+    }));
+
+    const { onUpdate, section } = renderGallery(three);
+    const cards = section.querySelectorAll('[draggable="true"]');
+    const fileDrag = { types: ["Files"], setData: () => {}, dropEffect: "", effectAllowed: "" };
+
+    fireEvent.dragStart(cards[0], { dataTransfer: { ...dragData } });
+    fireEvent.dragOver(cards[2], { dataTransfer: fileDrag });
+    fireEvent.drop(cards[2], { dataTransfer: fileDrag });
+
+    await waitFor(() => expect(section).toBeTruthy());
+    expect(onUpdate).not.toHaveBeenCalled();
   });
 
   it("shows a light-blue progress fill inside the button while uploading", async () => {

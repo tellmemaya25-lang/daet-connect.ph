@@ -7,7 +7,7 @@ import type { EditGalleryImage, EditPackageStatus, ValidationErrors, StepProps }
 import { uploadPackageImage, deletePackageImage } from "./actions";
 import { EDIT_LIMITS, ALLOWED_IMAGE_EXTENSIONS, ALLOWED_IMAGE_TYPES } from "./edit-constants";
 import { getEditPermissions } from "./permissions";
-import { moveItem, withDisplayOrder } from "./edit-order";
+import { moveItem, swapItems, withDisplayOrder } from "./edit-order";
 import { useFileDrop } from "./use-file-drop";
 import { useSortableList } from "./use-sortable-list";
 
@@ -184,7 +184,9 @@ export function GalleryStep({
   // keyboard and touch, which HTML drag-and-drop cannot serve.
   const sortable = useSortableList({
     enabled: canReorder,
-    onMove: (from, to) => onUpdate(withDisplayOrder(moveItem(sortedImages, from, to))),
+    // Dropping a photo on another swaps the two, leaving the rest of the row
+    // where it was. The arrows still step a photo one place at a time.
+    onMove: (from, to) => onUpdate(withDisplayOrder(swapItems(sortedImages, from, to))),
   });
 
   const handleDeleteImage = useCallback(
@@ -229,11 +231,7 @@ export function GalleryStep({
       if (direction === "up" && index === 0) return;
       if (direction === "down" && index === sortedImages.length - 1) return;
 
-      const newOrder = [...sortedImages];
-      const [removed] = newOrder.splice(index, 1);
-      newOrder.splice(direction === "up" ? index - 1 : index + 1, 0, removed);
-
-      onUpdate(withDisplayOrder(newOrder));
+      onUpdate(withDisplayOrder(moveItem(sortedImages, index, direction === "up" ? index - 1 : index + 1)));
     },
     [sortedImages, onUpdate]
   );
@@ -255,7 +253,7 @@ export function GalleryStep({
           </p>
           {canAddImages && (
             <p className="text-xs text-daet-ink/70 mt-1">
-              Drag photos here to upload them{sortedImages.length > 1 && canReorder ? ", or drag a photo onto another to reorder" : ""}.
+              Drag photos here to upload them{sortedImages.length > 1 && canReorder ? ", or drag a photo onto another to swap them" : ""}.
             </p>
           )}
         </div>
