@@ -1,4 +1,4 @@
-import { moveItem, withDisplayOrder, withStopOrder } from "./edit-order";
+import { moveItem, swapItems, withDisplayOrder, withStopOrder } from "./edit-order";
 
 /**
  * The server rejects list positions that aren't exactly 1..n
@@ -78,6 +78,33 @@ describe("list ordering helpers", () => {
     it("does not mutate the input", () => {
       const items = ["a", "b", "c"];
       moveItem(items, 0, 2);
+      expect(items).toEqual(["a", "b", "c"]);
+    });
+  });
+
+  describe("swapItems", () => {
+    it("exchanges two positions and leaves the rest alone", () => {
+      expect(swapItems(["a", "b", "c", "d"], 0, 2)).toEqual(["c", "b", "a", "d"]);
+    });
+
+    it("works backwards too", () => {
+      expect(swapItems(["a", "b", "c"], 2, 0)).toEqual(["c", "b", "a"]);
+    });
+
+    it("ignores a swap with itself", () => {
+      const items = ["a", "b"];
+      expect(swapItems(items, 1, 1)).toBe(items);
+    });
+
+    it("ignores out-of-range positions", () => {
+      const items = ["a", "b"];
+      expect(swapItems(items, 0, 5)).toBe(items);
+      expect(swapItems(items, -1, 0)).toBe(items);
+    });
+
+    it("does not mutate the input", () => {
+      const items = ["a", "b", "c"];
+      swapItems(items, 0, 2);
       expect(items).toEqual(["a", "b", "c"]);
     });
   });
