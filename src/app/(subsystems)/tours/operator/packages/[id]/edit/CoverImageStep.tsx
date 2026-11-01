@@ -6,6 +6,7 @@ import type { EditPackageStatus, ValidationErrors } from "./edit-types";
 import { uploadPackageImage } from "./actions";
 import { EDIT_LIMITS, ALLOWED_IMAGE_EXTENSIONS, ALLOWED_IMAGE_TYPES } from "./edit-constants";
 import { getEditPermissions } from "./permissions";
+import { useFileDrop } from "./use-file-drop";
 
 interface CoverImageStepData {
   coverImageUrl: string | null;
@@ -59,11 +60,8 @@ export function CoverImageStep({
     return null;
   };
 
-  const handleFileChange = useCallback(
-    async (event: React.ChangeEvent<HTMLInputElement>) => {
-      const file = event.target.files?.[0];
-      if (!file) return;
-
+  const uploadFile = useCallback(
+    async (file: File) => {
       const validationError = validateImage(file);
       if (validationError) {
         setUploadError(validationError);
@@ -92,21 +90,38 @@ export function CoverImageStep({
       } finally {
         setUploadLoading(false);
       }
-
-      // Reset file input
-      event.target.value = "";
     },
+    // validateImage only reads module-level constants
     [data, onUpdate, packageId]
   );
+
+  const handleFileChange = useCallback(
+    (event: React.ChangeEvent<HTMLInputElement>) => {
+      const file = event.target.files?.[0];
+      event.target.value = "";
+      if (file) void uploadFile(file);
+    },
+    [uploadFile]
+  );
+
+  // Drop a photo straight onto the preview.
+  const fileDrop = useFileDrop({
+    onFile: (file) => void uploadFile(file),
+    enabled: !isReadOnly && !uploadLoading && !loading,
+  });
 
   return (
     <div className="border rounded-2xl p-6 bg-surface">
       <h2 className="text-xl font-bold text-daet-ink mb-6">Cover Image</h2>
 
-      <div className="space-y-4">
+      <div className="space-y-4" {...fileDrop.dropProps}>
         {/* Current Image Preview */}
         {data.coverImageUrl ? (
-          <div className="relative w-full h-64 rounded-2xl overflow-hidden bg-muted border border-daet-ink/20">
+          <div
+            className={`relative w-full h-64 rounded-2xl overflow-hidden bg-muted border transition ${
+              fileDrop.isDragging ? "border-daet-forest ring-2 ring-daet-forest/40" : "border-daet-ink/20"
+            }`}
+          >
             <Image
               src={data.coverImageUrl}
               alt="Cover image preview"
@@ -118,12 +133,21 @@ export function CoverImageStep({
             />
           </div>
         ) : (
-          <div className="w-full h-64 rounded-2xl bg-muted border-2 border-dashed border-daet-ink/20 flex items-center justify-center">
+          <div
+            className={`w-full h-64 rounded-2xl bg-muted border-2 border-dashed flex items-center justify-center transition ${
+              fileDrop.isDragging ? "border-daet-forest bg-blue-50 dark:bg-blue-950/40" : "border-daet-ink/20"
+            }`}
+          >
             <div className="text-center">
               <svg className="w-12 h-12 text-daet-ink/70 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
               </svg>
-              <p className="text-daet-ink/80 text-sm font-medium">No cover image</p>
+              <p className="text-daet-ink/80 text-sm font-medium">
+                {fileDrop.isDragging ? "Drop the photo to upload it" : "No cover image"}
+              </p>
+              {!fileDrop.isDragging && !isReadOnly && (
+                <p className="text-daet-ink/70 text-xs mt-1">or drag a photo here</p>
+              )}
             </div>
           </div>
         )}

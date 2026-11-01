@@ -1,4 +1,4 @@
-import { withDisplayOrder, withStopOrder } from "./edit-order";
+import { moveItem, withDisplayOrder, withStopOrder } from "./edit-order";
 
 /**
  * The server rejects list positions that aren't exactly 1..n
@@ -52,6 +52,33 @@ describe("list ordering helpers", () => {
 
     it("handles an empty list", () => {
       expect(withDisplayOrder([])).toEqual([]);
+    });
+  });
+
+  describe("moveItem", () => {
+    it("moves an item forward", () => {
+      expect(moveItem(["a", "b", "c"], 0, 2)).toEqual(["b", "c", "a"]);
+    });
+
+    it("moves an item backward", () => {
+      expect(moveItem(["a", "b", "c"], 2, 0)).toEqual(["c", "a", "b"]);
+    });
+
+    it("ignores a move that changes nothing", () => {
+      const items = ["a", "b"];
+      expect(moveItem(items, 1, 1)).toBe(items);
+    });
+
+    it("ignores out-of-range positions", () => {
+      const items = ["a", "b"];
+      expect(moveItem(items, 0, 5)).toBe(items);
+      expect(moveItem(items, -1, 0)).toBe(items);
+    });
+
+    it("does not mutate the input", () => {
+      const items = ["a", "b", "c"];
+      moveItem(items, 0, 2);
+      expect(items).toEqual(["a", "b", "c"]);
     });
   });
 
