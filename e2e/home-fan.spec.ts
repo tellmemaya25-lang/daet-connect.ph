@@ -304,33 +304,52 @@ test.describe("home fan on a desktop", () => {
     expect(dark.shadow, "no elevation on the scrim").not.toContain("rgba(15, 23, 42");
   });
 
-  test("is a white page with an ink headline in light mode, ink with a white one in dark", async ({ page }) => {
+  test("is a light page with an ink headline in light mode, ink with a white one in dark", async ({ page }) => {
     await visit(page, "/");
 
+    /**
+     * Colours as RGB, whatever the theme tokens serialise to. Tailwind v4 hands
+     * some of them back as `lab(…)`, so the browser's own parser reads them.
+     */
     const readHero = () =>
       page.evaluate(() => {
+        const rgb = (value: string) => {
+          const canvas = document.createElement("canvas");
+          canvas.width = canvas.height = 1;
+          const context = canvas.getContext("2d")!;
+          context.fillStyle = value;
+          context.fillRect(0, 0, 1, 1);
+          const [r, g, b] = context.getImageData(0, 0, 1, 1).data;
+          return [r, g, b];
+        };
+
         const hero = document.querySelector("section[aria-labelledby='home-title']") as HTMLElement;
+        const headline = document.getElementById("home-title") as HTMLElement;
+        const guide = hero.querySelector("[data-headline] button") as HTMLElement | null;
+
         return {
-          ground: getComputedStyle(hero).backgroundColor,
-          headline: getComputedStyle(document.getElementById("home-title") as HTMLElement).color,
-          guide: getComputedStyle(
-            (hero.querySelector("[data-headline] button") as HTMLElement) ?? hero,
-          ).color,
+          ground: rgb(getComputedStyle(hero).backgroundColor),
+          headline: rgb(getComputedStyle(headline).color),
+          guide: guide ? rgb(getComputedStyle(guide).color) : null,
         };
       });
 
+    /** Both channels of an RGB triple, give or take a rounding step. */
+    const isNear = (actual: number[], expected: number[]) =>
+      expected.every((channel, i) => Math.abs((actual[i] ?? 0) - channel) <= 2);
+
     const light = await readHero();
-    expect(light.ground, "the page's own ground, with no dark band").toBe("rgb(248, 250, 252)");
-    expect(light.headline, "ink on white").toBe("rgb(15, 23, 42)");
+    expect(isNear(light.ground, [248, 250, 252]), "the page's own ground, no dark band").toBe(true);
+    expect(isNear(light.headline, [15, 23, 42]), "ink on it").toBe(true);
     // White-on-white was the bug in the mock: this button has to carry ink here.
-    expect(light.guide, "the guide button keeps its own edge on white").toBe("rgb(15, 23, 42)");
+    expect(isNear(light.guide ?? [], [15, 23, 42]), "the guide button keeps an edge on light").toBe(true);
 
     await page.addInitScript(() => localStorage.setItem("daet-theme", "dark"));
     await visit(page, "/");
 
     const dark = await readHero();
-    expect(dark.ground, "the dark ground the fan had").toBe("rgb(15, 23, 42)");
-    expect(dark.headline, "white on it").toBe("rgb(255, 255, 255)");
+    expect(isNear(dark.ground, [15, 23, 42]), "the dark ground the fan had").toBe(true);
+    expect(isNear(dark.headline, [255, 255, 255]), "white on it").toBe(true);
   });
 
   test("takes 'Open on the map' to the map, leaving the place open", async ({ page }) => {
