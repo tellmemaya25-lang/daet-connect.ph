@@ -49,12 +49,29 @@ export async function visit(page: Page, path: string, heading?: string | RegExp)
 export async function offScreen(page: Page): Promise<string[]> {
   return page.evaluate(() => {
     const vw = window.innerWidth;
-    const inScroller = (el: Element) => {
+    /**
+     * Is this element's fate already decided by an ancestor?
+     *
+     * A sideways scroller, a fixed layer or a clip-path ancestor is left out:
+     * a clip-path cuts its own subtree, a fixed layer has its own frame. So is
+     * an ancestor that clips — `overflow: hidden` or `clip` — when the element
+     * falls outside it, because then it is clipped away rather than on screen:
+     * the closed panels in "Places to start" hold their text right there, a few
+     * pixels below a 4rem strip with `overflow-hidden`. An element *inside*
+     * such an ancestor is still checked.
+     */
+    const decided = (el: Element, r: DOMRect) => {
       for (let a = el.parentElement; a; a = a.parentElement) {
         const s = getComputedStyle(a);
         if (/(auto|scroll)/.test(s.overflowX) && a.scrollWidth > a.clientWidth) return true;
         if (s.position === "fixed") return true;
         if (s.clipPath && s.clipPath !== "none") return true;
+        if (/(hidden|clip)/.test(s.overflowX) || /(hidden|clip)/.test(s.overflowY)) {
+          const box = a.getBoundingClientRect();
+          if (r.left < box.left - 1 || r.right > box.right + 1 || r.top < box.top - 1 || r.bottom > box.bottom + 1) {
+            return true;
+          }
+        }
       }
       return false;
     };
@@ -66,7 +83,7 @@ export async function offScreen(page: Page): Promise<string[]> {
       if (!hasText && !["button", "a", "img", "input", "select", "textarea"].includes(tag)) continue;
       const r = el.getBoundingClientRect();
       if (r.width < 2 || r.height < 2 || getComputedStyle(el).position === "fixed") continue;
-      if (inScroller(el)) continue;
+      if (decided(el, r)) continue;
       const label = `${tag} "${(el.textContent ?? "").trim().slice(0, 30)}"`;
       if (r.right > vw + 1 || r.left < -1) found.push(`${label} [${Math.round(r.left)}..${Math.round(r.right)}]`);
       else {

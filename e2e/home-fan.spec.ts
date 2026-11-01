@@ -15,7 +15,17 @@ import { checkA11y, visit } from "./fixtures";
  */
 test.use({ reducedMotion: "reduce" });
 
-const panel = (page: import("@playwright/test").Page, name: string) => page.getByRole("region", { name });
+/**
+ * A place's panel, inside the hero.
+ *
+ * Scoped to `#place-detail`: the "Places to start" panels further down the page
+ * name the same places (and quote the same lines about them) in their closed,
+ * inert regions, so an unscoped role or text lookup matches two elements.
+ */
+const panel = (page: import("@playwright/test").Page, name: string) =>
+  page.locator("#place-detail").getByRole("region", { name });
+
+const inPanel = (page: import("@playwright/test").Page) => page.locator("#place-detail");
 
 test.describe("home fan on a phone", () => {
   test("shows six places, one per wedge", async ({ page }) => {
@@ -35,7 +45,7 @@ test.describe("home fan on a phone", () => {
     await page.keyboard.press("Enter");
 
     await expect(page.getByRole("heading", { level: 2, name: "Bagasbas Beach" })).toBeVisible();
-    await expect(page.getByText(/ten minutes from the plaza/)).toBeVisible();
+    await expect(inPanel(page).getByText(/ten minutes from the plaza/)).toBeVisible();
     await expect(page).toHaveURL(/#place-bagasbas-beach/);
     await checkA11y(page, "home, a place open");
 
@@ -71,7 +81,7 @@ test.describe("home fan on a phone", () => {
     await visit(page, "/#place-cathedral-most-holy-trinity");
 
     await expect(page.getByRole("heading", { level: 2, name: "Cathedral of the Most Holy Trinity" })).toBeVisible();
-    await expect(page.getByText("6 of 6")).toBeVisible();
+    await expect(inPanel(page).getByText("6 of 6")).toBeVisible();
   });
 
   test("shows the Tourism Office's own counts, not a placeholder", async ({ page }) => {
