@@ -358,6 +358,46 @@ test.describe("home fan, motion on", () => {
     expect(fold.headlineOpacity).toBeLessThan(1);
   });
 
+  test("reveals a band once, then leaves it fully readable", async ({ page }) => {
+    await visit(page, "/");
+
+    const opacityOf = (selector: string) =>
+      page.evaluate(
+        (selector) => Number(getComputedStyle(document.querySelector(selector) as HTMLElement).opacity),
+        selector,
+      );
+
+    await page.evaluate(() =>
+      document.querySelector("#home-how")?.scrollIntoView({ block: "center", behavior: "instant" }),
+    );
+    await page.waitForTimeout(600);
+
+    // The reveal is one 300ms step, not a scroll-linked gradient: by the time
+    // the band is being read, it is fully opaque.
+    expect(await opacityOf("#home-how")).toBe(1);
+
+    // …and it stays revealed. Scrolling past it and back must not fade it again.
+    await page.evaluate(() => window.scrollBy(0, 800));
+    await page.waitForTimeout(300);
+    await page.evaluate(() =>
+      document.querySelector("#home-how")?.scrollIntoView({ block: "center", behavior: "instant" }),
+    );
+    await page.waitForTimeout(300);
+    expect(await opacityOf("#home-how")).toBe(1);
+
+    const results = await new AxeBuilder({ page })
+      .include("#home-how")
+      .withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"])
+      .analyze();
+    const serious = results.violations.filter(
+      (violation) => violation.impact === "serious" || violation.impact === "critical",
+    );
+    expect(
+      serious.map((violation) => `${violation.id} (${violation.impact})`),
+      "the steps band",
+    ).toEqual([]);
+  });
+
   test("shows one name tag, for the wedge under the mouse or the keyboard", async ({ page }) => {
     await visit(page, "/");
 
