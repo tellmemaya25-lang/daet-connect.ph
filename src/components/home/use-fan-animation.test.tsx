@@ -294,16 +294,17 @@ describe("useFanAnimation", () => {
     expect(onOpened).toHaveBeenCalledTimes(1);
   });
 
-  it("hides the headline whether the fan folds or cross-fades", () => {
+  it("fades the headline by opacity only, so it stays in the accessibility tree", () => {
     const instant = mount();
     act(() => instant.api.current?.openAt(0, { instant: true }));
-    expect(records.set.some((call) => call.targets === instant.headline && call.vars.autoAlpha === 0)).toBe(true);
+    expect(records.set.some((call) => call.targets === instant.headline && call.vars.opacity === 0)).toBe(true);
+    expect(records.set.some((call) => call.targets === instant.headline && "autoAlpha" in call.vars)).toBe(false);
 
     records.set.length = 0;
     records.conditions.reduce = true;
     const reduced = mount();
     act(() => reduced.api.current?.openAt(0));
-    expect(records.set.some((call) => call.targets === reduced.headline && call.vars.autoAlpha === 0)).toBe(true);
+    expect(records.set.some((call) => call.targets === reduced.headline && call.vars.opacity === 0)).toBe(true);
   });
 
   it("brings the headline back when the fan closes", () => {
@@ -313,7 +314,7 @@ describe("useFanAnimation", () => {
     records.set.length = 0;
     act(() => api.current?.close());
 
-    expect(records.set.some((call) => call.targets === headline && call.vars.autoAlpha === 1)).toBe(true);
+    expect(records.set.some((call) => call.targets === headline && call.vars.opacity === 1)).toBe(true);
   });
 
   it("nudges the photo through one reused tween per wedge", () => {

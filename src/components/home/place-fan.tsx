@@ -347,7 +347,9 @@ export function PlaceFan({ places, signedIn }: { places: FanPlace[]; signedIn: b
             <p className="mx-auto mt-3 max-w-xl text-sm leading-relaxed text-white/90 sm:text-base">
               Beaches, islands and old-town walks, with operators and guides verified by the Daet Tourism Office.
             </p>
-            <div className="pointer-events-auto mt-4 flex flex-wrap justify-center gap-3">
+            {/* Behind an open place this row is invisible, so it must not be
+                tabbable either — the heading above it stays readable. */}
+            <div className="pointer-events-auto mt-4 flex flex-wrap justify-center gap-3" inert={isOpen}>
               <ButtonLink href="/tours/browse" size="lg">
                 Find a tour
               </ButtonLink>

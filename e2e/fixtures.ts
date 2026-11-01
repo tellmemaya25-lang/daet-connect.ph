@@ -41,7 +41,10 @@ export async function visit(page: Page, path: string, heading?: string | RegExp)
  * Text, buttons and images that stick out past the screen edge. Overflow the
  * page hides doesn't show in scrollWidth, but phones still clip or scroll it.
  * Content spilling out of its card counts too. Sideways scrollers (chip
- * rows) and fixed layers are left out.
+ * rows), fixed layers, and anything painted through a `clip-path` are left out:
+ * a clip-path cuts its own subtree, so what its box reports is never on screen —
+ * the hero's wedges scale each photo to fill its slice, and the wedge's polygon
+ * is what the visitor sees.
  */
 export async function offScreen(page: Page): Promise<string[]> {
   return page.evaluate(() => {
@@ -51,6 +54,7 @@ export async function offScreen(page: Page): Promise<string[]> {
         const s = getComputedStyle(a);
         if (/(auto|scroll)/.test(s.overflowX) && a.scrollWidth > a.clientWidth) return true;
         if (s.position === "fixed") return true;
+        if (s.clipPath && s.clipPath !== "none") return true;
       }
       return false;
     };

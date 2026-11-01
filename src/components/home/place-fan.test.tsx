@@ -147,6 +147,25 @@ describe("PlaceFan opening a place", () => {
     expect(window.location.hash).toBe("#place-bagasbas-beach");
   });
 
+  it("keeps the page heading in the accessibility tree while a place is open", () => {
+    openThird();
+
+    // Faded out behind the photo, but a screen reader still has an h1 to start from.
+    expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent("Start in Daet.");
+  });
+
+  it("takes the headline's buttons out of the tab order while a place is open", () => {
+    const { container } = renderFan();
+
+    const row = (name: string) => screen.getByRole("link", { name }).parentElement;
+    expect(row("Find a tour")).not.toHaveAttribute("inert");
+
+    fireEvent.click(screen.getByRole("button", { name: "Bagasbas Beach: open photo and details" }));
+
+    expect(row("Find a tour")).toHaveAttribute("inert");
+    expect(container.querySelector("[data-headline]")).not.toBeNull();
+  });
+
   it("tells a screen reader which place just opened", () => {
     openThird();
 

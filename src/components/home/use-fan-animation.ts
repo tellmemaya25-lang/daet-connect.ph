@@ -71,8 +71,11 @@ export function useFanAnimation({
     photos.forEach((element) => gsap.set(element, { x: 0, y: 0, scale: 1.15 }));
     chips.forEach((element) => gsap.set(element, { y: 0 }));
 
+    // Opacity, not autoAlpha: the headline must stay in the accessibility tree
+    // even while it is faded out behind an open place. Its buttons are taken out
+    // of the tab order by the component instead.
     const headline = root.current?.querySelector("[data-headline]");
-    if (headline) gsap.set(headline, { autoAlpha: 1 });
+    if (headline) gsap.set(headline, { opacity: 1 });
   }, [geometry, parts]);
 
   // The geometry changes when the hero is re-measured: re-apply the rest shapes.
@@ -150,7 +153,7 @@ export function useFanAnimation({
       gsap.set(wedges, { autoAlpha: (i: number) => (i === index ? 1 : 0), x: 0, y: 0, zIndex: (i: number) => (i === index ? 5 : 0) });
       gsap.set(wedges[index], { clipPath: geometry.open, filter: "brightness(1)" });
       gsap.set(photos[index], { x: 0, y: 0, scale: 1 });
-      if (headline) gsap.set(headline, { autoAlpha: 0 });
+      if (headline) gsap.set(headline, { opacity: 0 });
       if (!instant) gsap.to(wedges, { autoAlpha: (i: number) => (i === index ? 1 : 0), duration: REDUCED_FADE });
       onOpened?.();
       return;
@@ -173,7 +176,7 @@ export function useFanAnimation({
       tl.to(element, { autoAlpha: 0, x: slides[i].x, y: slides[i].y, duration: OPEN }, 0);
     });
 
-    if (headline) tl.to(headline, { autoAlpha: 0, duration: 0.25, ease: "power2.out" }, 0);
+    if (headline) tl.to(headline, { opacity: 0, duration: 0.25, ease: "power2.out" }, 0);
     tl.eventCallback("onComplete", () => onOpened?.());
   });
 
