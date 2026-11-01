@@ -93,7 +93,14 @@ const BID = "e9466de5-4877-47c1-ac14-d86deeb38b9e";
     { id: "s2", location_name: "Daet Heritage Center", description: null, latitude: "14.113187", longitude: "122.954828", stop_order: 1 },
     { id: "s3", location_name: "Bagasbas Beach", description: "Surf lesson.", latitude: "14.131583", longitude: "122.985083", stop_order: 2 },
   ];
-  pkg.tours_package_inclusions = []; pkg.tours_package_gallery = []; pkg.tours_operators = [operator];
+  pkg.tours_package_inclusions = [];
+  // Three photos, so the editor's gallery has something to reorder.
+  pkg.tours_package_gallery = [
+    { id: "g1", image_url: "/photos/bagasbas-beach.jpg", caption: "Surf at sunrise", display_order: 1 },
+    { id: "g2", image_url: "/photos/calaguas-beach.jpg", caption: "Calaguas sandbar", display_order: 2 },
+    { id: "g3", image_url: "/photos/apuao-sandbar.jpg", caption: "Apuao sandbar", display_order: 3 },
+  ];
+  pkg.tours_operators = [operator];
   booking.status = booking.status;
   const rv = (id, rating, comment, extra = {}) => ({ id, booking_id: "b-" + id, package_id: PKG, operator_id: "op-1", rating, comment, created_at: "2026-10-1" + (id.length % 9) + "T05:00:00Z", operator_reply: null, replied_at: null, is_hidden: false, hidden_reason: null, tours_packages: { title: pkg.title }, tours_operators: { business_name: "Bagasbas Coast Tours" }, tours_bookings: { booking_reference: "BK-2026101" + (id.length % 9) + "-AB12CD", tour_date: "2026-10-10" }, ...extra });
   const reviews = [

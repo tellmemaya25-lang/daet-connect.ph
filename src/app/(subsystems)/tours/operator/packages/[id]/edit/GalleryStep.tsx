@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import React, { useCallback, useEffect, useId, useMemo, useRef, useState } from "react";
 import Image from "next/image";
 import {
   DndContext,
@@ -195,6 +195,10 @@ export function GalleryStep({
     (id: UniqueIdentifier) => items.findIndex((entry) => entry.id === id) + 1,
     [items],
   );
+
+  // A stable id, so the drag instructions dnd-kit links with aria-describedby
+  // get the same id on the server and in the browser (no hydration mismatch).
+  const dndId = useId();
 
   const sensors = useSensors(
     // A few pixels of travel, so a click or a caption edit never starts a drag.
@@ -416,6 +420,7 @@ export function GalleryStep({
       ) : (
         <>
           <DndContext
+            id={dndId}
             sensors={sensors}
             collisionDetection={closestCenter}
             onDragStart={handleDragStart}
