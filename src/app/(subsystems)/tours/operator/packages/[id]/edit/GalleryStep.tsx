@@ -91,7 +91,7 @@ export function GalleryStep({
         const formData = new FormData();
         formData.append("file", file);
 
-        const result = await uploadPackageImage(packageId, formData);
+        const result = await uploadPackageImage(packageId, formData, "gallery");
 
         if (result.success && result.imageUrl) {
           const newImage: EditGalleryImage = {

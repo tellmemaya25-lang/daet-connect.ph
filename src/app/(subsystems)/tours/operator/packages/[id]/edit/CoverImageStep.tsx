@@ -42,7 +42,6 @@ export function CoverImageStep({
   const permissions = getEditPermissions(packageStatus);
   const [uploadLoading, setUploadLoading] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
-  const [uploadProgress, setUploadProgress] = useState(0);
 
   const isReadOnly = !permissions.canEdit || !permissions.coverImage;
 
@@ -68,41 +67,29 @@ export function CoverImageStep({
       const validationError = validateImage(file);
       if (validationError) {
         setUploadError(validationError);
-        setUploadProgress(0);
         return;
       }
 
       setUploadLoading(true);
       setUploadError(null);
-      setUploadProgress(10);
 
       try {
         const formData = new FormData();
         formData.append("file", file);
 
-        setUploadProgress(50);
-        const result = await uploadPackageImage(packageId, formData);
+        const result = await uploadPackageImage(packageId, formData, "cover");
 
         if (result.success && result.imageUrl) {
-          setUploadProgress(100);
           onUpdate({
             ...data,
             coverImageUrl: result.imageUrl,
           });
-
-          // Reset after success
-          setTimeout(() => {
-            setUploadProgress(0);
-            setUploadLoading(false);
-          }, 500);
         } else {
           setUploadError(result.error?.message ?? "Failed to upload image");
-          setUploadProgress(0);
-          setUploadLoading(false);
         }
       } catch (error) {
         setUploadError("An error occurred during upload");
-        setUploadProgress(0);
+      } finally {
         setUploadLoading(false);
       }
 
@@ -141,15 +128,13 @@ export function CoverImageStep({
           </div>
         )}
 
-        {/* Upload Progress */}
-        {uploadLoading && uploadProgress > 0 && (
-          <div className="space-y-2">
-            <div className="flex items-center justify-between text-sm">
-              <span className="text-daet-ink/80">Uploading...</span>
-              <span className="text-daet-ink/70">{uploadProgress}%</span>
-            </div>
+        {/* Upload in progress: the upload isn't measurable from here, so the
+            bar is indeterminate rather than a made-up percentage. */}
+        {uploadLoading && (
+          <div role="status" className="space-y-2">
+            <span className="text-sm text-daet-ink/80">Uploading...</span>
             <div className="w-full h-2 bg-muted-strong rounded-full overflow-hidden">
-              <div className="h-full bg-daet-forest transition-all duration-300" style={{ width: `${uploadProgress}%` }} />
+              <div className="h-full w-1/3 rounded-full bg-daet-forest animate-pulse" />
             </div>
           </div>
         )}
