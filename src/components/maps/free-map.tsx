@@ -69,7 +69,7 @@ function markerElement(
     img.src = m.photo.src;
     img.alt = "";
     img.decoding = "async";
-    img.className = "block h-full w-full object-cover";
+    img.className = "block h-full w-full object-contain";
     // The point: a triangle whose top is tucked under the circle's lower arc, so
     // the two shapes are one pin at any size.
     const tail = document.createElement("span");

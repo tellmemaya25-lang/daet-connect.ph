@@ -357,7 +357,8 @@ describe("FreeMap", () => {
     // The photo is a block that fills the circle. Inline, it sat on the text
     // baseline and left a strip at the bottom that the circle's clip showed as a
     // straight edge.
-    expect(frame.querySelector("img")).toHaveClass("block", "h-full", "w-full", "object-cover");
+    // Contained, not cropped: a wide photo shows whole inside the circle.
+    expect(frame.querySelector("img")).toHaveClass("block", "h-full", "w-full", "object-contain");
     // Its point is a triangle tucked under the circle, not a diamond floating
     // below it — one pin, not two shapes with the map's labels between them.
     const tail = pin.querySelectorAll("span")[1] as HTMLElement;
