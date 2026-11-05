@@ -28,7 +28,7 @@ export function MerchCard({ item }: { item: MerchItem }) {
     <article className="flex w-full flex-col overflow-hidden rounded-2xl card-edge bg-surface">
       <div className="relative aspect-[4/3] overflow-hidden bg-blue-50 dark:bg-blue-950/40 min-[420px]:aspect-square">
         {item.image_url ? (
-          <img src={item.image_url} alt={item.name} className="h-full w-full object-cover" />
+          <img src={item.image_url} alt={item.name} className="block h-full w-full object-cover" />
         ) : (
           <div className="grid h-full place-items-center text-blue-600 dark:text-blue-300" aria-hidden="true">
             <LineIcon name={MERCH_ICONS[item.category]} className="h-16 w-16" />

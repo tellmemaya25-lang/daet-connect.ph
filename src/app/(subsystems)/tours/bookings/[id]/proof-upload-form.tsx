@@ -110,7 +110,7 @@ function ReceiptPicker({
         onChange={(event) => onChange(event.currentTarget.files?.[0] ?? null)}
       />
       <span className="grid h-16 w-16 shrink-0 place-items-center overflow-hidden rounded-xl bg-muted text-daet-ink/70">
-        {preview ? <img src={preview} alt="" className="h-full w-full object-cover" /> : <LineIcon name={file ? "receipt" : "camera"} className="h-7 w-7" />}
+        {preview ? <img src={preview} alt="" className="block h-full w-full object-cover" /> : <LineIcon name={file ? "receipt" : "camera"} className="h-7 w-7" />}
       </span>
       <span className="min-w-0">
         <span className="block font-bold text-daet-ink">{file ? file.name : "Add a photo of your receipt"}</span>

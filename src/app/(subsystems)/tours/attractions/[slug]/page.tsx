@@ -61,7 +61,7 @@ export default async function AttractionPage({ params }: PageProps) {
         {attraction.photo_url || photoKey ? (
           <figure className="relative -mx-4 mt-2 aspect-[4/3] overflow-hidden bg-blue-50 dark:bg-blue-950/40 sm:mx-0 sm:aspect-[16/9] sm:rounded-2xl">
             {attraction.photo_url ? (
-              <img src={attraction.photo_url} alt={attraction.name} className="h-full w-full object-cover" />
+              <img src={attraction.photo_url} alt={attraction.name} className="block h-full w-full object-cover" />
             ) : photoKey ? (
               <Image src={PHOTOS[photoKey].src} alt={PHOTOS[photoKey].alt} fill priority sizes="(min-width: 896px) 896px, 100vw" className="object-cover" />
             ) : null}

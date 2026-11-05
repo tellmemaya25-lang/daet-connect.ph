@@ -68,7 +68,7 @@ export default async function EventDetailPage({ params }: { params: Promise<{ id
         <article className="overflow-hidden rounded-2xl card-edge bg-surface">
           {event.image_url ? (
             <div className="aspect-video bg-blue-50 dark:bg-blue-950/40">
-              <img src={event.image_url} alt={event.title} className="h-full w-full object-cover" />
+              <img src={event.image_url} alt={event.title} className="block h-full w-full object-cover" />
             </div>
           ) : (
             // No picture: the date itself, set large on the brand blue.
@@ -168,7 +168,7 @@ function EventTours({ tours, attractionName }: { tours: EventTour[]; attractionN
             <li key={tour.id}>
               <Link href={`/tours/packages/${tour.id}`} className="flex h-full gap-3 rounded-2xl card-edge bg-surface p-3">
                 <div className="h-20 w-24 shrink-0 overflow-hidden rounded-2xl bg-gradient-to-br from-daet-forest to-daet-leaf">
-                  {tour.cover_image_url ? <img src={tour.cover_image_url} alt="" className="h-full w-full object-cover" /> : null}
+                  {tour.cover_image_url ? <img src={tour.cover_image_url} alt="" className="block h-full w-full object-cover" /> : null}
                 </div>
                 <div className="min-w-0">
                   <p className="font-bold text-daet-ink">{tour.title}</p>

@@ -104,7 +104,7 @@ export default async function AttractionsPage({ searchParams }: PageProps) {
                 <Link href={`/tours/attractions/${attraction.slug}`} className="group flex h-full flex-col overflow-hidden rounded-2xl card-edge bg-surface transition hover:bg-blue-50 dark:hover:bg-blue-950/40 active:scale-[0.99]">
                   <div className="relative aspect-[16/10] overflow-hidden bg-blue-50 dark:bg-blue-950/40">
                     {attraction.photo_url ? (
-                      <img src={attraction.photo_url} alt="" loading="lazy" className="h-full w-full object-cover" />
+                      <img src={attraction.photo_url} alt="" loading="lazy" className="block h-full w-full object-cover" />
                     ) : photoKey ? (
                       <Image src={PHOTOS[photoKey].src} alt="" fill sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw" className="object-cover" />
                     ) : (

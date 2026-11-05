@@ -354,6 +354,10 @@ describe("FreeMap", () => {
     // A circle with the site's blue drawn round it: the old white ring vanished
     // against dark tiles, and the crop showed the photo reading as a dark blob.
     expect(frame).toHaveClass("rounded-full", "border-blue-600");
+    // The photo is a block that fills the circle. Inline, it sat on the text
+    // baseline and left a strip at the bottom that the circle's clip showed as a
+    // straight edge.
+    expect(frame.querySelector("img")).toHaveClass("block", "h-full", "w-full", "object-cover");
     // Its point is a triangle tucked under the circle, not a diamond floating
     // below it — one pin, not two shapes with the map's labels between them.
     const tail = pin.querySelectorAll("span")[1] as HTMLElement;

@@ -200,7 +200,7 @@ export default async function PackageDetailPage({ params }: PageProps) {
       ) : (
         <figure className="relative -mx-4 mt-2 aspect-[4/3] overflow-hidden bg-blue-100 dark:bg-blue-900/40 sm:mx-0 sm:aspect-[16/9] sm:rounded-2xl lg:aspect-[21/9]">
           {photos.length === 1 ? (
-            <img src={photos[0].src} alt={photos[0].alt} fetchPriority="high" className="h-full w-full object-cover" />
+            <img src={photos[0].src} alt={photos[0].alt} fetchPriority="high" className="block h-full w-full object-cover" />
           ) : (
             <Image src={fallback.src} alt={`${pkg.location_name}: ${fallback.alt}`} fill priority sizes="100vw" className="object-cover" />
           )}
