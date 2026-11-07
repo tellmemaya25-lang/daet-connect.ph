@@ -1,0 +1,260 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Easy-to-read pseudocode showing how the CONNECT-Daet itinerary planner works.">
+  <title>Figure 5 - CONNECT-Daet Itinerary Planner Pseudocode</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #173042;
+      --muted: #536a78;
+      --paper: #f3f8f6;
+      --green: #176348;
+      --green-pale: #eaf6ef;
+      --blue: #195e83;
+      --blue-pale: #edf6fb;
+      --amber: #8a5200;
+      --amber-pale: #fff5df;
+      --border: #d5e1e2;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--paper);
+      color: var(--ink);
+      font-family: Arial, Helvetica, sans-serif;
+      line-height: 1.55;
+    }
+    main { width: min(1020px, calc(100% - 32px)); margin: 32px auto; }
+    h1 { margin: 0; font-size: clamp(1.75rem, 4vw, 2.5rem); line-height: 1.16; }
+    h2 { margin: 0 0 10px; font-size: 1.25rem; }
+    .intro { margin: 12px 0 20px; color: var(--muted); font-size: 1.05rem; }
+    .toolbar { display: flex; flex-wrap: wrap; gap: 10px; margin: 16px 0; }
+    button {
+      min-height: 44px;
+      padding: 10px 16px;
+      border: 0;
+      border-radius: 999px;
+      background: var(--green);
+      color: #fff;
+      font: inherit;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    button.secondary { background: #e4ecec; color: var(--ink); }
+    button:hover { filter: brightness(.94); }
+    button:focus-visible, summary:focus-visible { outline: 3px solid #edae22; outline-offset: 3px; }
+    .callout, figure, .notes {
+      margin: 18px 0;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      background: #fff;
+      box-shadow: 0 10px 26px rgb(23 48 66 / 6%);
+    }
+    .callout { padding: 16px 18px; }
+    .callout strong { color: var(--blue); }
+    figure { overflow: hidden; margin-inline: 0; }
+    .figure-head { padding: 16px 18px 0; }
+    .figure-head p { margin: 5px 0 0; color: var(--muted); }
+    pre {
+      margin: 16px 0 0;
+      padding: 22px;
+      overflow: auto;
+      background: #102b3a;
+      color: #f4fbf8;
+      font: 15px/1.58 Consolas, "Courier New", monospace;
+      tab-size: 2;
+      white-space: pre;
+    }
+    figcaption { padding: 14px 18px 18px; color: var(--muted); font-style: italic; }
+    .notes { padding: 18px; }
+    .notes ul { margin: 8px 0 0; padding-left: 23px; }
+    .notes li + li { margin-top: 7px; }
+    .status { min-height: 1.5em; margin: 0 0 12px; color: var(--green); font-weight: 700; }
+    footer { padding: 8px 0 22px; color: var(--muted); font-size: .92rem; }
+    @media (max-width: 600px) {
+      main { width: calc(100% - 20px); margin-top: 20px; }
+      pre { padding: 16px; font-size: 13px; }
+      .callout, .notes { padding: 14px; }
+    }
+    @media print {
+      body { background: #fff; }
+      main { width: 100%; margin: 0; }
+      .toolbar, .status { display: none; }
+      .callout, figure, .notes { box-shadow: none; break-inside: avoid; }
+      pre { overflow: visible; white-space: pre-wrap; overflow-wrap: anywhere; print-color-adjust: exact; }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>CONNECT-Daet Itinerary Planner</h1>
+    <p class="intro">A simple pseudocode guide to how a Tourist's request becomes an itinerary in the current system.</p>
+
+    <section class="callout" aria-label="How this planner works">
+      <strong>Important:</strong> Gemini is optional and helps read the Tourist's preferences. The system's rule-based planner builds the actual schedule from listed places and data. It does not ask Gemini to invent a complete itinerary in JSON and save it automatically.
+    </section>
+
+    <div class="toolbar" aria-label="File actions">
+      <button type="button" onclick="window.print()">Print or save as PDF</button>
+      <button type="button" class="secondary" onclick="downloadPseudocode()">Download pseudocode as TXT</button>
+      <button type="button" class="secondary" onclick="copyPseudocode()">Copy pseudocode</button>
+    </div>
+    <p class="status" id="status" role="status" aria-live="polite"></p>
+
+    <figure>
+      <div class="figure-head">
+        <h2>Itinerary generation logic</h2>
+        <p>Route: <code>/tours/plan</code></p>
+      </div>
+      <pre id="pseudocode" aria-label="Pseudocode of the itinerary planner"></pre>
+      <figcaption>Figure 5: Pseudocode of the CONNECT-Daet itinerary planner logic.</figcaption>
+    </figure>
+
+    <section class="notes" aria-labelledby="notes-title">
+      <h2 id="notes-title">System details shown in this logic</h2>
+      <ul>
+        <li>The planner asks for missing trip details such as dates or a sample-plan choice, traveler counts and child ages, and where the Tourist is travelling from.</li>
+        <li>Gemini may interpret interests, budget, and pace from the message. If Gemini is unavailable, the basic text parser can still read preferences.</li>
+        <li>The rule engine uses database listings to choose places and calculate the schedule. It uses listed opening hours, entrance fees, group size, and travel estimates.</li>
+        <li>Bookable tour packages and listed fares are added when available. Missing tour or fare data does not stop the itinerary from being shown.</li>
+        <li>Changing pace can regenerate the plan. Changing the getting-around choice changes travel labels; travel-time values remain road estimates.</li>
+        <li>A no-date sample uses stand-in dates. The Tourist must choose real dates before saving it.</li>
+        <li>Saving is a separate user action and requires sign-in. Offline saving may happen automatically after a saved itinerary is opened; it is not a setting the Tourist turns on.</li>
+      </ul>
+    </section>
+
+    <footer>Prepared from the current CONNECT-Daet planner routes and implementation. Times and fares shown in the app are estimates and should be confirmed where the app says so.</footer>
+  </main>
+
+  <script>
+    const pseudocode = `START
+  OPEN the Tourist planner at /tours/plan
+  READ the Tourist's message and trip details
+
+  // 1. Check that the planner has the required trip details
+  SET missing_details = CHECK dates_or_sample_choice, traveler_counts,
+                        child_ages_if_any, and travel_origin
+
+  IF required_details_are_missing THEN
+    SHOW the "Before I draft" questions form
+    ASK the Tourist to complete the missing fields
+    IF any answer is invalid THEN
+      SHOW field-level validation errors
+      RETURN to the questions form
+    END IF
+  END IF
+
+  // 2. Choose real trip dates or make a clearly marked sample plan
+  IF the Tourist chose "No dates yet, show me a sample plan" THEN
+    SET dates = a stand-in weekend
+    SET sample_plan = TRUE
+  ELSE
+    SET dates = the Tourist's selected dates
+    SET sample_plan = FALSE
+  END IF
+
+  // 3. Read preferences from the free-text request
+  IF Gemini is available THEN
+    SET preferences = Gemini reads interests, budget, and pace from the request
+    // Gemini interprets preferences; it does not write the final schedule.
+  ELSE
+    SET preferences = the basic text parser reads interests, budget, and pace
+  END IF
+
+  // 4. Validate planner input
+  SET planner_input = trip details + preferences
+  IF planner_input is invalid THEN
+    SHOW a trip-details or date validation error
+    STOP this planning attempt
+  END IF
+
+  // 5. Load places and build the actual itinerary with app rules
+  LOAD attractions that have map locations from the current listings
+  IF no mapped attractions are available THEN
+    SHOW "No places with a map location are listed yet"
+    STOP this planning attempt
+  END IF
+
+  SET itinerary = RULE_BASED_SCHEDULER(
+    attractions,
+    dates,
+    traveler_group,
+    preferences,
+    listed_hours,
+    entrance_fees,
+    travel_time_estimates
+  )
+
+  // 6. Add optional travel and booking information
+  TRY to find bookable tour packages that match itinerary stops
+  IF the package lookup fails THEN
+    SET bookable_tours = none
+  END IF
+
+  TRY to find listed fares from the travel origin to Daet
+  IF no fares are listed or the fare lookup fails THEN
+    SET getting_there_card = none
+  END IF
+
+  // 7. Show the plan; do not save it automatically
+  DISPLAY itinerary stops, estimated times, group entrance fees,
+          route map, matching bookable tours, and fare card if available
+
+  IF sample_plan is TRUE THEN
+    DISPLAY "Sample plan, no dates yet"
+    DISPLAY "Pick dates to save"
+  END IF
+
+  ALLOW the Tourist to edit, reorder, add, remove, or swap stops
+  ALLOW the Tourist to change pace or travel option, or regenerate the plan
+  // Pace can redraft the plan. The travel option changes its label;
+  // travel-time values remain road estimates.
+
+  // 8. Save only when the Tourist asks
+  IF the Tourist chooses to save the itinerary THEN
+    IF sample_plan is TRUE THEN
+      ASK the Tourist to choose real dates and create a dated plan first
+    ELSE IF the Tourist is not signed in THEN
+      SEND the Tourist to sign in, then return to the save flow
+    ELSE
+      SAVE the itinerary to My itineraries
+      SHOW the saved itinerary
+      // Offline status appears automatically when the phone saves a copy.
+    END IF
+  END IF
+END`;
+
+    const code = document.getElementById("pseudocode");
+    const status = document.getElementById("status");
+    code.textContent = pseudocode;
+
+    function downloadPseudocode() {
+      const blob = new Blob([pseudocode + "\n"], { type: "text/plain;charset=utf-8" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = "CONNECT-DAET-ITINERARY-PSEUDOCODE.txt";
+      document.body.append(link);
+      link.click();
+      link.remove();
+      window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+      status.textContent = "Pseudocode TXT downloaded.";
+    }
+
+    async function copyPseudocode() {
+      try {
+        await navigator.clipboard.writeText(pseudocode);
+        status.textContent = "Pseudocode copied to clipboard.";
+      } catch {
+        status.textContent = "Copy is not available in this browser. Select the pseudocode text and copy it.";
+      }
+    }
+
+    window.downloadPseudocode = downloadPseudocode;
+    window.copyPseudocode = copyPseudocode;
+  </script>
+</body>
+</html>
