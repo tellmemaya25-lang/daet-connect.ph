@@ -1,0 +1,79 @@
+CONNECT-DAET STEP-BY-STEP USER GUIDE
+
+This guide lists the main features to explore for each role, based on the current app. Text in quotation marks is an app label. Routes are included where useful.
+
+START HERE - ALL USERS
+
+1. Create an account at /signup.
+2. Confirm your email, then sign in at /login.
+3. Open /settings to review your profile.
+4. Open /tours/notifications to see updates.
+5. Operators and Guides must apply for their role after signing in. They need approval before using role-specific tools.
+
+TOURIST
+
+1. Find a tour. Visit /tours/browse. Search for trips and try the available place and price filters.
+2. Check tour details. Open a trip to see its price, meeting place, directions, itinerary, inclusions, operator information, and reviews.
+3. Plan your visit. Open /tours/plan. Enter your request, dates, group size, and starting city when asked. You can also try a sample plan without dates.
+4. Explore the plan. Review the stops, estimated times, map, entrance fees, travel information, and tours you can book.
+5. Change or save the plan. Try editing, moving, adding, removing, or swapping stops. Choose a pace or travel option, then save the plan or share a view-only link. Offline saving is automatic when available.
+6. Ask the assistant. Use /tours/help or /tours/messages/ai to ask about Daet. The assistant can help with planning, but it does not book a tour.
+7. Request a booking. On the trip page, select an available date and price option, enter the group size and lead contact details, then send the request.
+8. Wait for confirmation. Check /tours/bookings/[id]. The operator must confirm the request before you pay.
+9. Pay after confirmation. Use the payment option shown. If manual payment is available, follow the instructions and upload proof.
+10. Open your ticket. Go to /tours/bookings/[id]/ticket. The ticket QR appears after the booking is fully paid. You can print it; it may also be saved automatically for offline use.
+11. Manage changes. Check your booking for cancellation updates, operator call-offs, and any new-date or refund choices.
+12. During and after the tour. Use messages and optional location sharing. After the booking is marked completed, submit a review and check your rewards.
+13. Explore other public pages: Attractions, Events, Souvenirs, FAQ, and Help.
+
+TOUR OPERATOR
+
+1. Apply. Submit the business application at /tours/operator/register. Check /tours/operator/pending while waiting for approval.
+2. Check the dashboard. Visit /tours/operator/dashboard to see bookings waiting for you, revenue, occupancy, ratings, tours by date, today's tours, and revenue by package.
+3. Create a tour package. Open /tours/operator/packages/create. Complete the sections for details, inclusions, pricing, itinerary, and images. Then submit it for review.
+4. Edit your package. Use /tours/operator/packages/[id]/edit to update details, prices, stops, or images. The available save and submit actions depend on the package status.
+5. Set tour dates and capacity. Open the package availability page to add dates and seats.
+6. Manage bookings. At /tours/operator/bookings, confirm or decline requests and follow their status. You can mark a tour completed on or after its date.
+7. Assign a Guide. Choose an approved, available Guide for a booking. Review and respond to schedule-swap requests.
+8. Manage payments. Review manual payment proofs and update payment records. Record a refund after it has actually been sent.
+9. Manage cancellations and call-offs. Review cancellation requests. If you call off a tour, enter a reason and follow the available next steps.
+10. Check revenue and payment settings. Use /tours/operator/payments for the revenue report and CSV download. Use /tours/operator/settings to review business and payment details.
+11. Use live-tour tools. Open /tours/operator/live to check live-tour status when available.
+12. Manage reviews and merchandise. Reply to reviews. At /tours/operator/merch, create or edit products and check their review status.
+13. Use messages and notifications. Contact tourists, Guides, or the Tourism Office and check for updates.
+
+TOUR GUIDE
+
+1. Apply. Submit the application at /tours/guide/register. Check /tours/guide/pending while waiting for approval.
+2. Check your dashboard. Visit /tours/guide/dashboard to see today's and upcoming tours and your availability calendar.
+3. Set your availability. Update the calendar and save your changes. Some dates may be unavailable if you have an active booking.
+4. Check your tours. Open /tours/guide/my-tours to see assigned tours, guest-list links, ticket-scanning links, and completed tours. You can also request a schedule swap.
+5. Open the guest roster. Review the booking group size and special requests. Guest names may not be available; when they are missing, check in the group as a whole.
+6. Check in guests. Use /tours/guide/check-in to scan a ticket QR or use the camera/paste-link option. Check-in is limited to the right Guide and a confirmed, fully paid booking on the tour date.
+7. Show your Guide badge. Open /tours/guide/my-qr ("My QR Code"). The public verification page is /tours/verify/[token]. This badge QR is not a tourist's ticket QR.
+8. Use live-tour tools. Start a live tour, allow location access, review the map and stops, then end the tour when finished.
+9. Check messages and updates. Watch for assignment, swap, or call-off messages and notifications.
+
+ADMIN / TOURISM OFFICE
+
+1. Check the dashboard. Open /tours/admin to see review queues, management links, and recent activity.
+2. Review Operator applications. Use /tours/admin/operators to check applications and authorized documents, then approve or reject.
+3. Review Guide applications. Use /tours/admin/guides to check Guide profiles and protected identity documents, then approve or reject.
+4. Review tour packages. Open /tours/admin/packages to see Pending Approval, Published, and Archived sections. Open a package to review its status and notes.
+5. Review merchandise. Use /tours/admin/merch to check products waiting for approval, then approve or reject them with a note.
+6. Manage attractions and local information. Use /tours/admin/attractions for attraction listings and map pins, /tours/admin/fares for fares, and /tours/admin/guide-places for local places.
+7. Manage events. Use /tours/admin/events to add or edit events and check their status. The public events calendar is at /tours/events.
+8. Manage emergency numbers. Use /tours/admin/emergency to add a number, mark it "Checked today," or delete it.
+9. Moderate reviews. At /tours/admin/reviews, filter reviews, hide a review with a reason, or show a hidden review again.
+10. Review assistant feedback. At /tours/admin/feedback, check "Not helpful," "Helpful," or "All," and review the questions, answers, answer type, date, and page.
+11. Check analytics. Use /tours/admin/analytics to choose a date range and review bookings, revenue, check-ins, ratings, and other available totals.
+12. Check messages and activity. Review messages, notifications, and audit activity when needed.
+
+IMPORTANT THINGS TO KNOW
+
+- The current Admin package screen does not offer a Rejected status. Do not show package rejection as an available Admin action.
+- Tourist bookings collect a group size and lead contact details, not each guest's name or age.
+- The tourist merchandise page is a showcase/contact page, not an in-app checkout.
+- The emergency-number page has no edit action.
+- Offline saving is automatic when available; it is not a setting the user switches on or off.
+- Use test or redacted data for IDs, tickets, receipts, contact details, and locations.
