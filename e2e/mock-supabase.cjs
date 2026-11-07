@@ -55,6 +55,15 @@ const AVATAR_PNG = Buffer.from(
 
 const aiUsage = new Map();
 
+// The create wizard's draft, kept the way Postgres would: the package row plus
+// its child lists. /__reset_drafts clears it for a spec that wants a clean slate.
+let drafts = [];
+const freshDrafts = () => [];
+const resetDrafts = () => {
+  drafts = freshDrafts();
+};
+
+
 function build(role) {
   const BID = "e9466de5-4877-47c1-ac14-d86deeb38b9e";
   const operator = {
@@ -1579,6 +1588,29 @@ http
         account = freshAccount();
         return send(200, { ok: true });
       }
+      // Package photos: the create wizard's Photos step uploads for real, so the
+      // object has to come back and the public URL has to serve an image.
+      if (url.pathname.startsWith("/storage/v1/object/public/package-images/")) {
+        res.writeHead(200, {
+          "content-type": "image/png",
+          "cache-control": "public, max-age=60",
+          ...cors,
+        });
+        return res.end(AVATAR_PNG);
+      }
+      if (
+        req.method === "POST" &&
+        url.pathname.startsWith("/storage/v1/object/package-images/")
+      ) {
+        return send(200, {
+          Key: url.pathname.replace("/storage/v1/object/", ""),
+          Id: crypto.randomUUID(),
+        });
+      }
+      if (url.pathname === "/__reset_drafts") {
+        resetDrafts();
+        return send(200, { ok: true });
+      }
       if (
         url.pathname === "/storage/v1/object/public/tours-avatars/" ||
         url.pathname.startsWith("/storage/v1/object/public/tours-avatars/")
@@ -1725,6 +1757,105 @@ http
         return send(404, { message: "unknown live rpc" });
       }
       const table = url.pathname.replace("/rest/v1/", "");
+      // --------------------------------------------- create wizard draft writes --
+      // The wizard saves through server actions, which write the package row and
+      // then its lists. Enough of PostgREST to make a second save (and a reload)
+      // see the same draft.
+      const draftTables = [
+        "tours_packages",
+        "tours_package_price_variants",
+        "tours_package_inclusions",
+        "tours_package_stops",
+        "tours_package_gallery",
+      ];
+      const readJson = () => {
+        try {
+          return JSON.parse(body || "{}");
+        } catch {
+          return {};
+        }
+      };
+      const wantsSingleRow = () => (req.headers.accept || "").includes("vnd.pgrst.object");
+      const replyRows = (rows, code = 201) => {
+        if (wantsSingleRow()) {
+          return rows.length ? send(code, rows[0]) : send(406, { code: "PGRST116", message: "none" });
+        }
+        if (!rows.length && code === 204) {
+          res.writeHead(204, cors);
+          return res.end();
+        }
+        return send(code, rows);
+      };
+      const draftById = () => {
+        const filter = url.searchParams.get("id") || "";
+        const id = filter.startsWith("eq.") ? filter.slice(3) : null;
+        return id ? drafts.find((entry) => entry.package.id === id) || null : null;
+      };
+
+      if (url.pathname === "/rest/v1/rpc/submit_package_for_review") {
+        const entry = drafts.find((candidate) => candidate.package.id === readJson().p_package_id);
+        if (!entry) return send(404, { code: "PT404", message: "Package not found or access denied" });
+        const variants = entry.children.tours_package_price_variants || [];
+        const stops = entry.children.tours_package_stops || [];
+        if (variants.length === 0)
+          return send(400, { code: "PT400", message: "Add at least one price variant before submitting." });
+        if (variants.filter((variant) => variant.is_default).length !== 1)
+          return send(400, { code: "PT400", message: "Set exactly one price variant as the default before submitting." });
+        if (stops.length === 0)
+          return send(400, { code: "PT400", message: "Add at least one map stop before submitting." });
+        entry.package.status = "pending_review";
+        entry.package.updated_at = new Date().toISOString();
+        res.writeHead(204, cors);
+        return res.end();
+      }
+
+      if (table === "tours_packages" && req.method === "GET") {
+        const entry = draftById();
+        if (entry) return replyRows([entry.package], 200);
+      }
+
+      if (draftTables.includes(table) && req.method === "POST") {
+        const payload = readJson();
+        const rows = (Array.isArray(payload) ? payload : [payload]).map((row) => ({
+          id: row.id || crypto.randomUUID(),
+          created_at: new Date().toISOString(),
+          ...row,
+        }));
+        if (table === "tours_packages") {
+          const empty = { tours_package_price_variants: [], tours_package_inclusions: [], tours_package_stops: [], tours_package_gallery: [] };
+          for (const row of rows) {
+            drafts.push({ package: { updated_at: new Date().toISOString(), ...row }, children: { ...empty } });
+          }
+        } else {
+          for (const entry of drafts) {
+            for (const row of rows) {
+              if (row.package_id !== entry.package.id) continue;
+              entry.children[table] = [...(entry.children[table] || []), row];
+            }
+          }
+        }
+        return replyRows(rows);
+      }
+
+      if (table === "tours_packages" && req.method === "PATCH") {
+        const entry = draftById();
+        if (entry) {
+          entry.package = { ...entry.package, ...readJson(), updated_at: new Date().toISOString() };
+          return replyRows([entry.package], 200);
+        }
+      }
+
+      if (draftTables.includes(table) && req.method === "DELETE") {
+        if (table === "tours_packages") {
+          const entry = draftById();
+          if (entry) drafts = drafts.filter((candidate) => candidate !== entry);
+        } else {
+          for (const entry of drafts) entry.children[table] = [];
+        }
+        res.writeHead(204, cors);
+        return res.end();
+      }
+
       if (table === "profiles" && req.method === "PATCH") {
         let patch = {};
         try {

@@ -10,7 +10,7 @@ import {
   OPERATOR_USER_ID_COLUMN,
   OPERATOR_OWN_STATUS_SELECT,
 } from "@/lib/tours/operator-contract";
-import { PackageCreateForm } from "./package-create-form";
+import { PackageCreateWizard } from "./package-create-wizard";
 
 
 export default async function CreatePackagePage() {
@@ -50,7 +50,7 @@ export default async function CreatePackagePage() {
   // Get operator info - using profile_id (correct column name)
   const { data: operator, error } = await supabase
     .from("tours_operators")
-    .select("id, accreditation_status")
+    .select("id, accreditation_status, business_name")
     .eq("profile_id", session.user.id)
     .maybeSingle();
 
@@ -81,15 +81,15 @@ export default async function CreatePackagePage() {
   return (
     <PageFrame>
       <div className="mx-auto max-w-4xl">
-        <div className="mb-8">
+        <div className="mb-6">
           <h1 className="display-2 text-daet-ink">New tour package</h1>
           <p className="mt-2 text-sm leading-6 text-daet-ink/65">
-            Fill out the form below to create a new tour package. After submission, it will be
-            reviewed by the Tourism Office.
+            Five short steps. Your draft is saved after each one, so you can stop and finish later.
+            When you submit it, the Tourism Office reviews the package before tourists see it.
           </p>
         </div>
 
-        <PackageCreateForm operatorId={operator.id} />
+        <PackageCreateWizard operatorName={operator.business_name ?? undefined} />
       </div>
     </PageFrame>
   );
