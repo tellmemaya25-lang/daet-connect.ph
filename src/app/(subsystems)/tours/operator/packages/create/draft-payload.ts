@@ -46,6 +46,15 @@ function number(value: unknown): number | null {
   return null;
 }
 
+/**
+ * Coordinates must arrive as numbers. A string is not coerced: the stop is
+ * handed to validation as NaN so the operator sees a plain error instead of a
+ * silently invented location.
+ */
+function coordinate(value: unknown): number {
+  return typeof value === "number" && Number.isFinite(value) ? value : Number.NaN;
+}
+
 function optionalNumber(value: unknown): number | null {
   if (value === null || value === undefined || value === "") return null;
   return number(value);
@@ -89,8 +98,8 @@ function parseStop(value: unknown, index: number): EditStop | null {
     id: id(value.id),
     locationName: text(value.locationName, EDIT_LIMITS.stopLocation.max) ?? "",
     description: optionalText(value.description, EDIT_LIMITS.stopDescription.max),
-    latitude: number(value.latitude) ?? Number.NaN,
-    longitude: number(value.longitude) ?? Number.NaN,
+    latitude: coordinate(value.latitude),
+    longitude: coordinate(value.longitude),
     estimatedDurationMinutes: optionalNumber(value.estimatedDurationMinutes),
     stopOrder: number(value.stopOrder) ?? index + 1,
   };

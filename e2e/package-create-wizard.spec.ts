@@ -59,9 +59,12 @@ test("saves a draft after every step and submits the finished package", async ({
   await page.getByRole("button", { name: "Save & continue" }).click();
 
   await expect(page.getByText(/Step 5 of 5: Route & stops/)).toBeVisible();
-  await page.getByRole("button", { name: /Add Stop/ }).click();
-  await page.getByLabel("Location", { exact: true }).fill("Bagasbas Beach");
-  await page.getByRole("button", { name: "Add", exact: true }).click();
+  // Stops are chosen by name from the attractions list — never by coordinate.
+  await page.getByRole("button", { name: "Add stop" }).click();
+  await page.getByRole("combobox", { name: "Find an attraction" }).fill("Bagasbas");
+  await page.getByRole("option", { name: "Bagasbas Beach" }).click();
+  await page.getByRole("button", { name: "Save stop" }).click();
+  await expect(page.getByText("Bagasbas Beach")).toBeVisible();
   await page.getByRole("button", { name: "Review package" }).click();
 
   // The review reuses the editor's section summaries.

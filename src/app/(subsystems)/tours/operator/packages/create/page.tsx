@@ -78,6 +78,12 @@ export default async function CreatePackagePage() {
     );
   }
 
+  const { data: attractions, error: attractionsError } = await supabase
+    .from("tours_attractions")
+    .select("id, name, description, latitude, longitude")
+    .eq("is_active", true)
+    .order("name");
+
   return (
     <PageFrame>
       <div className="mx-auto max-w-4xl">
@@ -89,7 +95,18 @@ export default async function CreatePackagePage() {
           </p>
         </div>
 
-        <PackageCreateWizard operatorName={operator.business_name ?? undefined} />
+        {attractionsError ? (
+          <div className="mb-5">
+            <Notice variant="warning" title="Attractions unavailable">
+              The list of places could not be loaded. You can still pick each stop on the map.
+            </Notice>
+          </div>
+        ) : null}
+
+        <PackageCreateWizard
+          operatorName={operator.business_name ?? undefined}
+          attractions={attractions ?? []}
+        />
       </div>
     </PageFrame>
   );

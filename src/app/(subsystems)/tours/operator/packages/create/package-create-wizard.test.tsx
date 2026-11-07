@@ -1,7 +1,7 @@
 /** @jest-environment jsdom */
 
 import React from "react";
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import "@testing-library/jest-dom";
 import { PackageCreateWizard } from "./package-create-wizard";
 import { savePackageDraft } from "./actions";
@@ -43,20 +43,18 @@ jest.mock("../[id]/edit/PricingStep", () => ({
     </button>
   ),
 }));
-jest.mock("../[id]/edit/StopsStep", () => ({
-  StopsStep: ({ data, onUpdate }: { data: unknown[]; onUpdate: (next: unknown[]) => void }) => (
+jest.mock("./stops-picker", () => ({
+  CreateStopsPicker: ({ stops, onChange }: { stops: unknown[]; onChange: (next: unknown[]) => void }) => (
     <button
       type="button"
       onClick={() =>
-        onUpdate([
-          ...data,
+        onChange([
+          ...stops,
           {
             locationName: "Bagasbas Beach",
             description: "Meet at the lifeguard station.",
             latitude: 14.1122,
             longitude: 122.9553,
-            estimatedDurationMinutes: 120,
-            stopOrder: 1,
           },
         ])
       }
@@ -95,8 +93,18 @@ function fillBasics() {
   });
 }
 
+/**
+ * Clicks something whose handler awaits the server action, and lets the
+ * resulting state updates settle inside act().
+ */
+async function clickAndSettle(name: string) {
+  await act(async () => {
+    fireEvent.click(screen.getByRole("button", { name }));
+  });
+}
+
 async function continueStep() {
-  fireEvent.click(screen.getByRole("button", { name: "Save & continue" }));
+  await clickAndSettle("Save & continue");
 }
 
 async function reachReview() {
@@ -112,7 +120,7 @@ async function reachReview() {
   await continueStep();
   await screen.findByText(/Step 5 of 5: Route & stops/);
   fireEvent.click(screen.getByRole("button", { name: "Stub: add stop" }));
-  fireEvent.click(screen.getByRole("button", { name: "Review package" }));
+  await clickAndSettle("Review package");
   await screen.findByText(/Final check/);
 }
 
@@ -194,7 +202,7 @@ describe("create wizard", () => {
     expect(screen.getByText("Board and rash guard")).toBeInTheDocument();
 
     mockSave.mockResolvedValue(saved({ status: "pending_review" }));
-    fireEvent.click(screen.getByRole("button", { name: "Submit for review" }));
+    await clickAndSettle("Submit for review");
 
     await waitFor(() => expect(mockPush).toHaveBeenCalledWith("/tours/operator/packages?submitted=true"));
     const lastCall = mockSave.mock.calls[mockSave.mock.calls.length - 1][0];
@@ -213,7 +221,7 @@ describe("create wizard", () => {
       error: "Some details still need attention before this can go to the Tourism Office.",
       errors: { stops: "Add at least one itinerary stop." },
     });
-    fireEvent.click(screen.getByRole("button", { name: "Submit for review" }));
+    await clickAndSettle("Submit for review");
 
     expect(await screen.findByText("Step 5 of 5: Route & stops")).toBeInTheDocument();
     expect(screen.getByText(/Some details still need attention/)).toBeInTheDocument();
@@ -224,7 +232,7 @@ describe("create wizard", () => {
     renderWizard();
     fillBasics();
 
-    fireEvent.click(screen.getByRole("button", { name: "Save & finish later" }));
+    await clickAndSettle("Save & finish later");
 
     await waitFor(() => expect(mockPush).toHaveBeenCalledWith("/tours/operator/packages"));
     expect(mockSave).toHaveBeenCalledTimes(1);

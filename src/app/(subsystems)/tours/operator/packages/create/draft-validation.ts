@@ -73,7 +73,7 @@ export const WIZARD_STEPS: readonly WizardStep[] = [
     id: "stops",
     label: "Route & stops",
     title: "Route & stops",
-    description: "The places the tour visits, in the order guests see them.",
+    description: "The places the tour visits, chosen from the attractions list or picked on the map.",
   },
 ] as const;
 

@@ -36,13 +36,16 @@ import { CoverImageStep } from "../[id]/edit/CoverImageStep";
 import { GalleryStep } from "../[id]/edit/GalleryStep";
 import { InclusionsStep } from "../[id]/edit/InclusionsStep";
 import { PricingStep } from "../[id]/edit/PricingStep";
-import { StopsStep } from "../[id]/edit/StopsStep";
+import { CreateStopsPicker } from "./stops-picker";
+import { fromCreateStops, toCreateStop, type Attraction } from "./stops";
 import { detectChanges } from "../[id]/edit/change-detection";
 import type { EditPackageFormData, ValidationErrors } from "../[id]/edit/edit-types";
 import type { PackageSectionId } from "../components/package-draft";
 
 interface PackageCreateWizardProps {
   operatorName?: string;
+  /** Active attractions, so every stop can be chosen by name instead of by coordinate. */
+  attractions?: Attraction[];
 }
 
 function formatClock(iso: string | null): string | null {
@@ -52,7 +55,7 @@ function formatClock(iso: string | null): string | null {
   return date.toLocaleTimeString("en-PH", { hour: "numeric", minute: "2-digit" });
 }
 
-export function PackageCreateWizard({ operatorName }: PackageCreateWizardProps) {
+export function PackageCreateWizard({ operatorName, attractions = [] }: PackageCreateWizardProps) {
   const router = useRouter();
   const { toast } = useFeedback();
 
@@ -284,6 +287,7 @@ export function PackageCreateWizard({ operatorName }: PackageCreateWizardProps) 
               draft={draft}
               savedDraft={savedDraft}
               packageId={packageId}
+              attractions={attractions}
               errors={errors}
               showAllErrors={showAllErrors}
               saving={saving}
@@ -351,6 +355,7 @@ function StepBody({
   draft,
   savedDraft,
   packageId,
+  attractions,
   errors,
   showAllErrors,
   saving,
@@ -360,6 +365,7 @@ function StepBody({
   draft: EditPackageFormData;
   savedDraft: EditPackageFormData | null;
   packageId: string | null;
+  attractions: Attraction[];
   errors: ValidationErrors;
   showAllErrors: boolean;
   saving: boolean;
@@ -436,14 +442,20 @@ function StepBody({
 
     case "stops":
       return (
-        <StopsStep
-          data={draft.stops}
-          originalData={original.stops}
-          packageStatus="draft"
-          onUpdate={(next) => onUpdate({ stops: next })}
-          errors={scopedErrors}
-          loading={saving}
-        />
+        <div className="space-y-4">
+          <CreateStopsPicker
+            attractions={attractions}
+            stops={draft.stops.map(toCreateStop)}
+            onChange={(next) => onUpdate({ stops: fromCreateStops(next) })}
+          />
+          {Object.keys(scopedErrors).length > 0 ? (
+            <ul className="rounded-2xl bg-red-50 p-4 text-sm font-semibold text-red-800 dark:bg-red-950/40 dark:text-red-300">
+              {Object.values(scopedErrors).map((message) => (
+                <li key={message}>{message}</li>
+              ))}
+            </ul>
+          ) : null}
+        </div>
       );
 
     default:

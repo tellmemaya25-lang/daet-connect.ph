@@ -1,9 +1,9 @@
 /** @jest-environment jsdom */
 
 import React from "react";
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import "@testing-library/jest-dom";
-import { EditPackageForm } from "./EditPackageForm";
+import { EditPackageForm, Toast } from "./EditPackageForm";
 import { updatePackageCore } from "./actions";
 import type { EditPackageRecord, UpdatePackageResponse } from "./edit-types";
 
@@ -76,6 +76,32 @@ const packageData: EditPackageRecord = {
   },
 };
 
+describe("toast colors", () => {
+  it.each([
+    ["success", "bg-green-500", "text-slate-950"],
+    ["error", "bg-red-600", "text-white"],
+  ] as const)("uses the design-system colors for %s, including its icons", (type, background, foreground) => {
+    const onClose = jest.fn();
+    render(<Toast type={type} message="Notification" onClose={onClose} />);
+
+    const toast = screen.getByText("Notification").parentElement!;
+    expect(toast).toHaveClass(background, foreground);
+    expect(toast).not.toHaveClass(type === "success" ? "text-white" : "text-slate-950");
+    const dismiss = screen.getByRole("button", { name: "Dismiss notification" });
+    expect(dismiss).toHaveClass("text-inherit");
+    expect(dismiss).not.toHaveClass("text-white");
+    expect(dismiss).not.toHaveClass("text-slate-950");
+    const icons = toast.querySelectorAll('svg[fill="currentColor"]');
+    expect(icons).toHaveLength(2);
+    icons.forEach((icon) => {
+      expect(icon).not.toHaveClass("text-white");
+      expect(icon).not.toHaveClass("text-slate-950");
+    });
+    fireEvent.click(dismiss);
+    expect(onClose).toHaveBeenCalledTimes(1);
+  });
+});
+
 describe("EditPackageForm validation state", () => {
   beforeEach(() => {
     mockedUpdatePackageCore.mockReset();
@@ -140,5 +166,56 @@ describe("EditPackageForm validation state", () => {
 
     await waitFor(() => expect(mockedUpdatePackageCore).toHaveBeenCalledTimes(2));
     expect(mockedUpdatePackageCore.mock.calls[1][2]).toBe("2026-11-06T12:05:00.000Z");
+  });
+});
+
+describe("EditPackageForm toast contrast and accessibility", () => {
+  beforeEach(() => {
+    mockedUpdatePackageCore.mockReset();
+  });
+
+  it("renders the success toast with dark text on bg-green-500 and an accessible dismiss button", async () => {
+    mockedUpdatePackageCore.mockResolvedValueOnce({
+      success: true,
+      message: "Package updated successfully.",
+      updatedAt: "2026-11-06T12:05:00.000Z",
+      data: { packageId: "package-1", status: "published" },
+    } satisfies UpdatePackageResponse);
+
+    render(<EditPackageForm packageData={packageData} />);
+    fireEvent.click(screen.getByRole("button", { name: "Add first inclusion" }));
+    fireEvent.click(screen.getByRole("button", { name: "Save changes" }));
+
+    const message = await screen.findByText("Changes saved.");
+    const toast = message.closest('[role="status"]');
+    expect(toast).not.toBeNull();
+    expect(toast).toHaveClass("bg-green-500", "text-slate-950");
+    expect(toast).not.toHaveClass("text-white");
+
+    const dismissButton = within(toast as HTMLElement).getByRole("button", { name: "Dismiss notification" });
+    expect(dismissButton).toHaveAttribute("type", "button");
+    expect(dismissButton).toHaveClass("min-h-11", "min-w-11", "text-inherit");
+    expect(dismissButton).not.toHaveClass("text-white");
+
+    fireEvent.click(dismissButton);
+    expect(screen.queryByText("Changes saved.")).not.toBeInTheDocument();
+  });
+
+  it("retains high-contrast white text on bg-red-600 for the error toast state", () => {
+    const onClose = jest.fn();
+    render(<Toast message="Unable to save package." type="error" onClose={onClose} />);
+
+    const alert = screen.getByRole("alert");
+    expect(alert).toHaveTextContent("Unable to save package.");
+    expect(alert).toHaveClass("bg-red-600", "text-white");
+    expect(alert).not.toHaveClass("text-slate-950");
+    expect(alert).not.toHaveClass("bg-red-500");
+
+    const dismissButton = within(alert).getByRole("button", { name: "Dismiss notification" });
+    expect(dismissButton).toHaveAttribute("type", "button");
+    expect(dismissButton).toHaveClass("text-inherit");
+
+    fireEvent.click(dismissButton);
+    expect(onClose).toHaveBeenCalledTimes(1);
   });
 });
