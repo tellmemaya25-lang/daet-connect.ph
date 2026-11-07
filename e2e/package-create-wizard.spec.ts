@@ -10,6 +10,8 @@ import { signInAs, visit } from "./fixtures";
  */
 
 const MOCK = process.env.MOCK_SUPABASE_URL ?? "http://127.0.0.1:54329";
+/** The device copy of the draft; see create/draft-storage.ts. */
+const STORAGE_KEY = "daet:package-create-draft:v1";
 const CREATE_PATH = "/tours/operator/packages/create";
 
 async function expectNoAxeViolations(page: Page, where: string) {
@@ -49,7 +51,7 @@ test("saves a draft after every step and submits the finished package", async ({
   await page.getByLabel("Min Participants").fill("1");
   await page.getByLabel("Price per Person").fill("950");
   await page.getByRole("button", { name: "Add", exact: true }).click();
-  await expect(page.getByRole("cell", { name: "Standard" })).toBeVisible();
+  await expect(page.getByRole("cell", { name: "Standard", exact: true })).toBeVisible();
   await page.getByRole("button", { name: "Save & continue" }).click();
 
   await expect(page.getByText(/Step 4 of 5: What's included/)).toBeVisible();
@@ -64,7 +66,7 @@ test("saves a draft after every step and submits the finished package", async ({
   await page.getByRole("combobox", { name: "Find an attraction" }).fill("Bagasbas");
   await page.getByRole("option", { name: "Bagasbas Beach" }).click();
   await page.getByRole("button", { name: "Save stop" }).click();
-  await expect(page.getByText("Bagasbas Beach")).toBeVisible();
+  await expect(page.getByText("Bagasbas Beach").first()).toBeVisible();
   await page.getByRole("button", { name: "Review package" }).click();
 
   // The review reuses the editor's section summaries.
@@ -87,9 +89,19 @@ test("keeps the half-finished draft when the page is reloaded", async ({ page, c
   await page.getByRole("button", { name: "Save & continue" }).click();
   await expect(page.getByText("Step 2 of 5: Photos")).toBeVisible();
 
+  // The device copy is written as the operator types, so it is there to reload from.
+  await page.waitForFunction((key) => window.localStorage.getItem(key) !== null, STORAGE_KEY);
+
   await page.reload({ waitUntil: "networkidle" });
 
-  await expect(page.getByText(/Pick up where you left off/i)).toBeVisible();
+  // The wizard comes back on step 1 and offers the device copy to restore.
+  await expect(page.getByText("Step 1 of 5: Basics")).toBeVisible();
+  await expect(page.getByText(/Pick up where you left off/i))
+    .toBeVisible({ timeout: 15_000 })
+    .catch(async (error: Error) => {
+      const stored = await page.evaluate((key) => window.localStorage.getItem(key), STORAGE_KEY);
+      throw new Error(`${error.message}\nDevice copy after reload: ${stored ?? "(empty)"}`);
+    });
   await page.getByRole("button", { name: "Restore my work" }).click();
 
   await expect(page.getByText("Step 2 of 5: Photos")).toBeVisible();

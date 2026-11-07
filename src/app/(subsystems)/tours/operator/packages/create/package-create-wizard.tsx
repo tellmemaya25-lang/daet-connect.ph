@@ -84,14 +84,12 @@ export function PackageCreateWizard({ operatorName, attractions = [] }: PackageC
 
   useUnsavedChangesGuard(hasUnsavedChanges);
 
-  // Keep a copy on this device, including the half-typed step. Debounced, so a
-  // long description is not rewritten on every keystroke.
+  // Keep a copy on this device, including the half-typed step. Written straight
+  // away rather than debounced: the package id lives here too, so a reload that
+  // lost it would start a second draft next time the operator saved.
   useEffect(() => {
     if (!hasStarted) return;
-    const timer = setTimeout(() => {
-      writeStoredDraft({ packageId, draft, stepIndex, savedAt: new Date().toISOString() });
-    }, 250);
-    return () => clearTimeout(timer);
+    writeStoredDraft({ packageId, draft, stepIndex, savedAt: new Date().toISOString() });
   }, [draft, packageId, stepIndex, hasStarted]);
 
   // Move focus to the problem when a step cannot be saved, so a keyboard user

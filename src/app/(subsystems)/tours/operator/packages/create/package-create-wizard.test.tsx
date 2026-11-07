@@ -246,6 +246,25 @@ describe("create wizard", () => {
     expect(readStoredDraft()?.draft.locationName).toBe("Bagasbas Beach, Daet");
   });
 
+  it("brings back the work the browser wrote, after a reload", async () => {
+    // The round trip, not just one half of it: the wizard writes the device copy
+    // as the operator types, and a fresh mount has to read that exact value back.
+    const first = renderWizard();
+    fillBasics();
+    await waitFor(() =>
+      expect(readStoredDraft()?.draft.title).toBe("Bagasbas surf lesson for beginners"),
+    );
+    first.unmount();
+
+    renderWizard();
+
+    expect(await screen.findByText(/Pick up where you left off/i)).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Restore my work" }));
+    expect(await screen.findByLabelText(/package title/i)).toHaveValue(
+      "Bagasbas surf lesson for beginners",
+    );
+  });
+
   it("offers last session's work back after a reload", async () => {
     window.localStorage.setItem(
       DRAFT_STORAGE_KEY,
