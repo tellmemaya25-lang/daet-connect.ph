@@ -54,6 +54,13 @@ export function PlaceFan({
   /** Where the open photo is looking: object-position, as percentages. */
   const [pan, setPan] = useState<PanPosition>(PAN_CENTRE);
   const panRef = useRef<PanPosition>(PAN_CENTRE);
+  /**
+   * The photo a flick is sliding away from, and where the drag had left it looking. Without this the
+   * leaving photo snaps back to its middle the instant the next place opens — a bounce — and only
+   * then slides out.
+   */
+  const [leavingPan, setLeavingPan] = useState<{ index: number; pan: PanPosition } | null>(null);
+  const leavingTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const press = useRef<{
     id: number;
     x: number;
@@ -164,6 +171,10 @@ export function PlaceFan({
   const shortHero = size.height < 500;
   const sheet = onPhone || shortHero;
   const isOpen = openIndex >= 0;
+
+  useEffect(() => () => {
+    if (leavingTimer.current) clearTimeout(leavingTimer.current);
+  }, []);
 
   // The hand that says the photo drags, until this visitor has dragged one.
   useEffect(() => {
@@ -303,6 +314,10 @@ export function PlaceFan({
       const next = (openIndex + delta + places.length) % places.length;
       lastOpen.current = next;
       driven.current = next;
+      if (leavingTimer.current) clearTimeout(leavingTimer.current);
+      setLeavingPan({ index: openIndex, pan: panRef.current });
+      // The slide is 0.3s (SWAP in use-fan-animation); let go a beat after it ends.
+      leavingTimer.current = setTimeout(() => setLeavingPan(null), 400);
       openInUrl(places[next].slug);
       setAnnouncement(describe(next));
       swapTo(next, { from: openIndex, direction: delta });
@@ -602,7 +617,13 @@ export function PlaceFan({
                     // A finger on the photo pans it; the browser's own image drag
                     // would take the gesture instead.
                     draggable={false}
-                    style={openIndex === index ? { objectPosition: panStyle(pan) } : undefined}
+                    style={
+                      openIndex === index
+                        ? { objectPosition: panStyle(pan) }
+                        : leavingPan?.index === index
+                          ? { objectPosition: panStyle(leavingPan.pan) }
+                          : undefined
+                    }
                     className="object-cover"
                   />
                 </span>
