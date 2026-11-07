@@ -5,220 +5,553 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>CONNECT-DAET.ph — Data Flow Diagram</title>
   <style>
-    :root{color-scheme:light;--navy:#12304b;--ink:#1f2937;--muted:#596b7d;--line:#dbe4ec;--paper:#fff;--bg:#f2f6fa;--blue:#2563eb;--green:#15803d;--gold:#a16207}
-    *{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.55 system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif}
-    header{background:linear-gradient(120deg,#12304b,#1c5475);color:#fff;padding:28px clamp(18px,4vw,64px) 24px}
-    header h1{font-size:clamp(26px,3vw,38px);line-height:1.15;margin:0 0 8px}header p{max-width:920px;margin:0;color:#e1edf7}
-    .toolbar{display:flex;gap:9px;flex-wrap:wrap;align-items:center;margin-top:20px}.toolbar a,.toolbar button{border:1px solid #ffffff55;border-radius:999px;padding:8px 14px;background:#ffffff15;color:#fff;text-decoration:none;font:700 14px system-ui;cursor:pointer}.toolbar a:hover,.toolbar button:hover{background:#ffffff2b}.toolbar .print{margin-left:auto;background:#fff;color:var(--navy);border-color:#fff}
-    main{max-width:1900px;margin:24px auto;padding:0 18px 42px}.intro{padding:16px 20px;margin-bottom:18px;background:#e9f2f8;border:1px solid #cbdce8;border-left:5px solid #2b7393;border-radius:12px;color:#29435a}
-    .panel{margin:18px 0 24px;padding:18px;background:var(--paper);border:1px solid var(--line);border-radius:16px;box-shadow:0 5px 22px #102a430d;scroll-margin-top:14px}.panel h2{margin:0;color:var(--navy);font-size:24px}.panel .lead{margin:4px 0 14px;color:var(--muted)}
-    .diagram-frame{overflow:auto;border:1px solid #e2e8f0;border-radius:12px;background:#fff}.diagram-svg{display:block;width:100%;height:auto}.context-svg{min-width:1250px}.level1-svg{min-width:1650px}
-    .legend{display:flex;gap:10px 22px;flex-wrap:wrap;align-items:center;padding:14px 16px;margin:14px 0 0;background:#f8fafc;border:1px solid var(--line);border-radius:12px;color:#435467;font-size:14px}.legend-item{display:flex;align-items:center;gap:9px}.sample-entity{width:28px;height:19px;border:2px solid #3b82f6;background:#eff6ff}.sample-process{width:23px;height:23px;border:2px solid #2563eb;background:#eff6ff;border-radius:50%}.sample-store{position:relative;width:30px;height:20px;border-left:2px solid #15803d;border-top:2px solid #15803d;border-bottom:2px solid #15803d}.sample-store:after{content:"";position:absolute;left:8px;top:-2px;height:20px;border-left:2px solid #15803d}
-    .notes{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:12px;margin-top:14px}.note{background:#f8fafc;border:1px solid var(--line);border-radius:12px;padding:13px 15px;color:#435467;font-size:14px}.note strong{display:block;margin-bottom:4px;color:var(--navy)}.note.warning{background:#fff9e9;border-color:#f1d69c}.note.warning strong{color:#8a5a00}
-    footer{max-width:1900px;margin:0 auto;padding:0 18px 28px;color:var(--muted);font-size:13px}
-    /* Inline SVG presentation */
-    .diagram-svg text{font-family:Arial,Helvetica,sans-serif;fill:#1f2937}.diagram-title{font-size:25px;font-weight:700;fill:#173b59!important}.diagram-subtitle{font-size:14px;fill:#607286!important}.flow{fill:none;stroke:#526579;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}.entity-box{fill:#eff6ff;stroke:#3b82f6;stroke-width:2.3}.entity-title{font-size:16px;font-weight:700;text-anchor:middle;fill:#173b59!important}.entity-subtitle{font-size:11px;text-anchor:middle;fill:#607286!important}.process-circle{fill:#f3f7ff;stroke:#2563eb;stroke-width:2.6}.process-id{font-size:13px;font-weight:700;text-anchor:middle;fill:#2563eb!important}.process-name{font-size:15px;font-weight:700;text-anchor:middle;fill:#173b59!important}.store-line{fill:none;stroke:#15803d;stroke-width:2.5;stroke-linecap:square}.store-id{font-size:12px;font-weight:700;text-anchor:middle;fill:#15803d!important}.store-name{font-size:14px;font-weight:700;fill:#14532d!important}.store-detail{font-size:11.5px;fill:#527063!important}.flow-label{font-size:12px;font-weight:600;text-anchor:middle;fill:#34485d!important;paint-order:stroke;stroke:#fff;stroke-width:5px;stroke-linejoin:round}.tiny-label{font-size:11px;font-weight:600;text-anchor:middle;fill:#34485d!important;paint-order:stroke;stroke:#fff;stroke-width:4px;stroke-linejoin:round}.callout-box{fill:#fff9e9;stroke:#e7c46f;stroke-width:1.5}.callout-text{font-size:12px;fill:#70510e!important}.boundary{fill:#f8fafc;stroke:#cbd5e1;stroke-width:1.3;stroke-dasharray:7 6}.boundary-label{font-size:12px;font-weight:700;letter-spacing:1px;fill:#64748b!important}
-    @media(max-width:700px){.panel{padding:12px}.panel h2{font-size:20px}.toolbar .print{margin-left:0}.intro{font-size:14px}}
-    @media print{body{background:#fff}header{background:#fff;color:#111;padding:10px 0 14px;border-bottom:2px solid var(--navy)}header p{color:#334155}.toolbar,.intro,footer{display:none}main{max-width:none;margin:0;padding:0}.panel{box-shadow:none;border:0;padding:8px 0;margin:0;break-after:page}.panel h2{font-size:19px}.panel .lead{font-size:12px}.diagram-frame{overflow:visible;border:0}.diagram-svg{min-width:0!important;width:100%!important}.notes,.legend{break-inside:avoid}.notes{font-size:10px}}
+    :root {
+      color-scheme: light;
+      --navy: #12324d;
+      --ink: #1d2c3b;
+      --muted: #5b6c7d;
+      --line: #dbe4ec;
+      --paper: #fff;
+      --page: #f2f6fa;
+      --blue: #2c6db2;
+      --green: #287b4d;
+      --gold: #956417;
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      color: var(--ink);
+      background: var(--page);
+      font: 16px/1.55 system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+    }
+    header {
+      padding: 30px clamp(18px, 4vw, 64px) 24px;
+      color: #fff;
+      background: linear-gradient(120deg, #12324d, #1e5d78);
+    }
+    header h1 { margin: 0 0 8px; font-size: clamp(26px, 3vw, 38px); line-height: 1.15; }
+    header p { max-width: 900px; margin: 0; color: #e3eef6; }
+    nav { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 20px; }
+    nav a, .print-button {
+      display: inline-flex;
+      align-items: center;
+      min-height: 38px;
+      padding: 7px 13px;
+      border: 1px solid #ffffff55;
+      border-radius: 999px;
+      color: #fff;
+      background: #ffffff14;
+      font: 700 13px/1.2 system-ui, sans-serif;
+      text-decoration: none;
+      cursor: pointer;
+    }
+    nav a:hover, .print-button:hover { background: #ffffff2b; }
+    .print-button { margin-left: auto; color: var(--navy); background: #fff; border-color: #fff; }
+    main { width: min(1500px, 100%); margin: 24px auto; padding: 0 18px 42px; }
+    .intro, .panel, .legend {
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      background: var(--paper);
+    }
+    .intro {
+      margin-bottom: 16px;
+      padding: 16px 20px;
+      color: #28445c;
+      background: #e9f2f8;
+      border-left: 5px solid #317a98;
+    }
+    .panel {
+      margin: 18px 0 24px;
+      padding: 18px;
+      box-shadow: 0 5px 20px #102a430c;
+      scroll-margin-top: 14px;
+    }
+    .panel h2 { margin: 0; color: var(--navy); font-size: 23px; line-height: 1.25; }
+    .panel .lead { margin: 5px 0 14px; color: var(--muted); }
+    .module {
+      margin-top: 20px;
+      padding-top: 18px;
+      border-top: 1px solid var(--line);
+      break-inside: avoid;
+    }
+    .module:first-of-type { margin-top: 12px; }
+    .module h3 { margin: 0 0 5px; color: var(--navy); font-size: 18px; }
+    .module p { margin: 0 0 10px; color: var(--muted); font-size: 14px; }
+    .diagram-frame { overflow: auto; border: 1px solid #e3e9ef; border-radius: 12px; background: #fff; }
+    .diagram-svg { display: block; width: 100%; height: auto; }
+    .context-svg { min-width: 1200px; }
+    .module-svg { min-width: 1200px; }
+    .booking-svg { min-width: 1500px; }
+    .support-svg { min-width: 1450px; }
+    .legend {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 10px 22px;
+      padding: 13px 16px;
+      margin: 0 0 16px;
+      color: #435467;
+      font-size: 13px;
+    }
+    .legend-item { display: inline-flex; align-items: center; gap: 8px; }
+    .sample-entity { width: 27px; height: 18px; border: 2px solid var(--blue); background: #eef5ff; }
+    .sample-process { width: 22px; height: 22px; border: 2px solid var(--blue); border-radius: 50%; background: #f2f7ff; }
+    .sample-store { position: relative; width: 30px; height: 19px; border: 2px solid var(--green); border-right: 0; }
+    .sample-store::after { position: absolute; top: -2px; left: 7px; height: 19px; border-left: 2px solid var(--green); content: ""; }
+    .sample-arrow { width: 34px; height: 0; border-top: 2px solid #526579; position: relative; }
+    .sample-arrow::after { position: absolute; top: -5px; right: -1px; border: 4px solid transparent; border-left-color: #526579; content: ""; }
+    .store-key { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 10px; margin-top: 14px; }
+    .store-card, .support-card, .note {
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 12px 14px;
+      background: #f8fafc;
+      color: #435467;
+      font-size: 13px;
+    }
+    .store-card strong, .support-card strong, .note strong { display: block; margin-bottom: 3px; color: var(--navy); }
+    .store-card code, .support-card code, .note code { color: #30465c; font-size: 12px; overflow-wrap: anywhere; }
+    .notes-grid, .support-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 12px; margin-top: 14px; }
+    .support-card { min-height: 125px; }
+    .note.callout { background: #fff9e9; border-color: #eed49e; }
+    .note.callout strong { color: var(--gold); }
+    footer { width: min(1500px, 100%); margin: 0 auto; padding: 0 18px 28px; color: var(--muted); font-size: 13px; }
+    /* Shared SVG styling: standard DFD shapes and readable labels. */
+    .diagram-svg text { font-family: Arial, Helvetica, sans-serif; fill: var(--ink); }
+    .entity-box { fill: #eef5ff; stroke: var(--blue); stroke-width: 2.2; }
+    .entity-title { font-size: 15px; font-weight: 700; text-anchor: middle; fill: #173b59 !important; }
+    .entity-subtitle { font-size: 10.5px; text-anchor: middle; fill: #607286 !important; }
+    .process-circle { fill: #f2f7ff; stroke: var(--blue); stroke-width: 2.6; }
+    .process-id { font-size: 12px; font-weight: 700; text-anchor: middle; fill: var(--blue) !important; }
+    .process-name { font-size: 14px; font-weight: 700; text-anchor: middle; fill: #173b59 !important; }
+    .store-symbol { fill: none; stroke: var(--green); stroke-width: 2.4; stroke-linecap: square; }
+    .store-id { font-size: 11px; font-weight: 700; text-anchor: middle; fill: var(--green) !important; }
+    .store-name { font-size: 13px; font-weight: 700; fill: #14532d !important; }
+    .store-detail { font-size: 10.5px; fill: #527063 !important; }
+    .flow { fill: none; stroke: #526579; stroke-width: 2.1; stroke-linecap: round; stroke-linejoin: round; }
+    .flow-label { font-size: 10.5px; font-weight: 600; text-anchor: middle; fill: #33485d !important; paint-order: stroke; stroke: #fff; stroke-width: 4px; stroke-linejoin: round; }
+    .context-title { font-size: 18px; font-weight: 700; text-anchor: middle; fill: #173b59 !important; }
+    .context-subtitle { font-size: 12px; text-anchor: middle; fill: #607286 !important; }
+    @media (max-width: 720px) {
+      main { margin: 14px auto; padding: 0 10px 28px; }
+      .panel { padding: 12px; }
+      .panel h2 { font-size: 20px; }
+      .print-button { margin-left: 0; }
+      .intro { font-size: 14px; }
+    }
+    @media print {
+      body { background: #fff; }
+      header { padding: 8px 0 12px; color: #111; background: #fff; border-bottom: 2px solid var(--navy); }
+      header p { color: #334155; }
+      nav, .print-button, .intro { display: none; }
+      main, footer { width: 100%; margin: 0; padding: 0; }
+      .panel { margin: 0; padding: 8px 0; border: 0; box-shadow: none; break-after: page; }
+      .module { break-inside: avoid; }
+      .diagram-frame { overflow: visible; border: 0; }
+      .diagram-svg { width: 100% !important; min-width: 0 !important; }
+      .store-card, .support-card, .note { break-inside: avoid; }
+      footer { display: none; }
+    }
   </style>
 </head>
 <body>
   <header>
     <h1>CONNECT-DAET.ph — Data Flow Diagram</h1>
-    <p>See how information moves between tourists, operators, guides, administrators, external services, system processes, and Supabase data stores. The diagrams use standard DFD symbols and are self-contained SVGs.</p>
-    <div class="toolbar" aria-label="Diagram navigation">
-      <a href="#level-0">Context Diagram · Level 0</a>
-      <a href="#level-1">Detailed DFD · Level 1</a>
-      <button class="print" onclick="window.print()">Print / Save as PDF</button>
-    </div>
+    <p>A clean, focused view of how tourists, operators, guides, administrators, external services, system processes, and Supabase data stores exchange information.</p>
+    <nav aria-label="Diagram sections">
+      <a href="#level-0">Context · Level 0</a>
+      <a href="#level-1">Detailed flows · Level 1</a>
+      <a href="#store-key">Data-store key</a>
+      <a href="#whole-system">Whole-system modules</a>
+      <button class="print-button" onclick="window.print()">Print / Save as PDF</button>
+    </nav>
   </header>
+
   <main>
-    <div class="intro"><strong>Reading the diagrams:</strong> arrows are labeled data flows. Level 0 treats CONNECT-DAET as one process; Level 1 decomposes it into processes and shows the Supabase tables they read or update.</div>
+    <div class="intro"><strong>How to read this page:</strong> boxes are external entities, circles are system processes, open-ended rectangles are data stores, and every arrow is labeled. Level 1 is split into aligned workflow views to avoid a crowded, tangled diagram. Repeated D-numbers in different views refer to the same store—not duplicate tables.</div>
+
+    <div class="legend" aria-label="DFD symbol legend">
+      <span class="legend-item"><i class="sample-entity" aria-hidden="true"></i> External entity</span>
+      <span class="legend-item"><i class="sample-process" aria-hidden="true"></i> Process</span>
+      <span class="legend-item"><i class="sample-store" aria-hidden="true"></i> Supabase data store</span>
+      <span class="legend-item"><i class="sample-arrow" aria-hidden="true"></i> Labeled data flow</span>
+    </div>
 
     <section class="panel" id="level-0" aria-labelledby="level0-title">
-      <h2 id="level0-title">Context Diagram — Level 0</h2>
-      <p class="lead">One process represents the whole Daet-Connect System. External entities exchange data with it; the database detail is intentionally hidden at this level.</p>
+      <h2 id="level0-title">Context DFD — Level 0</h2>
+      <p class="lead">One process represents the entire Daet-Connect System. Database details are hidden at this level; only external actors and services are shown.</p>
       <div class="diagram-frame">
-        <svg class="diagram-svg context-svg" role="img" aria-label="Level 0 context diagram showing Tourist, Tour Operator, Tour Guide, Admin, PayMongo, and optional Gemini AI exchanging data with the Daet-Connect System" viewBox="0 0 1600 900" xmlns="http://www.w3.org/2000/svg">
-          <defs><marker id="ctx-arrow" markerWidth="10" markerHeight="10" refX="8.5" refY="5" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L10,5 L0,10 z" fill="#526579"/></marker></defs>
-          <rect x="0" y="0" width="1600" height="900" fill="#fff"/>
-          <text x="42" y="48" class="diagram-title">Level 0 · System Context</text>
-          <text x="42" y="72" class="diagram-subtitle">External entities send requests and receive system responses.</text>
-          <!-- Data flows -->
-          <path class="flow" marker-end="url(#ctx-arrow)" d="M270 405 C390 335 530 345 660 410"/>
-          <path class="flow" marker-end="url(#ctx-arrow)" d="M660 480 C525 550 390 520 270 455"/>
-          <path class="flow" marker-end="url(#ctx-arrow)" d="M520 169 C575 240 650 280 705 335"/>
-          <path class="flow" marker-end="url(#ctx-arrow)" d="M680 330 C615 245 560 205 455 169"/>
-          <path class="flow" marker-end="url(#ctx-arrow)" d="M1070 169 C1020 240 950 280 895 335"/>
-          <path class="flow" marker-end="url(#ctx-arrow)" d="M920 330 C985 245 1045 205 1135 169"/>
-          <path class="flow" marker-end="url(#ctx-arrow)" d="M520 730 C575 660 650 610 705 565"/>
-          <path class="flow" marker-end="url(#ctx-arrow)" d="M680 570 C620 645 565 690 455 730"/>
-          <path class="flow" marker-end="url(#ctx-arrow)" d="M895 565 C960 630 1010 665 1070 730"/>
-          <path class="flow" marker-end="url(#ctx-arrow)" d="M1090 730 C1035 665 965 625 915 565"/>
-          <path class="flow" marker-end="url(#ctx-arrow)" d="M945 410 C1055 355 1190 355 1330 405"/>
-          <path class="flow" marker-end="url(#ctx-arrow)" d="M1330 455 C1190 515 1055 520 945 485"/>
-          <!-- Central system process -->
-          <circle class="process-circle" cx="800" cy="450" r="145"/>
-          <text class="process-id" x="800" y="413">SYSTEM PROCESS</text>
-          <text class="process-name" x="800" y="451" style="font-size:21px"><tspan x="800">Daet-Connect</tspan><tspan x="800" dy="27">System</tspan></text>
+        <svg class="diagram-svg context-svg" role="img" aria-label="Level 0 context DFD showing tourists, tour operators, tour guides, the Tourism Office, PayMongo, and optional AI and map services exchanging data with Daet-Connect" viewBox="0 0 1200 900" xmlns="http://www.w3.org/2000/svg">
+          <defs><marker id="ctx-arrow" markerWidth="10" markerHeight="10" refX="8.5" refY="5" orient="auto" markerUnits="strokeWidth"><path d="M0 0 L10 5 L0 10 z" fill="#526579"/></marker></defs>
+          <rect width="1200" height="900" fill="#fff"/>
+          <!-- Labeled system-boundary data flows -->
+          <path class="flow" marker-end="url(#ctx-arrow)" d="M240 400 L451 400"/>
+          <path class="flow" marker-end="url(#ctx-arrow)" d="M451 440 L240 440"/>
+          <path class="flow" marker-end="url(#ctx-arrow)" d="M555 140 L555 277"/>
+          <path class="flow" marker-end="url(#ctx-arrow)" d="M645 277 L645 140"/>
+          <path class="flow" marker-end="url(#ctx-arrow)" d="M930 110 L820 110 L700 310"/>
+          <path class="flow" marker-end="url(#ctx-arrow)" d="M720 330 L820 210 L930 145"/>
+          <path class="flow" marker-end="url(#ctx-arrow)" d="M555 563 L555 760"/>
+          <path class="flow" marker-end="url(#ctx-arrow)" d="M645 760 L645 563"/>
+          <path class="flow" marker-end="url(#ctx-arrow)" d="M749 400 L960 400"/>
+          <path class="flow" marker-end="url(#ctx-arrow)" d="M960 440 L749 440"/>
+          <path class="flow" marker-end="url(#ctx-arrow)" d="M700 531.8 L820 610 L930 675"/>
+          <path class="flow" marker-end="url(#ctx-arrow)" d="M930 720 L680 546.9"/>
+          <!-- Single whole-system process -->
+          <circle class="process-circle" cx="600" cy="420" r="150"/>
+          <text class="process-id" x="600" y="383">SYSTEM PROCESS</text>
+          <text class="context-title" x="600" y="421">Daet-Connect</text>
+          <text class="context-title" x="600" y="447">System</text>
           <!-- External entities -->
-          <g><rect class="entity-box" x="70" y="390" width="200" height="84"/><text class="entity-title" x="170" y="427">Tourist</text><text class="entity-subtitle" x="170" y="448">External entity</text></g>
-          <g><rect class="entity-box" x="370" y="85" width="225" height="84"/><text class="entity-title" x="482.5" y="122">Tour Operator</text><text class="entity-subtitle" x="482.5" y="143">External entity</text></g>
-          <g><rect class="entity-box" x="350" y="730" width="225" height="84"/><text class="entity-title" x="462.5" y="767">Tour Guide</text><text class="entity-subtitle" x="462.5" y="788">External entity</text></g>
-          <g><rect class="entity-box" x="1000" y="85" width="225" height="84"/><text class="entity-title" x="1112.5" y="122">Admin / Tourism Office</text><text class="entity-subtitle" x="1112.5" y="143">External entity</text></g>
-          <g><rect class="entity-box" x="1330" y="390" width="200" height="84"/><text class="entity-title" x="1430" y="427">PayMongo</text><text class="entity-subtitle" x="1430" y="448">Payment service</text></g>
-          <g><rect class="entity-box" x="1000" y="730" width="225" height="84"/><text class="entity-title" x="1112.5" y="767">Gemini AI</text><text class="entity-subtitle" x="1112.5" y="788">Optional AI service</text></g>
+          <g><rect class="entity-box" x="40" y="380" width="200" height="80"/><text class="entity-title" x="140" y="414">Tourist</text><text class="entity-subtitle" x="140" y="435">External entity</text></g>
+          <g><rect class="entity-box" x="475" y="55" width="250" height="85"/><text class="entity-title" x="600" y="91">Tour Operator</text><text class="entity-subtitle" x="600" y="113">External entity</text></g>
+          <g><rect class="entity-box" x="930" y="80" width="220" height="90"/><text class="entity-title" x="1040" y="116">Admin / Tourism Office</text><text class="entity-subtitle" x="1040" y="139">External entity</text></g>
+          <g><rect class="entity-box" x="475" y="760" width="250" height="85"/><text class="entity-title" x="600" y="796">Tour Guide</text><text class="entity-subtitle" x="600" y="818">External entity</text></g>
+          <g><rect class="entity-box" x="960" y="380" width="200" height="80"/><text class="entity-title" x="1060" y="414">PayMongo</text><text class="entity-subtitle" x="1060" y="435">Payment service</text></g>
+          <g><rect class="entity-box" x="930" y="660" width="220" height="80"/><text class="entity-title" x="1040" y="692">Optional services</text><text class="entity-subtitle" x="1040" y="714">Gemini AI • Maps / Routes</text></g>
           <!-- Flow labels -->
-          <text class="flow-label" x="455" y="347">Account / booking details / trip preferences</text>
-          <text class="flow-label" x="445" y="532">Availability / booking status / itinerary</text>
-          <text class="flow-label" x="598" y="213">Package updates / booking decisions</text>
-          <text class="flow-label" x="572" y="275">Approval / roster / payment status</text>
-          <text class="flow-label" x="987" y="213">Approvals / content / safety actions</text>
-          <text class="flow-label" x="1030" y="275">Review queues / reports / analytics</text>
-          <text class="flow-label" x="600" y="675">Application / availability / QR scans</text>
-          <text class="flow-label" x="570" y="622">Assignments / roster / check-in result</text>
-          <text class="flow-label" x="985" y="630">Trip prompt / planning context</text>
-          <text class="flow-label" x="1024" y="690">AI response (optional)</text>
-          <text class="flow-label" x="1140" y="350">Checkout session / amount / reference</text>
-          <text class="flow-label" x="1136" y="520">Verified payment event / status</text>
+          <text class="flow-label" x="345" y="389">Account, booking &amp; trip requests</text>
+          <text class="flow-label" x="345" y="457">Availability, status &amp; itinerary</text>
+          <text class="flow-label" x="350" y="195">Applications / package edits / decisions</text>
+          <text class="flow-label" x="350" y="251">Approvals / booking status</text>
+          <text class="flow-label" x="848" y="98">Approval / content actions</text>
+          <text class="flow-label" x="850" y="230">Review results / reports</text>
+          <text class="flow-label" x="400" y="625">Assignments / roster / check-in results</text>
+          <text class="flow-label" x="820" y="700">Guide availability / QR or roster data</text>
+          <text class="flow-label" x="855" y="389">Checkout / payment reference</text>
+          <text class="flow-label" x="855" y="457">Verified payment status</text>
+          <text class="flow-label" x="820" y="597">Optional itinerary / route request</text>
+          <text class="flow-label" x="820" y="666">Model response / route estimate</text>
         </svg>
-      </div>
-      <div class="legend" aria-label="DFD symbol legend">
-        <span class="legend-item"><i class="sample-entity" aria-hidden="true"></i> External entity</span>
-        <span class="legend-item"><i class="sample-process" aria-hidden="true"></i> Process</span>
-        <span class="legend-item"><i class="sample-store" aria-hidden="true"></i> Data store</span>
-        <span class="legend-item">Arrow + label · Data flow</span>
-      </div>
-      <div class="notes">
-        <div class="note"><strong>Tourist</strong>Sends account, booking, payment, and trip-planning data; receives package availability, booking status/ticket access, and itinerary results.</div>
-        <div class="note"><strong>Tour Operator / Tour Guide / Admin</strong>Send package, application, approval, assignment, and check-in data; receive the status, roster, and reports needed for their roles.</div>
-        <div class="note"><strong>External services</strong>PayMongo exchanges checkout and verified payment data. Gemini is optional; core trip planning can still return a rule-based plan without the model.</div>
       </div>
     </section>
 
     <section class="panel" id="level-1" aria-labelledby="level1-title">
-      <h2 id="level1-title">Detailed Data Flow Diagram — Level 1</h2>
-      <p class="lead">The system is decomposed into six processes. D1–D7 are logical Supabase data stores; connectors are labeled with the information each process reads or writes.</p>
-      <div class="diagram-frame">
-        <svg class="diagram-svg level1-svg" role="img" aria-label="Level 1 DFD with six processes for users, bookings, AI itinerary, QR check-in, payments, and package management, connected to Supabase data stores and external entities" viewBox="0 0 1850 1360" xmlns="http://www.w3.org/2000/svg">
-          <defs><marker id="l1-arrow" markerWidth="10" markerHeight="10" refX="8.5" refY="5" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L10,5 L0,10 z" fill="#526579"/></marker></defs>
-          <rect x="0" y="0" width="1850" height="1360" fill="#fff"/>
-          <!-- Account and role data -->
-          <path class="flow" marker-end="url(#l1-arrow)" d="M235 150 C285 150 325 170 375 185"/>
-          <path class="flow" marker-end="url(#l1-arrow)" d="M375 220 C325 200 285 180 235 170"/>
-          <path class="flow" marker-end="url(#l1-arrow)" d="M445 292 L445 385"/>
-          <path class="flow" marker-end="url(#l1-arrow)" d="M500 385 L500 290"/>
-          <!-- Operator maintains packages; admin moderates -->
-          <path class="flow" marker-end="url(#l1-arrow)" d="M45 455 L20 455 L20 60 L1325 60 L1325 100"/>
-          <path class="flow" marker-end="url(#l1-arrow)" d="M1600 180 C1540 215 1480 225 1420 235"/>
-          <path class="flow" marker-end="url(#l1-arrow)" d="M1412 250 C1485 275 1545 245 1600 205"/>
-          <path class="flow" marker-end="url(#l1-arrow)" d="M1300 300 L1300 385"/>
-          <path class="flow" marker-end="url(#l1-arrow)" d="M1370 385 L1370 290"/>
-          <path class="flow" marker-end="url(#l1-arrow)" d="M1260 430 L1240 350 L1060 350 L997 225"/>
-          <!-- Tourist and operator booking data -->
-          <path class="flow" marker-end="url(#l1-arrow)" d="M235 155 L275 90 L900 90 L900 100"/>
-          <path class="flow" marker-end="url(#l1-arrow)" d="M803 225 L760 500 L290 500 L290 195 L235 195"/>
-          <!-- Bookings table: 2.0 writes; 5.0 reads and updates payment status -->
-          <path class="flow" marker-end="url(#l1-arrow)" d="M950 285 L980 385"/>
-          <path class="flow" marker-end="url(#l1-arrow)" d="M980 385 L980 330 L953 285"/>
-          <!-- Payment process uses a layout repeat of D3 -->
-          <path class="flow" marker-end="url(#l1-arrow)" d="M1170 760 L1180 760 L1180 590 L1202 590"/>
-          <path class="flow" marker-end="url(#l1-arrow)" d="M1202 630 L1190 780 L1170 800"/>
-          <path class="flow" marker-end="url(#l1-arrow)" d="M1397 585 C1465 560 1530 560 1600 575"/>
-          <path class="flow" marker-end="url(#l1-arrow)" d="M1600 615 C1530 655 1465 660 1397 635"/>
-          <path class="flow" marker-end="url(#l1-arrow)" d="M1375 676 L1420 730 L1420 770"/>
-          <path class="flow" marker-end="url(#l1-arrow)" d="M1260 770 L1260 740 L1300 710"/>
-          <!-- Itinerary inputs, data lookups, optional Gemini, and saved plans -->
-          <path class="flow" marker-end="url(#l1-arrow)" d="M235 215 L240 225 L240 820 L390 820"/>
-          <path class="flow" marker-end="url(#l1-arrow)" d="M394 790 C345 730 320 650 270 650 L270 225 L235 205"/>
-          <path class="flow" marker-end="url(#l1-arrow)" d="M370 865 L400 865"/>
-          <path class="flow" marker-end="url(#l1-arrow)" d="M1260 475 L1160 520 L1160 680 L670 680 L500 710"/>
-          <path class="flow" marker-end="url(#l1-arrow)" d="M604 785 C630 745 650 745 680 780"/>
-          <path class="flow" marker-end="url(#l1-arrow)" d="M680 815 C650 860 630 860 604 855"/>
-          <path class="flow" marker-end="url(#l1-arrow)" d="M485 930 L485 1045"/>
-          <path class="flow" marker-end="url(#l1-arrow)" d="M545 1045 L545 919"/>
-          <!-- QR check-in reads role and booking data, then records a check-in -->
-          <path class="flow" marker-end="url(#l1-arrow)" d="M1170 915 L1190 915 L1233 930"/>
-          <path class="flow" marker-end="url(#l1-arrow)" d="M1170 1005 L1217 1005"/>
-          <path class="flow" marker-end="url(#l1-arrow)" d="M1290 1091 L1290 1150"/>
-          <path class="flow" marker-end="url(#l1-arrow)" d="M1350 1150 L1350 1091"/>
-          <path class="flow" marker-end="url(#l1-arrow)" d="M1600 950 C1540 920 1480 920 1420 960"/>
-          <path class="flow" marker-end="url(#l1-arrow)" d="M1420 1020 C1485 1060 1545 1055 1600 1005"/>
-          <!-- Process bubbles -->
-          <g><circle class="process-circle" cx="470" cy="200" r="95"/><text class="process-id" x="470" y="170">1.0</text><text class="process-name" x="470" y="198"><tspan x="470">Manage</tspan><tspan x="470" dy="21">Users</tspan></text></g>
-          <g><circle class="process-circle" cx="900" cy="200" r="100"/><text class="process-id" x="900" y="167">2.0</text><text class="process-name" x="900" y="194"><tspan x="900">Process</tspan><tspan x="900" dy="21">Bookings</tspan></text></g>
-          <g><circle class="process-circle" cx="500" cy="820" r="110"/><text class="process-id" x="500" y="780">3.0</text><text class="process-name" x="500" y="808"><tspan x="500">Generate AI</tspan><tspan x="500" dy="21">Itinerary</tspan></text></g>
-          <g><circle class="process-circle" cx="1320" cy="990" r="105"/><text class="process-id" x="1320" y="950">4.0</text><text class="process-name" x="1320" y="978"><tspan x="1320">Verify QR</tspan><tspan x="1320" dy="21">Check-in</tspan></text></g>
-          <g><circle class="process-circle" cx="1300" cy="610" r="100"/><text class="process-id" x="1300" y="577">5.0</text><text class="process-name" x="1300" y="604"><tspan x="1300">Process</tspan><tspan x="1300" dy="21">Payments</tspan></text></g>
-          <g><circle class="process-circle" cx="1325" cy="200" r="100"/><text class="process-id" x="1325" y="163">6.0</text><text class="process-name" x="1325" y="190"><tspan x="1325">Manage Tours</tspan><tspan x="1325" dy="21">&amp; Availability</tspan></text></g>
-          <!-- External entities -->
-          <g><rect class="entity-box" x="45" y="135" width="190" height="78"/><text class="entity-title" x="140" y="171">Tourist</text><text class="entity-subtitle" x="140" y="191">External entity</text></g>
-          <g><rect class="entity-box" x="45" y="420" width="190" height="78"/><text class="entity-title" x="140" y="456">Tour Operator</text><text class="entity-subtitle" x="140" y="476">External entity</text></g>
-          <g><rect class="entity-box" x="1600" y="130" width="190" height="78"/><text class="entity-title" x="1695" y="166">Admin / Tourism Office</text><text class="entity-subtitle" x="1695" y="186">External entity</text></g>
-          <g><rect class="entity-box" x="1600" y="555" width="190" height="78"/><text class="entity-title" x="1695" y="591">PayMongo</text><text class="entity-subtitle" x="1695" y="611">Payment service</text></g>
-          <g><rect class="entity-box" x="1600" y="930" width="190" height="78"/><text class="entity-title" x="1695" y="966">Tour Guide</text><text class="entity-subtitle" x="1695" y="986">External entity</text></g>
-          <g><rect class="entity-box" x="680" y="760" width="185" height="74"/><text class="entity-title" x="772.5" y="793">Gemini AI</text><text class="entity-subtitle" x="772.5" y="813">Optional service</text></g>
-          <!-- Supabase open-ended data stores -->
-          <g><path class="store-line" d="M350 385 H590 M350 475 H590 M350 385 V475 M395 385 V475"/><text class="store-id" x="372.5" y="434">D1</text><text class="store-name" x="410" y="417">Profiles &amp; role records</text><text class="store-detail" x="410" y="440">profiles • tours_operators</text><text class="store-detail" x="410" y="458">tours_guides</text></g>
-          <g><path class="store-line" d="M1260 385 H1490 M1260 475 H1490 M1260 385 V475 M1305 385 V475"/><text class="store-id" x="1282.5" y="434">D2</text><text class="store-name" x="1320" y="417">Packages &amp; availability</text><text class="store-detail" x="1320" y="440">tours_packages</text><text class="store-detail" x="1320" y="458">tours_package_availability</text></g>
-          <g><path class="store-line" d="M960 385 H1220 M960 475 H1220 M960 385 V475 M1005 385 V475"/><text class="store-id" x="982.5" y="434">D3</text><text class="store-name" x="1020" y="417">Supabase Bookings Table</text><text class="store-detail" x="1020" y="440">tours_bookings</text><text class="store-detail" x="1020" y="458">tours_booking_participants</text></g>
-          <g><path class="store-line" d="M1230 770 H1480 M1230 860 H1480 M1230 770 V860 M1275 770 V860"/><text class="store-id" x="1252.5" y="819">D4</text><text class="store-name" x="1290" y="802">Payment ledger</text><text class="store-detail" x="1290" y="825">tours_payments</text><text class="store-detail" x="1290" y="843">tours_payment_events</text></g>
-          <g><path class="store-line" d="M100 830 H370 M100 920 H370 M100 830 V920 M145 830 V920"/><text class="store-id" x="122.5" y="879">D5</text><text class="store-name" x="160" y="862">Published trip data</text><text class="store-detail" x="160" y="885">tours_attractions • tours_fares</text><text class="store-detail" x="160" y="903">active place / travel data</text></g>
-          <g><path class="store-line" d="M370 1045 H660 M370 1135 H660 M370 1045 V1135 M415 1045 V1135"/><text class="store-id" x="392.5" y="1094">D6</text><text class="store-name" x="430" y="1077">Saved itineraries</text><text class="store-detail" x="430" y="1100">tours_itineraries</text><text class="store-detail" x="430" y="1118">tours_itinerary_items</text></g>
-          <g><path class="store-line" d="M1180 1150 H1460 M1180 1235 H1460 M1180 1150 V1235 M1225 1150 V1235"/><text class="store-id" x="1202.5" y="1197">D7</text><text class="store-name" x="1240" y="1180">QR check-in records</text><text class="store-detail" x="1240" y="1203">tours_checkins</text><text class="store-detail" x="1240" y="1221">QR / manual method • timestamp</text></g>
-          <!-- Layout repeats: same physical Supabase stores as D1 and D3 -->
-          <g><path class="store-line" d="M880 875 H1170 M880 955 H1170 M880 875 V955 M925 875 V955"/><text class="store-id" x="902.5" y="919">D1*</text><text class="store-name" x="940" y="903">Profiles / guide roles</text><text class="store-detail" x="940" y="929">same D1: profiles • operator / guide roles</text></g>
-          <g><path class="store-line" d="M880 740 H1170 M880 820 H1170 M880 740 V820 M925 740 V820"/><text class="store-id" x="902.5" y="784">D3*</text><text class="store-name" x="940" y="768">Booking / payment data</text><text class="store-detail" x="940" y="793">same D3: tours_bookings</text></g>
-          <g><path class="store-line" d="M880 970 H1170 M880 1050 H1170 M880 970 V1050 M925 970 V1050"/><text class="store-id" x="902.5" y="1014">D3**</text><text class="store-name" x="940" y="998">Booking state</text><text class="store-detail" x="940" y="1024">same D3: tours_bookings</text></g>
-          <!-- Flow labels -->
-          <text class="tiny-label" x="305" y="140">Account / profile data</text>
-          <text class="tiny-label" x="305" y="215">Session / role status</text>
-          <text class="tiny-label" x="800" y="52">Package edits / date availability</text>
-          <text class="tiny-label" x="1500" y="220">Moderation / publication action</text>
-          <text class="tiny-label" x="1500" y="280">Review result / package status</text>
-          <text class="tiny-label" x="620" y="100">Selected package / date / guest details</text>
-          <text class="tiny-label" x="505" y="488">Booking status / ticket eligibility</text>
-          <text class="tiny-label" x="1115" y="340">Published package / open dates / seats</text>
-          <text class="tiny-label" x="1430" y="355">Package and capacity records</text>
-          <text class="tiny-label" x="1015" y="326">Validated booking data</text>
-          <text class="tiny-label" x="1110" y="375">Booking lookup / status</text>
-          <text class="tiny-label" x="1110" y="575">Booking ID / amount due</text>
-          <text class="tiny-label" x="1090" y="840">Payment status</text>
-          <text class="tiny-label" x="1500" y="548">Checkout / amount / reference</text>
-          <text class="tiny-label" x="1500" y="675">Verified payment event</text>
-          <text class="tiny-label" x="1445" y="745">Payment ledger entry</text>
-          <text class="tiny-label" x="1215" y="745">Payment record / status</text>
-          <text class="tiny-label" x="305" y="692">Trip dates / group / interests</text>
-          <text class="tiny-label" x="300" y="638">Generated itinerary</text>
-          <text class="tiny-label" x="385" y="850">Attractions / fares</text>
-          <text class="tiny-label" x="1080" y="668">Bookable package data</text>
-          <text class="tiny-label" x="640" y="728">Trip prompt / context</text>
-          <text class="tiny-label" x="640" y="872">Optional AI wording / tool response</text>
-          <text class="tiny-label" x="560" y="1008">Saved plan</text>
-          <text class="tiny-label" x="565" y="1033">Load saved plan</text>
-          <text class="tiny-label" x="1510" y="885">Role / guide assignment</text>
-          <text class="tiny-label" x="1510" y="908">Paid booking state</text>
-          <text class="tiny-label" x="1135" y="1128">New check-in record</text>
-          <text class="tiny-label" x="1520" y="1140">Existing check-ins</text>
-          <text class="tiny-label" x="1510" y="932">Signed QR / roster selection</text>
-          <text class="tiny-label" x="1510" y="1070">Check-in result</text>
-        </svg>
+      <h2 id="level1-title">Detailed DFD — Level 1</h2>
+      <p class="lead">The main process IDs remain consistent across the focused views: 1.0 users, 2.0 bookings, 3.0 itinerary, 4.0 check-in, 5.0 payments, and 6.0 packages. Support processes 7.0–11.0 cover content, messaging, rewards, the travel assistant, guide operations, and live safety.</p>
+
+      <section class="module" aria-labelledby="users-title">
+        <h3 id="users-title">1.0 — Manage Users &amp; Accreditation</h3>
+        <p>Tourist, operator, and guide account/application data is checked against the session and role; the Tourism Office handles protected review actions.</p>
+        <div class="diagram-frame">
+          <svg class="diagram-svg module-svg" role="img" aria-label="Manage Users process receives account and application data from users, exchanges review actions with the Admin, and reads and updates the profile store" viewBox="0 0 1200 500" xmlns="http://www.w3.org/2000/svg">
+            <defs><marker id="users-arrow" markerWidth="10" markerHeight="10" refX="8.5" refY="5" orient="auto" markerUnits="strokeWidth"><path d="M0 0 L10 5 L0 10 z" fill="#526579"/></marker></defs>
+            <rect width="1200" height="500" fill="#fff"/>
+            <path class="flow" marker-end="url(#users-arrow)" d="M230 220 L514 220"/>
+            <path class="flow" marker-end="url(#users-arrow)" d="M514 260 L230 260"/>
+            <path class="flow" marker-end="url(#users-arrow)" d="M970 220 L686 220"/>
+            <path class="flow" marker-end="url(#users-arrow)" d="M686 260 L970 260"/>
+            <path class="flow" marker-end="url(#users-arrow)" d="M570 323 L570 365"/>
+            <path class="flow" marker-end="url(#users-arrow)" d="M630 365 L630 323"/>
+            <circle class="process-circle" cx="600" cy="240" r="88"/>
+            <text class="process-id" x="600" y="217">1.0</text>
+            <text class="process-name" x="600" y="242"><tspan x="600">Manage Users</tspan><tspan x="600" dy="19">&amp; Accreditation</tspan></text>
+            <g><rect class="entity-box" x="40" y="200" width="190" height="80"/><text class="entity-title" x="135" y="232">Account applicants</text><text class="entity-subtitle" x="135" y="253">Tourist • Operator • Guide</text></g>
+            <g><rect class="entity-box" x="970" y="200" width="190" height="80"/><text class="entity-title" x="1065" y="232">Admin</text><text class="entity-subtitle" x="1065" y="253">Tourism Office</text></g>
+            <g><path class="store-symbol" d="M480 365 H720 M480 453 H720 M480 365 V453 M520 365 V453"/><text class="store-id" x="500" y="414">D1</text><text class="store-name" x="535" y="390">Profiles &amp; roles</text><text class="store-detail" x="535" y="414">profiles • tours_operators</text><text class="store-detail" x="535" y="436">tours_guides</text></g>
+            <text class="flow-label" x="372" y="209">Sign-up / profile / application data</text>
+            <text class="flow-label" x="372" y="276">Session / role / review status</text>
+            <text class="flow-label" x="828" y="209">Approval / role action</text>
+            <text class="flow-label" x="828" y="276">Review queue / outcome</text>
+            <text class="flow-label" x="750" y="352">Read / update account and role records</text>
+          </svg>
+        </div>
+      </section>
+
+      <section class="module" aria-labelledby="packages-title">
+        <h3 id="packages-title">6.0 — Manage Packages &amp; Availability</h3>
+        <p>Operators maintain packages and open dates; the Tourism Office approves or rejects submissions. Published records feed browsing and booking.</p>
+        <div class="diagram-frame">
+          <svg class="diagram-svg module-svg" role="img" aria-label="Manage Packages and Availability exchanges operator edits and admin decisions with the packages and availability store" viewBox="0 0 1200 450" xmlns="http://www.w3.org/2000/svg">
+            <defs><marker id="packages-arrow" markerWidth="10" markerHeight="10" refX="8.5" refY="5" orient="auto" markerUnits="strokeWidth"><path d="M0 0 L10 5 L0 10 z" fill="#526579"/></marker></defs>
+            <rect width="1200" height="450" fill="#fff"/>
+            <path class="flow" marker-end="url(#packages-arrow)" d="M230 210 L438 210"/>
+            <path class="flow" marker-end="url(#packages-arrow)" d="M438 250 L230 250"/>
+            <path class="flow" marker-end="url(#packages-arrow)" d="M602 210 L780 210"/>
+            <path class="flow" marker-end="url(#packages-arrow)" d="M780 250 L602 250"/>
+            <path class="flow" marker-end="url(#packages-arrow)" d="M480 102 L480 156"/>
+            <path class="flow" marker-end="url(#packages-arrow)" d="M560 156 L560 102"/>
+            <circle class="process-circle" cx="520" cy="230" r="84"/>
+            <text class="process-id" x="520" y="205">6.0</text>
+            <text class="process-name" x="520" y="231"><tspan x="520">Manage Packages</tspan><tspan x="520" dy="19">&amp; Availability</tspan></text>
+            <g><rect class="entity-box" x="40" y="185" width="190" height="80"/><text class="entity-title" x="135" y="218">Tour Operator</text><text class="entity-subtitle" x="135" y="239">Drafts • edits • open dates</text></g>
+            <g><rect class="entity-box" x="420" y="30" width="200" height="72"/><text class="entity-title" x="520" y="59">Admin</text><text class="entity-subtitle" x="520" y="80">Review / publish</text></g>
+            <g><path class="store-symbol" d="M780 185 H1050 M780 275 H1050 M780 185 V275 M822 185 V275"/><text class="store-id" x="801" y="235">D2</text><text class="store-name" x="838" y="210">Packages &amp; availability</text><text class="store-detail" x="838" y="235">Published packages • open dates</text><text class="store-detail" x="838" y="257">Prices • stops • inclusions</text></g>
+            <text class="flow-label" x="334" y="199">Draft / edit / capacity changes</text>
+            <text class="flow-label" x="334" y="268">Review status / published result</text>
+            <text class="flow-label" x="690" y="199">Write package / availability</text>
+            <text class="flow-label" x="690" y="268">Read existing package state</text>
+            <text class="flow-label" x="700" y="130">Approval / rejection</text>
+          </svg>
+        </div>
+      </section>
+
+      <section class="module" aria-labelledby="booking-title">
+        <h3 id="booking-title">2.0 &amp; 5.0 — Bookings, Payments &amp; PayMongo</h3>
+        <p>Package, price, date, guest count, and capacity are validated before a booking is created. Payment status is recorded separately from the booking.</p>
+        <div class="diagram-frame">
+          <svg class="diagram-svg module-svg booking-svg" role="img" aria-label="Tourist booking flows through booking records to payment processing, PayMongo, and the payment ledger, with operator confirmation" viewBox="0 0 1500 560" xmlns="http://www.w3.org/2000/svg">
+            <defs><marker id="booking-arrow" markerWidth="10" markerHeight="10" refX="8.5" refY="5" orient="auto" markerUnits="strokeWidth"><path d="M0 0 L10 5 L0 10 z" fill="#526579"/></marker></defs>
+            <rect width="1500" height="560" fill="#fff"/>
+            <path class="flow" marker-end="url(#booking-arrow)" d="M225 205 L333 205"/>
+            <path class="flow" marker-end="url(#booking-arrow)" d="M333 245 L225 245"/>
+            <path class="flow" marker-end="url(#booking-arrow)" d="M410 112 L410 145"/>
+            <path class="flow" marker-end="url(#booking-arrow)" d="M488 205 L590 205"/>
+            <path class="flow" marker-end="url(#booking-arrow)" d="M590 245 L488 245"/>
+            <path class="flow" marker-end="url(#booking-arrow)" d="M840 205 L923 205"/>
+            <path class="flow" marker-end="url(#booking-arrow)" d="M923 245 L840 245"/>
+            <path class="flow" marker-end="url(#booking-arrow)" d="M1078 205 L1250 205"/>
+            <path class="flow" marker-end="url(#booking-arrow)" d="M1250 245 L1078 245"/>
+            <path class="flow" marker-end="url(#booking-arrow)" d="M380 299 L380 395"/>
+            <path class="flow" marker-end="url(#booking-arrow)" d="M440 395 L440 299"/>
+            <path class="flow" marker-end="url(#booking-arrow)" d="M970 299 L970 395"/>
+            <path class="flow" marker-end="url(#booking-arrow)" d="M1030 395 L1030 299"/>
+            <circle class="process-circle" cx="410" cy="225" r="80"/>
+            <text class="process-id" x="410" y="202">2.0</text>
+            <text class="process-name" x="410" y="228"><tspan x="410">Process</tspan><tspan x="410" dy="19">Bookings</tspan></text>
+            <circle class="process-circle" cx="1000" cy="225" r="80"/>
+            <text class="process-id" x="1000" y="202">5.0</text>
+            <text class="process-name" x="1000" y="228"><tspan x="1000">Process</tspan><tspan x="1000" dy="19">Payments</tspan></text>
+            <g><rect class="entity-box" x="40" y="185" width="185" height="80"/><text class="entity-title" x="132.5" y="218">Tourist</text><text class="entity-subtitle" x="132.5" y="239">Package / date / guest choice</text></g>
+            <g><rect class="entity-box" x="300" y="395" width="220" height="78"/><text class="entity-title" x="410" y="426">Tour Operator</text><text class="entity-subtitle" x="410" y="447">Confirm / decline booking</text></g>
+            <g><rect class="entity-box" x="1250" y="185" width="200" height="80"/><text class="entity-title" x="1350" y="218">PayMongo</text><text class="entity-subtitle" x="1350" y="239">External payment service</text></g>
+            <g><path class="store-symbol" d="M300 30 H520 M300 112 H520 M300 30 V112 M338 30 V112"/><text class="store-id" x="319" y="77">D2</text><text class="store-name" x="352" y="55">Published package data</text><text class="store-detail" x="352" y="82">Prices • dates • remaining seats</text></g>
+            <g><path class="store-symbol" d="M590 180 H840 M590 270 H840 M590 180 V270 M632 180 V270"/><text class="store-id" x="611" y="230">D3</text><text class="store-name" x="646" y="205">Bookings &amp; guests</text><text class="store-detail" x="646" y="230">tours_bookings</text><text class="store-detail" x="646" y="252">tours_booking_participants</text></g>
+            <g><path class="store-symbol" d="M875 395 H1125 M875 485 H1125 M875 395 V485 M917 395 V485"/><text class="store-id" x="896" y="445">D4</text><text class="store-name" x="931" y="420">Payment ledger</text><text class="store-detail" x="931" y="445">tours_payments • payment events</text><text class="store-detail" x="931" y="467">Checkout session references</text></g>
+            <text class="flow-label" x="279" y="194">Booking request</text>
+            <text class="flow-label" x="279" y="262">Ticket / booking status</text>
+            <text class="flow-label" x="560" y="132">Read package / price / capacity</text>
+            <text class="flow-label" x="539" y="194">Create booking + participants</text>
+            <text class="flow-label" x="539" y="262">Booking / payment state</text>
+            <text class="flow-label" x="881" y="194">Booking ID / amount due</text>
+            <text class="flow-label" x="881" y="262">Paid / pending status</text>
+            <text class="flow-label" x="1164" y="194">Checkout session / amount</text>
+            <text class="flow-label" x="1164" y="262">Verified payment event</text>
+            <text class="flow-label" x="315" y="352">Booking request</text>
+            <text class="flow-label" x="500" y="352">Confirm / decline</text>
+            <text class="flow-label" x="1160" y="370">Ledger entry / payment status</text>
+          </svg>
+        </div>
+      </section>
+
+      <section class="module" aria-labelledby="planner-title">
+        <h3 id="planner-title">3.0 — Generate AI Itinerary</h3>
+        <p>The rule-based planner builds the schedule from Daet data. Gemini can interpret or explain a request, but is optional; it does not confirm bookings.</p>
+        <div class="diagram-frame">
+          <svg class="diagram-svg module-svg" role="img" aria-label="Tourist sends trip context to itinerary process, which reads packages, attractions and fares, optionally uses Gemini, and saves plans when requested" viewBox="0 0 1250 520" xmlns="http://www.w3.org/2000/svg">
+            <defs><marker id="planner-arrow" markerWidth="10" markerHeight="10" refX="8.5" refY="5" orient="auto" markerUnits="strokeWidth"><path d="M0 0 L10 5 L0 10 z" fill="#526579"/></marker></defs>
+            <rect width="1250" height="520" fill="#fff"/>
+            <path class="flow" marker-end="url(#planner-arrow)" d="M230 235 L372 235"/>
+            <path class="flow" marker-end="url(#planner-arrow)" d="M372 275 L230 275"/>
+            <path class="flow" marker-end="url(#planner-arrow)" d="M390 115 L390 198"/>
+            <path class="flow" marker-end="url(#planner-arrow)" d="M520 115 L520 198"/>
+            <path class="flow" marker-end="url(#planner-arrow)" d="M540 214 L540 115"/>
+            <path class="flow" marker-end="url(#planner-arrow)" d="M420 336 L420 400"/>
+            <path class="flow" marker-end="url(#planner-arrow)" d="M500 400 L500 336"/>
+            <path class="flow" marker-end="url(#planner-arrow)" d="M548 235 L970 235"/>
+            <path class="flow" marker-end="url(#planner-arrow)" d="M970 275 L548 275"/>
+            <path class="flow" marker-end="url(#planner-arrow)" d="M540 296.2 L970 405"/>
+            <path class="flow" marker-end="url(#planner-arrow)" d="M970 480 L535 304.75"/>
+            <circle class="process-circle" cx="460" cy="255" r="90"/>
+            <text class="process-id" x="460" y="230">3.0</text>
+            <text class="process-name" x="460" y="256"><tspan x="460">Generate AI</tspan><tspan x="460" dy="19">Itinerary</tspan></text>
+            <g><rect class="entity-box" x="40" y="215" width="190" height="80"/><text class="entity-title" x="135" y="248">Tourist</text><text class="entity-subtitle" x="135" y="269">Dates • group • interests</text></g>
+            <g><rect class="entity-box" x="970" y="215" width="220" height="80"/><text class="entity-title" x="1080" y="248">Gemini AI</text><text class="entity-subtitle" x="1080" y="269">Optional model service</text></g>
+            <g><rect class="entity-box" x="970" y="405" width="220" height="80"/><text class="entity-title" x="1080" y="438">Google Maps / Routes</text><text class="entity-subtitle" x="1080" y="459">Optional route service</text></g>
+            <g><path class="store-symbol" d="M150 35 H390 M150 115 H390 M150 35 V115 M190 35 V115"/><text class="store-id" x="170" y="83">D2</text><text class="store-name" x="205" y="59">Published packages</text><text class="store-detail" x="205" y="85">Same package store as 6.0</text></g>
+            <g><path class="store-symbol" d="M520 35 H760 M520 115 H760 M520 35 V115 M560 35 V115"/><text class="store-id" x="540" y="83">D5</text><text class="store-name" x="575" y="59">Daet trip data</text><text class="store-detail" x="575" y="85">tours_attractions • tours_fares</text></g>
+            <g><path class="store-symbol" d="M340 400 H580 M340 485 H580 M340 400 V485 M380 400 V485"/><text class="store-id" x="360" y="448">D6</text><text class="store-name" x="395" y="425">Saved itineraries</text><text class="store-detail" x="395" y="450">tours_itineraries • items</text><text class="store-detail" x="395" y="471">Saved only when requested</text></g>
+            <text class="flow-label" x="301" y="224">Trip context / planning request</text>
+            <text class="flow-label" x="301" y="293">Itinerary / matching tour links</text>
+            <text class="flow-label" x="300" y="164">Published package data</text>
+            <text class="flow-label" x="680" y="164">Attractions / fares / cached routes</text>
+            <text class="flow-label" x="650" y="381">Save / load plan</text>
+            <text class="flow-label" x="759" y="224">Prompt / optional context</text>
+            <text class="flow-label" x="759" y="293">Model response / explanation</text>
+            <text class="flow-label" x="755" y="336">Optional route / ETA request</text>
+            <text class="flow-label" x="755" y="429">Road route / estimate</text>
+          </svg>
+        </div>
+      </section>
+
+      <section class="module" aria-labelledby="checkin-title">
+        <h3 id="checkin-title">4.0 — Verify QR Check-in</h3>
+        <p>The guide scans a signed QR ticket or uses the roster. The server checks authorization, assignment, tour date, booking status, and full payment before recording the check-in.</p>
+        <div class="diagram-frame">
+          <svg class="diagram-svg module-svg" role="img" aria-label="Tour guide sends a QR scan or roster selection to check-in process, which reads roles and paid booking state and writes check-in records" viewBox="0 0 1250 540" xmlns="http://www.w3.org/2000/svg">
+            <defs><marker id="checkin-arrow" markerWidth="10" markerHeight="10" refX="8.5" refY="5" orient="auto" markerUnits="strokeWidth"><path d="M0 0 L10 5 L0 10 z" fill="#526579"/></marker></defs>
+            <rect width="1250" height="540" fill="#fff"/>
+            <path class="flow" marker-end="url(#checkin-arrow)" d="M230 240 L362 240"/>
+            <path class="flow" marker-end="url(#checkin-arrow)" d="M362 280 L230 280"/>
+            <path class="flow" marker-end="url(#checkin-arrow)" d="M450 120 L450 170"/>
+            <path class="flow" marker-end="url(#checkin-arrow)" d="M450 420 L450 350"/>
+            <path class="flow" marker-end="url(#checkin-arrow)" d="M537 235 L800 235"/>
+            <path class="flow" marker-end="url(#checkin-arrow)" d="M800 285 L537 285"/>
+            <circle class="process-circle" cx="450" cy="260" r="90"/>
+            <text class="process-id" x="450" y="236">4.0</text>
+            <text class="process-name" x="450" y="262"><tspan x="450">Verify QR</tspan><tspan x="450" dy="19">Check-in</tspan></text>
+            <g><rect class="entity-box" x="40" y="220" width="190" height="80"/><text class="entity-title" x="135" y="253">Tour Guide</text><text class="entity-subtitle" x="135" y="274">QR scan / roster choice</text></g>
+            <g><path class="store-symbol" d="M330 35 H570 M330 120 H570 M330 35 V120 M370 35 V120"/><text class="store-id" x="350" y="83">D1</text><text class="store-name" x="385" y="59">Profiles &amp; guide roles</text><text class="store-detail" x="385" y="85">Same D1 as account view</text></g>
+            <g><path class="store-symbol" d="M330 420 H570 M330 505 H570 M330 420 V505 M370 420 V505"/><text class="store-id" x="350" y="468">D3</text><text class="store-name" x="385" y="444">Paid booking state</text><text class="store-detail" x="385" y="470">Same D3 as booking view</text></g>
+            <g><path class="store-symbol" d="M800 215 H1060 M800 305 H1060 M800 215 V305 M842 215 V305"/><text class="store-id" x="821" y="265">D7</text><text class="store-name" x="856" y="240">Check-in records</text><text class="store-detail" x="856" y="265">tours_checkins</text><text class="store-detail" x="856" y="287">QR / manual • timestamp</text></g>
+            <text class="flow-label" x="296" y="229">Signed QR / roster request</text>
+            <text class="flow-label" x="296" y="298">Check-in result / rejection</text>
+            <text class="flow-label" x="650" y="153">Role / guide assignment</text>
+            <text class="flow-label" x="650" y="390">Booking / paid / tour-date check</text>
+            <text class="flow-label" x="669" y="224">Write idempotent check-in</text>
+            <text class="flow-label" x="669" y="298">Existing check-in state</text>
+          </svg>
+        </div>
+      </section>
+
+      <section class="module" aria-labelledby="support-title">
+        <h3 id="support-title">7.0–11.0 — Content, Communication, Engagement &amp; Safety</h3>
+        <p>These aligned support rows summarize the whole-system modules outside the core booking journey.</p>
+        <div class="diagram-frame">
+          <svg class="diagram-svg support-svg" role="img" aria-label="Support DFD showing admin content management, messages and notifications, reviews and rewards, the travel assistant, and guide live-safety operations with their data stores and external actors" viewBox="0 0 1450 1370" xmlns="http://www.w3.org/2000/svg">
+            <defs><marker id="support-arrow" markerWidth="10" markerHeight="10" refX="8.5" refY="5" orient="auto" markerUnits="strokeWidth"><path d="M0 0 L10 5 L0 10 z" fill="#526579"/></marker></defs>
+            <rect width="1450" height="1130" fill="#fff"/>
+            <!-- 7.0 Admin content and public listings -->
+            <path class="flow" marker-end="url(#support-arrow)" d="M230 110 L633 110"/>
+            <path class="flow" marker-end="url(#support-arrow)" d="M633 150 L230 150"/>
+            <path class="flow" marker-end="url(#support-arrow)" d="M767 110 L1160 110"/>
+            <path class="flow" marker-end="url(#support-arrow)" d="M1160 150 L767 150"/>
+            <path class="flow" marker-end="url(#support-arrow)" d="M680 200 L680 235"/>
+            <path class="flow" marker-end="url(#support-arrow)" d="M720 235 L720 200"/>
+            <path class="flow" marker-end="url(#support-arrow)" d="M740 73 L990 85"/>
+            <circle class="process-circle" cx="700" cy="130" r="70"/>
+            <text class="process-id" x="700" y="111">7.0</text>
+            <text class="process-name" x="700" y="136"><tspan x="700">Manage Content</tspan><tspan x="700" dy="18">&amp; Safety</tspan></text>
+            <g><rect class="entity-box" x="40" y="90" width="190" height="80"/><text class="entity-title" x="135" y="122">Admin</text><text class="entity-subtitle" x="135" y="143">Tourism Office</text></g>
+            <g><rect class="entity-box" x="1160" y="90" width="220" height="80"/><text class="entity-title" x="1270" y="122">Tourist / public</text><text class="entity-subtitle" x="1270" y="143">Reads published content</text></g>
+            <g><path class="store-symbol" d="M900 5 H1160 M900 85 H1160 M900 5 V85 M940 5 V85"/><text class="store-id" x="920" y="55">D5</text><text class="store-name" x="955" y="30">Daet trip data</text><text class="store-detail" x="955" y="55">Attractions • fares • route cache</text></g>
+            <g><path class="store-symbol" d="M560 235 H840 M560 325 H840 M560 235 V325 M602 235 V325"/><text class="store-id" x="581" y="285">D8</text><text class="store-name" x="616" y="260">Tourism content &amp; safety</text><text class="store-detail" x="616" y="285">Events • merchandise • emergency contacts</text><text class="store-detail" x="616" y="307">Admin review / audit records</text></g>
+            <text class="flow-label" x="430" y="100">Content / safety updates</text>
+            <text class="flow-label" x="430" y="160">Review status / reports</text>
+            <text class="flow-label" x="963" y="100">Published listings / notices</text>
+            <text class="flow-label" x="963" y="160">Public listing request</text>
+            <text class="flow-label" x="835" y="65">Attraction / fare updates</text>
+            <text class="flow-label" x="800" y="224">Read / write content</text>
+
+            <!-- 8.0 Messaging and notifications -->
+            <path class="flow" marker-end="url(#support-arrow)" d="M230 370 L633 370"/>
+            <path class="flow" marker-end="url(#support-arrow)" d="M633 410 L230 410"/>
+            <path class="flow" marker-end="url(#support-arrow)" d="M767 370 L1160 370"/>
+            <path class="flow" marker-end="url(#support-arrow)" d="M1160 410 L767 410"/>
+            <path class="flow" marker-end="url(#support-arrow)" d="M680 460 L680 495"/>
+            <path class="flow" marker-end="url(#support-arrow)" d="M720 495 L720 460"/>
+            <circle class="process-circle" cx="700" cy="390" r="70"/>
+            <text class="process-id" x="700" y="371">8.0</text>
+            <text class="process-name" x="700" y="396"><tspan x="700">Messaging &amp;</tspan><tspan x="700" dy="18">Notifications</tspan></text>
+            <g><rect class="entity-box" x="40" y="350" width="190" height="80"/><text class="entity-title" x="135" y="382">Signed-in users</text><text class="entity-subtitle" x="135" y="403">Tourist • Operator • Guide</text></g>
+            <g><rect class="entity-box" x="1160" y="350" width="220" height="80"/><text class="entity-title" x="1270" y="382">Push / Email</text><text class="entity-subtitle" x="1270" y="403">Optional delivery services</text></g>
+            <g><path class="store-symbol" d="M560 495 H840 M560 585 H840 M560 495 V585 M602 495 V585"/><text class="store-id" x="581" y="545">D9</text><text class="store-name" x="616" y="520">Messages &amp; notifications</text><text class="store-detail" x="616" y="545">tours_conversations • tours_messages</text><text class="store-detail" x="616" y="567">tours_notifications • presence / reads</text></g>
+            <text class="flow-label" x="430" y="360">Message / conversation event</text>
+            <text class="flow-label" x="430" y="420">Message / notification result</text>
+            <text class="flow-label" x="963" y="360">Push / email delivery request</text>
+            <text class="flow-label" x="963" y="420">Subscription / delivery status</text>
+            <text class="flow-label" x="800" y="484">Store / retrieve messages</text>
+
+            <!-- 9.0 Reviews and rewards -->
+            <path class="flow" marker-end="url(#support-arrow)" d="M230 630 L633 630"/>
+            <path class="flow" marker-end="url(#support-arrow)" d="M633 670 L230 670"/>
+            <path class="flow" marker-end="url(#support-arrow)" d="M767 630 L1160 630"/>
+            <path class="flow" marker-end="url(#support-arrow)" d="M1160 670 L767 670"/>
+            <path class="flow" marker-end="url(#support-arrow)" d="M680 720 L680 755"/>
+            <path class="flow" marker-end="url(#support-arrow)" d="M720 755 L720 720"/>
+            <circle class="process-circle" cx="700" cy="650" r="70"/>
+            <text class="process-id" x="700" y="631">9.0</text>
+            <text class="process-name" x="700" y="656"><tspan x="700">Reviews &amp;</tspan><tspan x="700" dy="18">Rewards</tspan></text>
+            <g><rect class="entity-box" x="40" y="610" width="190" height="80"/><text class="entity-title" x="135" y="642">Tourist</text><text class="entity-subtitle" x="135" y="663">Review after completion</text></g>
+            <g><rect class="entity-box" x="1160" y="610" width="220" height="80"/><text class="entity-title" x="1270" y="642">Operator / Admin</text><text class="entity-subtitle" x="1270" y="663">Reply / moderation</text></g>
+            <g><path class="store-symbol" d="M560 755 H840 M560 845 H840 M560 755 V845 M602 755 V845"/><text class="store-id" x="581" y="805">D10</text><text class="store-name" x="616" y="780">Reviews &amp; rewards</text><text class="store-detail" x="616" y="805">tours_reviews • rewards_ledger</text><text class="store-detail" x="616" y="827">Completion-triggered award records</text></g>
+            <text class="flow-label" x="430" y="620">Review / feedback</text>
+            <text class="flow-label" x="430" y="680">Rating / reward status</text>
+            <text class="flow-label" x="963" y="620">Review / reply status</text>
+            <text class="flow-label" x="963" y="680">Reply / moderation action</text>
+            <text class="flow-label" x="800" y="744">Write / read review and reward state</text>
+
+            <!-- 10.0 Read-only travel assistant; it never books for the tourist -->
+            <path class="flow" marker-end="url(#support-arrow)" d="M230 890 L633 890"/>
+            <path class="flow" marker-end="url(#support-arrow)" d="M633 930 L230 930"/>
+            <path class="flow" marker-end="url(#support-arrow)" d="M767 890 L1160 890"/>
+            <path class="flow" marker-end="url(#support-arrow)" d="M1160 930 L767 930"/>
+            <path class="flow" marker-end="url(#support-arrow)" d="M680 980 L680 1015"/>
+            <path class="flow" marker-end="url(#support-arrow)" d="M720 1015 L720 980"/>
+            <circle class="process-circle" cx="700" cy="910" r="70"/>
+            <text class="process-id" x="700" y="891">10.0</text>
+            <text class="process-name" x="700" y="916"><tspan x="700">Travel</tspan><tspan x="700" dy="18">Assistant</tspan></text>
+            <g><rect class="entity-box" x="40" y="870" width="190" height="80"/><text class="entity-title" x="135" y="902">Tourist</text><text class="entity-subtitle" x="135" y="923">Question / permitted context</text></g>
+            <g><rect class="entity-box" x="1160" y="870" width="220" height="80"/><text class="entity-title" x="1270" y="902">Gemini AI</text><text class="entity-subtitle" x="1270" y="923">Optional model service</text></g>
+            <g><path class="store-symbol" d="M560 1015 H840 M560 1105 H840 M560 1015 V1105 M602 1015 V1105"/><text class="store-id" x="581" y="1065">D11</text><text class="store-name" x="616" y="1040">Assistant records</text><text class="store-detail" x="616" y="1065">tours_ai_messages • feedback</text><text class="store-detail" x="616" y="1087">Usage counts • basic-mode fallback</text></g>
+            <text class="flow-label" x="430" y="880">Question / Daet trip-day request</text>
+            <text class="flow-label" x="430" y="940">Answer / links to real pages</text>
+            <text class="flow-label" x="963" y="880">Optional prompt / context</text>
+            <text class="flow-label" x="963" y="940">Model wording / explanation</text>
+            <text class="flow-label" x="800" y="1004">Store feedback / usage where enabled</text>
+
+            <!-- 11.0 Guide operations, consent-based live tracking and safety -->
+            <path class="flow" marker-end="url(#support-arrow)" d="M230 1150 L633 1150"/>
+            <path class="flow" marker-end="url(#support-arrow)" d="M633 1190 L230 1190"/>
+            <path class="flow" marker-end="url(#support-arrow)" d="M767 1150 L1160 1150"/>
+            <path class="flow" marker-end="url(#support-arrow)" d="M1160 1190 L767 1190"/>
+            <path class="flow" marker-end="url(#support-arrow)" d="M680 1240 L680 1275"/>
+            <path class="flow" marker-end="url(#support-arrow)" d="M720 1275 L720 1240"/>
+            <circle class="process-circle" cx="700" cy="1170" r="70"/>
+            <text class="process-id" x="700" y="1151">11.0</text>
+            <text class="process-name" x="700" y="1176"><tspan x="700">Guide Ops &amp;</tspan><tspan x="700" dy="18">Live Safety</tspan></text>
+            <g><rect class="entity-box" x="40" y="1130" width="190" height="80"/><text class="entity-title" x="135" y="1162">Tour Guide</text><text class="entity-subtitle" x="135" y="1183">Consent • live tour • swap</text></g>
+            <g><rect class="entity-box" x="1160" y="1130" width="220" height="80"/><text class="entity-title" x="1270" y="1162">Operator / Admin</text><text class="entity-subtitle" x="1270" y="1183">Assigned tour / safety view</text></g>
+            <g><path class="store-symbol" d="M560 1275 H840 M560 1365 H840 M560 1275 V1365 M602 1275 V1365"/><text class="store-id" x="581" y="1325">D12</text><text class="store-name" x="616" y="1300">Guide ops &amp; live safety</text><text class="store-detail" x="616" y="1325">Live sessions • positions • consent</text><text class="store-detail" x="616" y="1347">Flares • schedule-swap requests</text></g>
+            <text class="flow-label" x="430" y="1140">Consent / live location / separated flare</text>
+            <text class="flow-label" x="430" y="1200">Assignment / live safety status</text>
+            <text class="flow-label" x="963" y="1140">Live tour / guide status</text>
+            <text class="flow-label" x="963" y="1200">Assignment / swap / safety action</text>
+            <text class="flow-label" x="800" y="1264">Store / retrieve protected live data</text>
+          </svg>
+        </div>
+      </section>
+
+      <section class="module" id="store-key" aria-labelledby="store-key-title">
+        <h3 id="store-key-title">Shared Supabase data-store key</h3>
+        <p>The same store ID is reused wherever a focused view needs to show that data source. It still represents one logical store and the underlying named tables.</p>
+        <div class="store-key">
+          <div class="store-card"><strong>D1 · Profiles &amp; roles</strong><code>profiles</code>, <code>tours_operators</code>, <code>tours_guides</code></div>
+          <div class="store-card"><strong>D2 · Packages &amp; availability</strong><code>tours_packages</code>, <code>tours_package_availability</code>, <code>tours_package_price_variants</code>, <code>tours_package_stops</code>, <code>tours_package_inclusions</code>, <code>tours_package_gallery</code>, <code>tours_package_guides</code></div>
+          <div class="store-card"><strong>D3 · Bookings &amp; participants</strong><code>tours_bookings</code>, <code>tours_booking_participants</code></div>
+          <div class="store-card"><strong>D4 · Payment ledger</strong><code>tours_payments</code>, <code>tours_payment_events</code>, <code>tours_checkout_sessions</code></div>
+          <div class="store-card"><strong>D5 · Daet trip data</strong><code>tours_attractions</code>, <code>tours_fares</code>, <code>tours_route_cache</code></div>
+          <div class="store-card"><strong>D6 · Saved itineraries</strong><code>tours_itineraries</code>, <code>tours_itinerary_items</code></div>
+          <div class="store-card"><strong>D7 · Check-ins</strong><code>tours_checkins</code></div>
+          <div class="store-card"><strong>D8 · Tourism content &amp; safety</strong><code>tours_events</code>, <code>tours_merchandise</code>, <code>tours_emergency_contacts</code>, <code>tours_admin_audit_log</code></div>
+          <div class="store-card"><strong>D9 · Conversations &amp; notifications</strong><code>tours_conversations</code>, <code>tours_messages</code>, <code>tours_message_reactions</code>, <code>tours_notifications</code>, <code>tours_presence</code>, <code>tours_conversation_reads</code></div>
+          <div class="store-card"><strong>D10 · Reviews &amp; rewards</strong><code>tours_reviews</code>, <code>rewards_ledger</code></div>
+          <div class="store-card"><strong>D11 · Assistant records</strong><code>tours_ai_messages</code>, <code>tours_ai_feedback</code>, <code>tours_ai_usage</code></div>
+          <div class="store-card"><strong>D12 · Guide operations &amp; live safety</strong><code>tours_guide_availability</code>, <code>tours_guide_swap_requests</code>, <code>tours_live_sessions</code>, <code>tours_live_positions</code>, <code>tours_live_consents</code>, <code>tours_live_flares</code></div>
+        </div>
+      </section>
+    </section>
+
+    <section class="panel" id="whole-system" aria-labelledby="whole-system-title">
+      <h2 id="whole-system-title">Whole-system flows &amp; safeguards</h2>
+      <p class="lead">The focused diagrams show the main DFD paths. These notes tie them back to the complete role workflows and shared services in CONNECT-DAET.</p>
+      <div class="support-grid">
+        <div class="support-card"><strong>Tour Operator workflow</strong>Apply for accreditation; draft and maintain packages; set availability and capacity; confirm or decline bookings; assign approved, available guides; review manual receipts; call off or complete tours. Public merchandise is a showcase/contact flow, not an in-app checkout.</div>
+        <div class="support-card"><strong>Tour Guide workflow</strong>Apply and submit private documents; set availability; receive assignments; request schedule swaps; use the QR scanner or roster for check-in; opt into live-tour location sharing and send a separated flare when needed. Check-in rejects invalid or unauthorized requests without writing a record.</div>
+        <div class="support-card"><strong>Tourism Office workflow</strong>Review operator and guide applications, packages and merchandise; maintain attractions, events, fares and emergency contacts; moderate reviews; review assistant feedback; access analytics and audit records.</div>
+        <div class="support-card"><strong>Assistant &amp; planner</strong>The itinerary engine and data-backed travel content work without Gemini. The assistant is read-only for public data and permitted booking data; it links to booking pages but does not book, confirm payment, promise refunds, or invent schedules.</div>
+        <div class="support-card"><strong>Shared platform</strong>Next.js pages, Server Actions and API routes run on Vercel. Supabase Auth, Postgres RLS/RPCs, private Storage and Realtime protect account, booking, chat and file data.</div>
+        <div class="support-card"><strong>External services</strong>PayMongo checkout events are signature-verified and rechecked before ledger updates. Gemini and Google Maps/Routes are optional; basic answers and estimated route fallbacks remain available.</div>
       </div>
-      <div class="legend" aria-label="DFD symbol legend">
-        <span class="legend-item"><i class="sample-entity" aria-hidden="true"></i> External entity (square)</span>
-        <span class="legend-item"><i class="sample-process" aria-hidden="true"></i> Process (circle)</span>
-        <span class="legend-item"><i class="sample-store" aria-hidden="true"></i> Supabase data store (open-ended rectangle)</span>
-        <span class="legend-item">Arrow + label · Data flow</span>
-      </div>
-      <div class="notes">
-        <div class="note"><strong>2.0 Process Bookings → D3</strong>The tourist's selected package, date, guest count, and price option are validated; booking rows go to <code>tours_bookings</code> and participant rows to <code>tours_booking_participants</code>.</div>
-        <div class="note"><strong>3.0 Generate AI Itinerary</strong>The rule-based planner uses saved Daet attractions, fares, and published package data. Gemini can interpret or explain the request when available; the plan can still be generated without it. Plans are stored only when the tourist saves them.</div>
-        <div class="note warning"><strong>4.0 Verify QR Check-in</strong>The server checks the signed ticket, assigned guide/admin/operator permission, confirmed and fully paid booking, and tour date before the database records a check-in.</div>
-        <div class="note"><strong>5.0 Process Payments</strong>PayMongo checkout and verified webhook events update the payment ledger. Operators can also review submitted manual payment receipts.</div>
-        <div class="note"><strong>Data protection &amp; notation</strong>Supabase Auth validates sessions; server authorization, row-level security, ownership checks, database constraints, and verified PayMongo webhooks protect reads and writes. D1*, D3*, and D3** repeat D1 or D3 for layout clarity; they are not extra tables.</div>
+      <div class="notes-grid">
+        <div class="note callout"><strong>Booking integrity</strong>Prices and open seats are read from the database; capacity is checked transactionally before a booking reserves space. A payment event does not itself mean a booking is confirmed.</div>
+        <div class="note callout"><strong>Check-in integrity</strong>The server validates the signed ticket, tour date, booking/payment state, assigned guide and caller role. Duplicate scans are harmless and idempotent.</div>
+        <div class="note"><strong>Private files</strong>Accreditation documents and manual payment receipt proofs live in protected Supabase Storage, not public tables or browser code.</div>
+        <div class="note"><strong>Live location</strong>Tourist sharing is opt-in; guide location is limited to an active live-tour window. Trip mode shares town-level location, while tour mode shares the live position. Only the latest position is kept, and ending or expiring the session removes live-position and flare records.</div>
       </div>
     </section>
   </main>
-  <footer>CONNECT-DAET.ph · Core DFD based on the current application routes, server actions, assistant/planner implementation, and Supabase migrations. Other secondary flows such as messaging, notifications, maps, and analytics are intentionally summarized rather than expanded here.</footer>
+  <footer>CONNECT-DAET.ph · Based on the current whole-system flowchart, application routes and actions, planner implementation, and Supabase migrations. Secondary tables are grouped by function in the shared data-store key.</footer>
 </body>
 </html>
