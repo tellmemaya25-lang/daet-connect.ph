@@ -1,0 +1,309 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="UML-style use case diagram for the current CONNECT-Daet tourism platform.">
+  <title>CONNECT-Daet Use Case Diagram</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #173042;
+      --muted: #536a78;
+      --paper: #f4f8f7;
+      --line: #cbd8dc;
+      --tourist: #087e8b;
+      --operator: #a65300;
+      --guide: #26714d;
+      --admin: #6540a5;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--paper);
+      color: var(--ink);
+      font-family: Arial, Helvetica, sans-serif;
+      line-height: 1.5;
+    }
+    header, main, footer { width: min(1440px, calc(100% - 32px)); margin-inline: auto; }
+    header { padding: 30px 0 16px; }
+    h1 { margin: 0; font-size: clamp(1.8rem, 4vw, 2.7rem); line-height: 1.1; }
+    header p { max-width: 850px; margin: 12px 0 0; color: var(--muted); font-size: 1.05rem; }
+    .toolbar { display: flex; flex-wrap: wrap; gap: 10px; margin: 16px 0; }
+    button {
+      min-height: 44px;
+      padding: 10px 16px;
+      border: 0;
+      border-radius: 999px;
+      background: #145d66;
+      color: #fff;
+      font: inherit;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    button.secondary { background: #e5eeee; color: var(--ink); }
+    button:hover { filter: brightness(.94); }
+    button:focus-visible, summary:focus-visible { outline: 3px solid #f2a900; outline-offset: 3px; }
+    .diagram-frame {
+      overflow: auto;
+      border: 1px solid #d7e2e4;
+      border-radius: 20px;
+      background: #fff;
+      box-shadow: 0 16px 40px rgb(23 48 66 / 9%);
+    }
+    #diagram { display: block; width: 100%; min-width: 1080px; height: auto; }
+    .legend { display: flex; flex-wrap: wrap; gap: 14px 22px; padding: 14px 18px; color: var(--muted); font-size: .92rem; }
+    .legend-item { display: inline-flex; align-items: center; gap: 8px; }
+    .legend-line { width: 28px; border-top: 2px solid #71848e; }
+    .legend-oval { width: 30px; height: 18px; border: 2px solid #087e8b; border-radius: 50%; background: #fff; }
+    .legend-actor { width: 18px; height: 18px; border: 2px solid #173042; border-radius: 50%; }
+    .notes, .role-details, footer {
+      margin-top: 20px;
+      padding: 20px;
+      border: 1px solid #d7e2e4;
+      border-radius: 16px;
+      background: #fff;
+    }
+    h2 { margin: 0 0 10px; font-size: 1.35rem; }
+    .notes ul { margin: 8px 0 0; padding-left: 22px; }
+    .notes li + li { margin-top: 6px; }
+    .role-details details { padding: 12px 0; border-top: 1px solid #e2eaec; }
+    .role-details details:first-of-type { border-top: 0; }
+    summary { cursor: pointer; font-weight: 700; }
+    .role-details ul { margin: 10px 0 0; padding-left: 22px; }
+    .role-details li + li { margin-top: 8px; }
+    code { overflow-wrap: anywhere; color: #234d67; }
+    footer { margin-bottom: 28px; color: var(--muted); font-size: .92rem; }
+    @media (max-width: 600px) {
+      header, main, footer { width: min(100% - 20px, 1440px); }
+      header { padding-top: 22px; }
+      .notes, .role-details { padding: 16px; }
+    }
+    @media print {
+      body { background: #fff; }
+      header, main, footer { width: 100%; }
+      .toolbar { display: none; }
+      .diagram-frame { overflow: visible; border: 0; box-shadow: none; }
+      #diagram { width: 100%; min-width: 0; }
+      .notes, .role-details { break-inside: avoid; box-shadow: none; }
+      .role-details details { break-inside: avoid; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>CONNECT-Daet Use Case Diagram</h1>
+    <p>This diagram shows who uses the platform and the main actions available to each role. Actors are outside the system boundary, use cases are ovals, and lines show which actions each actor can use.</p>
+  </header>
+  <main>
+    <div class="toolbar" aria-label="Diagram actions">
+      <button type="button" onclick="window.print()">Print or save as PDF</button>
+      <button type="button" class="secondary" onclick="downloadSvg()">Download diagram as SVG</button>
+    </div>
+    <div class="diagram-frame" tabindex="0" aria-label="Scrollable use case diagram">
+      <svg id="diagram" viewBox="0 0 1900 1810" role="img" aria-labelledby="svg-title svg-desc" xmlns="http://www.w3.org/2000/svg">
+        <title id="svg-title">CONNECT-Daet use case diagram</title>
+        <desc id="svg-desc">A system boundary contains use cases for Tourists, Tour Operators, Tour Guides, and Admins. Each actor is outside the boundary and connected to their use cases.</desc>
+      </svg>
+      <div class="legend" aria-label="Diagram legend">
+        <span class="legend-item"><span class="legend-actor" aria-hidden="true"></span> Actor</span>
+        <span class="legend-item"><span class="legend-oval" aria-hidden="true"></span> Use case (platform function)</span>
+        <span class="legend-item"><span class="legend-line" aria-hidden="true"></span> Actor can use this function</span>
+      </div>
+    </div>
+
+    <section class="notes" aria-labelledby="notes-title">
+      <h2 id="notes-title">Important system notes</h2>
+      <ul>
+        <li>Admin package review currently has no “Rejected” option. The diagram uses “Review / update package status,” not an Admin reject action.</li>
+        <li>A Tourist booking records the group size and lead contact; it does not collect each guest's name or age.</li>
+        <li>A Tourist ticket QR is available after full payment. It is different from the Guide's accreditation badge QR.</li>
+        <li>The Souvenirs page is a showcase/contact flow, not an in-app merchandise checkout.</li>
+        <li>Use test or redacted personal details, payment records, tickets, IDs, and locations in demos and screenshots.</li>
+      </ul>
+    </section>
+
+    <section class="role-details" id="role-details" aria-labelledby="details-title">
+      <h2 id="details-title">Use cases and related app pages</h2>
+      <p>Open a role to see the actions and the main routes related to them.</p>
+    </section>
+  </main>
+  <footer>
+    Based on the current CONNECT-Daet app routes and role workflows. The diagram summarizes the main use cases; opening a listed page may require sign-in or role approval.
+  </footer>
+
+  <script>
+    const roles = [
+      {
+        id: "tourist", name: "Tourist", color: "#087e8b", pale: "#e8f7f7", laneY: 185,
+        cases: [
+          { lines: ["Create Account / Sign In", "Manage Profile"], detail: "Create a shared account, confirm email, sign in, and manage profile details.", routes: "/signup, /verify-email, /login, /settings" },
+          { lines: ["Browse Trips, Places", "Events & Souvenirs"], detail: "Search published tours and explore attractions, events, the souvenir showcase, and help pages.", routes: "/tours/browse, /tours/attractions, /tours/events, /tours/merch, /tours/help" },
+          { lines: ["View Tour Package", "Details & Reviews"], detail: "Review price options, meeting point, directions, itinerary, inclusions, operator accreditation, and reviews.", routes: "/tours/packages/[id]" },
+          { lines: ["Ask Assistant /", "Generate Itinerary"], detail: "Ask a Daet question or create a dated or sample itinerary from trip details and preferences.", routes: "/tours/plan, /tours/help, /tours/messages/ai" },
+          { lines: ["Edit, Save & Share", "a Trip Plan"], detail: "Edit stops, change pace or travel option, save an itinerary, or share a view-only link. Offline saving is automatic when available.", routes: "/tours/plan, /tours/my-itineraries, /tours/itineraries/shared/[token]" },
+          { lines: ["Request a Tour", "Booking"], detail: "Choose an open date and price option, enter group size and lead contact details, and send the request.", routes: "/tours/packages/[id]/book" },
+          { lines: ["Pay / Upload", "Payment Proof"], detail: "Pay after the Operator confirms the booking. Manual proof is available when that payment method is enabled.", routes: "/tours/bookings/[id]" },
+          { lines: ["View Paid Ticket", "QR & Print"], detail: "View the booking QR after full payment, print the ticket, and see the offline-saved status if it appears.", routes: "/tours/bookings/[id]/ticket" },
+          { lines: ["Messages &", "Notifications"], detail: "Communicate with the Operator or Guide and check booking or payment updates.", routes: "/tours/messages, /tours/notifications" },
+          { lines: ["Share Live Location", "(Optional)"], detail: "Choose whether to share trip-town or live-tour location when the booking supports live sharing.", routes: "/tours/bookings/[id]" },
+          { lines: ["Cancel Booking /", "Respond to Call-off"], detail: "Follow a cancellation request or respond to an Operator call-off with available new-date or refund choices.", routes: "/tours/bookings/[id]" },
+          { lines: ["Review Completed Tour", "& Check Rewards"], detail: "After the booking is marked completed, submit a review and view rewards.", routes: "/tours/bookings/[id], /tours/me" }
+        ]
+      },
+      {
+        id: "operator", name: "Tour Operator", color: "#a65300", pale: "#fff3e7", laneY: 570,
+        cases: [
+          { lines: ["Apply for", "Accreditation"], detail: "Submit the business application and check its review status.", routes: "/tours/operator/register, /tours/operator/pending" },
+          { lines: ["Manage Business &", "Payment Settings"], detail: "Maintain business contact information and configured payment instructions.", routes: "/tours/operator/settings" },
+          { lines: ["Create / Edit / Submit", "Tour Packages"], detail: "Create a package, edit its details and price variants, and submit it for review. If an existing package is rejected, its editor can show the reason and resubmission action.", routes: "/tours/operator/packages, /tours/operator/packages/create, /tours/operator/packages/[id]/edit" },
+          { lines: ["Set Tour Dates &", "Seat Capacity"], detail: "Add available dates and the number of seats for each date.", routes: "/tours/operator/packages/[id]/availability" },
+          { lines: ["View Dashboard &", "Manage Bookings"], detail: "Review dashboard metrics and booking requests, contact details, special requests, guest count, payment status, and booking state.", routes: "/tours/operator/dashboard, /tours/operator/bookings" },
+          { lines: ["Confirm / Decline /", "Complete Bookings"], detail: "Confirm or decline requests, then mark a tour completed on or after its tour date.", routes: "/tours/operator/bookings" },
+          { lines: ["Assign Guides &", "Handle Swap Requests"], detail: "Assign an approved, available Guide and decide on a schedule-swap request.", routes: "/tours/operator/bookings" },
+          { lines: ["Review Payments /", "Record Refunds"], detail: "Review manual payment proof, record received payments, and record a refund after it has been sent.", routes: "/tours/operator/bookings, /tours/operator/payments" },
+          { lines: ["Manage Cancellations", "& Call-offs"], detail: "Review cancellation requests, call off a tour with a reason, and notify affected guests.", routes: "/tours/operator/bookings" },
+          { lines: ["View Revenue /", "Download CSV"], detail: "Review the received-revenue ledger, revenue by package, and monthly CSV export.", routes: "/tours/operator/payments" },
+          { lines: ["Manage Live Tours"], detail: "View active live-tour status and related location information when available.", routes: "/tours/operator/live" },
+          { lines: ["Reviews / Merchandise /", "Messages & Notifications"], detail: "Reply to Tourist reviews, create or edit merchandise, check pending/approved/rejected status and review notes (approved product edits return to review), message tourists/Guides/Admins, and check alerts.", routes: "/tours/operator/reviews, /tours/operator/merch, /tours/messages, /tours/notifications" }
+        ]
+      },
+      {
+        id: "guide", name: "Tour Guide", color: "#26714d", pale: "#eaf6ef", laneY: 955,
+        cases: [
+          { lines: ["Apply for Guide", "Accreditation"], detail: "Submit a Guide profile and identity-verification application, then wait for approval.", routes: "/tours/guide/register, /tours/guide/pending" },
+          { lines: ["Manage Availability"], detail: "Set available or unavailable dates. An active booking can block an unavailable setting.", routes: "/tours/guide/dashboard" },
+          { lines: ["View Assigned Tours"], detail: "Review today's, upcoming, and completed assigned tours.", routes: "/tours/guide/dashboard, /tours/guide/my-tours" },
+          { lines: ["Request a Schedule", "Swap"], detail: "Request a replacement Guide and provide a reason; the Operator decides the request.", routes: "/tours/guide/my-tours" },
+          { lines: ["View Guest Roster"], detail: "See the booking party size, special requests, available guest details, and check-in state.", routes: "/tours/guide/tours/[bookingId]/roster" },
+          { lines: ["Scan Tourist Ticket", "QR Code"], detail: "Scan a synthetic ticket QR. If browser scanning is unavailable, use the phone-camera link or paste a ticket link/code.", routes: "/tours/guide/check-in" },
+          { lines: ["Manual Group / Guest", "Check-in"], detail: "Check in the whole party or a named guest when participant details exist. The booking must be confirmed, fully paid, assigned, and on the tour date.", routes: "/tours/guide/tours/[bookingId]/roster, /tours/guide/check-in" },
+          { lines: ["Show Guide Badge QR", "Public Verification"], detail: "Show the Guide accreditation badge. It is different from a Tourist's ticket QR; a public scan uses the verification page.", routes: "/tours/guide/my-qr, /tours/verify/[token]" },
+          { lines: ["Start / End Live Tour", "Share Location"], detail: "Start live sharing, use the map and stops, then end the tour to stop sharing.", routes: "/tours/guide/tours/[bookingId]/live" },
+          { lines: ["Messages &", "Notifications"], detail: "Receive assignment, swap, or call-off updates and message relevant people.", routes: "/tours/messages, /tours/notifications" }
+        ]
+      },
+      {
+        id: "admin", name: "Admin / Tourism Office", color: "#6540a5", pale: "#f2edfb", laneY: 1340,
+        cases: [
+          { lines: ["Sign In / View", "Admin Dashboard"], detail: "View application and package queues, management links, counts, and recent activity.", routes: "/tours/admin" },
+          { lines: ["Review Operator", "Applications"], detail: "Review Operator applications and authorized documents, then approve or reject.", routes: "/tours/admin/operators" },
+          { lines: ["Review Guide", "Applications"], detail: "Review Guide profiles and protected identity documents, then approve or reject.", routes: "/tours/admin/guides" },
+          { lines: ["Review / Update", "Package Status"], detail: "Review pending, published, or archived packages and update status. The current screen has no Rejected option.", routes: "/tours/admin/packages, /tours/admin/packages/[id]" },
+          { lines: ["Moderate", "Merchandise"], detail: "Review submitted products and approve or reject them with a note.", routes: "/tours/admin/merch" },
+          { lines: ["Manage Attractions", "& Map Pins"], detail: "Add, edit, or import attractions and review map-pin status.", routes: "/tours/admin/attractions" },
+          { lines: ["Manage Events"], detail: "Create and edit events and review Published, Draft, or Past status. The public month calendar is a separate page.", routes: "/tours/admin/events, /tours/events" },
+          { lines: ["Manage Fares &", "Local Guide Places"], detail: "Maintain fares, travel times, food/stay/transport places, and related imports.", routes: "/tours/admin/fares, /tours/admin/guide-places" },
+          { lines: ["Manage Emergency", "Numbers"], detail: "Add a number, mark it checked today, or delete it. The current screen has no edit action.", routes: "/tours/admin/emergency" },
+          { lines: ["Moderate Reviews"], detail: "Filter reviews, hide one with a reason, or show a hidden review again.", routes: "/tours/admin/reviews" },
+          { lines: ["Review Assistant", "Feedback"], detail: "Review helpful/not-helpful feedback, answer type, date, page, and the question/answer. Visitor names are not kept.", routes: "/tours/admin/feedback" },
+          { lines: ["View Analytics /", "Messages / Audit"], detail: "Review date-range operational analytics, messages, notifications, and audit activity.", routes: "/tours/admin/analytics, /tours/messages, /tours/notifications" }
+        ]
+      }
+    ];
+
+    const svg = document.getElementById("diagram");
+    const ns = "http://www.w3.org/2000/svg";
+    const el = (tag, attrs = {}, text = "") => {
+      const node = document.createElementNS(ns, tag);
+      Object.entries(attrs).forEach(([key, value]) => node.setAttribute(key, value));
+      if (text) node.textContent = text;
+      return node;
+    };
+    const svgText = (x, y, text, attrs = {}) => el("text", { x, y, ...attrs }, text);
+    const appendRoleDetails = () => {
+      const container = document.getElementById("role-details");
+      roles.forEach((role) => {
+        const details = document.createElement("details");
+        const summary = document.createElement("summary");
+        summary.textContent = role.name;
+        details.append(summary);
+        const list = document.createElement("ul");
+        role.cases.forEach((useCase) => {
+          const item = document.createElement("li");
+          const title = useCase.lines.join(" ");
+          item.innerHTML = `<strong>${title}</strong> - ${useCase.detail}<br><span>Routes: <code></code></span>`;
+          item.querySelector("code").textContent = useCase.routes;
+          list.append(item);
+        });
+        details.append(list);
+        container.append(details);
+      });
+    };
+
+    // The system boundary and its title.
+    svg.append(el("rect", { x: 260, y: 100, width: 1580, height: 1630, rx: 28, fill: "#ffffff", stroke: "#244757", "stroke-width": 4 }));
+    svg.append(svgText(300, 145, "CONNECT-Daet Tourism System", { fill: "#173042", "font-size": 27, "font-weight": 700 }));
+    svg.append(svgText(300, 171, "System boundary - platform functions (some require sign-in or role approval)", { fill: "#536a78", "font-size": 15 }));
+
+    const columns = [550, 1035, 1520];
+    const rowOffsets = [80, 165, 250, 335];
+
+    // Role lanes are inside the system boundary. Use cases are drawn after their association lines.
+    roles.forEach((role) => {
+      const lane = el("rect", { x: 285, y: role.laneY, width: 1530, height: 375, rx: 20, fill: role.pale, stroke: role.color, "stroke-opacity": .26, "stroke-width": 1.5 });
+      svg.append(lane);
+      svg.append(el("rect", { x: 303, y: role.laneY + 14, width: 12, height: 32, rx: 6, fill: role.color }));
+      svg.append(svgText(327, role.laneY + 37, role.name, { fill: role.color, "font-size": 21, "font-weight": 700 }));
+
+      // UML actor (stick figure) outside the system boundary.
+      const actorY = role.laneY + 190;
+      const actor = el("g", { fill: "none", stroke: role.color, "stroke-width": 5, "stroke-linecap": "round", "stroke-linejoin": "round", "aria-label": `${role.name} actor` });
+      actor.append(el("circle", { cx: 142, cy: actorY - 68, r: 18, fill: "#ffffff" }));
+      actor.append(el("path", { d: `M142 ${actorY - 49} L142 ${actorY + 8} M112 ${actorY - 24} L142 ${actorY - 42} L172 ${actorY - 24} M142 ${actorY + 8} L119 ${actorY + 42} M142 ${actorY + 8} L165 ${actorY + 42}` }));
+      svg.append(actor);
+      const actorLabel = role.name === "Tour Operator" ? ["Tour", "Operator"] : role.name === "Admin / Tourism Office" ? ["Admin /", "Tourism Office"] : [role.name];
+      const label = el("text", { x: 142, y: actorY + 68, fill: role.color, "font-size": 16, "font-weight": 700, "text-anchor": "middle" });
+      actorLabel.forEach((line, index) => label.append(el("tspan", { x: 142, dy: index === 0 ? 0 : 19 }, line)));
+      svg.append(label);
+
+      // Actor-to-use-case association lines (drawn behind the ovals).
+      role.cases.forEach((useCase, index) => {
+        const col = index % 3;
+        const row = Math.floor(index / 3);
+        const cx = columns[col];
+        const cy = role.laneY + rowOffsets[row];
+        const targetX = cx - 174;
+        const startX = 178;
+        const bend = startX + Math.max(42, (targetX - startX) * .24);
+        const path = `M ${startX} ${actorY - 3} C ${bend} ${actorY - 3}, ${targetX - 58} ${cy}, ${targetX} ${cy}`;
+        svg.append(el("path", { d: path, fill: "none", stroke: role.color, "stroke-opacity": .38, "stroke-width": 2 }));
+      });
+
+      // Use-case ovals.
+      role.cases.forEach((useCase, index) => {
+        const col = index % 3;
+        const row = Math.floor(index / 3);
+        const cx = columns[col];
+        const cy = role.laneY + rowOffsets[row];
+        const group = el("g", { tabindex: "0", role: "group", "aria-label": `${useCase.lines.join(" ")}. ${useCase.detail}` });
+        group.append(el("title", {}, `${useCase.lines.join(" ")} - ${useCase.detail} Routes: ${useCase.routes}`));
+        group.append(el("ellipse", { cx, cy, rx: 174, ry: 31, fill: "#ffffff", stroke: role.color, "stroke-width": 2.5 }));
+        const text = el("text", { x: cx, y: cy + (useCase.lines.length > 1 ? -4 : 5), fill: "#173042", "font-size": 16, "font-weight": 700, "text-anchor": "middle" });
+        useCase.lines.slice(0, 2).forEach((line, lineIndex) => text.append(el("tspan", { x: cx, dy: lineIndex === 0 ? 0 : 19 }, line)));
+        group.append(text);
+        svg.append(group);
+      });
+    });
+    appendRoleDetails();
+
+    function downloadSvg() {
+      const copy = svg.cloneNode(true);
+      copy.setAttribute("xmlns", ns);
+      copy.setAttribute("width", "1900");
+      copy.setAttribute("height", "1810");
+      const source = new XMLSerializer().serializeToString(copy);
+      const blob = new Blob([`<?xml version="1.0" encoding="UTF-8"?>\n${source}`], { type: "image/svg+xml;charset=utf-8" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = "CONNECT-DAET-USE-CASE-DIAGRAM.svg";
+      document.body.append(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(url);
+    }
+    window.downloadSvg = downloadSvg;
+  </script>
+</body>
+</html>
