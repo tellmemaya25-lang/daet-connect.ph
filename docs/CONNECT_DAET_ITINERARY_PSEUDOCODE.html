@@ -69,6 +69,18 @@
       white-space: pre;
     }
     figcaption { padding: 14px 18px 18px; color: var(--muted); font-style: italic; }
+    .sample-panel, .notes {
+      margin: 18px 0;
+      padding: 18px;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      background: #fff;
+      box-shadow: 0 10px 26px rgb(23 48 66 / 6%);
+    }
+    .sample-grid { display: grid; grid-template-columns: 1fr; gap: 14px; margin-top: 14px; }
+    .sample-grid h3 { margin: 0; font-size: 1rem; }
+    .sample-grid pre { margin-top: 8px; border-radius: 10px; font-size: 12px; }
+    .sample-note { margin: 12px 0 0; color: var(--muted); font-size: .93rem; }
     .notes { padding: 18px; }
     .notes ul { margin: 8px 0 0; padding-left: 23px; }
     .notes li + li { margin-top: 7px; }
@@ -112,6 +124,22 @@
       <pre id="pseudocode" aria-label="Pseudocode of the itinerary planner"></pre>
       <figcaption>Figure 5: Pseudocode of the CONNECT-Daet itinerary planner logic.</figcaption>
     </figure>
+
+    <section class="sample-panel" aria-labelledby="sample-title">
+      <h2 id="sample-title">Sample request and response from testing</h2>
+      <p>The request body follows the current <code>POST /api/assistant</code> format. The sample response is the NDJSON event stream produced by the same <code>respond()</code> logic used by that route; each line is a separate JSON object. The route uses <code>application/x-ndjson</code>.</p>
+      <div class="sample-grid">
+        <div>
+          <h3>Request payload (JSON)</h3>
+          <pre id="request-sample" aria-label="Sample request payload"></pre>
+        </div>
+        <div>
+          <h3>Response (NDJSON events)</h3>
+          <pre id="response-sample" aria-label="Sample response events"></pre>
+        </div>
+      </div>
+      <p class="sample-note">Captured by a local unit test of <code>respond()</code> with AI disabled (Basic mode), five synthetic attractions, and no tour or fare rows. The API route serializes these events as NDJSON; a live response may vary by sign-in state and daily limits. This is not production data, and <code>generatedAt</code> changes on each run.</p>
+    </section>
 
     <section class="notes" aria-labelledby="notes-title">
       <h2 id="notes-title">System details shown in this logic</h2>
@@ -226,6 +254,33 @@
     END IF
   END IF
 END`;
+
+    const requestSample =     {
+      "messages": [
+        {
+          "role": "user",
+          "content": "Plan 2 days of beaches for us"
+        }
+      ],
+      "context": {
+        "dates": {
+          "start": "2026-11-10",
+          "end": "2026-11-11"
+        },
+        "travelers": {
+          "adults": 2,
+          "children": [
+            6
+          ]
+        },
+        "origin": {
+          "city": "Manila"
+        }
+      }
+    };
+    const responseSample = "{\"t\":\"mode\",\"mode\":\"basic\"}\n{\"t\":\"text\",\"v\":\"Here is a 2-day plan with 5 stops  for your dates.\\n• Day 1 (Tuesday, Nov 10): Bagasbas Beach, Daet Cathedral, Daet Public Market, First Rizal Monument, Daet Park\\n• Day 2 (Wednesday, Nov 11): free day\\nCosts shown are entrance fees for your group. Tap a stop to swap or remove it.\"}\n{\"t\":\"itinerary\",\"itinerary\":{\"plan\":{\"days\":[{\"date\":\"2026-11-10\",\"blocks\":[{\"kind\":\"visit\",\"attractionId\":\"bagasbas\",\"name\":\"Bagasbas Beach\",\"start\":495,\"end\":555,\"travelMinutes\":11,\"cost\":0,\"hoursConfirmed\":false},{\"kind\":\"visit\",\"attractionId\":\"church\",\"name\":\"Daet Cathedral\",\"start\":580,\"end\":640,\"travelMinutes\":11,\"cost\":0,\"hoursConfirmed\":false},{\"kind\":\"visit\",\"attractionId\":\"market\",\"name\":\"Daet Public Market\",\"start\":655,\"end\":715,\"travelMinutes\":1,\"cost\":0,\"hoursConfirmed\":false},{\"kind\":\"lunch\",\"name\":\"Lunch break\",\"start\":715,\"end\":775,\"travelMinutes\":0,\"cost\":0},{\"kind\":\"visit\",\"attractionId\":\"rizal\",\"name\":\"First Rizal Monument\",\"start\":790,\"end\":850,\"travelMinutes\":1,\"cost\":0,\"hoursConfirmed\":false},{\"kind\":\"visit\",\"attractionId\":\"park\",\"name\":\"Daet Park\",\"start\":865,\"end\":925,\"travelMinutes\":1,\"cost\":60,\"hoursConfirmed\":false}]},{\"date\":\"2026-11-11\",\"blocks\":[]}],\"totals\":{\"cost\":60,\"travelMinutes\":25,\"visits\":5}},\"input\":{\"startDate\":\"2026-11-10\",\"days\":2,\"budgetPerDay\":500,\"interests\":[\"beach\"],\"pace\":\"normal\",\"groupSize\":3,\"dayStart\":\"08:00\",\"dayEnd\":\"18:00\"},\"stops\":[{\"id\":\"bagasbas\",\"name\":\"Bagasbas Beach\",\"category\":\"beach\",\"lat\":14.1316,\"lng\":122.9851,\"fee\":null,\"photoUrl\":null,\"tip\":null},{\"id\":\"church\",\"name\":\"Daet Cathedral\",\"category\":\"religious\",\"lat\":14.1125,\"lng\":122.955,\"fee\":null,\"photoUrl\":null,\"tip\":null},{\"id\":\"market\",\"name\":\"Daet Public Market\",\"category\":\"food\",\"lat\":14.114,\"lng\":122.956,\"fee\":null,\"photoUrl\":null,\"tip\":null},{\"id\":\"rizal\",\"name\":\"First Rizal Monument\",\"category\":\"heritage\",\"lat\":14.1131,\"lng\":122.9545,\"fee\":null,\"photoUrl\":null,\"tip\":null},{\"id\":\"park\",\"name\":\"Daet Park\",\"category\":\"park\",\"lat\":14.115,\"lng\":122.957,\"fee\":20,\"photoUrl\":null,\"tip\":null}],\"packages\":[],\"travelers\":{\"adults\":2,\"children\":[6]},\"gettingThere\":{\"from\":\"Manila\",\"card\":null,\"checkedOn\":null},\"generatedAt\":\"2026-11-07T20:14:09.274Z\"}}\n{\"t\":\"choices\",\"options\":[\"Make it more relaxed\",\"Add more food stops\",\"Start at 9am\"]}\n{\"t\":\"cards\",\"cards\":[]}\n{\"t\":\"done\"}";
+    document.getElementById("request-sample").textContent = JSON.stringify(requestSample, null, 2);
+    document.getElementById("response-sample").textContent = responseSample;
 
     const code = document.getElementById("pseudocode");
     const status = document.getElementById("status");
