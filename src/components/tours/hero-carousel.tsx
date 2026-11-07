@@ -79,7 +79,10 @@ export function HeroCarousel({ photos, title }: { photos: HeroPhoto[]; title: st
   const [open, setOpen] = useState(false);
   const wide = useMedia("(min-width: 640px)");
   const reduced = useMedia("(prefers-reduced-motion: reduce)");
-  const swipe = useRef<{ x: number; swiped: boolean } | null>(null);
+  const swipe = useRef<{ x: number; t: number; swiped: boolean } | null>(null);
+  // Phones: the photos follow the finger (dragX), then settle on release.
+  const [dragX, setDragX] = useState(0);
+  const [dragging, setDragging] = useState(false);
   const opener = useRef<HTMLButtonElement>(null);
   const wrap = useRef<HTMLDivElement>(null);
   // The strip runs the full width of the screen, past the page's own margins, so the blur and the fade
@@ -111,18 +114,37 @@ export function HeroCarousel({ photos, title }: { photos: HeroPhoto[]; title: st
           else if (e.key === "ArrowRight") go(i + 1);
         }}
         onPointerDown={(e) => {
-          swipe.current = { x: e.clientX, swiped: false };
+          swipe.current = { x: e.clientX, t: e.timeStamp, swiped: false };
+        }}
+        onPointerMove={(e) => {
+          const s = swipe.current;
+          if (wide || !s || e.pointerType === "mouse" && e.buttons === 0) return;
+          const dx = e.clientX - s.x;
+          if (!dragging && Math.abs(dx) > 6) {
+            setDragging(true);
+            e.currentTarget.setPointerCapture?.(e.pointerId);
+          }
+          if (dragging) setDragX(dx);
+        }}
+        onPointerCancel={() => {
+          setDragging(false);
+          setDragX(0);
         }}
         onPointerUp={(e) => {
           const s = swipe.current;
-          if (s && Math.abs(e.clientX - s.x) > SWIPE_PX) {
+          const dx = s ? e.clientX - s.x : 0;
+          // A short flick counts too: fast and far enough, or slow and far.
+          const fast = s ? Math.abs(dx) > 16 && Math.abs(dx) / Math.max(1, e.timeStamp - s.t) > 0.4 : false;
+          if (s && (Math.abs(dx) > SWIPE_PX || fast)) {
             s.swiped = true;
-            go(e.clientX < s.x ? i + 1 : i - 1);
+            go(dx < 0 ? i + 1 : i - 1);
           }
+          setDragging(false);
+          setDragX(0);
         }}
-        className="relative flex-none self-start overflow-x-clip [container-type:inline-size]"
+        className="relative flex-none touch-pan-y self-start overflow-x-clip [container-type:inline-size] sm:touch-auto"
         style={{
-          ["--cw" as string]: "min(560px, 78cqw)",
+          ["--cw" as string]: wide ? "min(560px, 78cqw)" : "calc(100cqw - 32px)",
           // How much of a side photo hangs past the screen edge, and how far the colour split reaches in.
           ["--off" as string]: `calc((3 * var(--cw) + ${2 * GAP}px - 100cqw) / 2)`,
           ["--ca-zone" as string]: "min(34cqw, 360px)",
@@ -146,22 +168,24 @@ export function HeroCarousel({ photos, title }: { photos: HeroPhoto[]; title: st
                 zIndex: here ? 2 : 1,
                 width: "var(--cw)",
                 marginLeft: "calc(var(--cw) / -2)",
-                top: here ? 30 : 20,
-                height: here ? "calc(var(--cw) * 0.643)" : "calc(var(--cw) * 0.678)",
+                top: here || !wide ? 30 : 20,
+                height: here || !wide ? "calc(var(--cw) * 0.643)" : "calc(var(--cw) * 0.678)",
                 opacity: Math.abs(d) > 1 ? 0 : 1,
-                transform: `translateX(calc(${d} * (var(--cw) + ${GAP}px))) perspective(1200px) rotateY(${d < 0 ? 18 : d > 0 ? -18 : 0}deg)`,
-                transition: wraps ? "none" : motion(["transform", "top", "height", "opacity"]),
+                transform: wide
+                  ? `translateX(calc(${d} * (var(--cw) + ${GAP}px))) perspective(1200px) rotateY(${d < 0 ? 18 : d > 0 ? -18 : 0}deg)`
+                  : `translateX(calc(${d} * (var(--cw) + ${GAP}px) + ${dragX}px))`,
+                transition: wraps || dragging ? "none" : motion(["transform", "top", "height", "opacity"]),
               }}
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src={photo.src} alt={here ? photo.alt : ""} loading={Math.abs(d) <= 2 ? "eager" : "lazy"} className="block h-full w-full object-cover" />
-              {near && !here ? <Aberration src={photo.src} side={d < 0 ? "left" : "right"} reduced={reduced} wraps={wraps} /> : null}
+              {wide && near && !here ? <Aberration src={photo.src} side={d < 0 ? "left" : "right"} reduced={reduced} wraps={wraps} /> : null}
             </figure>
           );
         })}
 
         {/* Progressive blur and a fade into the page colour, across the whole space beside the centre photo. */}
-        {(["left", "right"] as const).map((side) => {
+        {(wide ? (["left", "right"] as const) : []).map((side) => {
           const inward = side === "left" ? "right" : "left";
           return (
             <div key={side} aria-hidden="true">
