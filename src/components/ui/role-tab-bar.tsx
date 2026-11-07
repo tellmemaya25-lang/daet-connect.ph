@@ -29,7 +29,7 @@ export function RoleTabBar({
   return (
     <nav
       aria-label="Dashboard"
-      className="fixed inset-x-0 bottom-0 z-40 bg-surface pb-[env(safe-area-inset-bottom)] shadow-[0_-4px_16px_rgba(15,23,42,0.08)] sm:hidden print:hidden"
+      className="fixed inset-x-0 bottom-0 z-40 border-t border-slate-300/50 bg-surface pb-[env(safe-area-inset-bottom)] shadow-[0_-4px_16px_rgba(15,23,42,0.08)] dark:border-slate-600/50 sm:hidden print:hidden"
     >
       <ul className="mx-auto grid max-w-md grid-cols-5">
         {tabs.map((tab) => {

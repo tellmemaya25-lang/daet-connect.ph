@@ -382,7 +382,7 @@ export default async function PackageDetailPage({ params }: PageProps) {
         </aside>
       </div>
 
-      <div className="fixed inset-x-0 bottom-0 z-50 bg-surface px-4 pb-[calc(0.75rem+env(safe-area-inset-bottom))] pt-3 shadow-[var(--shadow-float)] lg:hidden print:hidden">
+      <div className="fixed inset-x-0 bottom-0 z-50 border-t border-slate-300/50 bg-surface dark:border-slate-600/50 px-4 pb-[calc(0.75rem+env(safe-area-inset-bottom))] pt-3 shadow-[var(--shadow-float)] lg:hidden print:hidden">
         <div className="mx-auto flex max-w-7xl items-center justify-between gap-4">
           <p className="leading-tight">
             <span className="block text-sm text-daet-ink/75">From</span>
