@@ -1,0 +1,293 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>CONNECT-DAET.ph — Information Flow Diagram</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --navy: #12324d;
+      --ink: #1d2c3b;
+      --muted: #5b6c7d;
+      --line: #dbe4ec;
+      --paper: #fff;
+      --page: #f2f6fa;
+      --flow: #526579;
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body { margin: 0; color: var(--ink); background: var(--page); font: 16px/1.55 system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif; }
+    header { padding: 30px clamp(18px, 4vw, 64px) 24px; color: #fff; background: linear-gradient(120deg, #12324d, #1e5d78); }
+    header h1 { margin: 0 0 8px; font-size: clamp(26px, 3vw, 38px); line-height: 1.15; }
+    header p { max-width: 960px; margin: 0; color: #e3eef6; }
+    nav { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 20px; }
+    nav a, .print-button { display: inline-flex; align-items: center; min-height: 38px; padding: 7px 13px; border: 1px solid #ffffff55; border-radius: 999px; color: #fff; background: #ffffff14; font: 700 13px/1.2 system-ui, sans-serif; text-decoration: none; cursor: pointer; }
+    nav a:hover, .print-button:hover { background: #ffffff2b; }
+    .print-button { margin-left: auto; color: var(--navy); background: #fff; border-color: #fff; }
+    main { width: min(1540px, 100%); margin: 24px auto; padding: 0 18px 42px; }
+    .intro, .panel, .legend { border: 1px solid var(--line); border-radius: 16px; background: var(--paper); }
+    .intro { margin-bottom: 16px; padding: 15px 19px; color: #28445c; background: #e9f2f8; border-left: 5px solid #317a98; }
+    .panel { margin: 18px 0 24px; padding: 18px; box-shadow: 0 5px 20px #102a430c; scroll-margin-top: 14px; }
+    .panel h2 { margin: 0; color: var(--navy); font-size: 23px; line-height: 1.25; }
+    .lead { margin: 5px 0 14px; color: var(--muted); }
+    .diagram-frame { overflow: auto; border: 1px solid #e3e9ef; border-radius: 12px; background: #fff; }
+    .diagram-svg { display: block; width: 100%; min-width: 1500px; height: auto; }
+    .legend { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 22px; padding: 13px 16px; margin: 0 0 16px; color: #435467; font-size: 13px; }
+    .legend-item { display: inline-flex; align-items: center; gap: 8px; }
+    .legend-swatch { width: 25px; height: 18px; border: 2px solid #6b8296; border-radius: 4px; background: #eef5ff; }
+    .legend-hub { width: 28px; height: 18px; border-radius: 5px; background: var(--navy); }
+    .legend-service { width: 25px; height: 18px; border: 2px dashed #9a6b22; border-radius: 4px; background: #fff7e8; }
+    .legend-arrow { position: relative; width: 34px; height: 0; border-top: 2px solid var(--flow); }
+    .legend-arrow::after { position: absolute; top: -5px; right: -1px; border: 4px solid transparent; border-left-color: var(--flow); content: ""; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 12px; margin-top: 14px; }
+    .card, .note { padding: 14px 16px; border: 1px solid var(--line); border-radius: 12px; color: #435467; background: #f8fafc; font-size: 14px; }
+    .card h3, .note strong { display: block; margin: 0 0 5px; color: var(--navy); font-size: 16px; }
+    .card p { margin: 0; }
+    .card ul { margin: 6px 0 0; padding-left: 19px; }
+    .card li + li { margin-top: 4px; }
+    .tag { display: inline-block; margin-bottom: 7px; padding: 2px 9px; border: 1px solid #cfdae4; border-radius: 999px; color: #304b63; background: #fff; font-size: 11px; font-weight: 800; letter-spacing: .04em; }
+    .accuracy { background: #fff9e9; border-color: #eed49e; }
+    .accuracy strong { color: #805b17; }
+    .flow-steps { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); align-items: stretch; gap: 10px; margin-top: 12px; }
+    .step { position: relative; padding: 13px 14px; border: 1px solid var(--line); border-radius: 12px; background: #fff; }
+    .step:not(:last-child)::after { position: absolute; top: 50%; right: -12px; z-index: 1; width: 13px; height: 2px; background: #61788c; content: ""; }
+    .step b { display: block; color: var(--navy); }
+    .step small { display: block; margin-top: 3px; color: var(--muted); line-height: 1.4; }
+    footer { width: min(1540px, 100%); margin: 0 auto; padding: 0 18px 28px; color: var(--muted); font-size: 13px; }
+    /* SVG labels are deliberately short; the role boxes and route notes carry the detail. */
+    .diagram-svg text { font-family: Arial, Helvetica, sans-serif; }
+    .role-box { stroke-width: 2.2; }
+    .tourist-box { fill: #eff6ff; stroke: #3675b8; }
+    .operator-box { fill: #effaf4; stroke: #3b8060; }
+    .guide-box { fill: #fff8e8; stroke: #a97b2e; }
+    .admin-box { fill: #f4f1ff; stroke: #725bb1; }
+    .role-title { font-size: 18px; font-weight: 800; fill: #173b59; }
+    .role-subtitle { font-size: 11px; fill: #607286; }
+    .section-label { font-size: 10.5px; font-weight: 800; letter-spacing: .08em; fill: #40586d; }
+    .role-copy { font-size: 11.5px; fill: #273a4d; }
+    .role-rule { stroke: #cbd6e0; stroke-width: 1; }
+    .hub-box { fill: #12324d; stroke: #0b2437; stroke-width: 2.6; }
+    .hub-title { font-size: 20px; font-weight: 800; text-anchor: middle; fill: #fff; }
+    .hub-subtitle { font-size: 12px; text-anchor: middle; fill: #cfe2ef; }
+    .hub-copy { font-size: 12px; text-anchor: middle; fill: #f0f6fa; }
+    .service-box { fill: #fff7e8; stroke: #a8792a; stroke-width: 2; stroke-dasharray: 7 5; }
+    .service-title { font-size: 14px; font-weight: 800; text-anchor: middle; fill: #634814; }
+    .service-copy { font-size: 10.5px; text-anchor: middle; fill: #735c33; }
+    .flow { fill: none; stroke: var(--flow); stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+    .flow-label { font-size: 10.5px; font-weight: 700; text-anchor: middle; fill: #33485d; paint-order: stroke; stroke: #fff; stroke-width: 4px; stroke-linejoin: round; }
+    @media (max-width: 720px) {
+      main { margin: 14px auto; padding: 0 10px 28px; }
+      .panel { padding: 12px; }
+      .panel h2 { font-size: 20px; }
+      .print-button { margin-left: 0; }
+      .flow-steps { grid-template-columns: 1fr; }
+      .step:not(:last-child)::after { top: auto; right: 50%; bottom: -12px; width: 2px; height: 13px; }
+    }
+    @media print {
+      body { background: #fff; }
+      header { padding: 8px 0 12px; color: #111; background: #fff; border-bottom: 2px solid var(--navy); }
+      header p { color: #334155; }
+      nav, .print-button, .intro { display: none; }
+      main, footer { width: 100%; margin: 0; padding: 0; }
+      .panel { margin: 0; padding: 8px 0; border: 0; box-shadow: none; break-after: page; }
+      .diagram-frame { overflow: visible; border: 0; }
+      .diagram-svg { width: 100% !important; min-width: 0 !important; }
+      .card, .note, .step { break-inside: avoid; }
+      footer { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>CONNECT-DAET.ph — Information Flow Diagram</h1>
+    <p>Role-focused view of what information tourists, operators, guides, and the Tourism Office send to CONNECT-DAET, what they receive, and how the platform routes it.</p>
+    <nav aria-label="Information flow sections">
+      <a href="#role-map">Role communication map</a>
+      <a href="#handoffs">Role-to-role handoffs</a>
+      <a href="#accuracy">Accuracy notes</a>
+      <button class="print-button" onclick="window.print()">Print / Save as PDF</button>
+    </nav>
+  </header>
+
+  <main>
+    <div class="intro"><strong>Important:</strong> CONNECT-DAET is the mediator between roles. For example, an operator assigns a guide in the platform; the system notifies the guide, who then opens the authorized guest roster. Hindi ito direct file transfer mula operator papunta sa guide.</div>
+
+    <div class="legend" aria-label="Diagram legend">
+      <span class="legend-item"><i class="legend-swatch" aria-hidden="true"></i> Role</span>
+      <span class="legend-item"><i class="legend-hub" aria-hidden="true"></i> CONNECT-DAET system</span>
+      <span class="legend-item"><i class="legend-service" aria-hidden="true"></i> External service</span>
+      <span class="legend-item"><i class="legend-arrow" aria-hidden="true"></i> Arrow direction = information direction</span>
+    </div>
+
+    <section class="panel" id="role-map" aria-labelledby="map-title">
+      <h2 id="map-title">Role communication map</h2>
+      <p class="lead">Each role communicates with the system; the platform validates, records, and routes authorized updates. Short arrow labels point to the detailed payloads in each role box.</p>
+      <div class="diagram-frame">
+        <svg class="diagram-svg" viewBox="0 0 1500 1190" role="img" aria-label="Tourist, Tour Operator, Tour Guide, and Admin exchange information through the CONNECT-DAET system, which also exchanges payment data with PayMongo and optional itinerary or route data with Gemini AI and Maps or Routes" xmlns="http://www.w3.org/2000/svg">
+          <defs><marker id="info-arrow" markerWidth="10" markerHeight="10" refX="8.5" refY="5" orient="auto" markerUnits="strokeWidth"><path d="M0 0 L10 5 L0 10 z" fill="#526579"/></marker></defs>
+          <rect width="1500" height="1190" fill="#fff"/>
+          <!-- Role-to-system information flows. No role-to-role line bypasses the platform. -->
+          <path class="flow" marker-end="url(#info-arrow)" d="M440 230 L560 455"/>
+          <path class="flow" marker-end="url(#info-arrow)" d="M560 505 L440 330"/>
+          <path class="flow" marker-end="url(#info-arrow)" d="M1060 230 L940 455"/>
+          <path class="flow" marker-end="url(#info-arrow)" d="M940 505 L1060 330"/>
+          <path class="flow" marker-end="url(#info-arrow)" d="M560 550 L440 760"/>
+          <path class="flow" marker-end="url(#info-arrow)" d="M440 900 L560 620"/>
+          <path class="flow" marker-end="url(#info-arrow)" d="M940 550 L1060 760"/>
+          <path class="flow" marker-end="url(#info-arrow)" d="M1060 900 L940 620"/>
+          <!-- Payment service: checkout request out; verified payment event back. -->
+          <path class="flow" marker-end="url(#info-arrow)" d="M700 425 L700 80"/>
+          <path class="flow" marker-end="url(#info-arrow)" d="M800 80 L800 425"/>
+          <!-- Optional model and map services; business data and fallbacks remain in CONNECT-DAET. -->
+          <path class="flow" marker-end="url(#info-arrow)" d="M700 675 L700 1100"/>
+          <path class="flow" marker-end="url(#info-arrow)" d="M800 1100 L800 675"/>
+
+          <!-- External role boxes -->
+          <g>
+            <rect class="role-box tourist-box" x="40" y="60" width="400" height="360" rx="15"/>
+            <text class="role-title" x="64" y="99">Tourist</text>
+            <text class="role-subtitle" x="64" y="121">Plans, books, asks, and travels</text>
+            <line class="role-rule" x1="64" y1="139" x2="416" y2="139"/>
+            <text class="section-label" x="64" y="162">TO SYSTEM</text>
+            <text class="role-copy" x="64" y="185">Dates • party size • travel origin</text>
+            <text class="role-copy" x="64" y="207">Interests • budget • pace</text>
+            <text class="role-copy" x="64" y="229">Booking/contact details • payment choice or proof</text>
+            <text class="role-copy" x="64" y="251">Questions • messages • reviews</text>
+            <text class="section-label" x="64" y="291">FROM SYSTEM</text>
+            <text class="role-copy" x="64" y="314">Itinerary • published tours • prices / availability</text>
+            <text class="role-copy" x="64" y="336">Booking / verified payment status • assigned guide</text>
+            <text class="role-copy" x="64" y="358">Check-in / call-off updates • messages • rewards</text>
+          </g>
+          <g>
+            <rect class="role-box operator-box" x="1060" y="60" width="400" height="360" rx="15"/>
+            <text class="role-title" x="1084" y="99">Tour Operator</text>
+            <text class="role-subtitle" x="1084" y="121">Own packages, bookings, and tour operations</text>
+            <line class="role-rule" x1="1084" y1="139" x2="1436" y2="139"/>
+            <text class="section-label" x="1084" y="162">TO SYSTEM</text>
+            <text class="role-copy" x="1084" y="185">Package details • prices • open dates</text>
+            <text class="role-copy" x="1084" y="207">Confirm / decline • manual receipt review</text>
+            <text class="role-copy" x="1084" y="229">Guide assignment • cancellation / call-off</text>
+            <text class="role-copy" x="1084" y="251">In-app messages • review replies</text>
+            <text class="section-label" x="1084" y="291">FROM SYSTEM</text>
+            <text class="role-copy" x="1084" y="314">New booking / payment / cancellation alerts</text>
+            <text class="role-copy" x="1084" y="336">Own booking / guest / payment status</text>
+            <text class="role-copy" x="1084" y="358">Revenue by package • occupancy • CSV report</text>
+          </g>
+          <g>
+            <rect class="role-box admin-box" x="40" y="740" width="400" height="340" rx="15"/>
+            <text class="role-title" x="64" y="779">Admin / Tourism Office</text>
+            <text class="role-subtitle" x="64" y="801">Accreditation, public information, oversight</text>
+            <line class="role-rule" x1="64" y1="819" x2="416" y2="819"/>
+            <text class="section-label" x="64" y="847">FROM SYSTEM</text>
+            <text class="role-copy" x="64" y="871">Review queues • AI feedback • audit events</text>
+            <text class="role-copy" x="64" y="893">Bookings • confirmed travelers • check-ins</text>
+            <text class="role-copy" x="64" y="915">Revenue by operator • cancellation rate</text>
+            <text class="role-copy" x="64" y="937">Top packages / planned attractions • ratings</text>
+            <text class="section-label" x="64" y="977">TO SYSTEM</text>
+            <text class="role-copy" x="64" y="1001">Operator / guide accreditation decisions</text>
+            <text class="role-copy" x="64" y="1023">Package / merchandise review and moderation</text>
+            <text class="role-copy" x="64" y="1045">Attractions • events • fares • emergency contacts</text>
+          </g>
+          <g>
+            <rect class="role-box guide-box" x="1060" y="740" width="400" height="340" rx="15"/>
+            <text class="role-title" x="1084" y="779">Tour Guide</text>
+            <text class="role-subtitle" x="1084" y="801">Availability, assigned tours, and check-in</text>
+            <line class="role-rule" x1="1084" y1="819" x2="1436" y2="819"/>
+            <text class="section-label" x="1084" y="847">FROM SYSTEM</text>
+            <text class="role-copy" x="1084" y="871">Tour assignment alert • authorized guest roster</text>
+            <text class="role-copy" x="1084" y="893">Meeting / booking details • call-off updates</text>
+            <text class="role-copy" x="1084" y="915">Check-in result • in-app messages</text>
+            <text class="section-label" x="1084" y="955">TO SYSTEM</text>
+            <text class="role-copy" x="1084" y="979">Availability • schedule-swap requests</text>
+            <text class="role-copy" x="1084" y="1001">Signed QR scan or roster check-in</text>
+            <text class="role-copy" x="1084" y="1023">Live-tour location / consent • separated flare</text>
+            <text class="role-copy" x="1084" y="1045">In-app messages • tour status</text>
+          </g>
+
+          <!-- Central system hub -->
+          <g>
+            <rect class="hub-box" x="560" y="425" width="380" height="250" rx="22"/>
+            <text class="hub-title" x="750" y="469">CONNECT-DAET</text>
+            <text class="hub-subtitle" x="750" y="493">Role-aware information hub</text>
+            <line x1="596" y1="511" x2="904" y2="511" stroke="#7392a8" stroke-width="1"/>
+            <text class="hub-copy" x="750" y="541">Validates session, role, ownership, and request data</text>
+            <text class="hub-copy" x="750" y="565">Applies booking, payment, and check-in rules</text>
+            <text class="hub-copy" x="750" y="589">Stores authorized updates and routes notifications</text>
+            <text class="hub-copy" x="750" y="613">Messages and role-specific pages share permitted data</text>
+          </g>
+
+          <!-- External service boxes -->
+          <g>
+            <rect class="service-box" x="660" y="5" width="180" height="75" rx="12"/>
+            <text class="service-title" x="750" y="35">PayMongo</text>
+            <text class="service-copy" x="750" y="56">Hosted payment service</text>
+          </g>
+          <g>
+            <rect class="service-box" x="600" y="1100" width="300" height="75" rx="12"/>
+            <text class="service-title" x="750" y="1130">Optional AI / Maps services</text>
+            <text class="service-copy" x="750" y="1151">Gemini AI • Google Maps / Routes</text>
+          </g>
+
+          <!-- Direction labels -->
+          <text class="flow-label" x="500" y="329">Trip / booking data</text>
+          <text class="flow-label" x="500" y="438">Plans / status</text>
+          <text class="flow-label" x="1000" y="329">Business actions</text>
+          <text class="flow-label" x="1000" y="438">Alerts / reports</text>
+          <text class="flow-label" x="500" y="643">Queues / analytics</text>
+          <text class="flow-label" x="500" y="754">Approvals / content</text>
+          <text class="flow-label" x="1000" y="643">Assignment / roster</text>
+          <text class="flow-label" x="1000" y="754">Check-in / updates</text>
+          <text class="flow-label" x="630" y="250">Checkout session</text>
+          <text class="flow-label" x="870" y="290">Verified result</text>
+          <text class="flow-label" x="630" y="875">Trip / route request</text>
+          <text class="flow-label" x="870" y="920">Answer / route estimate</text>
+        </svg>
+      </div>
+    </section>
+
+    <section class="panel" id="handoffs" aria-labelledby="handoffs-title">
+      <h2 id="handoffs-title">Key role-to-role handoffs</h2>
+      <p class="lead">The people may communicate with each other, but the application mediates platform data and enforces who can see it.</p>
+      <div class="grid">
+        <article class="card">
+          <span class="tag">OPERATOR → SYSTEM → GUIDE</span>
+          <h3>Assignment and guest roster</h3>
+          <p>The operator assigns a guide to a booking. CONNECT-DAET saves the assignment and sends a <em>New tour assigned</em> alert to the guide (and a guide-assigned update to the tourist). The guide then opens the protected roster to fetch the guest list; the manifest is not sent as an unrestricted direct file.</p>
+        </article>
+        <article class="card">
+          <span class="tag">TOURIST → SYSTEM ↔ PAYMONGO</span>
+          <h3>Payment information</h3>
+          <p>The tourist chooses a payment route and starts checkout. Card details are entered in PayMongo's hosted flow, not stored by CONNECT-DAET. The system accepts a signed, verified payment event before updating status. For manual payment, receipt proof is stored privately and reviewed by the operator.</p>
+        </article>
+        <article class="card">
+          <span class="tag">TOURIST ↔ SYSTEM ↔ OPERATOR / GUIDE</span>
+          <h3>Messages and trip updates</h3>
+          <p>In-app conversations carry tourist–operator or tourist–guide messages. The system routes the message to the permitted participants and may create an in-app or configured push/email notification. Booking, payment, guide assignment, check-in, and call-off updates use the same role-aware path.</p>
+        </article>
+        <article class="card">
+          <span class="tag">SYSTEM → ADMIN</span>
+          <h3>Operational tourism analytics</h3>
+          <p>The current Admin dashboard reports tourist check-ins, bookings and confirmed travelers, revenue received, cancellation rate, revenue by operator, top packages, top attractions in saved trip plans, ratings, accreditation queues, feedback, and audit records.</p>
+        </article>
+      </div>
+      <div class="flow-steps" aria-label="Guide assignment information route">
+        <div class="step"><b>1 · Operator</b><small>Confirms the booking and assigns an approved, available guide in the operator workflow.</small></div>
+        <div class="step"><b>2 · CONNECT-DAET</b><small>Persists the assignment, sends the guide-assigned notification, and applies access rules to the roster.</small></div>
+        <div class="step"><b>3 · Guide</b><small>Opens the assigned tour, retrieves the permitted guest manifest, and submits QR or roster check-ins.</small></div>
+      </div>
+    </section>
+
+    <section class="panel" id="accuracy" aria-labelledby="accuracy-title">
+      <h2 id="accuracy-title">Accuracy notes</h2>
+      <div class="grid">
+        <div class="note accuracy"><strong>Admin reports are analytics, not a separate formal assessment</strong>The application currently provides operational tourism analytics. It does not label or generate a standalone “Tourism Impact Assessment Report”; this diagram avoids implying that it does.</div>
+        <div class="note"><strong>Trip planning is grounded in Daet data</strong>The planner takes dates/group/origin from the trip questions and interests/budget/pace from the tourist's request. Database-backed rules determine stops, times, and prices. Gemini and Maps/Routes are optional; fallback planning and route estimates remain available.</div>
+        <div class="note"><strong>Check-in is validated by the system</strong>A signed ticket or roster action is checked against the caller's role, guide assignment, tour date, booking, and payment status. The system returns accepted/already/rejected status and records authorized check-ins.</div>
+        <div class="note"><strong>Live-tour privacy</strong>Tourist location sharing is opt-in; guide location is limited to the live-tour window. Trip mode uses town-level location. Only the latest position is retained, and the session lifecycle clears live-position and flare records.</div>
+      </div>
+    </section>
+  </main>
+  <footer>CONNECT-DAET.ph · Role flows summarized from the whole-system flowchart, planner notes, application routes/actions, notification rules, and Admin/operator/guide workflows.</footer>
+</body>
+</html>
