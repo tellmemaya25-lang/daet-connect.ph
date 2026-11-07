@@ -80,7 +80,10 @@
     .sample-grid { display: grid; grid-template-columns: 1fr; gap: 14px; margin-top: 14px; }
     .sample-grid h3 { margin: 0; font-size: 1rem; }
     .sample-grid pre { margin-top: 8px; border-radius: 10px; font-size: 12px; }
+    .sample-grid details { margin-top: 10px; }
+    .sample-grid summary { cursor: pointer; font-weight: 700; color: var(--blue); }
     .sample-note { margin: 12px 0 0; color: var(--muted); font-size: .93rem; }
+    .sample-caption { margin: 12px 0 0; color: var(--muted); font-style: italic; }
     .notes { padding: 18px; }
     .notes ul { margin: 8px 0 0; padding-left: 23px; }
     .notes li + li { margin-top: 7px; }
@@ -127,18 +130,24 @@
 
     <section class="sample-panel" aria-labelledby="sample-title">
       <h2 id="sample-title">Sample request and response from testing</h2>
-      <p>The request body follows the current <code>POST /api/assistant</code> format. The sample response is the NDJSON event stream produced by the same <code>respond()</code> logic used by that route; each line is a separate JSON object. The route uses <code>application/x-ndjson</code>.</p>
+      <p>The current endpoint is <code>POST /api/assistant</code>. Its request uses <code>messages</code> and optional trip <code>context</code>; the signed-in user comes from the server session, not a client-supplied <code>tourist_id</code>. Daet is the planner's destination, dates and traveler details belong in context, and interests and budget can be read from the message.</p>
+      <p>The example endpoint <code>/api/generate-itinerary</code> and fields such as <code>destination</code>, <code>duration_days</code>, <code>budget_php</code>, <code>preferences</code>, <code>itinerary_id</code>, and <code>total_estimated_cost</code> are not the current contract. The planner streams NDJSON events with <code>Content-Type: application/x-ndjson; charset=utf-8</code> rather than returning one <code>{status, data}</code> JSON object; the itinerary is carried in a <code>t: "itinerary"</code> event under <code>itinerary.plan.days[].blocks</code>, not a <code>schedule</code> field. The response events are shown as a formatted JSON array for readability; expand the raw stream to see the actual line-by-line wire format.</p>
       <div class="sample-grid">
         <div>
           <h3>Request payload (JSON)</h3>
           <pre id="request-sample" aria-label="Sample request payload"></pre>
         </div>
         <div>
-          <h3>Response (NDJSON events)</h3>
+          <h3>Response events (formatted JSON view)</h3>
           <pre id="response-sample" aria-label="Sample response events"></pre>
+          <details>
+            <summary>Show raw NDJSON response</summary>
+            <pre id="response-ndjson" aria-label="Raw NDJSON response"></pre>
+          </details>
         </div>
       </div>
-      <p class="sample-note">Captured by a local unit test of <code>respond()</code> with AI disabled (Basic mode), five synthetic attractions, and no tour or fare rows. The API route serializes these events as NDJSON; a live response may vary by sign-in state and daily limits. This is not production data, and <code>generatedAt</code> changes on each run.</p>
+      <p class="sample-note">Captured by a local unit test of <code>respond()</code> with AI disabled (Basic mode), five synthetic attractions, and no tour or fare rows. This is not production data; live route output may also depend on sign-in state and daily limits. The parsed budget is per person per day for entrance fees, while <code>itinerary.plan.totals.cost</code> is the group's listed entrance-fee cost—not the full trip cost. The itinerary has no <code>itinerary_id</code> until the Tourist saves it separately. <code>generatedAt</code> changes on each run.</p>
+      <p class="sample-caption">Figure 6: Sample request payload and corresponding itinerary response events captured from the current CONNECT-Daet planner logic.</p>
     </section>
 
     <section class="notes" aria-labelledby="notes-title">
@@ -146,7 +155,7 @@
       <ul>
         <li>The planner asks for missing trip details such as dates or a sample-plan choice, traveler counts and child ages, and where the Tourist is travelling from.</li>
         <li>Gemini may interpret interests, budget, and pace from the message. If Gemini is unavailable, the basic text parser can still read preferences.</li>
-        <li>The rule engine uses database listings to choose places and calculate the schedule. It uses listed opening hours, entrance fees, group size, and travel estimates.</li>
+        <li>The rule engine uses database listings to choose places and calculate the schedule. It uses listed opening hours, entrance fees, group size, and travel estimates; interests guide selection but can still result in stops from other available categories.</li>
         <li>Bookable tour packages and listed fares are added when available. Missing tour or fare data does not stop the itinerary from being shown.</li>
         <li>Changing pace can regenerate the plan. Changing the getting-around choice changes travel labels; travel-time values remain road estimates.</li>
         <li>A no-date sample uses stand-in dates. The Tourist must choose real dates before saving it.</li>
@@ -255,32 +264,34 @@
   END IF
 END`;
 
-    const requestSample =     {
-      "messages": [
-        {
-          "role": "user",
-          "content": "Plan 2 days of beaches for us"
-        }
-      ],
-      "context": {
-        "dates": {
-          "start": "2026-11-10",
-          "end": "2026-11-11"
-        },
-        "travelers": {
-          "adults": 2,
-          "children": [
-            6
-          ]
-        },
-        "origin": {
-          "city": "Manila"
-        }
-      }
-    };
-    const responseSample = "{\"t\":\"mode\",\"mode\":\"basic\"}\n{\"t\":\"text\",\"v\":\"Here is a 2-day plan with 5 stops  for your dates.\\n• Day 1 (Tuesday, Nov 10): Bagasbas Beach, Daet Cathedral, Daet Public Market, First Rizal Monument, Daet Park\\n• Day 2 (Wednesday, Nov 11): free day\\nCosts shown are entrance fees for your group. Tap a stop to swap or remove it.\"}\n{\"t\":\"itinerary\",\"itinerary\":{\"plan\":{\"days\":[{\"date\":\"2026-11-10\",\"blocks\":[{\"kind\":\"visit\",\"attractionId\":\"bagasbas\",\"name\":\"Bagasbas Beach\",\"start\":495,\"end\":555,\"travelMinutes\":11,\"cost\":0,\"hoursConfirmed\":false},{\"kind\":\"visit\",\"attractionId\":\"church\",\"name\":\"Daet Cathedral\",\"start\":580,\"end\":640,\"travelMinutes\":11,\"cost\":0,\"hoursConfirmed\":false},{\"kind\":\"visit\",\"attractionId\":\"market\",\"name\":\"Daet Public Market\",\"start\":655,\"end\":715,\"travelMinutes\":1,\"cost\":0,\"hoursConfirmed\":false},{\"kind\":\"lunch\",\"name\":\"Lunch break\",\"start\":715,\"end\":775,\"travelMinutes\":0,\"cost\":0},{\"kind\":\"visit\",\"attractionId\":\"rizal\",\"name\":\"First Rizal Monument\",\"start\":790,\"end\":850,\"travelMinutes\":1,\"cost\":0,\"hoursConfirmed\":false},{\"kind\":\"visit\",\"attractionId\":\"park\",\"name\":\"Daet Park\",\"start\":865,\"end\":925,\"travelMinutes\":1,\"cost\":60,\"hoursConfirmed\":false}]},{\"date\":\"2026-11-11\",\"blocks\":[]}],\"totals\":{\"cost\":60,\"travelMinutes\":25,\"visits\":5}},\"input\":{\"startDate\":\"2026-11-10\",\"days\":2,\"budgetPerDay\":500,\"interests\":[\"beach\"],\"pace\":\"normal\",\"groupSize\":3,\"dayStart\":\"08:00\",\"dayEnd\":\"18:00\"},\"stops\":[{\"id\":\"bagasbas\",\"name\":\"Bagasbas Beach\",\"category\":\"beach\",\"lat\":14.1316,\"lng\":122.9851,\"fee\":null,\"photoUrl\":null,\"tip\":null},{\"id\":\"church\",\"name\":\"Daet Cathedral\",\"category\":\"religious\",\"lat\":14.1125,\"lng\":122.955,\"fee\":null,\"photoUrl\":null,\"tip\":null},{\"id\":\"market\",\"name\":\"Daet Public Market\",\"category\":\"food\",\"lat\":14.114,\"lng\":122.956,\"fee\":null,\"photoUrl\":null,\"tip\":null},{\"id\":\"rizal\",\"name\":\"First Rizal Monument\",\"category\":\"heritage\",\"lat\":14.1131,\"lng\":122.9545,\"fee\":null,\"photoUrl\":null,\"tip\":null},{\"id\":\"park\",\"name\":\"Daet Park\",\"category\":\"park\",\"lat\":14.115,\"lng\":122.957,\"fee\":20,\"photoUrl\":null,\"tip\":null}],\"packages\":[],\"travelers\":{\"adults\":2,\"children\":[6]},\"gettingThere\":{\"from\":\"Manila\",\"card\":null,\"checkedOn\":null},\"generatedAt\":\"2026-11-07T20:14:09.274Z\"}}\n{\"t\":\"choices\",\"options\":[\"Make it more relaxed\",\"Add more food stops\",\"Start at 9am\"]}\n{\"t\":\"cards\",\"cards\":[]}\n{\"t\":\"done\"}";
+    const requestSample = {
+  "messages": [
+    {
+      "role": "user",
+      "content": "Plan 2 days in Daet for 2 adults and 1 child age 6. We like beaches, historical sites, and local food. Budget PHP 3,000 per person per day for entrance fees."
+    }
+  ],
+  "context": {
+    "dates": {
+      "start": "2026-11-10",
+      "end": "2026-11-11"
+    },
+    "travelers": {
+      "adults": 2,
+      "children": [
+        6
+      ]
+    },
+    "origin": {
+      "city": "Manila"
+    }
+  }
+};
+    const responseNdjson = "{\"t\":\"mode\",\"mode\":\"basic\"}\n{\"t\":\"text\",\"v\":\"Here is a 2-day plan with 5 stops  for your dates.\\n• Day 1 (Tuesday, Nov 10): First Rizal Monument, Daet Public Market, Bagasbas Beach\\n• Day 2 (Wednesday, Nov 11): Daet Cathedral, Daet Park\\nCosts shown are entrance fees for your group. Tap a stop to swap or remove it.\"}\n{\"t\":\"itinerary\",\"itinerary\":{\"plan\":{\"days\":[{\"date\":\"2026-11-10\",\"blocks\":[{\"kind\":\"visit\",\"attractionId\":\"rizal\",\"name\":\"First Rizal Monument\",\"start\":480,\"end\":555,\"travelMinutes\":0,\"cost\":0,\"hoursConfirmed\":false},{\"kind\":\"visit\",\"attractionId\":\"market\",\"name\":\"Daet Public Market\",\"start\":580,\"end\":655,\"travelMinutes\":1,\"cost\":0,\"hoursConfirmed\":false},{\"kind\":\"lunch\",\"name\":\"Lunch break\",\"start\":690,\"end\":750,\"travelMinutes\":0,\"cost\":0},{\"kind\":\"visit\",\"attractionId\":\"bagasbas\",\"name\":\"Bagasbas Beach\",\"start\":785,\"end\":860,\"travelMinutes\":11,\"cost\":0,\"hoursConfirmed\":false}]},{\"date\":\"2026-11-11\",\"blocks\":[{\"kind\":\"visit\",\"attractionId\":\"church\",\"name\":\"Daet Cathedral\",\"start\":485,\"end\":560,\"travelMinutes\":1,\"cost\":0,\"hoursConfirmed\":false},{\"kind\":\"visit\",\"attractionId\":\"park\",\"name\":\"Daet Park\",\"start\":585,\"end\":660,\"travelMinutes\":1,\"cost\":60,\"hoursConfirmed\":false},{\"kind\":\"lunch\",\"name\":\"Lunch break\",\"start\":690,\"end\":750,\"travelMinutes\":0,\"cost\":0}]}],\"totals\":{\"cost\":60,\"travelMinutes\":14,\"visits\":5}},\"input\":{\"startDate\":\"2026-11-10\",\"days\":2,\"budgetPerDay\":3000,\"interests\":[\"beach\",\"heritage\",\"food\"],\"pace\":\"relaxed\",\"groupSize\":3,\"dayStart\":\"08:00\",\"dayEnd\":\"18:00\"},\"stops\":[{\"id\":\"rizal\",\"name\":\"First Rizal Monument\",\"category\":\"heritage\",\"lat\":14.1131,\"lng\":122.9545,\"fee\":null,\"photoUrl\":null,\"tip\":null},{\"id\":\"market\",\"name\":\"Daet Public Market\",\"category\":\"food\",\"lat\":14.114,\"lng\":122.956,\"fee\":null,\"photoUrl\":null,\"tip\":null},{\"id\":\"bagasbas\",\"name\":\"Bagasbas Beach\",\"category\":\"beach\",\"lat\":14.1316,\"lng\":122.9851,\"fee\":null,\"photoUrl\":null,\"tip\":null},{\"id\":\"church\",\"name\":\"Daet Cathedral\",\"category\":\"religious\",\"lat\":14.1125,\"lng\":122.955,\"fee\":null,\"photoUrl\":null,\"tip\":null},{\"id\":\"park\",\"name\":\"Daet Park\",\"category\":\"park\",\"lat\":14.115,\"lng\":122.957,\"fee\":20,\"photoUrl\":null,\"tip\":null}],\"packages\":[],\"travelers\":{\"adults\":2,\"children\":[6]},\"gettingThere\":{\"from\":\"Manila\",\"card\":null,\"checkedOn\":null},\"generatedAt\":\"2026-11-07T20:19:38.917Z\"}}\n{\"t\":\"choices\",\"options\":[\"Make it more relaxed\",\"Add more food stops\",\"Start at 9am\"]}\n{\"t\":\"cards\",\"cards\":[]}\n{\"t\":\"done\"}";
+    const responseEvents = responseNdjson.split("\n").map((line) => JSON.parse(line));
     document.getElementById("request-sample").textContent = JSON.stringify(requestSample, null, 2);
-    document.getElementById("response-sample").textContent = responseSample;
+    document.getElementById("response-sample").textContent = JSON.stringify(responseEvents, null, 2);
+    document.getElementById("response-ndjson").textContent = responseNdjson;
 
     const code = document.getElementById("pseudocode");
     const status = document.getElementById("status");
