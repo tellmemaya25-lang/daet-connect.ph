@@ -71,7 +71,7 @@ test("saves a draft after every step and submits the finished package", async ({
 
   // The review reuses the editor's section summaries.
   await expect(page.getByText(/Final check/)).toBeVisible();
-  await expect(page.getByText("Board and rash guard")).toBeVisible();
+  await expect(page.getByText("Board and rash guard", { exact: true })).toBeVisible();
   await expect(page.getByText("₱950.00 per guest")).toBeVisible();
   await expectNoAxeViolations(page, "create wizard review");
 
