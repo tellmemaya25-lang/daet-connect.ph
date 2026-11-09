@@ -369,7 +369,6 @@ export function BookingBoard({ rows, selectableIds }: { rows: BoardRow[]; select
           packageTitle={refundTarget.packageTitle}
           guestName={refundTarget.contactName}
           refundable={refundTarget.refundable}
-          onlinePaid={refundTarget.onlinePaid}
           paymongoConfigured={refundTarget.paymongoConfigured}
           paymongoLive={refundTarget.paymongoLive}
           openBooking={refundTarget.lifecycleStatus === "pending" || refundTarget.lifecycleStatus === "confirmed"}

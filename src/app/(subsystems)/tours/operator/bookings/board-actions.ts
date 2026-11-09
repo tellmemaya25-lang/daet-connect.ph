@@ -12,13 +12,14 @@
 
 import { emailBookingConfirmed, emailGuideAssigned, emailRefundSent } from "@/lib/email/notify-booking";
 import { formatPeso } from "@/lib/money";
-import { createRefund, getPaymongoConfig } from "@/lib/paymongo/client";
+import { createRefund, getPaymongoConfig, listPaymentRefunds } from "@/lib/paymongo/client";
 import {
   isRefundReason,
   planRefund,
   REFUND_NOTES_MAX,
   REFUND_REASONS,
   refundNotes,
+  refundHistoryMatches,
   type OnlinePayment,
 } from "@/lib/paymongo/refunds";
 import { revalidatePath } from "next/cache";
@@ -247,6 +248,55 @@ export async function approvePendingBookings(bookingIds: string[]): Promise<Boar
   };
 }
 
+type OnlineRefundCheck =
+  | { ok: true; payments: OnlinePayment[]; available: number }
+  | { ok: false; error: string };
+
+/** Check the ledger and PayMongo together. Never guess if the histories differ. */
+async function checkOnlineRefunds(supabase: Supabase, bookingId: string): Promise<OnlineRefundCheck> {
+  const config = getPaymongoConfig();
+  if (!config) return { ok: false, error: "PayMongo is not configured." };
+  const { data: payments, error: paymentError } = await supabase
+    .from("tours_payments").select("id, provider_ref, amount")
+    .eq("booking_id", bookingId).eq("provider", "paymongo").eq("payment_status", "completed")
+    .order("payment_date", { ascending: true });
+  if (paymentError) return { ok: false, error: "The online payments could not be checked." };
+  if (!payments?.length) return { ok: true, payments: [], available: 0 };
+  if (payments.some((p) => !p.provider_ref)) return { ok: false, error: "An online payment is missing its PayMongo reference. Check the payment ledger before refunding." };
+  const { data: refunds, error: refundError } = await supabase.from("tours_payments")
+    .select("refund_of, provider_ref, amount, payment_status")
+    .in("refund_of", payments.map((p) => p.id)).eq("payment_status", "refunded");
+  if (refundError) return { ok: false, error: "The refund ledger could not be checked." };
+  try {
+    const online: OnlinePayment[] = [];
+    for (const payment of payments) {
+      const ref = payment.provider_ref!;
+      const ledger = (refunds ?? []).filter((r) => r.refund_of === payment.id);
+      const provider = await listPaymentRefunds(config, ref);
+      if (!refundHistoryMatches(provider, ledger, ref)) {
+        return { ok: false, error: "PayMongo's refund history differs from the booking ledger. Check the PayMongo dashboard and reconcile the refund records before retrying. Do not send another refund until they match." };
+      }
+      online.push({ id: payment.id, provider_ref: ref, amount: payment.amount, refunded: ledger.reduce((sum, row) => sum + Number(row.amount), 0) });
+    }
+    const available = online.reduce((sum, row) => sum + Math.max(0, Number(row.amount) - Number(row.refunded ?? 0)), 0);
+    return { ok: true, payments: online, available: Math.round(available * 100) / 100 };
+  } catch (error) {
+    console.error("PayMongo refund history check failed:", error);
+    return { ok: false, error: "PayMongo refund history could not be verified. Check the PayMongo dashboard before retrying." };
+  }
+}
+
+/** Current online availability for the dialog, restricted to the booking's operator. */
+export async function getOnlineRefundAvailability(bookingId: string): Promise<{ available: number; error?: string }> {
+  if (!isUuid(bookingId)) return { available: 0, error: "Booking not found." };
+  const supabase = await createSupabaseServerClient();
+  const operator = await requireOperator(supabase);
+  if (!operator.ok) return { available: 0, error: operator.error };
+  if (!await loadOwnBooking(supabase, bookingId, operator.operatorId)) return { available: 0, error: "Booking not found." };
+  const check = await checkOnlineRefunds(supabase, bookingId);
+  return check.ok ? { available: check.available } : { available: 0, error: check.error };
+}
+
 /**
  * Process Refund, from the board.
  *
@@ -281,25 +331,25 @@ export async function processRefund(input: {
   const booking = await loadOwnBooking(supabase, input.bookingId, operator.operatorId);
   if (!booking) return { success: false, error: "Booking not found." };
 
-  // Money only goes back once the tour is off. A live booking is closed here,
-  // in the same step, so the operator does not have to cancel and then refund.
-  if (booking.status === "pending" || booking.status === "confirmed") {
-    const nextStatus = input.closeAs === "rejected" && booking.status === "pending" ? "rejected" : "cancelled";
-    const check = checkTransition(booking.status, nextStatus, "operator", {
-      tourDate: booking.tour_date,
-      today: toManilaDateKey(new Date()),
-      totalPaid: Number(booking.total_paid ?? 0),
-    });
-    if (!check.ok) return { success: false, error: check.reason };
-    const trimmed = String(input.closeReason ?? "").trim();
-    const closeReason = trimmed.length >= 5 ? trimmed.slice(0, 500) : `Refunded before the tour: ${reasonLabel}.`;
-    const { error } = await supabase
-      .from("tours_bookings")
-      .update({ status: nextStatus, cancellation_reason: closeReason })
-      .eq("id", booking.id);
-    if (error) return { success: false, error: userFacingDbError(error, "The booking could not be closed for the refund.") };
-  } else if (booking.status !== "cancelled" && booking.status !== "rejected") {
-    return { success: false, error: "This booking has already been completed; refund it from the ledger instead." };
+  // Do not cancel a live booking until the refund request has passed validation.
+  let closedForRefund = false;
+  async function closeForRefund(): Promise<BoardActionResult | null> {
+    if (booking!.status === "pending" || booking!.status === "confirmed") {
+      const nextStatus = input.closeAs === "rejected" && booking!.status === "pending" ? "rejected" : "cancelled";
+      const check = checkTransition(booking!.status, nextStatus, "operator", {
+        tourDate: booking!.tour_date, today: toManilaDateKey(new Date()), totalPaid: Number(booking!.total_paid ?? 0),
+      });
+      if (!check.ok) return { success: false, error: check.reason };
+      const trimmed = String(input.closeReason ?? "").trim();
+      const closeReason = trimmed.length >= 5 ? trimmed.slice(0, 500) : `Refunded before the tour: ${reasonLabel}.`;
+      const { error } = await supabase.from("tours_bookings")
+        .update({ status: nextStatus, cancellation_reason: closeReason }).eq("id", booking!.id);
+      if (error) return { success: false, error: userFacingDbError(error, "The booking could not be closed for the refund.") };
+      closedForRefund = true;
+    } else if (booking!.status !== "cancelled" && booking!.status !== "rejected") {
+      return { success: false, error: "This booking has already been completed; refund it from the ledger instead." };
+    }
+    return null;
   }
 
   if (input.method === "manual") {
@@ -307,11 +357,14 @@ export async function processRefund(input: {
     formData.set("amount", input.amount != null ? input.amount.toFixed(2) : "");
     formData.set("method", input.manualMethod ?? "gcash");
     formData.set("reference", input.reference ?? "");
-    const { data: refundable } = await supabase.rpc("tours_refundable_amount", { p_booking_id: booking.id });
+    const { data: refundable, error: refundableError } = await supabase.rpc("tours_refundable_amount", { p_booking_id: booking.id });
+    if (refundableError) return { success: false, error: "The refundable amount could not be checked." };
     const available = Number(refundable ?? 0);
     if (input.amount == null) formData.set("amount", available.toFixed(2));
     const parsed = parseRefundForm(formData, available);
     if (!parsed.ok) return { success: false, error: parsed.error };
+    const closeError = await closeForRefund();
+    if (closeError) return closeError;
     const { data: left, error } = await supabase.rpc("tours_record_refund", {
       p_booking_id: booking.id,
       p_amount: parsed.data.amount,
@@ -320,7 +373,7 @@ export async function processRefund(input: {
     });
     if (error) {
       console.error("Record refund error:", error);
-      return { success: false, error: userFacingDbError(error, "The refund could not be recorded.") };
+      return { success: false, error: `${userFacingDbError(error, "The refund could not be recorded.")}${closedForRefund ? " The booking was cancelled." : ""}` };
     }
     revalidateBookings(booking.id);
     emailRefundSent(booking.id, parsed.data.amount);
@@ -338,52 +391,23 @@ export async function processRefund(input: {
   const config = getPaymongoConfig();
   if (!config) return { success: false, error: "PayMongo is not configured, so an automatic refund cannot be sent. Use Manual GCash." };
 
-  const { data: paymentRows, error: paymentsError } = await supabase
-    .from("tours_payments")
-    .select("id, provider, provider_ref, amount, payment_status")
-    .eq("booking_id", booking.id)
-    .eq("provider", "paymongo")
-    .eq("payment_status", "completed")
-    .order("payment_date", { ascending: true });
-  if (paymentsError) return { success: false, error: "The payments on this booking could not be read." };
-  if (!paymentRows || paymentRows.length === 0) {
-    return { success: false, error: "Nothing was paid online on this booking. Use Manual GCash to record what you sent back." };
-  }
-
-  // Refunds already linked to each payment, so a second refund only asks for
-  // what that payment still has left.
-  const paymentIds = paymentRows.map((row) => row.id);
-  const { data: earlierRefunds } = await supabase
-    .from("tours_payments")
-    .select("refund_of, amount, payment_status")
-    .in("refund_of", paymentIds);
-  const refundedByPayment = new Map<string, number>();
-  for (const row of earlierRefunds ?? []) {
-    if (row.payment_status !== "refunded" || !row.refund_of) continue;
-    refundedByPayment.set(row.refund_of, (refundedByPayment.get(row.refund_of) ?? 0) + Number(row.amount ?? 0));
-  }
-
-  const online: OnlinePayment[] = paymentRows
-    .filter((row) => row.provider_ref)
-    .map((row) => ({ id: row.id, provider_ref: row.provider_ref as string, amount: row.amount, refunded: refundedByPayment.get(row.id) ?? 0 }));
-
-  const { data: refundableRow } = await supabase.rpc("tours_refundable_amount", { p_booking_id: booking.id });
+  const onlineCheck = await checkOnlineRefunds(supabase, booking.id);
+  if (!onlineCheck.ok) return { success: false, error: onlineCheck.error };
+  const { data: refundableRow, error: refundableError } = await supabase.rpc("tours_refundable_amount", { p_booking_id: booking.id });
+  if (refundableError) return { success: false, error: "The refundable amount could not be checked." };
   const refundable = Number(refundableRow ?? 0);
-  // Without an amount, refund everything paid that has not come back yet.
-  // (remainingBalance is the *tourist's* outstanding balance — the wrong direction here.)
-  const onlineLeft = online.reduce((sum, row) => sum + Number(row.amount ?? 0), 0);
-  const amount = input.amount != null ? Math.round(input.amount * 100) / 100 : Math.min(refundable, Math.round(onlineLeft * 100) / 100);
-  if (amount <= 0) return { success: false, error: "There is nothing left to refund on this booking." };
-  if (amount > refundable + 0.001) {
-    return { success: false, error: `You can refund at most ${formatPeso(refundable)}.` };
-  }
-
-  const plan = planRefund(online, amount);
+  const amount = input.amount != null ? Math.round(input.amount * 100) / 100 : Math.min(refundable, onlineCheck.available);
+  if (!Number.isFinite(amount) || amount <= 0) return { success: false, error: "There is nothing left to refund on this booking." };
+  if (amount > refundable + 0.001) return { success: false, error: `You can refund at most ${formatPeso(refundable)}.` };
+  const plan = planRefund(onlineCheck.payments, amount);
   if (!plan.ok) return { success: false, error: plan.reason };
+  if (plan.slices.some((slice) => slice.amountCentavos < 100)) return { success: false, error: "Each PayMongo refund must be at least ₱1.00. Adjust the amount or record a manual refund." };
+  const closeError = await closeForRefund();
+  if (closeError) return closeError;
 
   const recorded: Array<{ payment_id: string; provider_ref: string; amount: number }> = [];
   for (const slice of plan.slices) {
-    const payment = paymentRows.find((row) => row.provider_ref === slice.paymentId);
+    const payment = onlineCheck.payments.find((row) => row.provider_ref === slice.paymentId);
     if (!payment) return { success: false, error: "A payment on this booking could not be matched." };
     try {
       const refund = await createRefund(config, {
@@ -392,19 +416,21 @@ export async function processRefund(input: {
         reason: REFUND_REASONS[reasonKey].paymongo,
         notes: refundNotes(booking.booking_reference, reasonLabel).slice(0, REFUND_NOTES_MAX),
       });
+      if (!["pending", "processing", "succeeded"].includes(refund.attributes.status)) throw new Error("PayMongo did not accept the refund. Check its status in the PayMongo dashboard before retrying.");
       recorded.push({ payment_id: payment.id, provider_ref: refund.id, amount: slice.amountCentavos / 100 });
     } catch (error) {
       console.error("PayMongo refund error:", error);
       const message = error instanceof Error ? error.message : "PayMongo did not accept the refund.";
+      const guidance = `${closedForRefund ? "The booking was cancelled. " : ""}Check the PayMongo dashboard before retrying; a previous or in-progress refund may not be reflected in the booking ledger.`;
       if (recorded.length > 0) {
-        // Record what did go through, so the ledger never disagrees with PayMongo.
-        await supabase.rpc("tours_record_online_refund", { p_booking_id: booking.id, p_rows: recorded });
+        const { error: recordError } = await supabase.rpc("tours_record_online_refund", { p_booking_id: booking.id, p_rows: recorded });
         revalidateBookings(booking.id);
+        const sent = formatPeso(recorded.reduce((sum, row) => sum + row.amount, 0));
+        return { success: false, error: recordError
+          ? `${message} PayMongo accepted ${sent}, but it could not be recorded in the ledger. ${guidance}`
+          : `${message} ${sent} was accepted and recorded. ${guidance}` };
       }
-      return {
-        success: false,
-        error: `${message}${recorded.length ? ` ${formatPeso(recorded.reduce((sum, row) => sum + row.amount, 0))} of it went through and was recorded.` : ""}`,
-      };
+      return { success: false, error: `${message} ${guidance}` };
     }
   }
 
@@ -416,7 +442,7 @@ export async function processRefund(input: {
     console.error("Record online refund error:", recordError);
     return {
       success: false,
-      error: `PayMongo sent ${formatPeso(amount)}, but the ledger could not be updated. Record it by hand: ${userFacingDbError(recordError, "please try again.")}`,
+      error: `PayMongo accepted ${formatPeso(amount)}, but the ledger could not be updated. ${closedForRefund ? "The booking was cancelled. " : ""}Do not retry the refund; check PayMongo and reconcile the ledger. ${userFacingDbError(recordError, "The ledger update failed.")}`,
     };
   }
 
