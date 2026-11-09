@@ -224,7 +224,7 @@ export function BookingBoard({ rows, selectableIds }: { rows: BoardRow[]; select
                   </div>
                 ) : null}
                 {Object.values(row.busy).some(Boolean) && row.picker.length > 0 ? (
-                  <p className="mt-2 text-sm text-daet-ink/70">
+                  <p className="mt-2 break-words text-sm text-daet-ink/70">
                     Busy on this date:{" "}
                     {row.picker
                       .filter((guide) => guide.reason)
