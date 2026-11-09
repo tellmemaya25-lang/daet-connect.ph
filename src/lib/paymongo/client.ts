@@ -117,15 +117,17 @@ export async function listPaymentRefunds(config: PaymongoConfig, paymentId: stri
   if (!/^pay_[A-Za-z0-9]+$/.test(paymentId)) throw new PaymongoApiError("Invalid payment id", 400, null);
   const refunds: RefundResource[] = [];
   let after: string | undefined;
+  const seenCursors = new Set<string>();
   for (let page = 0; page < 100; page++) {
-    const params = new URLSearchParams({ "data.attributes.payment_id": paymentId, limit: "100" });
-    if (after) params.set("after", after);
+    const params = new URLSearchParams({ "data.attributes.payment_id": paymentId, "data.attributes.limit": "100" });
+    if (after) params.set("data.attributes.after", after);
     const result = await paymongoRequest<{ data: RefundResource[]; has_more: boolean }>(config, `/refunds?${params}`);
     if (!Array.isArray(result?.data) || typeof result.has_more !== "boolean") throw new Error("Invalid PayMongo refund history.");
     refunds.push(...result.data);
     if (!result.has_more) return refunds;
     const next = result.data[result.data.length - 1]?.id;
-    if (!next || next === after) throw new Error("Invalid PayMongo refund pagination.");
+    if (!next || seenCursors.has(next)) throw new Error("Invalid PayMongo refund pagination.");
+    seenCursors.add(next);
     after = next;
   }
   throw new Error("PayMongo refund history is too long to verify.");

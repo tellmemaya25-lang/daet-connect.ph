@@ -12,7 +12,7 @@
 
 import { emailBookingConfirmed, emailGuideAssigned, emailRefundSent } from "@/lib/email/notify-booking";
 import { formatPeso } from "@/lib/money";
-import { createRefund, getPaymongoConfig, listPaymentRefunds } from "@/lib/paymongo/client";
+import { createRefund, getPaymongoConfig, listPaymentRefunds, PaymongoApiError } from "@/lib/paymongo/client";
 import {
   isRefundReason,
   planRefund,
@@ -288,7 +288,16 @@ async function checkOnlineRefunds(supabase: Supabase, bookingId: string): Promis
     return { ok: true, payments: online, available: Math.round(available * 100) / 100 };
   } catch (error) {
     console.error("PayMongo refund history check failed:", error);
-    return { ok: false, error: "PayMongo refund history could not be verified. Check the PayMongo dashboard before retrying." };
+    if (error instanceof PaymongoApiError) {
+      if (error.status === 401 || error.status === 403) {
+        return { ok: false, error: `PayMongo refused the refund history check (HTTP ${error.status}). Ask an administrator to check the PayMongo key and its permissions.` };
+      }
+      if (error.status === 429 || error.status >= 500) {
+        return { ok: false, error: `PayMongo could not check refund history (HTTP ${error.status}). Try again later and check the PayMongo dashboard before retrying.` };
+      }
+      return { ok: false, error: `PayMongo rejected the refund history check (HTTP ${error.status}). Check the payment and refund history in the PayMongo dashboard and ask an administrator to check the server logs.` };
+    }
+    return { ok: false, error: "PayMongo refund history could not be verified. Check the PayMongo dashboard and ask an administrator to check the server logs before retrying." };
   }
 }
 

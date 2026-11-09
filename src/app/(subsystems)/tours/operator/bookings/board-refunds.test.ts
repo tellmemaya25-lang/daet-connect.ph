@@ -2,10 +2,15 @@ jest.mock("server-only", () => ({}));
 jest.mock("next/cache", () => ({ revalidatePath: jest.fn() }));
 jest.mock("@/lib/email/notify-booking", () => ({ emailBookingConfirmed: jest.fn(), emailGuideAssigned: jest.fn(), emailRefundSent: jest.fn() }));
 jest.mock("@/lib/supabase/server", () => ({ createSupabaseServerClient: jest.fn() }));
-jest.mock("@/lib/paymongo/client", () => ({ getPaymongoConfig: jest.fn(() => ({ mode: "test" })), listPaymentRefunds: jest.fn(), createRefund: jest.fn() }));
+jest.mock("@/lib/paymongo/client", () => ({
+  getPaymongoConfig: jest.fn(() => ({ mode: "test" })), listPaymentRefunds: jest.fn(), createRefund: jest.fn(),
+  PaymongoApiError: class PaymongoApiError extends Error {
+    constructor(message: string, public status: number, public details: unknown) { super(message); }
+  },
+}));
 
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-import { createRefund, listPaymentRefunds } from "@/lib/paymongo/client";
+import { createRefund, listPaymentRefunds, PaymongoApiError } from "@/lib/paymongo/client";
 import { getOnlineRefundAvailability, processRefund } from "./board-actions";
 
 const bookingId = "410520f7-428e-4a5e-9f7c-e6c14a2399e5";
@@ -75,6 +80,17 @@ test("a missing refund column gives an actionable setup message and never sends 
   expect(result.error).toContain("apply the operator online refunds migration");
   expect(db.update).not.toHaveBeenCalled();
   expect(listPaymentRefunds).not.toHaveBeenCalled();
+  expect(createRefund).not.toHaveBeenCalled();
+  log.mockRestore();
+});
+
+test.each([400, 401, 403, 404, 429, 500])("reports HTTP %s and does not send a refund when PayMongo cannot verify history", async (status) => {
+  const db = mockDatabase();
+  const log = jest.spyOn(console, "error").mockImplementation(() => {});
+  jest.mocked(listPaymentRefunds).mockRejectedValue(new PaymongoApiError("provider detail", status, null));
+  const result = await processRefund({ bookingId, method: "paymongo", amount: 600 });
+  expect(result).toEqual(expect.objectContaining({ success: false, error: expect.stringContaining(`HTTP ${status}`) }));
+  expect(db.update).not.toHaveBeenCalled();
   expect(createRefund).not.toHaveBeenCalled();
   log.mockRestore();
 });
