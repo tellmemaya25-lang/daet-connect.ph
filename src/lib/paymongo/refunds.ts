@@ -90,7 +90,15 @@ export function refundNotes(reference: string, reasonLabel: string): string {
 export type RefundResource = {
   id: string;
   type: "refund";
-  attributes: { amount: number; status: string; payment_id: string; reason: string | null };
+  attributes: {
+    amount: number;
+    status: string;
+    payment_id: string;
+    reason: string | null;
+    currency?: string;
+    livemode?: boolean;
+    created_at?: number;
+  };
 };
 
 /** PayMongo refund statuses that mean the money is on its way back or already gone. */

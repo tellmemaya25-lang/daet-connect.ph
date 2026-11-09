@@ -12,8 +12,12 @@
 --                    it, as before: provider = 'manual', one ref they type.
 --
 -- Both are ledger rows with payment_status = 'refunded' linked to the payment
--- they undo through the new refund_of column, so tours_refundable_amount and
--- the payments ledger keep working unchanged.
+-- they undo through the refund_of column, so tours_refundable_amount and the
+-- payments ledger keep working unchanged.
+--
+-- The application also has a service-role fallback for databases where this
+-- migration has not been applied yet; it stores the same link in raw_event.
+-- Applying this migration enables the checked RPC and the refund_of column.
 --
 -- Written without DROP statements, so it can be applied through tooling that
 -- requires confirmation for destructive SQL.
@@ -48,7 +52,7 @@ DECLARE
   v_online_paid numeric;
   v_refunded numeric;
   v_total_refunded numeric := 0;
-  v_method text;
+  v_ledger_method text;
 BEGIN
   IF p_rows IS NULL OR jsonb_typeof(p_rows) <> 'array' OR jsonb_array_length(p_rows) = 0 THEN
     RAISE EXCEPTION 'No refund lines to record.' USING ERRCODE = 'check_violation';
@@ -71,7 +75,7 @@ BEGIN
 
   FOR v_row IN SELECT * FROM jsonb_array_elements(p_rows) LOOP
     v_ref := btrim(COALESCE(v_row->>'provider_ref', ''));
-    IF v_ref = '' OR v_ref !~ '^ref_[A-Za-z0-9]+$' THEN
+    IF v_ref = '' OR v_ref !~ '^ref_[A-Za-z0-9_-]+$' THEN
       RAISE EXCEPTION 'A refund reference from PayMongo is missing.' USING ERRCODE = 'check_violation';
     END IF;
 
@@ -103,14 +107,21 @@ BEGIN
         ), 0)), 'FM999999990.00') USING ERRCODE = 'check_violation';
     END IF;
 
+    -- tours_payments.payment_method has a CHECK constraint. PayMongo's exact
+    -- wallet names (paymaya, grab_pay, qrph, …) are kept in provider_method;
+    -- the ledger method must stay inside the allowed values.
+    v_ledger_method := CASE
+      WHEN v_payment.payment_method IN ('cash', 'gcash', 'bank_transfer', 'credit_card', 'debit_card', 'paypal', 'other')
+        THEN v_payment.payment_method
+      WHEN v_payment.provider_method = 'card' THEN 'credit_card'
+      ELSE 'other'
+    END;
+
     INSERT INTO tours_payments (
       booking_id, amount, payment_method, payment_status, provider, provider_ref,
       reference_number, payment_date, notes, recorded_by, refund_of
     ) VALUES (
-      p_booking_id, v_amount,
-      CASE WHEN v_payment.payment_method IN ('gcash', 'bank_transfer', 'cash') THEN v_payment.payment_method
-           WHEN v_payment.provider_method IN ('gcash', 'paymaya', 'grab_pay', 'qrph') THEN v_payment.provider_method
-           ELSE 'other' END,
+      p_booking_id, v_amount, v_ledger_method,
       'refunded', 'paymongo', v_ref,
       v_ref, now(), 'Refund via PayMongo', auth.uid(), v_payment.id
     );
@@ -140,12 +151,67 @@ REVOKE ALL ON FUNCTION public.tours_record_online_refund(uuid, jsonb) FROM PUBLI
 GRANT EXECUTE ON FUNCTION public.tours_record_online_refund(uuid, jsonb) TO authenticated;
 
 -- ----------------------------------------------------------------
--- Ledger: refunds are written by the two functions above only. The manual
+-- Ledger: refunds are written by the function above only. The manual
 -- policy let an operator insert any row on their own booking; keep it, but a
 -- row that names a payment (refund_of) must come through a function so the
 -- per-payment ceiling above is applied.
+--
+-- F1 renamed these policies when it was applied; handle both the original
+-- names and the current ones so this migration is safe on either schema.
 -- ----------------------------------------------------------------
-ALTER POLICY "Operators insert payments" ON tours_payments
+DO $policies$
+BEGIN
+  IF EXISTS (
+    SELECT 1 FROM pg_policies
+    WHERE schemaname = 'public' AND tablename = 'tours_payments' AND policyname = 'Operators insert payments'
+  ) AND NOT EXISTS (
+    SELECT 1 FROM pg_policies
+    WHERE schemaname = 'public' AND tablename = 'tours_payments' AND policyname = 'tours_payments_insert_manual'
+  ) THEN
+    ALTER POLICY "Operators insert payments" ON public.tours_payments RENAME TO tours_payments_insert_manual;
+  ELSIF NOT EXISTS (
+    SELECT 1 FROM pg_policies
+    WHERE schemaname = 'public' AND tablename = 'tours_payments' AND policyname = 'tours_payments_insert_manual'
+  ) THEN
+    CREATE POLICY tours_payments_insert_manual ON public.tours_payments
+      FOR INSERT TO authenticated WITH CHECK (false);
+  END IF;
+
+  IF EXISTS (
+    SELECT 1 FROM pg_policies
+    WHERE schemaname = 'public' AND tablename = 'tours_payments' AND policyname = 'Operators update own payments'
+  ) AND NOT EXISTS (
+    SELECT 1 FROM pg_policies
+    WHERE schemaname = 'public' AND tablename = 'tours_payments' AND policyname = 'tours_payments_update_manual'
+  ) THEN
+    ALTER POLICY "Operators update own payments" ON public.tours_payments RENAME TO tours_payments_update_manual;
+  ELSIF NOT EXISTS (
+    SELECT 1 FROM pg_policies
+    WHERE schemaname = 'public' AND tablename = 'tours_payments' AND policyname = 'tours_payments_update_manual'
+  ) THEN
+    CREATE POLICY tours_payments_update_manual ON public.tours_payments
+      FOR UPDATE TO authenticated USING (false) WITH CHECK (false);
+  END IF;
+
+  IF EXISTS (
+    SELECT 1 FROM pg_policies
+    WHERE schemaname = 'public' AND tablename = 'tours_payments' AND policyname = 'Operators delete own payments'
+  ) AND NOT EXISTS (
+    SELECT 1 FROM pg_policies
+    WHERE schemaname = 'public' AND tablename = 'tours_payments' AND policyname = 'tours_payments_delete_manual'
+  ) THEN
+    ALTER POLICY "Operators delete own payments" ON public.tours_payments RENAME TO tours_payments_delete_manual;
+  ELSIF NOT EXISTS (
+    SELECT 1 FROM pg_policies
+    WHERE schemaname = 'public' AND tablename = 'tours_payments' AND policyname = 'tours_payments_delete_manual'
+  ) THEN
+    CREATE POLICY tours_payments_delete_manual ON public.tours_payments
+      FOR DELETE TO authenticated USING (false);
+  END IF;
+END
+$policies$;
+
+ALTER POLICY tours_payments_insert_manual ON public.tours_payments
   WITH CHECK (
     provider = 'manual' AND provider_ref IS NULL AND refund_of IS NULL
     AND recorded_by = auth.uid()
@@ -153,8 +219,8 @@ ALTER POLICY "Operators insert payments" ON tours_payments
   );
 
 -- The ledger's own refund rows are never edited by hand.
-ALTER POLICY "Operators update own payments" ON tours_payments
+ALTER POLICY tours_payments_update_manual ON public.tours_payments
   USING (provider = 'manual' AND payment_status <> 'refunded' AND public.tours_is_booking_operator(booking_id))
   WITH CHECK (provider = 'manual' AND payment_status <> 'refunded' AND public.tours_is_booking_operator(booking_id));
-ALTER POLICY "Operators delete own payments" ON tours_payments
+ALTER POLICY tours_payments_delete_manual ON public.tours_payments
   USING (provider = 'manual' AND payment_status <> 'refunded' AND public.tours_is_booking_operator(booking_id));

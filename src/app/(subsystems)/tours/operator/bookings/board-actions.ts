@@ -12,7 +12,21 @@
 
 import { emailBookingConfirmed, emailGuideAssigned, emailRefundSent } from "@/lib/email/notify-booking";
 import { formatPeso } from "@/lib/money";
-import { createRefund, getPaymongoConfig } from "@/lib/paymongo/client";
+import { centavosToPesos } from "@/lib/paymongo/checkout";
+import { createRefund, getPaymongoConfig, listRefunds, type PaymongoConfig } from "@/lib/paymongo/client";
+import {
+  idempotencyKeyForRefund,
+  ledgerRowsForRefundLines,
+  refundedByPaymentFromLedger,
+  refundLinesFromPaymongo,
+  refundReferences,
+  refundSequence,
+  rpcRefundRows,
+  sumRefundLines,
+  type LedgerRefundRow,
+  type OnlinePaymentRow,
+  type RefundLine,
+} from "@/lib/paymongo/online-refunds";
 import {
   isRefundReason,
   planRefund,
@@ -20,8 +34,10 @@ import {
   REFUND_REASONS,
   refundNotes,
   type OnlinePayment,
+  type RefundResource,
 } from "@/lib/paymongo/refunds";
 import { revalidatePath } from "next/cache";
+import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { checkTransition, isBookingStatus } from "@/lib/tours/booking-lifecycle";
 import { parseRefundForm } from "@/lib/tours/cancellation";
@@ -33,6 +49,10 @@ import { capacityCheck } from "@/lib/tours/booking-board";
 export type BoardActionResult = { success: boolean; message?: string; error?: string };
 
 type Supabase = Awaited<ReturnType<typeof createSupabaseServerClient>>;
+type Admin = ReturnType<typeof createSupabaseAdminClient>;
+type PaymentRow = OnlinePaymentRow & { provider: string; payment_status: string };
+
+const roundMoney = (value: number): number => Math.round((Number.isFinite(value) ? value : 0) * 100) / 100;
 
 function revalidateBookings(bookingId?: string) {
   revalidatePath("/tours/operator/bookings");
@@ -41,7 +61,9 @@ function revalidateBookings(bookingId?: string) {
 }
 
 /** The signed-in person's approved operator row, or the message to show. */
-async function requireOperator(supabase: Supabase): Promise<{ ok: true; operatorId: string } | { ok: false; error: string }> {
+async function requireOperator(
+  supabase: Supabase,
+): Promise<{ ok: true; operatorId: string; userId: string } | { ok: false; error: string }> {
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -55,7 +77,7 @@ async function requireOperator(supabase: Supabase): Promise<{ ok: true; operator
   if (operator.accreditation_status !== "approved") {
     return { ok: false, error: "Your operator account must be approved to manage bookings." };
   }
-  return { ok: true, operatorId: operator.id };
+  return { ok: true, operatorId: operator.id, userId: user.id };
 }
 
 /** Turns "not the operator" into the board's own result shape. */
@@ -247,12 +269,132 @@ export async function approvePendingBookings(bookingIds: string[]): Promise<Boar
   };
 }
 
+type RefundState = {
+  refundable: number;
+  refundedByPayment: Map<string, number>;
+  knownRefs: Set<string>;
+};
+
+/** Refunds already in the ledger, plus what the booking can still return. */
+async function loadRefundState(supabase: Supabase, bookingId: string, paymentRows: PaymentRow[]): Promise<RefundState> {
+  // select("*"), not refund_of: the production schema may not have that column
+  // yet. raw_event carries the same link after the fallback ledger write.
+  const { data: refundRows } = await supabase
+    .from("tours_payments")
+    .select("*")
+    .eq("booking_id", bookingId)
+    .eq("payment_status", "refunded");
+  const { data: refundableRow } = await supabase.rpc("tours_refundable_amount", { p_booking_id: bookingId });
+  const rows = (refundRows ?? []) as LedgerRefundRow[];
+  return {
+    refundable: roundMoney(Number(refundableRow ?? 0)),
+    refundedByPayment: refundedByPaymentFromLedger(rows, paymentRows),
+    knownRefs: new Set(rows.map((row) => row.provider_ref).filter((ref): ref is string => Boolean(ref))),
+  };
+}
+
+/** PostgREST's "this RPC has not been applied" error, in its two shapes. */
+function isMissingOnlineRefundRpc(error: unknown): boolean {
+  const dbError = error as { code?: string | null; message?: string | null } | null;
+  const code = String(dbError?.code ?? "").toUpperCase();
+  const message = String(dbError?.message ?? "");
+  return (
+    code === "PGRST202" ||
+    code === "42883" ||
+    /could not find the function/i.test(message) ||
+    /function .* does not exist/i.test(message)
+  );
+}
+
+type RecordRefundResult = { ok: true; remaining: number } | { ok: false; reason: string };
+
+/**
+ * Writes one ledger row per PayMongo refund. The preferred path is the
+ * database RPC, which re-checks the per-payment ceiling. If that migration
+ * has not been applied, a server-only service-role upsert writes the same
+ * rows: requireOperator and loadOwnBooking have already authorised the call,
+ * and the unique (provider, provider_ref) index makes replays harmless.
+ */
+async function recordOnlineRefundRows({
+  supabase,
+  bookingId,
+  userId,
+  paymentRows,
+  lines,
+}: {
+  supabase: Supabase;
+  bookingId: string;
+  userId: string;
+  paymentRows: PaymentRow[];
+  lines: RefundLine[];
+}): Promise<RecordRefundResult> {
+  if (lines.length === 0) {
+    const state = await loadRefundState(supabase, bookingId, paymentRows);
+    return { ok: true, remaining: state.refundable };
+  }
+
+  const { data: left, error } = await supabase.rpc("tours_record_online_refund", {
+    p_booking_id: bookingId,
+    p_rows: rpcRefundRows(lines),
+  });
+  if (!error) return { ok: true, remaining: roundMoney(Number(left ?? 0)) };
+  if (!isMissingOnlineRefundRpc(error)) {
+    console.error("Record online refund error:", error);
+    return { ok: false, reason: userFacingDbError(error, "the refund ledger rejected the write") };
+  }
+
+  let admin: Admin;
+  try {
+    admin = createSupabaseAdminClient();
+  } catch (error) {
+    console.error("Service-role client unavailable for refund fallback:", error);
+    return { ok: false, reason: "the server's Supabase admin key is missing" };
+  }
+  const now = new Date().toISOString();
+  const rows = ledgerRowsForRefundLines({ lines, paymentRows, bookingId, userId, now });
+  const { error: insertError } = await admin
+    .from("tours_payments")
+    .upsert(rows, { onConflict: "provider,provider_ref", ignoreDuplicates: true });
+  if (insertError) {
+    console.error("Fallback refund ledger error:", insertError);
+    return { ok: false, reason: userFacingDbError(insertError, "the fallback ledger write failed") };
+  }
+
+  const { data: refundableRow } = await admin.rpc("tours_refundable_amount", { p_booking_id: bookingId });
+  const remaining = roundMoney(Number(refundableRow ?? 0));
+  if (remaining <= 0) {
+    await admin
+      .from("tours_cancellations")
+      .update({ status: "refund_confirmed", resolved_at: now })
+      .eq("booking_id", bookingId)
+      .eq("status", "approved");
+  }
+  return { ok: true, remaining };
+}
+
+/** Every refund PayMongo already knows about, for this booking's payments. */
+async function paymongoRefundsForPayments(config: PaymongoConfig, paymentRows: PaymentRow[]): Promise<RefundResource[]> {
+  const paymentIds = [...new Set(paymentRows.map((row) => row.provider_ref).filter((ref): ref is string => Boolean(ref)))];
+  const lists = await Promise.all(paymentIds.map((paymentId) => listRefunds(config, paymentId)));
+  return lists.flat();
+}
+
+/** What each completed online payment still has left, after ledger refunds. */
+function onlineRoom(paymentRows: PaymentRow[], refundedByPayment: Map<string, number>): number {
+  return roundMoney(
+    paymentRows
+      .filter((row) => row.provider_ref)
+      .reduce((sum, row) => sum + Math.max(0, roundMoney(Number(row.amount ?? 0) - (refundedByPayment.get(row.id) ?? 0))), 0),
+  );
+}
+
 /**
  * Process Refund, from the board.
  *
- * PayMongo (Auto): the app refunds the payments that came in through PayMongo
- * (oldest first, never past what each still has), then records one ledger row
- * per refund so the booking's totals update and the tourist's page shows it.
+ * PayMongo (Auto): the app first reconciles refunds PayMongo already sent
+ * into the ledger, then refunds what is left (oldest payment first, never past
+ * what each still has) and records one ledger row per refund. A failed ledger
+ * write never asks the operator to "try again" into a second refund.
  * Manual GCash: the operator has sent the money themselves and is recording it.
  *
  * A booking that is still live is cancelled or declined first, because money
@@ -337,10 +479,11 @@ export async function processRefund(input: {
   // ---- PayMongo ----------------------------------------------------------
   const config = getPaymongoConfig();
   if (!config) return { success: false, error: "PayMongo is not configured, so an automatic refund cannot be sent. Use Manual GCash." };
+  const channel = config.mode === "live" ? "PayMongo" : "PayMongo Sandbox";
 
   const { data: paymentRows, error: paymentsError } = await supabase
     .from("tours_payments")
-    .select("id, provider, provider_ref, amount, payment_status")
+    .select("id, provider, provider_ref, amount, payment_status, payment_method, provider_method")
     .eq("booking_id", booking.id)
     .eq("provider", "paymongo")
     .eq("payment_status", "completed")
@@ -349,81 +492,157 @@ export async function processRefund(input: {
   if (!paymentRows || paymentRows.length === 0) {
     return { success: false, error: "Nothing was paid online on this booking. Use Manual GCash to record what you sent back." };
   }
-
-  // Refunds already linked to each payment, so a second refund only asks for
-  // what that payment still has left.
-  const paymentIds = paymentRows.map((row) => row.id);
-  const { data: earlierRefunds } = await supabase
-    .from("tours_payments")
-    .select("refund_of, amount, payment_status")
-    .in("refund_of", paymentIds);
-  const refundedByPayment = new Map<string, number>();
-  for (const row of earlierRefunds ?? []) {
-    if (row.payment_status !== "refunded" || !row.refund_of) continue;
-    refundedByPayment.set(row.refund_of, (refundedByPayment.get(row.refund_of) ?? 0) + Number(row.amount ?? 0));
+  const payments = paymentRows as PaymentRow[];
+  let state = await loadRefundState(supabase, booking.id, payments);
+  if (state.refundable <= 0) {
+    return { success: true, message: `${channel}: everything paid has already been returned. No money was sent.` };
   }
 
-  const online: OnlinePayment[] = paymentRows
-    .filter((row) => row.provider_ref)
-    .map((row) => ({ id: row.id, provider_ref: row.provider_ref as string, amount: row.amount, refunded: refundedByPayment.get(row.id) ?? 0 }));
+  // PayMongo is the source of truth for money already sent. An earlier click
+  // can have accepted a refund even when our ledger write failed, so look
+  // before creating anything new.
+  let paymongoRefunds: RefundResource[];
+  try {
+    paymongoRefunds = await paymongoRefundsForPayments(config, payments);
+  } catch (error) {
+    console.error("Could not list PayMongo refunds:", error);
+    return {
+      success: false,
+      error: `${channel} could not be checked for refunds already sent, so no money was sent. Check the PayMongo connection and try again.`,
+    };
+  }
 
-  const { data: refundableRow } = await supabase.rpc("tours_refundable_amount", { p_booking_id: booking.id });
-  const refundable = Number(refundableRow ?? 0);
+  const missingLines = refundLinesFromPaymongo({
+    refunds: paymongoRefunds,
+    paymentRows: payments,
+    knownRefs: state.knownRefs,
+    mode: config.mode,
+  });
+  const missingAmount = sumRefundLines(missingLines);
+  const recordable = Math.min(state.refundable, onlineRoom(payments, state.refundedByPayment));
+  if (missingAmount > recordable + 0.001) {
+    return {
+      success: false,
+      error: `${channel} shows ${formatPeso(missingAmount)} in refunds that are not in the ledger, but only ${formatPeso(recordable)} was paid online. No money was sent. Ask an admin to reconcile these references: ${refundReferences(missingLines)}.`,
+    };
+  }
+
+  if (missingLines.length > 0) {
+    const reconciled = await recordOnlineRefundRows({
+      supabase,
+      bookingId: booking.id,
+      userId: operator.userId,
+      paymentRows: payments,
+      lines: missingLines,
+    });
+    if (!reconciled.ok) {
+      return {
+        success: false,
+        error: `${channel} had already sent ${formatPeso(missingAmount)}, but the ledger could not be updated (${reconciled.reason}). Do not send another refund; ask an admin to record these references by hand: ${refundReferences(missingLines)}.`,
+      };
+    }
+    revalidateBookings(booking.id);
+    state = await loadRefundState(supabase, booking.id, payments);
+    if (state.refundable <= 0) {
+      return {
+        success: true,
+        message: `${channel}: ${formatPeso(missingAmount)} had already been sent by PayMongo. The ledger is now up to date; no money was sent again. Everything paid has been returned.`,
+      };
+    }
+  }
+
+  const online: OnlinePayment[] = payments
+    .filter((row) => row.provider_ref)
+    .map((row) => ({
+      id: row.id,
+      provider_ref: row.provider_ref as string,
+      amount: row.amount,
+      refunded: state.refundedByPayment.get(row.id) ?? 0,
+    }));
+  const roomLeft = onlineRoom(payments, state.refundedByPayment);
   // Without an amount, refund everything paid that has not come back yet.
-  // (remainingBalance is the *tourist's* outstanding balance — the wrong direction here.)
-  const onlineLeft = online.reduce((sum, row) => sum + Number(row.amount ?? 0), 0);
-  const amount = input.amount != null ? Math.round(input.amount * 100) / 100 : Math.min(refundable, Math.round(onlineLeft * 100) / 100);
+  // (remainingBalance is the tourist's outstanding balance — wrong direction.)
+  const amount = input.amount != null ? roundMoney(input.amount) : Math.min(state.refundable, roomLeft);
   if (amount <= 0) return { success: false, error: "There is nothing left to refund on this booking." };
-  if (amount > refundable + 0.001) {
-    return { success: false, error: `You can refund at most ${formatPeso(refundable)}.` };
+  if (amount > state.refundable + 0.001) {
+    return { success: false, error: `Only ${formatPeso(state.refundable)} can still be refunded. PayMongo has already returned the rest.` };
   }
 
   const plan = planRefund(online, amount);
   if (!plan.ok) return { success: false, error: plan.reason };
 
-  const recorded: Array<{ payment_id: string; provider_ref: string; amount: number }> = [];
+  const recorded: RefundLine[] = [];
+  const sequenceByPayment = new Map<string, number>();
   for (const slice of plan.slices) {
-    const payment = paymentRows.find((row) => row.provider_ref === slice.paymentId);
+    const payment = payments.find((row) => row.provider_ref === slice.paymentId);
     if (!payment) return { success: false, error: "A payment on this booking could not be matched." };
+    const sequence =
+      refundSequence(paymongoRefunds, slice.paymentId, config.mode) + (sequenceByPayment.get(slice.paymentId) ?? 0);
+    sequenceByPayment.set(slice.paymentId, (sequenceByPayment.get(slice.paymentId) ?? 0) + 1);
     try {
       const refund = await createRefund(config, {
         paymentId: slice.paymentId,
         amountCentavos: slice.amountCentavos,
         reason: REFUND_REASONS[reasonKey].paymongo,
         notes: refundNotes(booking.booking_reference, reasonLabel).slice(0, REFUND_NOTES_MAX),
+        idempotencyKey: idempotencyKeyForRefund({
+          bookingId: booking.id,
+          paymentId: slice.paymentId,
+          sequence,
+          amountCentavos: slice.amountCentavos,
+          reason: REFUND_REASONS[reasonKey].paymongo,
+        }),
       });
-      recorded.push({ payment_id: payment.id, provider_ref: refund.id, amount: slice.amountCentavos / 100 });
+      recorded.push({
+        payment_id: payment.id,
+        provider_ref: refund.id,
+        amount: roundMoney(centavosToPesos(refund.attributes.amount)),
+        original_payment_ref: slice.paymentId,
+      });
     } catch (error) {
       console.error("PayMongo refund error:", error);
       const message = error instanceof Error ? error.message : "PayMongo did not accept the refund.";
       if (recorded.length > 0) {
         // Record what did go through, so the ledger never disagrees with PayMongo.
-        await supabase.rpc("tours_record_online_refund", { p_booking_id: booking.id, p_rows: recorded });
-        revalidateBookings(booking.id);
+        const partial = await recordOnlineRefundRows({
+          supabase,
+          bookingId: booking.id,
+          userId: operator.userId,
+          paymentRows: payments,
+          lines: recorded,
+        });
+        if (partial.ok) revalidateBookings(booking.id);
+        const sent = sumRefundLines(recorded);
+        return {
+          success: false,
+          error: `${message}${
+            partial.ok
+              ? ` ${formatPeso(sent)} of it went through and was recorded.`
+              : ` ${formatPeso(sent)} went through but the ledger could not be updated. Do not send another refund; ask an admin to record ${refundReferences(recorded)} by hand.`
+          }`,
+        };
       }
-      return {
-        success: false,
-        error: `${message}${recorded.length ? ` ${formatPeso(recorded.reduce((sum, row) => sum + row.amount, 0))} of it went through and was recorded.` : ""}`,
-      };
+      return { success: false, error: message };
     }
   }
 
-  const { data: left, error: recordError } = await supabase.rpc("tours_record_online_refund", {
-    p_booking_id: booking.id,
-    p_rows: recorded,
+  const recordedResult = await recordOnlineRefundRows({
+    supabase,
+    bookingId: booking.id,
+    userId: operator.userId,
+    paymentRows: payments,
+    lines: recorded,
   });
-  if (recordError) {
-    console.error("Record online refund error:", recordError);
+  if (!recordedResult.ok) {
     return {
       success: false,
-      error: `PayMongo sent ${formatPeso(amount)}, but the ledger could not be updated. Record it by hand: ${userFacingDbError(recordError, "please try again.")}`,
+      error: `${channel} sent ${formatPeso(amount)}, but the ledger could not be updated (${recordedResult.reason}). Do not send another refund; ask an admin to record these PayMongo references by hand: ${refundReferences(recorded)}.`,
     };
   }
 
   revalidateBookings(booking.id);
   emailRefundSent(booking.id, amount);
-  const remaining = Number(left ?? 0);
-  const channel = config.mode === "live" ? "PayMongo" : "PayMongo Sandbox";
+  const remaining = recordedResult.remaining;
   return {
     success: true,
     message:
