@@ -177,7 +177,7 @@ export function ProcessRefundDialog({
       {online?.error ? <Notice variant="error" className="mt-3">{online.error}</Notice> : null}
 
       <div className="mt-4 grid gap-3 sm:grid-cols-2">
-        <Field id={`${uid}-amount`} label="Amount (₱)" required hint={method === "paymongo" ? `Up to ${formatPeso(autoAvailable)} online.` : undefined}>
+        <Field id={`${uid}-amount`} label="Amount (₱)" required hint={method === "paymongo" && online && !online.error ? `Up to ${formatPeso(autoAvailable)} online.` : undefined}>
           <Input
             id={`${uid}-amount`}
             inputMode="decimal"

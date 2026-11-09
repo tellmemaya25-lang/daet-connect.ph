@@ -266,7 +266,13 @@ async function checkOnlineRefunds(supabase: Supabase, bookingId: string): Promis
   const { data: refunds, error: refundError } = await supabase.from("tours_payments")
     .select("refund_of, provider_ref, amount, payment_status")
     .in("refund_of", payments.map((p) => p.id)).eq("payment_status", "refunded");
-  if (refundError) return { ok: false, error: "The refund ledger could not be checked." };
+  if (refundError) {
+    console.error("Refund ledger check failed:", refundError.code, refundError.message);
+    if ((refundError.code === "42703" || refundError.code === "PGRST204") && refundError.message.includes("refund_of")) {
+      return { ok: false, error: "PayMongo refunds are not set up in the database yet. Ask an administrator to apply the operator online refunds migration before retrying." };
+    }
+    return { ok: false, error: "The refund ledger could not be checked. Ask an administrator to check the server logs before retrying." };
+  }
   try {
     const online: OnlinePayment[] = [];
     for (const payment of payments) {

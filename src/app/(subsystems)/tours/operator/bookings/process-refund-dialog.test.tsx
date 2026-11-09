@@ -29,6 +29,7 @@ it("blocks automatic refunds when the provider and ledger disagree", async () =>
   render(<ProcessRefundDialog {...props} />);
   expect(await screen.findByText(/Refund history differs/)).toBeInTheDocument();
   expect(screen.getByRole("button", { name: "PayMongo (Auto)" })).toBeDisabled();
+  expect(screen.queryByText(/Up to ₱0.00 online/)).not.toBeInTheDocument();
   fireEvent.change(screen.getByLabelText(/Reason for refund/), { target: { value: "guest" } });
   expect(screen.getByRole("button", { name: "Confirm PayMongo Refund" })).toBeDisabled();
 });

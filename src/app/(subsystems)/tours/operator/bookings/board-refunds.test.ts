@@ -12,7 +12,7 @@ const bookingId = "410520f7-428e-4a5e-9f7c-e6c14a2399e5";
 const payment = { id: "row1", provider_ref: "pay_abc", amount: 600 };
 const providerRefund = { id: "ref_previous", type: "refund" as const, attributes: { amount: 60000, payment_id: "pay_abc", status: "succeeded", reason: null } };
 
-function mockDatabase(status = "confirmed") {
+function mockDatabase(status = "confirmed", ledgerError: { code: string; message: string } | null = null) {
   const update = jest.fn();
   const rpc = jest.fn(async (name: string) => ({ data: name === "tours_refundable_amount" ? 600 : 0, error: null }));
   const from = (table: string) => {
@@ -26,7 +26,7 @@ function mockDatabase(status = "confirmed") {
       maybeSingle: async () => ({ data: table === "tours_operators"
         ? { id: "op1", accreditation_status: "approved" }
         : { id: bookingId, status, tour_date: "2099-01-01", total_paid: 600, booking_reference: "BK-TEST", tours_packages: { operator_id: "op1" } }, error: null }),
-      then: (resolve: (result: unknown) => void) => resolve({ data: query.includes("refund_of") ? [] : null, error: null }),
+      then: (resolve: (result: unknown) => void) => resolve({ data: query.includes("refund_of") ? [] : null, error: query.includes("refund_of") ? ledgerError : null }),
     };
     return builder;
   };
@@ -64,4 +64,17 @@ test("a history lookup failure fails closed without sending a refund", async () 
   expect(db.update).not.toHaveBeenCalled();
   expect(createRefund).not.toHaveBeenCalled();
   jest.restoreAllMocks();
+});
+
+test("a missing refund column gives an actionable setup message and never sends money", async () => {
+  const db = mockDatabase("confirmed", { code: "42703", message: "column tours_payments.refund_of does not exist" });
+  const log = jest.spyOn(console, "error").mockImplementation(() => {});
+  const availability = await getOnlineRefundAvailability(bookingId);
+  expect(availability.error).toContain("apply the operator online refunds migration");
+  const result = await processRefund({ bookingId, method: "paymongo", amount: 600 });
+  expect(result.error).toContain("apply the operator online refunds migration");
+  expect(db.update).not.toHaveBeenCalled();
+  expect(listPaymentRefunds).not.toHaveBeenCalled();
+  expect(createRefund).not.toHaveBeenCalled();
+  log.mockRestore();
 });
