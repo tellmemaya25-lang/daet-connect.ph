@@ -248,6 +248,20 @@ export async function approvePendingBookings(bookingIds: string[]): Promise<Boar
   };
 }
 
+/** Non-sensitive, bounded provider identifiers help diagnose validation failures. */
+function paymongoErrorIdentifiers(details: unknown): string {
+  if (!details || typeof details !== "object") return "";
+  const errors = (details as { errors?: unknown }).errors;
+  const first = Array.isArray(errors) ? errors[0] : null;
+  if (!first || typeof first !== "object") return "";
+  const entry = first as { code?: unknown; source?: { pointer?: unknown } };
+  const safe = (value: unknown) => typeof value === "string" && /^[a-zA-Z0-9_.-]{1,80}$/.test(value) ? value : null;
+  const code = safe(entry.code);
+  const field = safe(entry.source?.pointer);
+  const parts = [code ? `code: ${code}` : null, field ? `field: ${field}` : null].filter(Boolean);
+  return parts.length ? ` (${parts.join(", ")})` : "";
+}
+
 type OnlineRefundCheck =
   | { ok: true; payments: OnlinePayment[]; available: number }
   | { ok: false; error: string };
@@ -295,7 +309,8 @@ async function checkOnlineRefunds(supabase: Supabase, bookingId: string): Promis
       if (error.status === 429 || error.status >= 500) {
         return { ok: false, error: `PayMongo could not check refund history (HTTP ${error.status}). Try again later and check the PayMongo dashboard before retrying.` };
       }
-      return { ok: false, error: `PayMongo rejected the refund history check (HTTP ${error.status}). Check the payment and refund history in the PayMongo dashboard and ask an administrator to check the server logs.` };
+      const identifiers = paymongoErrorIdentifiers(error.details);
+      return { ok: false, error: `PayMongo rejected the refund history check (HTTP ${error.status})${identifiers}. Check the payment and refund history in the PayMongo dashboard and ask an administrator to check the server logs.` };
     }
     return { ok: false, error: "PayMongo refund history could not be verified. Check the PayMongo dashboard and ask an administrator to check the server logs before retrying." };
   }

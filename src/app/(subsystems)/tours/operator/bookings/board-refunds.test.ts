@@ -94,3 +94,30 @@ test.each([400, 401, 403, 404, 429, 500])("reports HTTP %s and does not send a r
   expect(createRefund).not.toHaveBeenCalled();
   log.mockRestore();
 });
+
+
+test("reports safe PayMongo validation identifiers without leaking arbitrary provider details", async () => {
+  const db = mockDatabase();
+  const log = jest.spyOn(console, "error").mockImplementation(() => {});
+  jest.mocked(listPaymentRefunds).mockRejectedValue(new PaymongoApiError("private detail", 400, {
+    errors: [{ code: "parameter_invalid", detail: "private detail", source: { pointer: "data.attributes.limit" } }],
+  }));
+  const result = await processRefund({ bookingId, method: "paymongo", amount: 600 });
+  expect(result.error).toContain("code: parameter_invalid, field: data.attributes.limit");
+  expect(result.error).not.toContain("private detail");
+  expect(db.update).not.toHaveBeenCalled();
+  expect(createRefund).not.toHaveBeenCalled();
+  log.mockRestore();
+});
+
+test("does not expose untrusted error identifiers", async () => {
+  mockDatabase();
+  const log = jest.spyOn(console, "error").mockImplementation(() => {});
+  jest.mocked(listPaymentRefunds).mockRejectedValue(new PaymongoApiError("private", 400, {
+    errors: [{ code: "error with spaces secret", source: { pointer: "<private>" } }],
+  }));
+  const result = await getOnlineRefundAvailability(bookingId);
+  expect(result.error).not.toContain("secret");
+  expect(result.error).not.toContain("<private>");
+  log.mockRestore();
+});

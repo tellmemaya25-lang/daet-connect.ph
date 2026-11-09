@@ -119,7 +119,9 @@ export async function listPaymentRefunds(config: PaymongoConfig, paymentId: stri
   let after: string | undefined;
   const seenCursors = new Set<string>();
   for (let page = 0; page < 100; page++) {
-    const params = new URLSearchParams({ "data.attributes.payment_id": paymentId, "data.attributes.limit": "100" });
+    // Use PayMongo's documented default page size; not all accounts accept
+    // larger limits. Still walk every page and fail closed on bad pagination.
+    const params = new URLSearchParams({ "data.attributes.payment_id": paymentId });
     if (after) params.set("data.attributes.after", after);
     const result = await paymongoRequest<{ data: RefundResource[]; has_more: boolean }>(config, `/refunds?${params}`);
     if (!Array.isArray(result?.data) || typeof result.has_more !== "boolean") throw new Error("Invalid PayMongo refund history.");

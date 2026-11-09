@@ -14,7 +14,7 @@ test("reads all pages of refunds for the requested payment", async () => {
   const first = new URL(fetchMock.mock.calls[0][0] as string);
   const second = new URL(fetchMock.mock.calls[1][0] as string);
   expect(first.searchParams.get("data.attributes.payment_id")).toBe("pay_abc");
-  expect(first.searchParams.get("data.attributes.limit")).toBe("100");
+  expect(first.searchParams.has("data.attributes.limit")).toBe(false);
   expect(second.searchParams.get("data.attributes.after")).toBe("ref_first");
   expect(second.searchParams.has("after")).toBe(false);
   expect(first.searchParams.has("limit")).toBe(false);
@@ -32,4 +32,21 @@ test("rejects repeating pagination cursors rather than trusting an incomplete hi
     .mockResolvedValueOnce({ ok: true, json: async () => ({ data: [refund("ref_second")], has_more: true }) } as Response)
     .mockResolvedValueOnce({ ok: true, json: async () => ({ data: [refund("ref_first")], has_more: true }) } as Response);
   await expect(listPaymentRefunds(config, "pay_abc")).rejects.toThrow("Invalid PayMongo refund pagination");
+});
+
+test("uses the provider default page size without treating a rejected request as empty history", async () => {
+  const fetchMock = jest.spyOn(global, "fetch").mockImplementation(async (url) => {
+    const parsed = new URL(String(url));
+    if (parsed.searchParams.has("data.attributes.limit")) {
+      return { ok: false, status: 400, json: async () => ({ errors: [{ code: "parameter_invalid" }] }) } as Response;
+    }
+    return { ok: true, json: async () => ({ data: [], has_more: false }) } as Response;
+  });
+  await expect(listPaymentRefunds(config, "pay_abc")).resolves.toEqual([]);
+  expect(fetchMock).toHaveBeenCalledTimes(1);
+});
+
+test("a provider error never becomes an empty refund history", async () => {
+  jest.spyOn(global, "fetch").mockResolvedValue({ ok: false, status: 400, json: async () => ({ errors: [{ code: "parameter_invalid", detail: "Invalid payment id" }] }) } as Response);
+  await expect(listPaymentRefunds(config, "pay_abc")).rejects.toMatchObject({ status: 400 });
 });
