@@ -11,6 +11,8 @@ describe("safeNotificationLink", () => {
   it("keeps in-app links and rejects anything else", () => {
     expect(safeNotificationLink("/tours/bookings/abc")).toBe("/tours/bookings/abc");
     expect(safeNotificationLink("/tours/operator/bookings?status=pending")).toBe("/tours/operator/bookings?status=pending");
+    expect(safeNotificationLink("/tours/admin/guides")).toBe("/tours/admin/guides");
+    expect(safeNotificationLink("/tours/admin/operators")).toBe("/tours/admin/operators");
     for (const bad of ["https://evil.example", "//evil.example", "/tours//evil", "javascript:alert(1)", "/other", null, undefined]) {
       expect(safeNotificationLink(bad)).toBe("/tours/notifications");
     }
@@ -42,6 +44,8 @@ describe("helpers", () => {
   it("counts unread and picks icons", () => {
     expect(unreadCount([{ read_at: null }, { read_at: "2026-10-23T00:00:00Z" }, { read_at: null }])).toBe(2);
     expect(notificationIcon("message")).toBe("message");
+    expect(notificationIcon("guide_application_submitted")).toBe("guide");
+    expect(notificationIcon("operator_application_submitted")).toBe("inbox");
     expect(notificationIcon("unknown")).toBe("bell");
   });
 
