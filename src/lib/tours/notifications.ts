@@ -34,6 +34,8 @@ const KINDS: Record<string, NotificationKind> = {
   proof_rejected: "receipt",
   checked_in: "ticket",
   message: "message",
+  guide_application_submitted: "guide",
+  operator_application_submitted: "inbox",
   accreditation_approved: "award",
   accreditation_rejected: "note",
   package_approved: "check",
