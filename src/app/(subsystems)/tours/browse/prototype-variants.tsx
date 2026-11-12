@@ -1,6 +1,6 @@
 // PROTOTYPE: layouts for /tours/browse, switchable via ?variant=A|B|C.
-// Round 3: bold takes on the grid. A = current; B postcards, C magazine spread, D boarding passes, E tide-chart strips.
-// Rounds 1-2 are in this branch's git history.
+// Round 4: iterating on D (boarding pass). A = current grid, D = round-3 pass; B departures board, C scattered ticket desk, E tall die-cut tickets on a flight map.
+// Rounds 1-3 are in this branch's git history.
 // Round 1 (compare list, shelves by place) is in this branch's git history.
 // Question: what should the trip list look like? Throwaway; lives on branch prototype/tours-browse-layouts.
 import Image from "next/image";
@@ -16,10 +16,10 @@ type Props = { packages: Pkg[]; ratings: Map<string, RatingSummary> };
 
 export const VARIANTS = [
   { key: "A", name: "Grid (current)" },
-  { key: "B", name: "Postcards" },
-  { key: "C", name: "Magazine spread" },
-  { key: "D", name: "Boarding passes" },
-  { key: "E", name: "Sunset strips" },
+  { key: "B", name: "Departures board" },
+  { key: "C", name: "Tickets scattered on a desk" },
+  { key: "D", name: "Boarding passes (round 3)" },
+  { key: "E", name: "Die-cut tickets on a flight map" },
 ];
 
 function Cover({ pkg, sizes }: { pkg: Pkg; sizes: string }) {
@@ -64,28 +64,146 @@ export function VariantA({ packages, ratings }: Props) {
 const stars = (r?: RatingSummary) => (r ? `★ ${r.average.toFixed(1)}` : "New");
 const days = (pkg: Pkg) => durationLabel(pkg.duration_value, pkg.duration_type);
 
-/** B: tilted postcards on a sandy table. Price is a postage stamp; they straighten and lift on hover. */
+/** D: each trip is a boarding pass. Departure DAET, arrival the place; the price sits on a tear-off stub. */
+const code = (s: string) => (s || "XXX").replace(/[^A-Za-z]/g, "").slice(0, 3).toUpperCase();
+const amount = (pkg: Pkg) => priceText(pkg).split(" / ")[0];
+const per = (pkg: Pkg) => priceText(pkg).split(" / ")[1] ?? "";
+const barcode = "bg-[repeating-linear-gradient(90deg,currentColor_0_2px,transparent_2px_4px,currentColor_4px_5px,transparent_5px_8px)]";
+/** Ticket notches cut by a mask, so the shape is real (shows whatever is behind it). */
+const notched = (at: string, r = 14): React.CSSProperties => {
+  const m = `radial-gradient(circle at ${at}, transparent ${r}px, #000 ${r + 1}px)`;
+  return { WebkitMaskImage: m, maskImage: m };
+};
+
+/** B: an airport departures board. Split-flap tiles, amber on black; each row opens into a ticket on hover. */
 export function VariantB({ packages, ratings }: Props) {
-  const tilt = ["-rotate-2", "rotate-1", "-rotate-1", "rotate-2", "rotate-0", "-rotate-3", "rotate-3"];
+  const Flap = ({ text, w }: { text: string; w: number }) => (
+    <span className="inline-flex gap-[2px]">
+      {text.toUpperCase().padEnd(w).slice(0, w).split("").map((ch, i) => (
+        <span key={i} className="relative inline-grid h-8 w-6 place-items-center overflow-hidden rounded-[3px] bg-[#1c1c1c] font-mono text-lg font-bold text-amber-300 shadow-[inset_0_-1px_0_#000] after:absolute after:inset-x-0 after:top-1/2 after:h-px after:bg-black/80">
+          {ch === " " ? "\u00a0" : ch}
+        </span>
+      ))}
+    </span>
+  );
+  const times = ["05:30", "06:00", "07:15", "08:40", "09:00", "13:20", "15:45"];
   return (
-    <div className="-mx-4 mt-3 rounded-3xl bg-[radial-gradient(circle_at_20%_10%,#fdf3dc,#f3e2bd_60%,#e8d1a3)] px-6 py-12 sm:mx-0 dark:bg-[radial-gradient(circle_at_20%_10%,#3a3020,#2a2216)]">
-      <ul className="grid gap-x-8 gap-y-12 sm:grid-cols-2 lg:grid-cols-3">
+    <section className="-mx-4 mt-3 overflow-x-auto rounded-3xl bg-[#0b0b0b] p-4 text-amber-200 shadow-2xl sm:mx-0 sm:p-8">
+      <header className="flex items-center justify-between border-b border-amber-300/20 pb-4">
+        <h2 className="font-mono text-2xl font-black tracking-[.3em] text-amber-300">✈ DEPARTURES · DAET</h2>
+        <span className="animate-pulse font-mono text-sm text-amber-300/70">● LIVE</span>
+      </header>
+      <div className="mt-3 hidden grid-cols-[6rem_1fr_9rem_8rem] gap-4 px-3 font-mono text-xs tracking-[.2em] text-amber-300/50 md:grid">
+        <span>TIME</span><span>DESTINATION</span><span>FARE</span><span>STATUS</span>
+      </div>
+      <ul className="mt-2 space-y-2">
+        {packages.map((pkg, i) => {
+          const r = ratings.get(pkg.id);
+          return (
+            <li key={keyOf(pkg)}>
+              <Link href={`/tours/packages/${pkg.id}`} className="group block rounded-xl p-3 transition hover:bg-amber-300/5">
+                <div className="grid items-center gap-4 md:grid-cols-[6rem_1fr_9rem_8rem]">
+                  <Flap text={times[i % times.length]} w={5} />
+                  <div className="min-w-0"><Flap text={pkg.location_name} w={14} /></div>
+                  <span className="font-mono text-lg font-bold text-amber-300">{amount(pkg)}</span>
+                  <span className={`font-mono text-sm font-bold ${i % 3 === 0 ? "text-emerald-400" : "text-amber-300"}`}>{i % 3 === 0 ? "BOARDING" : "ON TIME"}</span>
+                </div>
+                <div className="grid grid-rows-[0fr] transition-all duration-500 group-hover:grid-rows-[1fr] group-focus-visible:grid-rows-[1fr]">
+                  <div className="overflow-hidden">
+                    <div className="mt-3 flex gap-4 rounded-lg bg-amber-300/10 p-3">
+                      <div className="relative h-20 w-28 shrink-0 overflow-hidden rounded"><Cover pkg={pkg} sizes="112px" /></div>
+                      <div>
+                        <p className="text-lg font-bold text-white">{pkg.title}</p>
+                        <p className="font-mono text-sm text-amber-200/80">{days(pkg)} · {stars(r)} · {per(pkg)}</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </Link>
+            </li>
+          );
+        })}
+      </ul>
+    </section>
+  );
+}
+
+/** C: tickets tossed on a cork desk at odd angles and overlaps; hover pulls one to the top, straight. */
+export function VariantC({ packages, ratings }: Props) {
+  const spots = [
+    "lg:col-start-1 lg:row-start-1 -rotate-6",
+    "lg:col-start-3 lg:row-start-1 rotate-3 lg:translate-y-10",
+    "lg:col-start-2 lg:row-start-2 -rotate-2 lg:-translate-y-16",
+    "lg:col-start-1 lg:row-start-3 rotate-6 lg:-translate-y-10",
+    "lg:col-start-3 lg:row-start-3 -rotate-3",
+    "lg:col-start-2 lg:row-start-4 rotate-2 lg:-translate-y-20",
+    "lg:col-start-1 lg:row-start-5 -rotate-1 lg:-translate-y-24",
+  ];
+  return (
+    <div className="-mx-4 mt-3 overflow-hidden rounded-3xl bg-[#8a5a35] bg-[radial-gradient(#0002_1px,transparent_1.5px)] [background-size:6px_6px] p-6 sm:mx-0 sm:p-12">
+      <ul className="grid gap-6 lg:grid-cols-[1fr_1fr_1fr] lg:gap-x-0">
         {packages.map((pkg, i) => (
-          <li key={keyOf(pkg)} className={`${tilt[i % tilt.length]} transition duration-300 hover:z-10 hover:rotate-0 hover:-translate-y-2 hover:scale-[1.03]`}>
-            <Link href={`/tours/packages/${pkg.id}`} className="block bg-[#fffdf7] p-3 pb-5 shadow-[0_18px_30px_-12px_rgba(60,40,10,.45)]">
-              <div className="relative aspect-[4/3] overflow-hidden">
-                <Cover pkg={pkg} sizes="(min-width:1024px) 33vw, 100vw" />
-                <span className="absolute right-2 top-2 rotate-6 border-2 border-dashed border-red-700 bg-[#fffdf7] px-2 py-1 text-center font-mono text-xs font-bold leading-tight text-red-700">
-                  {priceText(pkg).replace(" / ", "\n/ ")}
-                </span>
-                <span className="absolute bottom-2 left-2 -rotate-6 rounded-full border-2 border-white/80 px-3 py-1 text-[10px] font-bold uppercase tracking-[.2em] text-white/90">
-                  {pkg.location_name} · PH
-                </span>
+          <li key={keyOf(pkg)} className={`${spots[i % spots.length]} relative transition duration-300 hover:z-20 hover:rotate-0 hover:scale-105 lg:col-span-2`}>
+            <Link href={`/tours/packages/${pkg.id}`} className="flex bg-[#fbf7ee] shadow-[0_25px_40px_-15px_rgba(0,0,0,.6)]" style={notched("calc(100% - 7rem) 0", 0)}>
+              <div className="flex-1 p-5">
+                <p className="font-mono text-[10px] font-bold uppercase tracking-[.3em] text-red-700">Admit one · Trip {String(i + 1).padStart(3, "0")}</p>
+                <p className="mt-1 font-mono text-4xl font-black text-[#1d1a14]">DAE ✈ {code(pkg.location_name)}</p>
+                <h2 className="mt-1 font-serif text-xl italic text-[#1d1a14]">{pkg.title}</h2>
+                <p className="mt-2 font-mono text-xs uppercase text-[#1d1a14]/60">{days(pkg)} · {stars(ratings.get(pkg.id))}</p>
               </div>
-              <h2 className="mt-3 font-serif text-2xl italic text-[#2b2116]">Greetings from {pkg.title}!</h2>
-              <p className="mt-1 border-t border-dashed border-[#2b2116]/30 pt-2 font-mono text-xs uppercase tracking-wider text-[#2b2116]/70">
-                {days(pkg)} · {stars(ratings.get(pkg.id))}
-              </p>
+              <div className="relative flex w-28 flex-col items-center justify-center border-l-2 border-dashed border-[#1d1a14]/30 bg-red-700 p-3 text-center text-[#fbf7ee]">
+                <span className="text-[10px] uppercase tracking-widest">Fare</span>
+                <span className="text-lg font-black">{amount(pkg)}</span>
+                <span className="text-[10px] uppercase">{per(pkg)}</span>
+                <span className="absolute -right-3 top-6 rotate-12 rounded-full border-4 border-double border-[#fbf7ee] px-2 py-0.5 text-[10px] font-black uppercase">Approved</span>
+              </div>
+            </Link>
+            <span className="absolute -top-3 left-8 h-6 w-16 -rotate-6 bg-yellow-100/70 shadow" aria-hidden />
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+/** E: tall die-cut tickets (real notches, scalloped stub) staggered over a dashed flight map of Camarines Norte. */
+export function VariantE({ packages, ratings }: Props) {
+  return (
+    <div className="relative mt-3">
+      <svg className="pointer-events-none absolute inset-0 h-full w-full text-blue-500/30" preserveAspectRatio="none" viewBox="0 0 100 100" aria-hidden>
+        <path d="M2 8 C 30 0, 20 40, 50 30 S 80 70, 98 55 M5 90 C 30 60, 60 95, 95 20" fill="none" stroke="currentColor" strokeWidth="0.3" strokeDasharray="1 1.2" vectorEffect="non-scaling-stroke" />
+      </svg>
+      <ul className="relative grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-4">
+        {packages.map((pkg, i) => (
+          <li key={keyOf(pkg)} className={`${i % 2 ? "lg:mt-24" : ""} ${i % 4 === 2 ? "lg:-mt-6" : ""}`}>
+            <Link href={`/tours/packages/${pkg.id}`} className="group block drop-shadow-[0_20px_25px_rgba(30,64,175,.25)] transition duration-500 hover:-translate-y-2 hover:rotate-[-1.5deg]">
+              <div className="overflow-hidden rounded-t-[2rem] bg-blue-700 text-white" style={notched("50% 100%", 0)}>
+                <div className="relative aspect-[3/4]">
+                  <Cover pkg={pkg} sizes="(min-width:1024px) 25vw, 50vw" />
+                  <div className="absolute inset-0 bg-gradient-to-b from-blue-900/70 via-transparent to-blue-900/90" />
+                  <div className="absolute inset-x-0 top-0 flex justify-between p-5 font-mono">
+                    <span><span className="block text-[10px] opacity-70">FROM</span><b className="text-3xl">DAE</b></span>
+                    <span className="self-center text-xl transition-transform duration-700 group-hover:translate-x-3 group-hover:-translate-y-2">✈</span>
+                    <span className="text-right"><span className="block text-[10px] opacity-70">TO</span><b className="text-3xl">{code(pkg.location_name)}</b></span>
+                  </div>
+                  <h2 className="absolute inset-x-0 bottom-0 p-5 text-2xl font-black leading-tight">{pkg.title}</h2>
+                </div>
+              </div>
+              <div className="relative bg-white px-5 pb-6 pt-5 text-daet-ink dark:bg-slate-100" style={notched("0 0", 14)}>
+                <span className="absolute -top-px left-4 right-4 border-t-2 border-dashed border-blue-200" />
+                <div className="absolute -top-[14px] right-0 h-7 w-7 rounded-full bg-[var(--background,white)]" />
+                <div className="flex items-end justify-between">
+                  <div className="font-mono text-xs uppercase">
+                    <p className="text-daet-ink/50">Length · Rating</p>
+                    <p className="font-bold">{days(pkg)} · {stars(ratings.get(pkg.id))}</p>
+                  </div>
+                  <p className="text-right">
+                    <span className="block text-2xl font-black text-blue-700">{amount(pkg)}</span>
+                    <span className="text-xs uppercase text-daet-ink/60">{per(pkg)}</span>
+                  </p>
+                </div>
+                <div className={`mt-4 h-8 text-daet-ink ${barcode}`} />
+              </div>
             </Link>
           </li>
         ))}
@@ -94,40 +212,8 @@ export function VariantB({ packages, ratings }: Props) {
   );
 }
 
-/** C: editorial magazine spread. Huge issue numbers, asymmetric sizes, mixed aspect ratios, serif headlines. */
-export function VariantC({ packages, ratings }: Props) {
-  const spans = ["lg:col-span-4 lg:row-span-2", "lg:col-span-2", "lg:col-span-2", "lg:col-span-3", "lg:col-span-3", "lg:col-span-2", "lg:col-span-4"];
-  return (
-    <ol className="mt-3 grid auto-rows-[minmax(14rem,auto)] gap-6 border-t-4 border-daet-ink pt-6 sm:grid-cols-2 lg:grid-cols-6">
-      {packages.map((pkg, i) => {
-        const big = i === 0;
-        return (
-          <li key={keyOf(pkg)} className={spans[i % spans.length]}>
-            <Link href={`/tours/packages/${pkg.id}`} className="group flex h-full flex-col">
-              <div className={`relative overflow-hidden grayscale-[60%] transition duration-500 group-hover:grayscale-0 ${big ? "min-h-[24rem] flex-1" : "aspect-[5/4]"}`}>
-                <Cover pkg={pkg} sizes="(min-width:1024px) 66vw, 100vw" />
-                <span className="absolute left-3 top-0 font-serif text-[7rem] font-black leading-none text-white drop-shadow-[0_4px_12px_rgba(0,0,0,.5)]">
-                  {String(i + 1).padStart(2, "0")}
-                </span>
-              </div>
-              <div className="mt-3 flex items-baseline justify-between gap-4 border-b border-daet-ink/20 pb-3">
-                <h2 className={`font-serif leading-[1.05] text-daet-ink group-hover:underline ${big ? "text-5xl" : "text-2xl"}`}>{pkg.title}</h2>
-                <span className="shrink-0 text-xs font-bold uppercase tracking-[.2em] text-daet-ink/60">{days(pkg)}</span>
-              </div>
-              <p className="mt-2 text-sm uppercase tracking-[.15em] text-daet-ink/70">
-                {pkg.location_name} — {stars(ratings.get(pkg.id))} — <b className="text-daet-ink">{priceText(pkg)}</b>
-              </p>
-            </Link>
-          </li>
-        );
-      })}
-    </ol>
-  );
-}
-
-/** D: each trip is a boarding pass. Departure DAET, arrival the place; the price sits on a tear-off stub. */
 export function VariantD({ packages, ratings }: Props) {
-  const code = (s: string) => (s || "XXX").replace(/[^A-Za-z]/g, "").slice(0, 3).toUpperCase();
+  const _code = (s: string) => (s || "XXX").replace(/[^A-Za-z]/g, "").slice(0, 3).toUpperCase();
   return (
     <ul className="mt-3 grid gap-6 lg:grid-cols-2">
       {packages.map((pkg, i) => (
@@ -165,25 +251,3 @@ export function VariantD({ packages, ratings }: Props) {
   );
 }
 
-/** E: full-width cinematic strips; hovering one expands it and the rest compress, like an accordion of sunsets. */
-export function VariantE({ packages, ratings }: Props) {
-  const hues = ["from-orange-500/70", "from-pink-600/70", "from-violet-700/70", "from-sky-700/70", "from-teal-700/70"];
-  return (
-    <ul className="mt-3 flex h-[34rem] flex-col gap-2 lg:h-[30rem] lg:flex-row">
-      {packages.map((pkg, i) => (
-        <li key={keyOf(pkg)} className="group relative min-h-12 flex-1 overflow-hidden rounded-2xl transition-[flex-grow] duration-700 ease-out hover:flex-[5] focus-within:flex-[5]">
-          <Link href={`/tours/packages/${pkg.id}`} className="absolute inset-0 block">
-            <Cover pkg={pkg} sizes="100vw" />
-            <div className={`absolute inset-0 bg-gradient-to-t ${hues[i % hues.length]} to-transparent mix-blend-multiply`} />
-            <div className="absolute inset-0 bg-black/30 transition group-hover:bg-black/10" />
-            <span className="absolute left-3 top-3 font-mono text-xs font-bold text-white/80 lg:[writing-mode:vertical-rl]">{String(i + 1).padStart(2, "0")} · {pkg.location_name}</span>
-            <div className="absolute inset-x-0 bottom-0 translate-y-4 p-6 opacity-0 transition duration-500 group-hover:translate-y-0 group-hover:opacity-100 group-focus-within:opacity-100">
-              <h2 className="text-3xl font-black text-white sm:text-4xl">{pkg.title}</h2>
-              <p className="mt-1 text-white/90">{days(pkg)} · {stars(ratings.get(pkg.id))} · <b>{priceText(pkg)}</b></p>
-            </div>
-          </Link>
-        </li>
-      ))}
-    </ul>
-  );
-}
