@@ -13,7 +13,7 @@ import { toSummary, type RatingSummary } from "@/lib/tours/reviews";
 import { PackageFilters } from "./package-filters";
 import { placePhoto } from "@/lib/tours/trip-board";
 import { PrototypeSwitcher } from "@/components/ui/prototype-switcher";
-import { VARIANTS, VariantA, VariantB, VariantC } from "./prototype-variants";
+import { VARIANTS, VariantA, VariantB, VariantC, VariantD, padForDemo } from "./prototype-variants";
 
 
 type SearchParams = Promise<{
@@ -188,14 +188,11 @@ export default async function BrowsePackagesPage({
           <p className="mt-6 font-semibold text-daet-ink/80" aria-live="polite">
             {filteredPackages.length} trip{filteredPackages.length !== 1 ? "s" : ""}
           </p>
-          {/* PROTOTYPE: layout variants, ?variant=A|B|C */}
-          {params.variant === "B" ? (
-            <VariantB packages={filteredPackages} ratings={ratingsById} />
-          ) : params.variant === "C" ? (
-            <VariantC packages={filteredPackages} ratings={ratingsById} />
-          ) : (
-            <VariantA packages={filteredPackages} ratings={ratingsById} />
-          )}
+          {/* PROTOTYPE: layout variants, ?variant=A|B|C|D */}
+          {(() => {
+            const V = { A: VariantA, B: VariantB, C: VariantC, D: VariantD }[params.variant ?? "A"] ?? VariantA;
+            return <V packages={padForDemo(filteredPackages)} ratings={ratingsById} />;
+          })()}
         </>
       )}
       <PrototypeSwitcher variants={VARIANTS} />
