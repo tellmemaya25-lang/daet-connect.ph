@@ -13,7 +13,8 @@
     "test:e2e:tours": "playwright test --config playwright.tours.config.ts",
     "test:scripts": "node --test scripts/*.test.mjs",
     "seed:demo": "node scripts/seed-demo.mjs",
-    "paymongo:setup": "node scripts/paymongo-setup.mjs"
+    "paymongo:setup": "node scripts/paymongo-setup.mjs",
+    "prototype:tours": "node scripts/prototype-tours-browse.mjs"
   },
   "dependencies": {
     "@dnd-kit/core": "6.3.1",

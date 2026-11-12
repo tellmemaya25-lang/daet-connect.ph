@@ -12,6 +12,8 @@ import { PackageCard } from "@/components/tours/package-card";
 import { toSummary, type RatingSummary } from "@/lib/tours/reviews";
 import { PackageFilters } from "./package-filters";
 import { placePhoto } from "@/lib/tours/trip-board";
+import { PrototypeSwitcher } from "@/components/ui/prototype-switcher";
+import { VARIANTS, VariantA, VariantB, VariantC } from "./prototype-variants";
 
 
 type SearchParams = Promise<{
@@ -21,6 +23,7 @@ type SearchParams = Promise<{
   maxPrice?: string;
   duration?: string;
   sort?: string;
+  variant?: string;
 }>;
 
 export default async function BrowsePackagesPage({
@@ -185,15 +188,17 @@ export default async function BrowsePackagesPage({
           <p className="mt-6 font-semibold text-daet-ink/80" aria-live="polite">
             {filteredPackages.length} trip{filteredPackages.length !== 1 ? "s" : ""}
           </p>
-          <ul className="mt-3 grid gap-4 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3">
-            {filteredPackages.map((pkg: any) => (
-              <li key={pkg.id} data-reveal>
-                <PackageCard package={pkg} rating={ratingsById.get(pkg.id) ?? null} />
-              </li>
-            ))}
-          </ul>
+          {/* PROTOTYPE: layout variants, ?variant=A|B|C */}
+          {params.variant === "B" ? (
+            <VariantB packages={filteredPackages} ratings={ratingsById} />
+          ) : params.variant === "C" ? (
+            <VariantC packages={filteredPackages} ratings={ratingsById} />
+          ) : (
+            <VariantA packages={filteredPackages} ratings={ratingsById} />
+          )}
         </>
       )}
+      <PrototypeSwitcher variants={VARIANTS} />
     </PageFrame>
   );
 }
