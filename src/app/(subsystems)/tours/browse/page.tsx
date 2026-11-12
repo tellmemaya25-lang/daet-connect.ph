@@ -13,7 +13,7 @@ import { toSummary, type RatingSummary } from "@/lib/tours/reviews";
 import { PackageFilters } from "./package-filters";
 import { placePhoto } from "@/lib/tours/trip-board";
 import { PrototypeSwitcher } from "@/components/ui/prototype-switcher";
-import { VARIANTS, VariantA, VariantB, VariantC, VariantD, padForDemo } from "./prototype-variants";
+import { VARIANTS, VariantA, VariantB, VariantC, VariantD, VariantE, padForDemo } from "./prototype-variants";
 
 
 type SearchParams = Promise<{
@@ -188,9 +188,9 @@ export default async function BrowsePackagesPage({
           <p className="mt-6 font-semibold text-daet-ink/80" aria-live="polite">
             {filteredPackages.length} trip{filteredPackages.length !== 1 ? "s" : ""}
           </p>
-          {/* PROTOTYPE: layout variants, ?variant=A|B|C|D */}
+          {/* PROTOTYPE: layout variants, ?variant=A|B|C|D|E */}
           {(() => {
-            const V = { A: VariantA, B: VariantB, C: VariantC, D: VariantD }[params.variant ?? "A"] ?? VariantA;
+            const V = { A: VariantA, B: VariantB, C: VariantC, D: VariantD, E: VariantE }[params.variant ?? "A"] ?? VariantA;
             return <V packages={padForDemo(filteredPackages)} ratings={ratingsById} />;
           })()}
         </>
