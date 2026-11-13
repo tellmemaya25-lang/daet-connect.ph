@@ -21,7 +21,9 @@ export type WaitingBooking = {
   proposedGuideId: string | null;
   proposedGuideName: string | null;
 };
-export type Coverage = { areas: AreaCoverage[]; unplacedPackages: number; guides: CoverageGuide[]; bookings: WaitingBooking[] };
+/** A published package and the guides chosen for it (tried first for its bookings). */
+export type CoveragePackage = { id: string; title: string; operator: string; municipality: Municipality | null; guideIds: string[] };
+export type Coverage = { areas: AreaCoverage[]; unplacedPackages: number; guides: CoverageGuide[]; packages: CoveragePackage[]; bookings: WaitingBooking[] };
 
 const rows = (v: unknown) => (Array.isArray(v) ? (v as Record<string, unknown>[]) : []);
 const text = (v: unknown) => (typeof v === "string" ? v : "");
@@ -34,6 +36,13 @@ export function parseCoverage(data: unknown): Coverage {
       .map((a) => ({ municipality: a.municipality as Municipality, guides: Number(a.guides) || 0, packages: Number(a.packages) || 0 })),
     unplacedPackages: Number(d.unplaced_packages) || 0,
     guides: rows(d.guides).map((g) => ({ id: text(g.id), name: text(g.name) || "Guide", areas: (Array.isArray(g.areas) ? g.areas : []).filter(isMunicipality) })),
+    packages: rows(d.packages).map((p) => ({
+      id: text(p.id),
+      title: text(p.title) || "Tour",
+      operator: text(p.operator) || "Operator",
+      municipality: isMunicipality(p.municipality) ? p.municipality : null,
+      guideIds: (Array.isArray(p.guide_ids) ? p.guide_ids : []).filter((id): id is string => typeof id === "string"),
+    })),
     bookings: rows(d.bookings).map((b) => ({
       id: text(b.id),
       reference: text(b.booking_reference),
@@ -54,4 +63,9 @@ export function parseCoverage(data: unknown): Coverage {
 /** Municipalities with published tours but no guide serving them: the gaps to fill first. */
 export function uncoveredAreas(areas: AreaCoverage[]): AreaCoverage[] {
   return areas.filter((a) => a.packages > 0 && a.guides === 0);
+}
+
+/** Published packages with no guide of their own and no municipality: no guide can be proposed for them. */
+export function packagesWithoutGuides(packages: CoveragePackage[]): CoveragePackage[] {
+  return packages.filter((p) => p.guideIds.length === 0 && p.municipality === null);
 }

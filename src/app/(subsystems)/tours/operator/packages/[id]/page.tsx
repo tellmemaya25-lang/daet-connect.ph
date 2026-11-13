@@ -162,10 +162,20 @@ export default async function OperatorPackageDetailPage({ params }: PageProps) {
 
   // Pickup points and guide settings live in their own columns; a database
   // without them yet (20261203 not applied) shows a notice instead of failing.
-  const [{ data: guideSettings, error: settingsError }, { data: pickupRows }] = await Promise.all([
+  const [{ data: guideSettings, error: settingsError }, { data: pickupRows }, { data: guideLinks }] = await Promise.all([
     supabase.from("tours_packages").select("guide_fee, municipality").eq("id", pkg.id).maybeSingle(),
     supabase.from("tours_package_pickup_points").select("id, name, fee, fee_per, note, is_active").eq("package_id", pkg.id).order("sort_order"),
+    supabase.from("tours_package_guides").select("guide_id, tours_guides ( profile_id, accreditation_status )").eq("package_id", pkg.id).eq("is_active", true),
   ]);
+  // The guides the Tourism Office chose for this tour (proposed first for its bookings).
+  const linkedProfiles = (guideLinks ?? []).flatMap((link) => {
+    const guide = (Array.isArray(link.tours_guides) ? link.tours_guides[0] : link.tours_guides) as { profile_id?: string; accreditation_status?: string } | null;
+    return guide?.profile_id && guide.accreditation_status === "approved" ? [guide.profile_id] : [];
+  });
+  const { data: linkedNames } = linkedProfiles.length
+    ? await supabase.from("profiles").select("full_name").in("id", linkedProfiles)
+    : { data: [] as Array<{ full_name: string | null }> };
+  const packageGuides = (linkedNames ?? []).map((p) => p.full_name?.trim() || "Guide");
 
   // Get default price or first price variant
   const defaultVariant =
@@ -444,6 +454,12 @@ export default async function OperatorPackageDetailPage({ params }: PageProps) {
 
             <section aria-labelledby="pickup-guide-heading" className="mt-6 rounded-2xl card-edge bg-surface p-6">
               <h2 id="pickup-guide-heading" className="font-bold text-daet-ink">Pickup points &amp; guide</h2>
+              <p className="mt-2 text-sm text-slate-600 dark:text-slate-400">
+                <span className="font-bold text-daet-ink">Guides for this tour:</span>{" "}
+                {packageGuides.length
+                  ? `${packageGuides.join(", ")}. They are proposed first for new bookings; the Tourism Office chooses them.`
+                  : "none chosen yet. New bookings get a free guide from the municipality below; ask the Tourism Office to choose this tour's guides."}
+              </p>
               <div className="mt-3">
                 <PickupGuideSettings
                   packageId={pkg.id}

@@ -1,4 +1,4 @@
-import { parseCoverage, uncoveredAreas } from "./guide-coverage";
+import { packagesWithoutGuides, parseCoverage, uncoveredAreas } from "./guide-coverage";
 
 describe("parseCoverage", () => {
   it("reads areas, guides and waiting bookings, dropping unknown towns", () => {
@@ -27,5 +27,21 @@ describe("uncoveredAreas", () => {
         { municipality: "Basud", guides: 1, packages: 1 },
       ]).map((a) => a.municipality),
     ).toEqual(["Daet"]);
+  });
+});
+
+describe("packages", () => {
+  it("reads each package's own guides", () => {
+    const c = parseCoverage({ packages: [{ id: "p1", title: "Surf", operator: "Kalmado", municipality: "Daet", guide_ids: ["g1", 7] }] });
+    expect(c.packages).toEqual([{ id: "p1", title: "Surf", operator: "Kalmado", municipality: "Daet", guideIds: ["g1"] }]);
+  });
+  it("flags packages that can get no guide", () => {
+    expect(
+      packagesWithoutGuides([
+        { id: "a", title: "A", operator: "O", municipality: null, guideIds: [] },
+        { id: "b", title: "B", operator: "O", municipality: "Daet", guideIds: [] },
+        { id: "c", title: "C", operator: "O", municipality: null, guideIds: ["g1"] },
+      ]).map((p) => p.id),
+    ).toEqual(["a"]);
   });
 });
