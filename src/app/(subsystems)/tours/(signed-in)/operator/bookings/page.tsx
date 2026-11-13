@@ -51,6 +51,14 @@ type SearchParams = Promise<{
 
 type Supabase = Awaited<ReturnType<typeof createSupabaseServerClient>>;
 
+/** A proposal still waiting on the operator; null once a guide is assigned or nothing was proposed. */
+function guideProposalFor(row: Record<string, unknown>, guideName: (id: string | null) => string | null): BoardRow["guideProposal"] {
+  const status = row.guide_proposal_status;
+  if (row.assigned_guide_id || (status !== "proposed" && status !== "none_available")) return null;
+  const guideId = typeof row.proposed_guide_id === "string" ? row.proposed_guide_id : null;
+  return { guideId, guideName: guideName(guideId), by: row.guide_proposed_by === "admin" ? "admin" : "auto", status };
+}
+
 /** Approved guides, with their name and the two specialties the picker shows. */
 async function loadGuides(supabase: Supabase) {
   const { data: guideRows, error } = await supabase
@@ -179,9 +187,7 @@ async function BookingsContent({ searchParams }: { searchParams: SearchParams })
     .from("tours_bookings")
     .select(
       `
-      id, booking_reference, status, tour_date, number_of_pax, total_amount, total_paid, payment_status,
-      contact_name, contact_email, contact_phone, special_requests, assigned_guide_id, package_id,
-      called_off_at, called_off_reason, call_off_resolution, rescheduled_from, cancellation_reason,
+      *,
       tours_packages!inner ( id, title, cover_image_url, operator_id )
     `,
     )
@@ -392,6 +398,10 @@ async function BookingsContent({ searchParams }: { searchParams: SearchParams })
       guideId: booking.assigned_guide_id,
       guideName: guideName(booking.assigned_guide_id),
       guideNotNeeded: guideNotNeeded.get(booking.id) ?? null,
+      guideProposal: guideProposalFor(booking as Record<string, unknown>, guideName),
+      pickup: (booking as { pickup_name?: string | null }).pickup_name
+        ? { name: String((booking as { pickup_name?: string }).pickup_name), fee: round2(Number((booking as { pickup_fee?: unknown }).pickup_fee ?? 0)) }
+        : null,
       note: paymentNote({
         totalAmount: booking.total_amount,
         totalPaid: booking.total_paid,

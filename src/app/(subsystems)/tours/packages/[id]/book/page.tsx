@@ -10,6 +10,7 @@ import { bookableDates, type AvailabilityRow } from "@/lib/tours/availability";
 import { toManilaDateKey } from "@/lib/tours/events-calendar";
 import { BookingForm } from "./booking-form";
 import { getAuthenticatedSession } from "@/lib/tours/server-auth";
+import { toPickupPoints } from "@/lib/tours/pickup";
 
 
 type PageProps = {
@@ -91,7 +92,7 @@ export default async function BookPackagePage({ params, searchParams }: PageProp
 
   // Get user profile for pre-filling form
   const today = toManilaDateKey(new Date());
-  const [{ data: profile }, { data: availabilityRows }, { count: openDateCount }] = await Promise.all([
+  const [{ data: profile }, { data: availabilityRows }, { count: openDateCount }, { data: pickupRows }] = await Promise.all([
     supabase.from("profiles").select("full_name").eq("id", user.id).maybeSingle(),
     supabase
       .from("tours_package_availability")
@@ -101,6 +102,7 @@ export default async function BookPackagePage({ params, searchParams }: PageProp
       .order("available_date", { ascending: true }),
     // Any open date (past ones included) switches the package to "open dates only".
     supabase.from("tours_package_availability").select("id", { count: "exact", head: true }).eq("package_id", pkg.id),
+    supabase.from("tours_package_pickup_points").select("id, name, fee, fee_per, note, is_active").eq("package_id", pkg.id).order("sort_order"),
   ]);
   const usesOpenDates = (openDateCount ?? 0) > 0;
 
@@ -148,6 +150,7 @@ export default async function BookPackagePage({ params, searchParams }: PageProp
         <BookingForm
           packageId={pkg.id}
           priceVariants={pkg.tours_package_price_variants || []}
+          pickupPoints={toPickupPoints(pickupRows)}
           prefill={prefill}
           dateOptions={usesOpenDates ? bookableDates((availabilityRows ?? []) as AvailabilityRow[], today) : null}
           userProfile={{

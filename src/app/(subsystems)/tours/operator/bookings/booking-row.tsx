@@ -8,6 +8,7 @@ import { LineIcon, type IconName } from "@/components/ui/icons";
 import { formatPeso } from "@/lib/money";
 import type { BoardStatus, PaymentNote } from "@/lib/tours/booking-board";
 import type { BoardRow } from "./board-types";
+import { GuideProposal } from "./guide-proposal";
 
 const STATUS_TONE: Record<BoardStatus, string> = {
   // Same chip colours as everywhere else (badge.tsx).
@@ -196,11 +197,22 @@ export function BookingRow({
                     {booking.guideName ?? (booking.guideNotNeeded ? "None — as the guest asked" : "Unassigned")}
                   </dd>
                 </div>
+                {booking.pickup ? (
+                  <div className="flex flex-wrap items-baseline justify-between gap-x-2">
+                    <dt className="text-daet-ink/70">Pickup:</dt>
+                    <dd className="min-w-0 break-words text-right font-bold text-daet-ink">
+                      {booking.pickup.name} · {booking.pickup.fee > 0 ? formatPeso(booking.pickup.fee) : "Free"}
+                    </dd>
+                  </div>
+                ) : null}
                 <div className="flex flex-wrap items-baseline justify-between gap-x-2">
                   <dt className="text-daet-ink/70">Payment status:</dt>
                   <dd className={`min-w-0 break-words text-right font-bold ${NOTE_TONE[booking.note.tone]}`}>{booking.note.text}</dd>
                 </div>
               </dl>
+              {booking.guideProposal && !booking.guideId && ["pending", "confirmed"].includes(booking.lifecycleStatus) ? (
+                <GuideProposal bookingId={booking.id} proposal={booking.guideProposal} />
+              ) : null}
               {booking.calledOff === "awaiting" ? (
                 <p className="mt-3 rounded-xl bg-yellow-50 p-3 text-sm text-daet-ink dark:bg-yellow-950/30">
                   <span className="font-bold">Called off:</span> {booking.calledOffReason} The traveller is choosing a new

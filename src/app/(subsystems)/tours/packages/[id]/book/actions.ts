@@ -119,6 +119,8 @@ export async function createBooking(input: CreateBookingInput): Promise<CreateBo
         contact_email: input.contactEmail,
         contact_phone: input.contactPhone,
         special_requests: input.specialRequests || null,
+        // The database checks it belongs to this package and adds its fee to the total.
+        pickup_point_id: input.pickupPointId || null,
         status: "pending",
       })
       .select("id")

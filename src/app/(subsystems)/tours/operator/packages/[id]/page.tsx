@@ -4,6 +4,8 @@ import { formatPeso } from "@/lib/money";
 import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
 import { MeetingPointForm } from "./meeting-point-form";
+import { PickupGuideSettings } from "./pickup-guide-settings";
+import { toPickupPoints } from "@/lib/tours/pickup";
 import { PageFrame } from "@/components/ui/page-frame";
 import { Notice } from "@/components/ui/notice";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
@@ -157,6 +159,13 @@ export default async function OperatorPackageDetailPage({ params }: PageProps) {
   if (!pkg) {
     notFound();
   }
+
+  // Pickup points and guide settings live in their own columns; a database
+  // without them yet (20261203 not applied) shows a notice instead of failing.
+  const [{ data: guideSettings, error: settingsError }, { data: pickupRows }] = await Promise.all([
+    supabase.from("tours_packages").select("guide_fee, municipality").eq("id", pkg.id).maybeSingle(),
+    supabase.from("tours_package_pickup_points").select("id, name, fee, fee_per, note, is_active").eq("package_id", pkg.id).order("sort_order"),
+  ]);
 
   // Get default price or first price variant
   const defaultVariant =
@@ -429,6 +438,19 @@ export default async function OperatorPackageDetailPage({ params }: PageProps) {
                   latitude={pkg.meeting_lat === null || pkg.meeting_lat === undefined ? null : Number(pkg.meeting_lat)}
                   longitude={pkg.meeting_lng === null || pkg.meeting_lng === undefined ? null : Number(pkg.meeting_lng)}
                   time={pkg.meeting_time ?? null}
+                />
+              </div>
+            </section>
+
+            <section aria-labelledby="pickup-guide-heading" className="mt-6 rounded-2xl card-edge bg-surface p-6">
+              <h2 id="pickup-guide-heading" className="font-bold text-daet-ink">Pickup points &amp; guide</h2>
+              <div className="mt-3">
+                <PickupGuideSettings
+                  packageId={pkg.id}
+                  ready={!settingsError}
+                  points={toPickupPoints(pickupRows)}
+                  guideFee={guideSettings?.guide_fee === null || guideSettings?.guide_fee === undefined ? null : Number(guideSettings.guide_fee)}
+                  municipality={guideSettings?.municipality ?? null}
                 />
               </div>
             </section>

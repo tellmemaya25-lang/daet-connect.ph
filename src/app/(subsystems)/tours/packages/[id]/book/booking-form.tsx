@@ -7,6 +7,8 @@ import type { DateOption } from "@/lib/tours/availability";
 import { createBooking } from "./actions";
 import { bookingPrefill } from "./prefill";
 import { digitsOnlyPhone, PHONE_MAX_DIGITS } from "@/lib/tours/phone";
+import { pickupFee, pickupFeeLabel, type PickupPoint } from "@/lib/tours/pickup";
+import { Select } from "@/components/ui/field";
 
 interface PriceVariant {
   id: string;
@@ -21,6 +23,8 @@ interface PriceVariant {
 interface BookingFormProps {
   packageId: string;
   priceVariants: PriceVariant[];
+  /** The operator's pickup points with their fees; empty = meet at the meeting point only. */
+  pickupPoints?: PickupPoint[];
   /** Open dates when the operator manages availability; null = any future date. */
   dateOptions: DateOption[] | null;
   userProfile: {
@@ -34,7 +38,7 @@ interface BookingFormProps {
 const formatOpenDate = (dateKey: string) =>
   new Date(`${dateKey}T00:00:00Z`).toLocaleDateString("en-PH", { weekday: "short", month: "short", day: "numeric", year: "numeric", timeZone: "UTC" });
 
-export function BookingForm({ packageId, priceVariants, dateOptions, userProfile, prefill = {} }: BookingFormProps) {
+export function BookingForm({ packageId, priceVariants, pickupPoints = [], dateOptions, userProfile, prefill = {} }: BookingFormProps) {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -54,6 +58,7 @@ export function BookingForm({ packageId, priceVariants, dateOptions, userProfile
   const [contactEmail, setContactEmail] = useState(userProfile.email);
   const [contactPhone, setContactPhone] = useState("");
   const [specialRequests, setSpecialRequests] = useState("");
+  const [pickupPointId, setPickupPointId] = useState("");
 
   // Get selected variant
   const selectedVariant = priceVariants.find((v) => v.id === selectedVariantId);
@@ -73,7 +78,10 @@ export function BookingForm({ packageId, priceVariants, dateOptions, userProfile
     return 0;
   };
 
-  const totalAmount = calculateTotal();
+  const tourAmount = calculateTotal();
+  const pickup = pickupPoints.find((p) => p.id === pickupPointId) ?? null;
+  const pickupAmount = pickupFee(pickup, numberOfPax);
+  const totalAmount = tourAmount + pickupAmount;
 
   // Get min date (tomorrow in Manila, not in the visitor's or the server's zone)
   const getMinDate = () => {
@@ -116,6 +124,7 @@ export function BookingForm({ packageId, priceVariants, dateOptions, userProfile
         contactEmail: contactEmail.trim(),
         contactPhone: contactPhone.trim(),
         specialRequests: specialRequests.trim() || undefined,
+        pickupPointId: pickupPointId || null,
       });
 
       if (!result.success) {
@@ -282,6 +291,30 @@ export function BookingForm({ packageId, priceVariants, dateOptions, userProfile
             ) : null}
           </div>
 
+          {pickupPoints.length ? (
+            <div>
+              <label htmlFor="pickupPoint" className="block text-sm font-bold text-daet-ink">
+                Pickup location
+              </label>
+              <Select
+                id="pickupPoint"
+                value={pickupPointId}
+                onChange={(e) => setPickupPointId(e.target.value)}
+                aria-describedby="pickupPointHint"
+              >
+                <option value="">No pickup, I&apos;ll go to the meeting point (free)</option>
+                {pickupPoints.map((point) => (
+                  <option key={point.id} value={point.id}>
+                    {point.name} · {pickupFeeLabel(point, formatPeso)}
+                  </option>
+                ))}
+              </Select>
+              <p id="pickupPointHint" className="mt-1 text-xs text-daet-ink/70">
+                {pickup?.note ?? "Pickup fees are set by the operator and added to your total."}
+              </p>
+            </div>
+          ) : null}
+
           {/* Price Summary */}
           <div className="rounded-2xl bg-daet-sand/30 p-4">
             <div className="flex items-baseline justify-between">
@@ -295,6 +328,12 @@ export function BookingForm({ packageId, priceVariants, dateOptions, userProfile
                 {formatPeso(selectedVariant.price_per_pax)} × {numberOfPax} guest{numberOfPax === 1 ? "" : "s"}
               </p>
             )}
+            {pickup ? (
+              <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
+                Tour {formatPeso(tourAmount)} + pickup at {pickup.name} {formatPeso(pickupAmount)}
+                {pickup.feePer === "person" ? ` (${formatPeso(pickup.fee)} × ${numberOfPax})` : ""}
+              </p>
+            ) : null}
           </div>
         </div>
       </section>

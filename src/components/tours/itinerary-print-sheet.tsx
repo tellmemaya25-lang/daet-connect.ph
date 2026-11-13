@@ -32,9 +32,9 @@ export function ItineraryPrintSheet({
 }) {
   const printedOn = new Date().toLocaleDateString("en-PH", { month: "long", day: "numeric", year: "numeric", timeZone: "Asia/Manila" });
   return (
-    <article className="mx-auto max-w-3xl bg-white p-6 text-slate-900 print:max-w-none print:p-0" aria-label="Printable itinerary">
-      <header className="border-b-2 border-slate-900 pb-3">
-        <p className="text-xs font-bold uppercase tracking-widest text-slate-600">CONNECT-Daet · Trip itinerary</p>
+    <article className="mx-auto max-w-3xl rounded-2xl bg-surface p-6 text-daet-ink print:max-w-none print:rounded-none print:p-0" aria-label="Printable itinerary">
+      <header className="border-b-2 border-daet-ink pb-3">
+        <p className="text-sm font-bold text-slate-600 dark:text-slate-400 print:text-slate-600">CONNECT-Daet · Trip itinerary</p>
         <h1 className="mt-1 text-3xl font-bold leading-tight">{title}</h1>
         {subtitle ? <p className="mt-1 text-sm text-slate-700">{subtitle}</p> : null}
       </header>

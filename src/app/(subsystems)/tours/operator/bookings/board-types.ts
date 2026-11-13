@@ -63,6 +63,10 @@ export type BoardRow = {
   guideName: string | null;
   /** Set when the guest asked for this tour to go ahead without a guide. */
   guideNotNeeded: { at: string; note: string | null } | null;
+  /** The guide the admin or the system proposed, waiting for the operator (owner's list, item 8). */
+  guideProposal?: { guideId: string | null; guideName: string | null; by: "auto" | "admin"; status: "proposed" | "none_available" } | null;
+  /** Where the guests are picked up, and what it added to the total. */
+  pickup?: { name: string; fee: number } | null;
   note: PaymentNote;
   pendingProofs: ReviewableProof[];
   refundable: number;
