@@ -1,6 +1,8 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { emailGuideAssigned } from "@/lib/email/notify-booking";
+import { scheduleErrorMessage } from "@/lib/tours/guide-swap";
 import { userFacingDbError } from "@/lib/tours/db-errors";
 import { isMunicipality } from "@/lib/tours/municipalities";
 import { isUuid } from "@/lib/tours/operator-access";
@@ -20,20 +22,24 @@ export async function setGuideAreas(guideId: string, areas: string[]): Promise<A
 }
 
 /**
- * Proposes a guide for a booking (null = let the system pick the least busy
- * free guide in the package's area). The booking's operator approves it.
+ * Assigns a guide to a booking straight away (null = the best free guide:
+ * the package's own guides first, then its municipality). The operator has
+ * nothing to approve, and only an admin can change the guide afterwards.
  */
-export async function proposeGuide(bookingId: string, guideId: string | null): Promise<AssignmentResult> {
+export async function assignGuide(bookingId: string, guideId: string | null): Promise<AssignmentResult> {
   const admin = await requirePromoAdmin();
   if (!admin.ok) return { ok: false, message: admin.error };
   if (!isUuid(bookingId) || (guideId !== null && !isUuid(guideId))) return { ok: false, message: "Choose a booking and a guide." };
-  const { data, error } = await admin.supabase.rpc("tours_admin_propose_guide", { p_booking_id: bookingId, p_guide_id: guideId });
-  if (error) return { ok: false, message: userFacingDbError(error, "The guide could not be proposed.") };
+  const { data, error } = await admin.supabase.rpc("tours_admin_assign_guide", { p_booking_id: bookingId, p_guide_id: guideId });
+  if (error) {
+    const schedule = scheduleErrorMessage(error);
+    return { ok: false, message: schedule ?? userFacingDbError(error, "The guide could not be assigned.") };
+  }
   revalidatePath("/tours/admin/guide-assignments");
   revalidatePath("/tours/operator/bookings");
-  return data === "none_available"
-    ? { ok: false, message: "No free guide serves this area that day. Pick one by name, or add a service area." }
-    : { ok: true, message: "Proposed. The operator will approve or choose another." };
+  if (!data) return { ok: false, message: "No free guide for this tour that day. Pick one by name, or add guides to the package." };
+  emailGuideAssigned(bookingId, String(data));
+  return { ok: true, message: "Guide assigned. The operator, the guest and the guide are told; nothing for the operator to do." };
 }
 
 /** The guides chosen for one package; its bookings propose them before anyone else. */

@@ -4,9 +4,9 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Select } from "@/components/ui/field";
-import { proposeGuide, type AssignmentResult } from "./actions";
+import { assignGuide, type AssignmentResult } from "./actions";
 
-/** Pick a guide by name, or let the system choose from the area; the operator approves. */
+/** Assign a guide by name, or let the system pick the best free one; it takes effect at once. */
 export function ProposeGuide({ bookingId, guides, current }: { bookingId: string; guides: Array<{ id: string; name: string }>; current: string | null }) {
   const router = useRouter();
   const [guideId, setGuideId] = useState(current ?? "");
@@ -14,7 +14,7 @@ export function ProposeGuide({ bookingId, guides, current }: { bookingId: string
   const [pending, start] = useTransition();
   const run = (id: string | null) =>
     start(async () => {
-      const r = await proposeGuide(bookingId, id);
+      const r = await assignGuide(bookingId, id);
       setResult(r);
       if (r.ok) router.refresh();
     });
@@ -34,10 +34,10 @@ export function ProposeGuide({ bookingId, guides, current }: { bookingId: string
           </Select>
         </label>
         <Button disabled={pending || !guideId} onClick={() => run(guideId)}>
-          Propose
+          Assign
         </Button>
         <Button variant="ghost" disabled={pending} onClick={() => run(null)}>
-          Pick automatically
+          Assign automatically
         </Button>
       </div>
       {result ? (

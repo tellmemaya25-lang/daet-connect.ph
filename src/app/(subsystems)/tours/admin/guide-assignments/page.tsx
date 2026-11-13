@@ -25,7 +25,7 @@ export default async function GuideAssignmentsPage() {
     <PageFrame adminNav>
       <AdminPageHeading title="Guide assignments" backHref="/tours/admin" backLabel="Admin dashboard" />
       <p className="mb-6 max-w-3xl text-slate-600 dark:text-slate-400">
-        Each new booking is proposed a free guide automatically: first the guides chosen for that package, then guides who serve the package&apos;s municipality, the least busy first. You can propose someone else; the operator approves before the guide is assigned.
+        Each new booking is proposed a free guide automatically (first the guides chosen for that package, then guides who serve its municipality, the least busy first), and the operator approves it. When you assign a guide here, it is assigned at once: the operator has nothing to approve and can&apos;t change it.
       </p>
 
       {error ? (
@@ -69,7 +69,7 @@ export default async function GuideAssignmentsPage() {
                       </p>
                       <p className="mt-1 text-sm text-daet-ink">
                         {b.proposal === "proposed"
-                          ? `Proposed: ${b.proposedGuideName ?? "a guide"} (${b.proposedBy === "admin" ? "by an admin" : "automatic"}), waiting for the operator.`
+                          ? `Proposed automatically: ${b.proposedGuideName ?? "a guide"}, waiting for the operator. Assign below to settle it now.`
                           : b.proposal === "none_available"
                             ? "No free guide in this area that day."
                             : "No guide proposed yet."}

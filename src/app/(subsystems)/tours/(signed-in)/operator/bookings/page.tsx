@@ -399,6 +399,7 @@ async function BookingsContent({ searchParams }: { searchParams: SearchParams })
       guideName: guideName(booking.assigned_guide_id),
       guideNotNeeded: guideNotNeeded.get(booking.id) ?? null,
       guideProposal: guideProposalFor(booking as Record<string, unknown>, guideName),
+      guideAssignedBy: (["admin", "operator", "system"] as const).find((by) => by === (booking as { guide_assigned_by?: unknown }).guide_assigned_by) ?? null,
       pickup: (booking as { pickup_name?: string | null }).pickup_name
         ? { name: String((booking as { pickup_name?: string }).pickup_name), fee: round2(Number((booking as { pickup_fee?: unknown }).pickup_fee ?? 0)) }
         : null,
