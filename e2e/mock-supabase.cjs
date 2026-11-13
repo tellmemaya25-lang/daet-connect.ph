@@ -1112,6 +1112,11 @@ function build(role) {
   ];
   const user0 = "9b7e5a5e-0000-4000-8000-000000000001";
   const tables = {
+    // The operator's pickup points for the surf lesson, with their fees (owner's list, item 5).
+    tours_package_pickup_points: [
+      { id: "pp-1", package_id: PKG, name: "Daet Town Plaza", fee: 0, fee_per: "booking", note: "In front of the church, 5:30 AM.", sort_order: 0, is_active: true },
+      { id: "pp-2", package_id: PKG, name: "Mercedes port", fee: 300, fee_per: "booking", note: null, sort_order: 1, is_active: true },
+    ],
     rewards_balances: [{ profile_id: user0, balance: 115, earned: 165 }],
     rewards_ledger: [
       {
