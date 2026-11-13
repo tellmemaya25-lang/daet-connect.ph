@@ -1,6 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { ATTRACTION_COLUMNS, toAttraction } from "@/lib/tours/attractions";
-import { matchPackages, similarPackages, type PackageCandidate } from "@/lib/tours/itinerary/suggest";
+import { groupSameOffers, matchPackages, similarPackages, type PackageCandidate, type PackageMatch } from "@/lib/tours/itinerary/suggest";
 import type { PlannerAttraction } from "@/lib/tours/itinerary/types";
 import { fromPrice } from "@/lib/tours/trip-board";
 import { durationText } from "@/lib/tours/duration";
@@ -111,18 +111,25 @@ export async function bookablePackages(supabase: SupabaseClient, places: Array<{
   if (!places.length) return [];
   const candidates = await loadPackageCandidates(supabase);
   const byId = new Map(candidates.map((c) => [c.id, c]));
-  const matches = matchPackages(places, candidates, limit);
-  const shown = new Set(matches.map((m) => m.id));
-  return matches.map((match) => {
-    const extra = byId.get(match.id)!;
-    const alternatives = similarPackages(match, places, candidates, shown)
-      .map(({ id, shared }) => {
-        const alt = byId.get(id)!;
-        return { id, title: alt.title, price: alt.price, operatorName: alt.operatorName, duration: alt.duration, verified: alt.verified, shared };
-      })
+  const priceOf = (id: string) => byId.get(id)?.price?.amount ?? Infinity;
+  // Verified operators first, then the cheaper offer.
+  const better = (a: PackageMatch, b: PackageMatch) =>
+    Number(byId.get(b.id)?.verified ?? false) - Number(byId.get(a.id)?.verified ?? false) || priceOf(a.id) - priceOf(b.id) || a.title.localeCompare(b.title);
+  const groups = groupSameOffers(matchPackages(places, candidates, Infinity), better).slice(0, limit);
+  const shown = new Set(groups.flatMap((g) => [g.main.id, ...g.same.map((m) => m.id)]));
+  const alternative = (id: string, shared: string[]) => {
+    const alt = byId.get(id)!;
+    return { id, title: alt.title, price: alt.price, operatorName: alt.operatorName, duration: alt.duration, verified: alt.verified, shared };
+  };
+  return groups.map(({ main, same }) => {
+    const extra = byId.get(main.id)!;
+    const sameOffer = same.map((m) => alternative(m.id, m.matched));
+    const similar = similarPackages(main, places, candidates, shown)
+      .map(({ id, shared }) => alternative(id, shared))
       // Most shared places first, then cheapest; unpriced last.
-      .sort((a, b) => b.shared.length - a.shared.length || (a.price?.amount ?? Infinity) - (b.price?.amount ?? Infinity))
-      .slice(0, ALTERNATIVES_PER_PACKAGE);
-    return { ...match, price: extra.price, operatorName: extra.operatorName, operatorPhone: extra.operatorPhone, duration: extra.duration, verified: extra.verified, notIncluded: extra.notIncluded, alternatives };
+      .sort((a, b) => b.shared.length - a.shared.length || (a.price?.amount ?? Infinity) - (b.price?.amount ?? Infinity));
+    // The same offer from other operators first, then tours that share some of the places.
+    const alternatives = [...sameOffer, ...similar].slice(0, ALTERNATIVES_PER_PACKAGE);
+    return { ...main, price: extra.price, operatorName: extra.operatorName, operatorPhone: extra.operatorPhone, duration: extra.duration, verified: extra.verified, notIncluded: extra.notIncluded, alternatives };
   });
 }
