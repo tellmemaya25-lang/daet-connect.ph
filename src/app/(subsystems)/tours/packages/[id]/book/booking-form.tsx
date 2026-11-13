@@ -25,6 +25,8 @@ interface BookingFormProps {
   priceVariants: PriceVariant[];
   /** The operator's pickup points with their fees; empty = meet at the meeting point only. */
   pickupPoints?: PickupPoint[];
+  /** Where guests meet when they take no pickup (the package's meeting point), if listed. */
+  meetingPoint?: string | null;
   /** Open dates when the operator manages availability; null = any future date. */
   dateOptions: DateOption[] | null;
   userProfile: {
@@ -38,7 +40,7 @@ interface BookingFormProps {
 const formatOpenDate = (dateKey: string) =>
   new Date(`${dateKey}T00:00:00Z`).toLocaleDateString("en-PH", { weekday: "short", month: "short", day: "numeric", year: "numeric", timeZone: "UTC" });
 
-export function BookingForm({ packageId, priceVariants, pickupPoints = [], dateOptions, userProfile, prefill = {} }: BookingFormProps) {
+export function BookingForm({ packageId, priceVariants, pickupPoints = [], meetingPoint = null, dateOptions, userProfile, prefill = {} }: BookingFormProps) {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -291,49 +293,67 @@ export function BookingForm({ packageId, priceVariants, pickupPoints = [], dateO
             ) : null}
           </div>
 
-          {pickupPoints.length ? (
-            <div>
-              <label htmlFor="pickupPoint" className="block text-sm font-bold text-daet-ink">
-                Pickup location
-              </label>
-              <Select
-                id="pickupPoint"
-                value={pickupPointId}
-                onChange={(e) => setPickupPointId(e.target.value)}
-                aria-describedby="pickupPointHint"
-              >
-                <option value="">No pickup, I&apos;ll go to the meeting point (free)</option>
-                {pickupPoints.map((point) => (
-                  <option key={point.id} value={point.id}>
-                    {point.name} · {pickupFeeLabel(point, formatPeso)}
-                  </option>
-                ))}
-              </Select>
-              <p id="pickupPointHint" className="mt-1 text-xs text-daet-ink/70">
-                {pickup?.note ?? "Pickup fees are set by the operator and added to your total."}
+          {/* Pickup: always shown, so the price never hides a pickup choice or fee. */}
+          <div>
+            {pickupPoints.length ? (
+              <>
+                <label htmlFor="pickupPoint" className="block text-sm font-bold text-daet-ink">
+                  Pickup location
+                </label>
+                <Select id="pickupPoint" value={pickupPointId} onChange={(e) => setPickupPointId(e.target.value)} aria-describedby="pickupPointHint">
+                  <option value="">No pickup: I&apos;ll go to {meetingPoint ?? "the meeting point"} (free)</option>
+                  {pickupPoints.map((point) => (
+                    <option key={point.id} value={point.id}>
+                      {point.name} · {pickupFeeLabel(point, formatPeso)}
+                    </option>
+                  ))}
+                </Select>
+                <p id="pickupPointHint" className="mt-1 text-xs text-daet-ink/70">
+                  {pickup?.note ?? "Pickup fees are set by the operator and added to your total."}
+                </p>
+              </>
+            ) : (
+              <>
+              <p className="text-sm font-bold text-daet-ink">Pickup location</p>
+              <p className="mt-1 rounded-2xl bg-muted p-3 text-sm text-daet-ink">
+                This tour has no pickup service. You meet at <span className="font-bold">{meetingPoint ?? "the meeting point the operator sends you"}</span>, so there is no pickup fee.
               </p>
-            </div>
-          ) : null}
-
-          {/* Price Summary */}
-          <div className="rounded-2xl bg-daet-sand/30 p-4">
-            <div className="flex items-baseline justify-between">
-              <span className="text-sm font-bold text-daet-ink">Total</span>
-              <span className="text-3xl font-bold text-daet-forest dark:text-blue-300">
-                {formatPeso(totalAmount)}
-              </span>
-            </div>
-            {selectedVariant?.price_per_pax && (
-              <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
-                {formatPeso(selectedVariant.price_per_pax)} × {numberOfPax} guest{numberOfPax === 1 ? "" : "s"}
-              </p>
+              </>
             )}
-            {pickup ? (
-              <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
-                Tour {formatPeso(tourAmount)} + pickup at {pickup.name} {formatPeso(pickupAmount)}
-                {pickup.feePer === "person" ? ` (${formatPeso(pickup.fee)} × ${numberOfPax})` : ""}
-              </p>
-            ) : null}
+          </div>
+
+          {/* Price Summary: tour + pickup = total */}
+          <div className="rounded-2xl bg-daet-sand/30 p-4">
+            <dl className="space-y-1 text-sm">
+              <div className="flex justify-between gap-4">
+                <dt className="text-daet-ink">
+                  Tour
+                  {selectedVariant?.price_per_pax ? (
+                    <span className="text-slate-600 dark:text-slate-400">
+                      {" "}
+                      ({formatPeso(selectedVariant.price_per_pax)} × {numberOfPax} guest{numberOfPax === 1 ? "" : "s"})
+                    </span>
+                  ) : null}
+                </dt>
+                <dd className="font-bold text-daet-ink">{formatPeso(tourAmount)}</dd>
+              </div>
+              <div className="flex justify-between gap-4">
+                <dt className="text-daet-ink">
+                  Pickup
+                  <span className="text-slate-600 dark:text-slate-400">
+                    {" "}
+                    {pickup
+                      ? `(${pickup.name}${pickup.feePer === "person" && pickup.fee > 0 ? `, ${formatPeso(pickup.fee)} × ${numberOfPax}` : ""})`
+                      : `(${meetingPoint ?? "meeting point"})`}
+                  </span>
+                </dt>
+                <dd className="font-bold text-daet-ink">{pickupAmount > 0 ? formatPeso(pickupAmount) : "Free"}</dd>
+              </div>
+            </dl>
+            <div className="mt-2 flex items-baseline justify-between border-t border-daet-ink/10 pt-2">
+              <span className="text-sm font-bold text-daet-ink">Total</span>
+              <span className="text-3xl font-bold text-daet-forest dark:text-blue-300">{formatPeso(totalAmount)}</span>
+            </div>
           </div>
         </div>
       </section>

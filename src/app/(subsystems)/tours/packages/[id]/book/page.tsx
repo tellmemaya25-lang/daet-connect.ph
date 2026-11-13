@@ -66,6 +66,7 @@ export default async function BookPackagePage({ params, searchParams }: PageProp
       duration_value,
       duration_type,
       cover_image_url,
+      meeting_point_name,
       status,
       tours_package_price_variants(
         id,
@@ -151,6 +152,7 @@ export default async function BookPackagePage({ params, searchParams }: PageProp
           packageId={pkg.id}
           priceVariants={pkg.tours_package_price_variants || []}
           pickupPoints={toPickupPoints(pickupRows)}
+          meetingPoint={pkg.meeting_point_name?.trim() || null}
           prefill={prefill}
           dateOptions={usesOpenDates ? bookableDates((availabilityRows ?? []) as AvailabilityRow[], today) : null}
           userProfile={{
