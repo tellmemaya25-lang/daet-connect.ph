@@ -47,6 +47,7 @@ export function ItineraryPrintSheet({
             Day {day.dayNumber}
             {day.date ? ` · ${longDate(day.date)}` : ""}
           </h2>
+          {day.items.length === 0 ? <p className="mt-2 text-sm">Nothing planned for this day.</p> : (
           <table className="mt-2 w-full border-collapse text-left text-sm">
             <thead>
               <tr className="border-b border-slate-400">
@@ -76,6 +77,7 @@ export function ItineraryPrintSheet({
               })}
             </tbody>
           </table>
+          )}
         </section>
       ))}
 

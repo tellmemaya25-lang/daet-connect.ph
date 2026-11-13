@@ -496,6 +496,13 @@
   }
 }
 
+/* Printing a plan from the trip planner: only its paper sheet, not the chat or map. */
+@media print {
+  body:has([data-print-plan]) > :not([data-print-plan]) {
+    display: none !important;
+  }
+}
+
 /* Paper is always light. */
 @media print {
   :root,
