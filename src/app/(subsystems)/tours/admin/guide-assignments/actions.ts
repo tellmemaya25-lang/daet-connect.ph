@@ -35,3 +35,22 @@ export async function proposeGuide(bookingId: string, guideId: string | null): P
     ? { ok: false, message: "No free guide serves this area that day. Pick one by name, or add a service area." }
     : { ok: true, message: "Proposed. The operator will approve or choose another." };
 }
+
+/** The guides chosen for one package; its bookings propose them before anyone else. */
+export async function setPackageGuides(packageId: string, guideIds: string[]): Promise<AssignmentResult> {
+  const admin = await requirePromoAdmin();
+  if (!admin.ok) return { ok: false, message: admin.error };
+  if (!isUuid(packageId) || !Array.isArray(guideIds) || !guideIds.every(isUuid) || guideIds.length > 20) {
+    return { ok: false, message: "Choose up to 20 guides." };
+  }
+  const { error } = await admin.supabase.rpc("tours_admin_set_package_guides", { p_package_id: packageId, p_guide_ids: guideIds });
+  if (error) return { ok: false, message: userFacingDbError(error, "The package's guides could not be saved.") };
+  revalidatePath("/tours/admin/guide-assignments");
+  revalidatePath(`/tours/operator/packages/${packageId}`);
+  return {
+    ok: true,
+    message: guideIds.length
+      ? `Saved. New bookings try ${guideIds.length === 1 ? "this guide" : "these guides"} first.`
+      : "No guides of its own: new bookings use guides from the package's municipality.",
+  };
+}

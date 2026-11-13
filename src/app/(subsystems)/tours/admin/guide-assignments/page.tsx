@@ -1,9 +1,10 @@
 import { Notice } from "@/components/ui/notice";
 import { PageFrame } from "@/components/ui/page-frame";
 import { AdminPageHeading, PromoAdminDenied } from "@/components/tours/promo-admin-denied";
-import { parseCoverage, uncoveredAreas } from "@/lib/tours/guide-coverage";
+import { packagesWithoutGuides, parseCoverage, uncoveredAreas } from "@/lib/tours/guide-coverage";
 import { requirePromoAdmin } from "@/lib/tours/promo-admin";
 import { GuideAreasForm } from "./guide-areas-form";
+import { PackageGuidesForm } from "./package-guides-form";
 import { ProposeGuide } from "./propose-guide";
 
 export const metadata = { title: "Guide assignments" };
@@ -17,13 +18,14 @@ export default async function GuideAssignmentsPage() {
   const { data, error } = await admin.supabase.rpc("tours_admin_guide_coverage");
   const coverage = parseCoverage(data);
   const gaps = uncoveredAreas(coverage.areas);
+  const unguided = packagesWithoutGuides(coverage.packages);
   const guideOptions = coverage.guides.map((g) => ({ id: g.id, name: g.name }));
 
   return (
     <PageFrame adminNav>
       <AdminPageHeading title="Guide assignments" backHref="/tours/admin" backLabel="Admin dashboard" />
       <p className="mb-6 max-w-3xl text-slate-600 dark:text-slate-400">
-        Each new booking is proposed the least busy guide who serves the tour&apos;s municipality and is free that day. You can propose someone else; the operator approves before the guide is assigned.
+        Each new booking is proposed a free guide automatically: first the guides chosen for that package, then guides who serve the package&apos;s municipality, the least busy first. You can propose someone else; the operator approves before the guide is assigned.
       </p>
 
       {error ? (
@@ -35,6 +37,11 @@ export default async function GuideAssignmentsPage() {
           {gaps.length ? (
             <Notice variant="warning" title="Towns with tours but no guide">
               {gaps.map((a) => a.municipality).join(", ")}. Add a service area to a guide below so these tours get a guide.
+            </Notice>
+          ) : null}
+          {unguided.length ? (
+            <Notice variant="warning" title="Tours that can't get a guide yet">
+              {unguided.map((p) => `${p.title} (${p.operator})`).join(", ")}. Choose guides for them below, or have the operator set their municipality.
             </Notice>
           ) : null}
           {coverage.unplacedPackages ? (
@@ -72,6 +79,24 @@ export default async function GuideAssignmentsPage() {
                   </li>
                 ))}
               </ul>
+            )}
+          </section>
+
+          <section aria-labelledby="package-guides-heading">
+            <h2 id="package-guides-heading" className="mb-1 text-xl font-bold text-daet-ink">
+              Guides for each package
+            </h2>
+            <p className="mb-3 text-sm text-slate-600 dark:text-slate-400">
+              These guides are proposed first for the package&apos;s bookings. When all of them are busy, a free guide from the package&apos;s municipality is proposed instead.
+            </p>
+            {coverage.packages.length === 0 ? (
+              <p className="rounded-2xl bg-surface p-4 text-slate-600 dark:text-slate-400">No published packages yet.</p>
+            ) : (
+              <div className="space-y-3">
+                {coverage.packages.map((p) => (
+                  <PackageGuidesForm key={p.id} pkg={p} guides={guideOptions} />
+                ))}
+              </div>
             )}
           </section>
 
