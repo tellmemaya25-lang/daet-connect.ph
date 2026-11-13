@@ -111,6 +111,9 @@ export default async function GuideDashboardPage({ searchParams }: { searchParam
           <ButtonLink href="/tours/guide/my-qr" variant="secondary">
             <LineIcon name="idcard" className="inline-block h-[1.1em] w-[1.1em] align-[-0.15em]" /> My QR badge
           </ButtonLink>
+          <ButtonLink href="/tours/guide/earnings" variant="secondary">
+            My earnings
+          </ButtonLink>
         </div>
       </div>
 

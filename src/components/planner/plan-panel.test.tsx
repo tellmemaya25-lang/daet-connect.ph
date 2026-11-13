@@ -196,3 +196,27 @@ describe("moveInOrders", () => {
     expect(moveInOrders(orders, "x", "a")).toBe(orders);
   });
 });
+
+describe("planToPrintDays", () => {
+  it("numbers the days and carries each stop's tip", async () => {
+    const { planToPrintDays } = await import("@/components/planner/print-plan-button");
+    const days = planToPrintDays({
+      plan: {
+        days: [
+          {
+            date: "2026-11-19",
+            blocks: [
+              { kind: "visit", attractionId: "a1", name: "Bagasbas Beach", start: 495, end: 675, travelMinutes: 0, cost: 0, hoursConfirmed: false },
+              { kind: "lunch", name: "Lunch", start: 690, end: 750, travelMinutes: 0, cost: 0 },
+            ],
+          },
+        ],
+        totals: { cost: 0, travelMinutes: 0, visits: 1 },
+      },
+      stops: [{ id: "a1", name: "Bagasbas Beach", category: "beach", lat: 14.1, lng: 122.9, fee: null, tip: "Go early for waves." }],
+    } as never);
+    expect(days[0]).toMatchObject({ dayNumber: 1, date: "2026-11-19" });
+    expect(days[0].items[0]).toMatchObject({ kind: "visit", name: "Bagasbas Beach", start: 495, tip: "Go early for waves." });
+    expect(days[0].items[1]).toMatchObject({ kind: "lunch", tip: null });
+  });
+});

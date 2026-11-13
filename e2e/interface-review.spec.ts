@@ -15,6 +15,9 @@ test("operator rows keep the risky actions out of the row, behind a confirm that
   await expect(row.getByRole("button", { name: /^Decline$/ })).toHaveCount(0);
 
   await row.getByRole("button", { name: /Show details for/ }).click();
+  // Since the board redesign, cancelling sits with the money, in the row's
+  // collapsed "Guests, receipts & payments" section.
+  await row.getByText("Guests, receipts & payments").click();
   await row.getByRole("button", { name: /^Cancel booking$/ }).click();
   await expect(page.getByRole("dialog", { name: /^Cancel BK-\S+ for .+\?$/ })).toBeVisible();
   await checkA11y(page, "operator cancel confirm");

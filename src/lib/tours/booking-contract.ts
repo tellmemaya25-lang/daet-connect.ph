@@ -1,4 +1,5 @@
 import "server-only";
+import { phoneError } from "./phone";
 
 /**
  * Booking system contracts and types
@@ -116,6 +117,8 @@ export interface CreateBookingInput {
   contactEmail: string;
   contactPhone: string;
   specialRequests?: string;
+  /** One of the package's pickup points; omitted = meet at the meeting point. */
+  pickupPointId?: string | null;
 }
 
 export interface BookingParticipantInput {
@@ -163,8 +166,11 @@ export function validateCreateBooking(input: CreateBookingInput): string | null 
     return "Valid email address is required.";
   }
   
-  if (typeof input.contactPhone !== "string" || input.contactPhone.trim().length < 10) {
-    return "Valid phone number is required (at least 10 digits).";
+  const phoneProblem = phoneError(input.contactPhone);
+  if (phoneProblem) return phoneProblem;
+
+  if (input.pickupPointId != null && !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(input.pickupPointId)) {
+    return "Choose a pickup point from the list.";
   }
   
   return null;

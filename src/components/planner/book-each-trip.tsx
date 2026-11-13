@@ -75,7 +75,55 @@ export function BookableCard({ pkg, group, bookHref: href, canBook = false }: { 
           </a>
         ) : null}
       </div>
+      {pkg.alternatives?.length ? <SimilarChoices pkg={pkg} group={group} bookHref={href} canBook={canBook} /> : null}
     </div>
+  );
+}
+
+/** Other tours to the same places, so the tourist can compare operators and prices. */
+function SimilarChoices({ pkg, group, bookHref: href, canBook }: { pkg: BookablePackage; group: number | null; bookHref?: string; canBook: boolean }) {
+  const alternatives = pkg.alternatives ?? [];
+  return (
+    <details className="group/similar rounded-xl bg-surface p-3">
+      <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between gap-2 text-sm font-bold text-blue-700 dark:text-blue-300">
+        <span>
+          {alternatives.length} similar {alternatives.length === 1 ? "choice" : "choices"} for the same places
+        </span>
+        <span aria-hidden="true" className="transition-transform group-open/similar:rotate-180">⌄</span>
+      </summary>
+      <ul className="mt-2 space-y-2">
+        {alternatives.map((alt) => {
+          const price = alt.price
+            ? alt.price.perPerson
+              ? `from ${formatPeso(alt.price.amount)} per person${group && group > 1 ? ` · about ${formatPeso(alt.price.amount * group)} for ${group}` : ""}`
+              : `from ${formatPeso(alt.price.amount)} per group`
+            : "Price on the tour page";
+          // Same day and group as the main tour's booking link, for this tour instead.
+          const altHref = href ? href.replace(`/packages/${pkg.id}/`, `/packages/${alt.id}/`) : null;
+          return (
+            <li key={alt.id} className="space-y-1 rounded-lg border border-daet-ink/10 p-3">
+              <p className="font-bold text-daet-ink">{alt.title}</p>
+              <p className="text-sm text-slate-600 dark:text-slate-400">{[alt.duration, price].filter(Boolean).join(" · ")}</p>
+              <p className="text-sm text-slate-600 dark:text-slate-400">
+                {alt.operatorName ? `By ${alt.operatorName}` : null}
+                {alt.verified ? `${alt.operatorName ? " · " : ""}Verified by the Tourism Office` : null}
+              </p>
+              <p className="text-xs text-slate-600 dark:text-slate-400">Also visits {alt.shared.join(", ")}</p>
+              <div className="flex flex-wrap gap-2 pt-1">
+                {altHref && canBook ? (
+                  <Link href={altHref} className="inline-flex min-h-11 items-center rounded-full bg-blue-600 px-4 text-sm font-bold text-white hover:bg-blue-700">
+                    Book this instead
+                  </Link>
+                ) : null}
+                <Link href={`/tours/packages/${alt.id}`} className="inline-flex min-h-11 items-center rounded-full border border-slate-500 bg-surface px-4 text-sm font-bold text-daet-ink hover:bg-muted">
+                  See details
+                </Link>
+              </div>
+            </li>
+          );
+        })}
+      </ul>
+    </details>
   );
 }
 

@@ -339,6 +339,12 @@ export default async function BookingDetailPage({ params, searchParams }: PagePr
                 <dd className="font-bold">{formatPeso(booking.price_per_pax)}</dd>
               </div>
             ) : null}
+            {booking.pickup_name ? (
+              <div className="flex justify-between gap-4">
+                <dt>Pickup at {booking.pickup_name}</dt>
+                <dd className="font-bold">{Number(booking.pickup_fee) > 0 ? formatPeso(Number(booking.pickup_fee)) : "Free"}</dd>
+              </div>
+            ) : null}
             <div className="flex items-baseline justify-between gap-4 rounded-2xl bg-canvas px-4 py-3">
               <dt className="text-lg font-bold">Total</dt>
               <dd className="text-2xl font-bold text-blue-700 dark:text-blue-300">{formatPeso(booking.total_amount)}</dd>

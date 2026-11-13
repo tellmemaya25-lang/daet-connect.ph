@@ -48,9 +48,14 @@ export default function OperatorPaymentsPage({ searchParams }: { searchParams: S
 async function ExportLink({ searchParams }: { searchParams: SearchParams }) {
   const key = monthKey(parseMonthParam((await searchParams).month));
   return (
-    <ButtonLink href={`/tours/operator/payments/export?month=${key}`} variant="secondary" prefetch={false}>
-      Download CSV
-    </ButtonLink>
+    <div className="flex flex-wrap gap-2">
+      <ButtonLink href="/tours/operator/earnings" variant="ghost">
+        Earnings breakdown
+      </ButtonLink>
+      <ButtonLink href={`/tours/operator/payments/export?month=${key}`} variant="secondary" prefetch={false}>
+        Download CSV
+      </ButtonLink>
+    </div>
   );
 }
 

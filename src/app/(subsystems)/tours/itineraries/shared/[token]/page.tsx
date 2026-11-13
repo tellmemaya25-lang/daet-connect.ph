@@ -33,6 +33,9 @@ export default async function SharedItineraryPage({ params }: { params: Promise<
       <div className="mx-auto max-w-3xl">
         <p className="text-sm font-semibold text-slate-600 dark:text-slate-400">Shared trip plan · view only</p>
         <h1 className="display-2 mt-1 text-daet-ink">{shared.title}</h1>
+        <Link href={`/tours/itineraries/shared/${token}/print`} className="mt-3 inline-flex min-h-11 items-center rounded-full px-5 text-sm font-bold text-daet-ink ring-1 ring-inset ring-daet-ink/20 hover:bg-muted">
+          Print / Save as PDF
+        </Link>
         {shared.summary ? <p className="mt-3 rounded-2xl card-edge bg-surface p-4 text-base leading-7 text-daet-ink">{shared.summary}</p> : null}
         <div className="mt-6">
           <SavedItinerary days={days} />

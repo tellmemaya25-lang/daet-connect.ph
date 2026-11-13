@@ -223,6 +223,9 @@ export default async function AdminDashboardPage({ searchParams }: { searchParam
         <h2 className="mb-4 text-xl font-bold text-daet-ink">Manage</h2>
         <div className="grid grid-cols-2 gap-2 lg:grid-cols-4">
           {[
+            ["/tours/admin/accounts", "Accounts and roles"],
+            ["/tours/admin/guide-assignments", "Guide assignments"],
+            ["/tours/admin/earnings", "Earnings and revenue"],
             ["/tours/admin/events", "Events calendar"],
             ["/tours/admin/attractions", "Places"],
             ["/tours/admin/guide-places", "Food, stays and fares"],

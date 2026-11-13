@@ -104,7 +104,8 @@ test.describe("mobile layout at 360px", () => {
     await signInAs(context, "tourist");
     await page.goto("/tours/messages", { waitUntil: "networkidle" });
     await page.getByRole("button", { name: /notification/i }).first().click();
-    const panel = page.getByText("Mark all read").locator("xpath=ancestor::div[contains(@class,'rounded-2xl')][1]");
+    // "Mark all read" only shows while something is unread; the footer link is always there.
+    const panel = page.getByRole("link", { name: "See all and notification settings" }).locator("xpath=ancestor::div[contains(@class,'rounded-2xl')][1]");
     await expect(panel).toBeVisible();
     const box = (await panel.boundingBox())!;
     expect(box.x).toBeGreaterThanOrEqual(0);

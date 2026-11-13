@@ -4,6 +4,7 @@ import { useEffect, useRef, useState, useTransition } from "react";
 import { TransportCardView } from "@/components/assistant/transport-card";
 import { BookableCard, groupPrice } from "@/components/planner/book-each-trip";
 import { PlanEditor } from "@/components/planner/plan-editor";
+import { PrintPlanButton } from "@/components/planner/print-plan-button";
 import { StopMenu } from "@/components/planner/stop-menu";
 import { RouteMap, type MapPoint } from "@/components/maps/route-map";
 import { Button } from "@/components/ui/button";
@@ -256,6 +257,7 @@ export function PlanPanel({
             <Button variant="secondary" loading={pending} loadingText="Working…" onClick={() => run("Here is a fresh plan.", () => actions.regenerate(itinerary))}>
               <LineIcon name="return" className="h-4 w-4" /> Regenerate
             </Button>
+            <PrintPlanButton itinerary={itinerary} title={`Your ${itinerary.sample ? "sample " : ""}${plan.days.length}-day Daet plan`} subtitle={tripLine(itinerary)} />
             {itinerary.sample && onPickDates ? (
               <Button onClick={onPickDates}>
                 <LineIcon name="calendar" className="h-4 w-4" /> Pick dates to save

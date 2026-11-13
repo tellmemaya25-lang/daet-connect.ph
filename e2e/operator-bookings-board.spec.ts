@@ -23,7 +23,8 @@ test("chips count every booking and the Refunded chip finds the returned ones", 
 
   await chips.getByRole("link", { name: /Refunded/ }).click();
   await expect(page).toHaveURL(/status=refunded/);
-  await expect(page.getByRole("link", { name: "BK-20261012-RF22MM" })).toBeVisible();
+  // The row links the tour; the reference is its text.
+  await expect(page.getByRole("article", { name: /BK-20261012-RF22MM/ })).toBeVisible();
   await expect(page.getByText("Refunded via PayMongo")).toBeVisible();
   await expect(page.getByRole("link", { name: /To confirm/ })).not.toHaveAttribute("aria-current", "page");
   await expect(page.getByRole("link", { name: /Refunded/ })).toHaveAttribute("aria-current", "page");

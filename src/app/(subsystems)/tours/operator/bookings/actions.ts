@@ -15,6 +15,7 @@ import { isUuid } from "@/lib/tours/operator-access";
 type ActionResult = {
   success: boolean;
   error?: string;
+  message?: string;
 };
 
 type Supabase = Awaited<ReturnType<typeof createSupabaseServerClient>>;
@@ -342,4 +343,38 @@ export async function callOffBooking(bookingId: string, reason: string): Promise
   revalidatePath(`/tours/bookings/${bookingId}`);
   emailTripCalledOff(bookingId, parsed.reason);
   return { success: true };
+}
+
+/**
+ * The operator's answer to a proposed guide (owner's list, item 8). The admin
+ * or the system proposes; approving assigns the guide (the database re-checks
+ * their schedule), choosing another rejects them and proposes the next free
+ * guide from the package's area.
+ */
+export async function reviewGuideProposal(bookingId: string, approve: boolean): Promise<ActionResult> {
+  try {
+    if (!isUuid(bookingId)) return { success: false, error: "Booking not found" };
+    const supabase = await createSupabaseServerClient();
+    const owned = await requireOwnedBooking(supabase, bookingId);
+    if (!owned.ok) return { success: false, error: owned.error };
+
+    const { data, error } = await supabase.rpc("tours_review_guide_proposal", { p_booking_id: bookingId, p_approve: approve });
+    if (error) {
+      const scheduleError = scheduleErrorMessage(error);
+      if (scheduleError) return { success: false, error: scheduleError };
+      return { success: false, error: userFacingDbError(error, "Could not update the guide. Please try again.") };
+    }
+    if (approve) {
+      const { data: row } = await supabase.from("tours_bookings").select("assigned_guide_id").eq("id", bookingId).maybeSingle();
+      if (row?.assigned_guide_id) emailGuideAssigned(bookingId, row.assigned_guide_id);
+    }
+    revalidateBooking(bookingId);
+    return {
+      success: true,
+      message: approve ? "Guide approved and assigned." : data === "proposed" ? "We proposed the next free guide." : "No other guide in this area is free that day.",
+    };
+  } catch (err) {
+    console.error("Unexpected error in reviewGuideProposal:", err);
+    return { success: false, error: "An unexpected error occurred" };
+  }
 }
