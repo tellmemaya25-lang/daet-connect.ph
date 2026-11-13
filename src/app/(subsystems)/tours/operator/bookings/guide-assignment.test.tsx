@@ -112,26 +112,23 @@ describe("GuideAssignment: assigning and unassigning", () => {
     await waitFor(() => expect(mockAssign).toHaveBeenCalledWith(bookingId, "g2"));
   });
 
-  it("asks before taking the current guide off", async () => {
-    mockConfirm.mockResolvedValue(false);
+  it("locks a confirmed guide: no picker, no Assign or Unassign", () => {
     renderAssignment({ currentGuideId: "g1" });
 
-    fireEvent.click(screen.getByRole("button", { name: "Unassign" }));
-
-    await waitFor(() => expect(mockConfirm).toHaveBeenCalledWith(expect.objectContaining({ title: "Take Bianca Zabala off this tour?" })));
-    expect(mockAssign).not.toHaveBeenCalled();
-
-    mockConfirm.mockResolvedValue(true);
-    fireEvent.click(screen.getByRole("button", { name: "Unassign" }));
-
-    await waitFor(() => expect(mockAssign).toHaveBeenCalledWith(bookingId, null));
+    expect(screen.getByText("Guide confirmed.")).toBeInTheDocument();
+    expect(screen.queryByRole("combobox", { name: "Guide for this booking" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Assign" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Unassign" })).not.toBeInTheDocument();
+    // The guest can still say they need no guide.
+    expect(screen.getByRole("button", { name: /doesn't need a guide/ })).toBeInTheDocument();
   });
 
   it("shows the error the server returned", async () => {
     mockAssign.mockResolvedValue({ success: false, error: "That guide is already on another tour that day." });
-    renderAssignment({ currentGuideId: "g1" });
+    renderAssignment();
 
-    fireEvent.click(screen.getByRole("button", { name: "Unassign" }));
+    fireEvent.change(screen.getByRole("combobox", { name: "Guide for this booking" }), { target: { value: "g2" } });
+    fireEvent.click(screen.getByRole("button", { name: "Assign" }));
 
     expect(await screen.findByText("That guide is already on another tour that day.")).toBeInTheDocument();
   });

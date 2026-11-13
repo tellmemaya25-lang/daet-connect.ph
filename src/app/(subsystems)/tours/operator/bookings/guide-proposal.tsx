@@ -26,7 +26,7 @@ export function GuideProposal({ bookingId, proposal }: { bookingId: string; prop
   if (proposal.status === "none_available" || !proposal.guideId) {
     return (
       <p className="mt-3 rounded-xl bg-yellow-50 p-3 text-sm text-daet-ink dark:bg-yellow-950/30">
-        <span className="font-bold">No free guide in this area that day.</span> Pick one yourself below, or the Tourism Office can propose one.
+        <span className="font-bold">No free guide in this area that day.</span> Pick one yourself below, or the Tourism Office can assign one.
       </p>
     );
   }
@@ -34,8 +34,15 @@ export function GuideProposal({ bookingId, proposal }: { bookingId: string; prop
   return (
     <div className="mt-3 rounded-xl bg-blue-50 p-3 text-sm text-daet-ink dark:bg-blue-950/40" aria-live="polite">
       <p>
-        <span className="font-bold">{proposal.guideName ?? "A guide"}</span> is proposed
-        {proposal.by === "admin" ? " by the Tourism Office" : " from the guides who cover this area"}. Approve to assign them.
+        {proposal.by === "admin" ? (
+          <>
+            The Tourism Office assigned <span className="font-bold">{proposal.guideName ?? "a guide"}</span> to this tour. Approve the guide to confirm.
+          </>
+        ) : (
+          <>
+            <span className="font-bold">{proposal.guideName ?? "A guide"}</span> is suggested from the guides for this tour. Approve to assign them.
+          </>
+        )}
       </p>
       <div className="mt-2 flex flex-wrap gap-2">
         <Button size="md" disabled={pending} onClick={() => answer(true)}>

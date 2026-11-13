@@ -119,7 +119,8 @@ test("the operator can take the guide off when the guest doesn't need one", asyn
 for (const width of [320, 375, 528, 1280]) {
   test(`expanded booking details fit at ${width}px`, async ({ page }) => {
     await page.setViewportSize({ width, height: 812 });
-    const row = page.getByRole("article").filter({ hasText: "BK-20261023-7F3K2Q" }).first();
+    // A booking without a guide: once a guide is confirmed the picker is gone.
+    const row = page.getByRole("article").filter({ hasText: "BK-20261102-PN11ZZ" }).first();
     await row.getByRole("button", { name: /Show details for/ }).click();
 
     const guidePanel = row.getByRole("region", { name: "Guide and operations" });

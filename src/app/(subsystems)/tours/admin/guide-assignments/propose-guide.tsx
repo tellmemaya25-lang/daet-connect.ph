@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Select } from "@/components/ui/field";
 import { proposeGuide, type AssignmentResult } from "./actions";
 
-/** Pick a guide by name, or let the system choose from the area; the operator approves. */
+/** Assign a guide by name, or let the system pick the best free one; the operator then approves. */
 export function ProposeGuide({ bookingId, guides, current }: { bookingId: string; guides: Array<{ id: string; name: string }>; current: string | null }) {
   const router = useRouter();
   const [guideId, setGuideId] = useState(current ?? "");
@@ -34,10 +34,10 @@ export function ProposeGuide({ bookingId, guides, current }: { bookingId: string
           </Select>
         </label>
         <Button disabled={pending || !guideId} onClick={() => run(guideId)}>
-          Propose
+          Assign
         </Button>
         <Button variant="ghost" disabled={pending} onClick={() => run(null)}>
-          Pick automatically
+          Assign automatically
         </Button>
       </div>
       {result ? (

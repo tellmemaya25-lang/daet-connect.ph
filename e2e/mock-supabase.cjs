@@ -750,6 +750,8 @@ function build(role) {
     booking_reference: "BK-20261102-PN11ZZ",
     tour_date: addDays(9),
     status: "pending",
+    // A new request: no guide yet, so the board offers the picker.
+    assigned_guide_id: null,
     payment_status: "unpaid",
     total_paid: 0,
     number_of_pax: 4,

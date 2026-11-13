@@ -32,8 +32,8 @@ export async function proposeGuide(bookingId: string, guideId: string | null): P
   revalidatePath("/tours/admin/guide-assignments");
   revalidatePath("/tours/operator/bookings");
   return data === "none_available"
-    ? { ok: false, message: "No free guide serves this area that day. Pick one by name, or add a service area." }
-    : { ok: true, message: "Proposed. The operator will approve or choose another." };
+    ? { ok: false, message: "No free guide for this tour that day. Pick one by name, or add guides to the package." }
+    : { ok: true, message: "Assigned. Waiting for the operator to approve the guide." };
 }
 
 /** The guides chosen for one package; its bookings propose them before anyone else. */
