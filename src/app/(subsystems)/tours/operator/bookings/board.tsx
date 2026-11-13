@@ -361,6 +361,17 @@ export function BookingBoard({ rows, selectableIds }: { rows: BoardRow[]; select
           tourDate={approveTarget.tourDate}
           capacity={approveTarget.capacity}
           guides={approveTarget.picker}
+          fixedGuide={
+            approveTarget.guideId
+              ? { id: null, name: approveTarget.guideName ?? "The guide", note: "already confirmed for this tour" }
+              : approveTarget.guideProposal?.status === "proposed" && approveTarget.guideProposal.guideId
+                ? {
+                    id: approveTarget.guideProposal.guideId,
+                    name: approveTarget.guideProposal.guideName ?? "The guide",
+                    note: approveTarget.guideProposal.by === "admin" ? "assigned by the Tourism Office; approving the booking approves the guide" : "suggested for this tour; approving the booking approves the guide",
+                  }
+                : null
+          }
         />
       ) : null}
 

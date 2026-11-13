@@ -31,7 +31,8 @@ type GuideAssignmentProps = {
  *
  * Three states, in the order they usually happen:
  *
- *   assigned   a guide is on it — Assign a different one, or Unassign.
+ *   assigned   a guide is confirmed — locked: only a swap request, the
+ *              guest's "no guide needed" or the Tourism Office changes it.
  *   unassigned nobody yet — the operator picks one, or records that the guest
  *              asked for none, so the tour stops looking unfinished.
  *   waived     the guest asked to go without one — shown as a decision, with
@@ -47,7 +48,7 @@ export function GuideAssignment({
 }: GuideAssignmentProps) {
   const groupId = useId();
   const router = useRouter();
-  const { toast, confirm } = useFeedback();
+  const { toast } = useFeedback();
   const [pending, startTransition] = useTransition();
   const [selectedGuideId, setSelectedGuideId] = useState(currentGuideId || "");
   const [error, setError] = useState<string | null>(null);
@@ -82,22 +83,6 @@ export function GuideAssignment({
     run(
       () => assignGuideToBooking(bookingId, selectedGuideId),
       () => toast(`${availableGuides.find((g) => g.id === selectedGuideId)?.full_name ?? "The guide"} is leading this tour.`, "success"),
-    );
-  }
-
-  async function handleUnassign() {
-    const ok = await confirm({
-      title: `Take ${currentGuideName} off this tour?`,
-      description: "They are told in the app. The tour then shows as having no guide until you pick another one.",
-      confirmLabel: "Unassign",
-    });
-    if (!ok) return;
-    run(
-      () => assignGuideToBooking(bookingId, null),
-      () => {
-        setSelectedGuideId("");
-        toast("Guide removed from this tour.", "success");
-      },
     );
   }
 
@@ -144,7 +129,13 @@ export function GuideAssignment({
         </div>
       ) : (
         <>
-          {availableGuides.length === 0 ? (
+          {currentGuideId ? (
+            // A confirmed guide stays on the tour: no picking another one here.
+            <p className="rounded-2xl bg-blue-50 p-3 text-sm text-daet-ink dark:bg-blue-950/40">
+              <span className="font-bold">Guide confirmed.</span> The guide can&apos;t be changed now. If they can&apos;t make it, they can
+              ask to swap, or message the Tourism Office.
+            </p>
+          ) : availableGuides.length === 0 ? (
             <p className="rounded-2xl bg-yellow-50 p-3 text-sm text-yellow-800 dark:bg-yellow-950/40 dark:text-yellow-200">
               No approved guides available. Guides must be approved before assignment.
             </p>
@@ -179,15 +170,9 @@ export function GuideAssignment({
                   })}
               </Select>
 
-              {currentGuideId ? (
-                <Button variant="secondary" className="shrink-0" onClick={handleUnassign} disabled={pending}>
-                  Unassign
-                </Button>
-              ) : (
-                <Button className="shrink-0" onClick={handleAssign} disabled={pending || !selectedGuideId} loading={pending} loadingText="Assigning...">
-                  Assign
-                </Button>
-              )}
+              <Button className="shrink-0" onClick={handleAssign} disabled={pending || !selectedGuideId} loading={pending} loadingText="Assigning...">
+                Assign
+              </Button>
             </div>
           )}
 

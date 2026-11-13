@@ -34,6 +34,12 @@ export type ApproveAssignProps = {
   }>;
   /** Called with the success message so the page can toast and refresh. */
   onApproved?: (message: string) => void;
+  /**
+   * A guide the operator doesn't pick here: one already confirmed (id null,
+   * nothing to send), or the Tourism Office's or system's choice that
+   * approving the booking also approves (id sent with the approval).
+   */
+  fixedGuide?: { id: string | null; name: string; note: string } | null;
 };
 
 /**
@@ -53,6 +59,7 @@ export function ApproveAssignDialog({
   capacity,
   guides,
   onApproved,
+  fixedGuide = null,
 }: ApproveAssignProps) {
   const router = useRouter();
   const { toast } = useFeedback();
@@ -65,7 +72,7 @@ export function ApproveAssignDialog({
   function confirm() {
     setError(null);
     startTransition(async () => {
-      const result = await approveBooking(bookingId, guideId || null);
+      const result = await approveBooking(bookingId, fixedGuide ? fixedGuide.id : guideId || null);
       if (!result.success) {
         setError(result.error ?? "The booking could not be approved.");
         return;
@@ -124,6 +131,11 @@ export function ApproveAssignDialog({
         <span>{check.text}</span>
       </p>
 
+      {fixedGuide ? (
+        <p className="mt-4 rounded-xl bg-blue-50 p-3 text-sm text-daet-ink dark:bg-blue-950/40">
+          <span className="font-bold">Guide: {fixedGuide.name}</span>, {fixedGuide.note}.
+        </p>
+      ) : (
       <Field
         id={`${uid}-guide`}
         label="Assign certified local eco-guide"
@@ -144,6 +156,7 @@ export function ApproveAssignDialog({
           ))}
         </Select>
       </Field>
+      )}
 
       <p className="mt-2 text-sm text-daet-ink/70">
         The tourist gets a voucher by email as soon as you confirm.
