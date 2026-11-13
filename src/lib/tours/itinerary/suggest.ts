@@ -17,3 +17,25 @@ export function matchPackages(places: Array<LatLng & { name: string }>, packages
     .sort((a, b) => b.matched.length - a.matched.length || a.title.localeCompare(b.title))
     .slice(0, limit);
 }
+
+/**
+ * Other packages that pass the same planned places as `main` ("Similar
+ * choices"): the tourist can compare operators and prices for the same stops.
+ * Excludes `main` and anything already shown; most shared places first.
+ */
+export function similarPackages(
+  main: PackageMatch,
+  places: Array<LatLng & { name: string }>,
+  candidates: PackageCandidate[],
+  exclude: ReadonlySet<string>,
+): Array<{ id: string; shared: string[] }> {
+  const targets = places.filter((p) => main.matched.includes(p.name));
+  return candidates
+    .filter((c) => c.id !== main.id && !exclude.has(c.id))
+    .map((c) => ({
+      id: c.id,
+      shared: [...new Set(targets.filter((place) => c.stops.some((stop) => haversineMeters(place, stop) <= MATCH_RADIUS_M)).map((p) => p.name))],
+    }))
+    .filter((c) => c.shared.length > 0)
+    .sort((a, b) => b.shared.length - a.shared.length);
+}

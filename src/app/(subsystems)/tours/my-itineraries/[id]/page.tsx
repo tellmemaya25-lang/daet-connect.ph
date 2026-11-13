@@ -127,6 +127,12 @@ export default async function ItineraryPage({ params }: { params: Promise<{ id: 
           </div>
           <div className="flex flex-wrap items-start gap-3">
             <ChangeWithAssistant id={itinerary.id} className={outline} />
+            <Link href={`/tours/my-itineraries/${itinerary.id}/print`} className={outline}>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <path d="M7 9V3h10v6M7 18H5a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2M7 14h10v7H7z" />
+              </svg>
+              Print / PDF
+            </Link>
             <a href="#share" className={outline}>
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                 <path d="M5 12v7h14v-7M12 15V4M8 8l4-4 4 4" />

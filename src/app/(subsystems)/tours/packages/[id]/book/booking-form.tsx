@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import type { DateOption } from "@/lib/tours/availability";
 import { createBooking } from "./actions";
 import { bookingPrefill } from "./prefill";
+import { digitsOnlyPhone, PHONE_MAX_DIGITS } from "@/lib/tours/phone";
 
 interface PriceVariant {
   id: string;
@@ -348,14 +349,21 @@ export function BookingForm({ packageId, priceVariants, dateOptions, userProfile
                 type="tel"
                 id="contactPhone"
                 autoComplete="tel"
-                inputMode="tel"
+                inputMode="numeric"
+                pattern="[0-9]{10,13}"
+                maxLength={PHONE_MAX_DIGITS}
+                title="Numbers only, 10 to 13 digits (e.g. 09123456789)"
+                aria-describedby="contactPhoneHint"
                 value={contactPhone}
-                onChange={(e) => setContactPhone(e.target.value)}
+                onChange={(e) => setContactPhone(digitsOnlyPhone(e.target.value))}
                 required
                 minLength={10}
                 className="mt-1 w-full rounded-2xl border border-daet-ink/20 min-h-11 px-4 py-2.5 text-base focus:border-daet-forest focus:outline-none focus:ring-2 focus:ring-daet-forest/20"
                 placeholder="09123456789"
               />
+              <p id="contactPhoneHint" className="mt-1 text-xs text-daet-ink/70">
+                Numbers only, e.g. 09123456789.
+              </p>
             </div>
           </div>
 

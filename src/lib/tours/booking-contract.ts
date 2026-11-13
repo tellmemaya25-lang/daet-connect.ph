@@ -1,4 +1,5 @@
 import "server-only";
+import { phoneError } from "./phone";
 
 /**
  * Booking system contracts and types
@@ -163,9 +164,8 @@ export function validateCreateBooking(input: CreateBookingInput): string | null 
     return "Valid email address is required.";
   }
   
-  if (typeof input.contactPhone !== "string" || input.contactPhone.trim().length < 10) {
-    return "Valid phone number is required (at least 10 digits).";
-  }
+  const phoneProblem = phoneError(input.contactPhone);
+  if (phoneProblem) return phoneProblem;
   
   return null;
 }

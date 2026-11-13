@@ -1,4 +1,4 @@
-import { matchPackages } from "@/lib/tours/itinerary/suggest";
+import { matchPackages, similarPackages } from "@/lib/tours/itinerary/suggest";
 
 const rizal = { name: "Rizal Monument", lat: 14.1131, lng: 122.9545 };
 const bagasbas = { name: "Bagasbas Beach", lat: 14.131583, lng: 122.985083 };
@@ -16,5 +16,29 @@ describe("matchPackages", () => {
 
   it("returns nothing when no stop is close", () => {
     expect(matchPackages([rizal], [{ id: "far", title: "Far", coverImageUrl: null, stops: [{ name: "x", lat: 14.3, lng: 123.2 }] }])).toEqual([]);
+  });
+});
+
+describe("similarPackages", () => {
+  const place = (name: string, lat: number, lng: number) => ({ name, lat, lng });
+  const falls = place("Falls", 14.1, 122.9);
+  const beach = place("Beach", 14.2, 122.95);
+  const pkg = (id: string, stops: Array<{ name: string; lat: number; lng: number }>) => ({ id, title: id, coverImageUrl: null, stops });
+
+  it("lists other tours that pass the same planned places, most shared first", () => {
+    const main = { id: "a", title: "a", coverImageUrl: null, matched: ["Falls", "Beach"] };
+    const result = similarPackages(main, [falls, beach], [pkg("a", [falls, beach]), pkg("b", [falls]), pkg("c", [falls, beach]), pkg("d", [place("Far", 13, 121)])], new Set(["a"]));
+    expect(result.map((r) => r.id)).toEqual(["c", "b"]);
+    expect(result[0].shared).toEqual(["Falls", "Beach"]);
+  });
+
+  it("skips tours already suggested on their own", () => {
+    const main = { id: "a", title: "a", coverImageUrl: null, matched: ["Falls"] };
+    expect(similarPackages(main, [falls], [pkg("b", [falls])], new Set(["a", "b"]))).toEqual([]);
+  });
+
+  it("only compares the places the main tour matched", () => {
+    const main = { id: "a", title: "a", coverImageUrl: null, matched: ["Falls"] };
+    expect(similarPackages(main, [falls, beach], [pkg("b", [beach])], new Set(["a"]))).toEqual([]);
   });
 });
