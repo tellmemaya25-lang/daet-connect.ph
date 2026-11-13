@@ -212,11 +212,7 @@ export function BookingBoard({ rows, selectableIds }: { rows: BoardRow[]; select
                     No guide: the guest asked to go without one.
                   </p>
                 ) : null}
-                {row.guideId && row.guideAssignedBy === "admin" ? (
-                  <p className="mt-3 rounded-xl bg-blue-50 p-3 text-sm text-daet-ink dark:bg-blue-950/40">
-                    <span className="font-bold">Assigned by the Tourism Office.</span> Nothing to do here. To change the guide, message the Tourism Office.
-                  </p>
-                ) : row.lifecycleStatus !== "rejected" && row.lifecycleStatus !== "cancelled" ? (
+                {row.lifecycleStatus !== "rejected" && row.lifecycleStatus !== "cancelled" ? (
                   <div className="mt-3">
                     <GuideAssignment
                       bookingId={row.id}
@@ -365,7 +361,6 @@ export function BookingBoard({ rows, selectableIds }: { rows: BoardRow[]; select
           tourDate={approveTarget.tourDate}
           capacity={approveTarget.capacity}
           guides={approveTarget.picker}
-          assignedGuideName={approveTarget.guideId && approveTarget.guideAssignedBy === "admin" ? approveTarget.guideName : null}
         />
       ) : null}
 

@@ -65,8 +65,6 @@ export type BoardRow = {
   guideNotNeeded: { at: string; note: string | null } | null;
   /** The guide the admin or the system proposed, waiting for the operator (owner's list, item 8). */
   guideProposal?: { guideId: string | null; guideName: string | null; by: "auto" | "admin"; status: "proposed" | "none_available" } | null;
-  /** Who put the current guide on the tour; "admin" means the Tourism Office did and the operator can't change it. */
-  guideAssignedBy?: "admin" | "operator" | "system" | null;
   /** Where the guests are picked up, and what it added to the total. */
   pickup?: { name: string; fee: number } | null;
   note: PaymentNote;

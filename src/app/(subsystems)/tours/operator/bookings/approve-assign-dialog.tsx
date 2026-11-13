@@ -34,8 +34,6 @@ export type ApproveAssignProps = {
   }>;
   /** Called with the success message so the page can toast and refresh. */
   onApproved?: (message: string) => void;
-  /** The guide the Tourism Office already assigned; the operator only confirms. */
-  assignedGuideName?: string | null;
 };
 
 /**
@@ -55,7 +53,6 @@ export function ApproveAssignDialog({
   capacity,
   guides,
   onApproved,
-  assignedGuideName = null,
 }: ApproveAssignProps) {
   const router = useRouter();
   const { toast } = useFeedback();
@@ -127,11 +124,6 @@ export function ApproveAssignDialog({
         <span>{check.text}</span>
       </p>
 
-      {assignedGuideName ? (
-        <p className="mt-4 rounded-xl bg-blue-50 p-3 text-sm text-daet-ink dark:bg-blue-950/40">
-          <span className="font-bold">Guide: {assignedGuideName}</span>, assigned by the Tourism Office.
-        </p>
-      ) : (
       <Field
         id={`${uid}-guide`}
         label="Assign certified local eco-guide"
@@ -152,7 +144,6 @@ export function ApproveAssignDialog({
           ))}
         </Select>
       </Field>
-      )}
 
       <p className="mt-2 text-sm text-daet-ink/70">
         The tourist gets a voucher by email as soon as you confirm.
