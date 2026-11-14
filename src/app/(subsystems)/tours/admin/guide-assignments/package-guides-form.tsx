@@ -28,7 +28,7 @@ export function PackageGuidesForm({ pkg, guides }: { pkg: CoveragePackage; guide
         {pkg.operator} · {pkg.municipality ?? "No municipality set"}
       </p>
       {guides.length === 0 ? (
-        <p className="mt-2 text-sm text-slate-600 dark:text-slate-400">No approved guides yet.</p>
+        <p className="mt-2 text-sm text-slate-600 dark:text-slate-400">No guides work with {pkg.operator} yet. Guides apply to the operator, who interviews them and agrees their share.</p>
       ) : (
         <div className="mt-2 grid grid-cols-1 gap-x-3 sm:grid-cols-2 lg:grid-cols-3">
           {guides.map((g) => (

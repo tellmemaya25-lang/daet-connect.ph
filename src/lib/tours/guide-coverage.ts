@@ -20,13 +20,16 @@ export type WaitingBooking = {
   proposedBy: "auto" | "admin" | null;
   proposedGuideId: string | null;
   proposedGuideName: string | null;
+  /** Guides who work with this tour's operator; the only ones it can be given. */
+  teamIds: string[];
 };
 /** A published package and the guides chosen for it (tried first for its bookings). */
-export type CoveragePackage = { id: string; title: string; operator: string; municipality: Municipality | null; guideIds: string[] };
+export type CoveragePackage = { id: string; title: string; operator: string; municipality: Municipality | null; guideIds: string[]; teamIds: string[] };
 export type Coverage = { areas: AreaCoverage[]; unplacedPackages: number; guides: CoverageGuide[]; packages: CoveragePackage[]; bookings: WaitingBooking[] };
 
 const rows = (v: unknown) => (Array.isArray(v) ? (v as Record<string, unknown>[]) : []);
 const text = (v: unknown) => (typeof v === "string" ? v : "");
+const ids = (v: unknown) => (Array.isArray(v) ? v : []).filter((id): id is string => typeof id === "string");
 
 export function parseCoverage(data: unknown): Coverage {
   const d = (data ?? {}) as Record<string, unknown>;
@@ -41,7 +44,9 @@ export function parseCoverage(data: unknown): Coverage {
       title: text(p.title) || "Tour",
       operator: text(p.operator) || "Operator",
       municipality: isMunicipality(p.municipality) ? p.municipality : null,
-      guideIds: (Array.isArray(p.guide_ids) ? p.guide_ids : []).filter((id): id is string => typeof id === "string"),
+      guideIds: ids(p.guide_ids),
+      /** Guides who work with this package's operator (active agreement); the only ones it can use. */
+      teamIds: ids(p.team_ids),
     })),
     bookings: rows(d.bookings).map((b) => ({
       id: text(b.id),
@@ -56,6 +61,7 @@ export function parseCoverage(data: unknown): Coverage {
       proposedBy: b.guide_proposed_by === "admin" || b.guide_proposed_by === "auto" ? b.guide_proposed_by : null,
       proposedGuideId: text(b.proposed_guide_id) || null,
       proposedGuideName: text(b.proposed_guide_name) || null,
+      teamIds: ids(b.team_ids),
     })),
   };
 }

@@ -213,6 +213,7 @@ export async function OperatorHome({ operatorId, searchParams }: { operatorId: s
             <CardHeader title="Manage" />
             <div className="grid grid-cols-2 gap-2">
               {[
+                ["/tours/operator/guides", "Guides"],
                 ["/tours/operator/live", "Live now"],
                 ["/tours/operator/reviews", "Reviews"],
                 ["/tours/operator/merch", "Merchandise"],

@@ -109,10 +109,13 @@ export default async function GuideMyToursPage() {
     assignedTours?.filter((t) => t.status === "completed" || t.tour_date < today) || [];
 
   // R6: other guides free on each upcoming date, and this guide's latest swap request per tour.
+  // A guide has one tour a day; naming it limits the list to that tour's operator team,
+  // the only guides the operator could approve a swap to.
+  const tourOnDate = new Map(upcomingTours.map((t) => [t.tour_date, t.id]));
   const pickers = new Map(
     await Promise.all(
-      [...new Set(upcomingTours.map((t) => t.tour_date))].map(async (date) => {
-        const { data } = await supabase.rpc("tours_guides_free_on", { p_date: date });
+      [...tourOnDate].map(async ([date, bookingId]) => {
+        const { data } = await supabase.rpc("tours_guides_free_on", { p_date: date, p_exclude_booking: bookingId });
         const rows = ((data ?? []) as Array<{ guide_id: string; full_name: string; reason: string | null }>)
           .filter((r) => r.guide_id !== guide.id)
           .map((r) => ({ id: r.guide_id, full_name: r.full_name, reason: isBusyReason(r.reason) ? r.reason : null }));

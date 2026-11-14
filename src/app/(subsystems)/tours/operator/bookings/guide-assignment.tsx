@@ -137,7 +137,11 @@ export function GuideAssignment({
             </p>
           ) : availableGuides.length === 0 ? (
             <p className="rounded-2xl bg-yellow-50 p-3 text-sm text-yellow-800 dark:bg-yellow-950/40 dark:text-yellow-200">
-              No approved guides available. Guides must be approved before assignment.
+              No guides on your team yet. Accredited guides apply to you; interview them and agree their share on{" "}
+              <a href="/tours/operator/guides" className="font-bold underline">
+                Guides
+              </a>
+              .
             </p>
           ) : (
             <div className="flex flex-wrap items-center gap-3">

@@ -31,16 +31,16 @@ describe("uncoveredAreas", () => {
 });
 
 describe("packages", () => {
-  it("reads each package's own guides", () => {
-    const c = parseCoverage({ packages: [{ id: "p1", title: "Surf", operator: "Kalmado", municipality: "Daet", guide_ids: ["g1", 7] }] });
-    expect(c.packages).toEqual([{ id: "p1", title: "Surf", operator: "Kalmado", municipality: "Daet", guideIds: ["g1"] }]);
+  it("reads each package's own guides and its operator's team", () => {
+    const c = parseCoverage({ packages: [{ id: "p1", title: "Surf", operator: "Kalmado", municipality: "Daet", guide_ids: ["g1", 7], team_ids: ["g1", "g2", null] }] });
+    expect(c.packages).toEqual([{ id: "p1", title: "Surf", operator: "Kalmado", municipality: "Daet", guideIds: ["g1"], teamIds: ["g1", "g2"] }]);
   });
   it("flags packages that can get no guide", () => {
     expect(
       packagesWithoutGuides([
-        { id: "a", title: "A", operator: "O", municipality: null, guideIds: [] },
-        { id: "b", title: "B", operator: "O", municipality: "Daet", guideIds: [] },
-        { id: "c", title: "C", operator: "O", municipality: null, guideIds: ["g1"] },
+        { id: "a", title: "A", operator: "O", municipality: null, guideIds: [], teamIds: [] },
+        { id: "b", title: "B", operator: "O", municipality: "Daet", guideIds: [], teamIds: [] },
+        { id: "c", title: "C", operator: "O", municipality: null, guideIds: ["g1"], teamIds: [] },
       ]).map((p) => p.id),
     ).toEqual(["a"]);
   });
