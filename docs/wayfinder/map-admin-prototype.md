@@ -21,8 +21,11 @@ Every admin screen of the Daet Connect tours admin (all 10 sections plus Dashboa
 - [Sample data](tickets/05-sample-data.md): one shared dataset in `sample-data.md`; today is 14 Nov 2026; 6 waiting items tie dashboard to lists.
 - [Shared shell include](tickets/06-shared-shell-include.md): yes via `<dc-import>`, but no slots, so two shared components (`Sidebar`, `TopBar`) instead of one shell; not yet rendered.
 
+- [Board builds](tickets/07-build-boards-people.md): 21 boards (tickets 07, 08, 09) published and placed on the canvas, one row per section from y=3000, 1800 apart, columns 1360 apart. Unrendered.
+
 ## Not yet specified
-- Canvas layout of ~22 boards (grid, naming, order in `canvas.json`).
+- Render check: whether the Sidebar/TopBar imports and sidebar collapse actually work, and real board heights.
+- Dashboard (`Main.dc.html`) still uses its old sidebar grouping, not the shared Sidebar.
 - Whether the phone board needs admin screens beyond the dashboard.
 
 ## Out of scope
