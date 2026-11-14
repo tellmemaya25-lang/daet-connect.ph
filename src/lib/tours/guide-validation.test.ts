@@ -2,7 +2,7 @@ import { guideFieldErrors, hasGuideIdConsent, validateGuideRegistration } from "
 
 const validProfile = {
   fullName: "Maya Santos",
-  contactPhone: "+63 917 123 4567",
+  contactPhone: "09171234567",
   bio: "I have guided visitors around Daet for several years.",
   idType: "philippine_national_id",
   idNumber: "1234-5678-9012",

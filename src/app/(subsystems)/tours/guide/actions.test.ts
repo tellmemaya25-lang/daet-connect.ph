@@ -38,7 +38,7 @@ function makeFormData(entries: Record<string, string> = {}): FormData {
 function makeGuideApplicationFormData() {
   const data = makeFormData({
     fullName: "Maya Santos",
-    contactPhone: "+63 917 123 4567",
+    contactPhone: "09171234567",
     bio: "I have guided visitors around Daet for several years.",
     idType: "philippine_national_id",
     idNumber: "1234-5678-9012",
@@ -112,7 +112,7 @@ describe("guide registration Server Action", () => {
     expect(publicQuery.insert).toHaveBeenCalledWith(expect.objectContaining({
       id: guideId,
       profile_id: applicantId,
-      contact_phone: "+63 917 123 4567",
+      contact_phone: "09171234567",
       bio: "I have guided visitors around Daet for several years.",
       consent_full_id_display: true,
       consent_given_at: expect.any(String),
