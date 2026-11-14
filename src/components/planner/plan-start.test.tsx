@@ -46,6 +46,23 @@ describe("PlanStart", () => {
     expect(screen.getByRole("form", { name: "Your trip" })).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Recents" })).toHaveAttribute("href", "/tours/my-itineraries");
   });
+
+  it("says 'No dates' on the pill until dates are chosen", () => {
+    render(<PlanStart signedIn onSend={jest.fn()} />);
+    expect(screen.getByRole("button", { name: "No dates" })).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Dates" })).toBeNull();
+  });
+
+  it("calls a stored sample trip 'Sample plan', never its stand-in dates", () => {
+    // A sample trip stores stand-in dates; they are not the traveller's dates.
+    window.localStorage.setItem(
+      "daet-trip-context-v1",
+      JSON.stringify({ dates: { start: "2099-11-21", end: "2099-11-22" }, sample: true, travelers: { adults: 3, children: [14] }, origin: { city: "Legazpi" } }),
+    );
+    render(<PlanStart signedIn onSend={jest.fn()} />);
+    expect(screen.getByRole("button", { name: "Sample plan" })).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /Nov 21/ })).toBeNull();
+  });
 });
 
 describe("PlanChoices", () => {

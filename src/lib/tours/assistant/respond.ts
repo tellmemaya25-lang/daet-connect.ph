@@ -1,8 +1,7 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { z } from "zod/v4";
 import { basicReply } from "@/lib/tours/assistant/basic";
-import { daysAsked, isPlanRequest, MAX_TRIP_DAYS, missingInputs, tripDays, TripContextSchema, type MissingInput, type TripContext } from "@/lib/tours/assistant/context";
-import { addDays } from "@/lib/tours/itinerary/types";
+import { countOf, daysAsked, groupSize, isPlanRequest, peopleAsked, missingInputs, tripDays, TripContextSchema, type MissingInput, type TripContext } from "@/lib/tours/assistant/context";
 import { describeItinerary, planTrip, wantsFromText, type ItineraryResult } from "@/lib/tours/assistant/plan-tool";
 import type { AssistantCard, ToolContext } from "@/lib/tours/assistant/tools";
 import { CHANGE_EXAMPLES } from "@/lib/tours/itinerary/assistant";
@@ -118,6 +117,7 @@ export async function* respond(raw: unknown, deps: RespondDeps): AsyncGenerator<
 
   // A plan needs dates, who is coming and where from. Ask once, before any model call.
   const latest = history[history.length - 1].content;
+  let formNotice = "";
   const planning = Boolean(deps.tripQuestions && trip && isPlanRequest(latest));
   if (planning) {
     const missing = missingInputs(trip, deps.today);
@@ -128,17 +128,14 @@ export async function* respond(raw: unknown, deps: RespondDeps): AsyncGenerator<
       yield { t: "done" };
       return;
     }
-    // "Plan 2 days" with 3 saved days: don't pick one silently. Offer the asked
-    // length from the same first day, and let them confirm or change it.
+    // The form's values are validated; the words only add preferences. If the
+    // words ask for a different length, say which one is being used.
     const asked = daysAsked(latest);
     const saved = trip!.dates ? tripDays(trip!.dates) : 0;
-    if (asked && trip!.dates && !trip!.datesConfirmed && asked !== saved && asked <= MAX_TRIP_DAYS) {
-      const proposed = { start: trip!.dates.start, end: addDays(trip!.dates.start, asked - 1) };
-      yield { t: "mode", mode: deps.aiAllowed ? "ai" : "basic" };
-      yield { t: "questions", missing: ["dates"], prefill: { ...trip!, dates: proposed } };
-      yield { t: "text", v: `You asked for ${asked} day${asked === 1 ? "" : "s"}, but your saved dates cover ${saved}. I've set ${asked === 1 ? "one day" : `${asked} days`} from your first day; check the dates, then tap Draft my plan.` };
-      yield { t: "done" };
-      return;
+    const group = groupSize(trip!.travelers);
+    const people = peopleAsked(latest);
+    if ((asked && asked !== saved) || (people && people !== group)) {
+      formNotice = `Using your form details (${countOf(saved, "day")}, ${countOf(group, "traveler")})\n\n`;
     }
   }
 
@@ -172,6 +169,7 @@ export async function* respond(raw: unknown, deps: RespondDeps): AsyncGenerator<
       });
 
     yield { t: "mode", mode: "ai" };
+    if (formNotice) yield { t: "text", v: formNotice };
     while (!finished || queue.length) {
       if (queue.length) {
         const items = queue.splice(0, queue.length);
@@ -209,6 +207,7 @@ export async function* respond(raw: unknown, deps: RespondDeps): AsyncGenerator<
   }
 
   yield { t: "mode", mode: "basic" };
+  if (formNotice) yield { t: "text", v: formNotice };
   if (planning) {
     try {
       const result = await planTrip(ctx, wantsFromText(latest, ctx));

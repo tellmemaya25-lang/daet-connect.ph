@@ -9,7 +9,7 @@ import { isDateKey } from "@/lib/tours/events-calendar";
  */
 
 export const ORIGIN_CHIPS = ["Manila", "Quezon City", "Naga", "Legazpi", "Cebu"] as const;
-export const MAX_TRIP_DAYS = 5;
+export const MAX_TRIP_DAYS = 14;
 export const MAX_ADULTS = 20;
 export const MAX_CHILDREN = 10;
 
@@ -27,6 +27,8 @@ export const TripContextSchema = z.object({
   datesConfirmed: z.boolean().optional(),
   /** "No dates yet" (decision 35): the dates are a typical weekend for a sample plan; it gets real dates before saving. */
   sample: z.boolean().optional(),
+  /** The dates the traveller chose before ticking "No dates yet"; kept so unticking brings them back. */
+  realDates: z.object({ start: dateKey, end: dateKey }).nullable().optional(),
 });
 export type TripContext = z.infer<typeof TripContextSchema>;
 
@@ -68,6 +70,38 @@ export function daysAsked(text: string): number | null {
   if (!m) return /\bday trip\b/.test(t) ? 1 : null;
   const n = DAY_WORDS[m[1]] ?? Number(m[1]);
   return Number.isInteger(n) && n >= 1 ? n : null;
+}
+
+const PEOPLE_WORDS: Record<string, number> = { ...DAY_WORDS, isang: 1, dalawang: 2, tatlong: 3, apat: 4, limang: 5, anim: 6, pitong: 7, walong: 8 };
+
+/**
+ * How many people the traveller's words name ("for 6 people", "family of 5",
+ * "tatlong tao"), or null when they don't say. Adults alone don't count: the
+ * form's group includes children.
+ */
+export function peopleAsked(text: string): number | null {
+  const t = text.toLowerCase();
+  const word = "\\d{1,2}|one|two|three|four|five|six|seven|eight|nine|ten|isang|dalawang|tatlong|apat|limang|anim|pitong|walong";
+  const m = new RegExp(`\\b(${word})[\\s-]*(?:people|persons?|pax|travell?ers|guests|tao)\\b|\\b(?:family|group|party) of (${word})\\b`).exec(t);
+  if (!m) return null;
+  const raw = m[1] ?? m[2];
+  const n = ({ six: 6, seven: 7, eight: 8, nine: 9, ten: 10, ...PEOPLE_WORDS } as Record<string, number>)[raw] ?? Number(raw);
+  return Number.isInteger(n) && n >= 1 ? n : null;
+}
+
+/** Everyone coming, adults and children; 0 when the group isn't known yet. */
+export function groupSize(travelers: { adults: number; children: readonly unknown[] } | null | undefined): number {
+  return travelers ? travelers.adults + travelers.children.length : 0;
+}
+
+/** "1 day", "3 travelers". */
+export function countOf(n: number, noun: string): string {
+  return `${n} ${noun}${n === 1 ? "" : "s"}`;
+}
+
+/** The traveller's own dates: a sample plan's `dates` are stand-ins, so theirs are in `realDates`. */
+export function ownDates(context: TripContext | null | undefined): { start: string; end: string } | null | undefined {
+  return context?.sample ? context.realDates : context?.dates;
 }
 
 export function describeTravelers(travelers: NonNullable<TripContext["travelers"]>): string {

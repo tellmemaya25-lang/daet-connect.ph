@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { CategoryIcon, LineIcon } from "@/components/ui/icons";
 import { formatPeso } from "@/lib/money";
 import type { ItineraryResult, PlanStop, Transport } from "@/lib/tours/assistant/plan-tool";
+import { groupSize } from "@/lib/tours/assistant/context";
 import { bookHref, dayFor } from "@/lib/tours/itinerary/bookable";
 import type { BookablePackage } from "@/lib/tours/itinerary/data";
 import type { StopChoice } from "@/lib/tours/itinerary/edit";
@@ -42,7 +43,7 @@ const pillClass = (on: boolean) =>
 /** "Nov 6 to Nov 8 · 2 travelers · Relaxed pace": the line under the plan's title. */
 export function tripLine(itinerary: ItineraryResult): string {
   const days = itinerary.plan.days;
-  const group = itinerary.travelers.adults + itinerary.travelers.children.length;
+  const group = groupSize(itinerary.travelers);
   const dates = itinerary.sample ? "No dates yet" : days.length > 1 ? `${shortDate(days[0].date)} to ${shortDate(days[days.length - 1].date)}` : days[0] ? shortDate(days[0].date) : "";
   const pace = PACE_LABEL[itinerary.input.pace as keyof typeof PACE_LABEL];
   const around = itinerary.transport ? TRAVEL_LABEL[itinerary.transport] : null;
@@ -122,7 +123,7 @@ export function PlanPanel({
   const [undo, setUndo] = useState<{ label: string; before: ItineraryResult } | null>(null);
   const [pending, start] = useTransition();
   const byId = new Map(itinerary.stops.map((s) => [s.id, s]));
-  const group = itinerary.travelers.adults + itinerary.travelers.children.length;
+  const group = groupSize(itinerary.travelers);
   const current = day === "all" ? null : Math.min(day, plan.days.length - 1);
   const shown = current === null ? plan.days.map((d, i) => ({ d, i })) : [{ d: plan.days[current], i: current }];
   const { byStop, rest } = placePackages(plan.days, itinerary.packages);

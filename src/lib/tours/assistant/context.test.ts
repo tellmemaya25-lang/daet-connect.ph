@@ -1,5 +1,5 @@
 import { contextPrompt, isPlanRequest, missingInputs, tripDays, TripContextSchema, type TripContext } from "@/lib/tours/assistant/context";
-import { daysAsked } from "@/lib/tours/assistant/context";
+import { daysAsked, peopleAsked } from "@/lib/tours/assistant/context";
 import { assistantSystemPrompt } from "@/lib/tours/assistant/prompt";
 import { cleanHistory } from "@/lib/tours/assistant/respond";
 
@@ -18,9 +18,9 @@ describe("missingInputs", () => {
   it("is empty when everything is filled in", () => {
     expect(missingInputs(full, TODAY)).toEqual([]);
   });
-  it("treats past dates and ranges over five days as missing", () => {
+  it("treats past dates and ranges over fourteen days as missing", () => {
     expect(missingInputs({ ...full, dates: { start: "2026-11-01", end: "2026-11-02" } }, TODAY)).toEqual(["dates"]);
-    expect(missingInputs({ ...full, dates: { start: "2026-11-10", end: "2026-11-20" } }, TODAY)).toEqual(["dates"]);
+    expect(missingInputs({ ...full, dates: { start: "2026-11-10", end: "2026-11-24" } }, TODAY)).toEqual(["dates"]);
     expect(missingInputs({ ...full, dates: { start: "2026-11-12", end: "2026-11-10" } }, TODAY)).toEqual(["dates"]);
   });
   it("counts days inclusively", () => {
@@ -80,5 +80,16 @@ describe("daysAsked", () => {
     expect(daysAsked("dalawang araw sa Daet")).toBe(2);
     expect(daysAsked("a day trip to Bagasbas")).toBe(1);
     expect(daysAsked("Plan a weekend")).toBeNull();
+  });
+});
+
+describe("peopleAsked", () => {
+  it("reads the group size from the traveller's words, only when they name people", () => {
+    expect(peopleAsked("Plan 2 days for 6 people")).toBe(6);
+    expect(peopleAsked("a trip for four travelers")).toBe(4);
+    expect(peopleAsked("family of 5 going to Bagasbas")).toBe(5);
+    expect(peopleAsked("tatlong tao, dalawang araw")).toBe(3);
+    expect(peopleAsked("Plan 2 days of beaches")).toBeNull();
+    expect(peopleAsked("Plan 3 adults")).toBeNull();
   });
 });

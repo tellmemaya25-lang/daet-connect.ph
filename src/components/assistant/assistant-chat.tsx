@@ -12,7 +12,7 @@ import type { AssistantEvent } from "@/lib/tours/assistant/respond";
 import type { AssistantCard, HandoffCard } from "@/lib/tours/assistant/tools";
 import type { CostCard, PlaceCard } from "@/lib/tours/assistant/guide-tools";
 import { ASSISTANT_NAME } from "@/lib/tours/assistant/name";
-import { pageSuggestions, tripDays, type MissingInput, type TripContext } from "@/lib/tours/assistant/context";
+import { groupSize, pageSuggestions, tripDays, type MissingInput, type TripContext } from "@/lib/tours/assistant/context";
 import { toManilaDateKey } from "@/lib/tours/events-calendar";
 import type { ChatActions } from "@/components/assistant/chat-actions";
 import { AiAvatar } from "@/components/chat/ai-avatar";
@@ -942,7 +942,7 @@ const tripDate = (key: string) => new Date(`${key}T00:00:00Z`).toLocaleDateStrin
  */
 function TripLine({ trip, onChange }: { trip: TripAnswers; onChange: (answers: TripAnswers) => void }) {
   const [editing, setEditing] = useState(false);
-  const group = trip.travelers ? trip.travelers.adults + trip.travelers.children.length : 0;
+  const group = groupSize(trip.travelers);
   const label = trip.dates
     ? [
         trip.sample ? `No dates yet, ${tripDays(trip.dates)} day${tripDays(trip.dates) === 1 ? "" : "s"}` : trip.dates.start === trip.dates.end ? tripDate(trip.dates.start) : `${tripDate(trip.dates.start)} to ${tripDate(trip.dates.end)}`,
