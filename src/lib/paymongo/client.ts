@@ -113,27 +113,26 @@ export async function createRefund(
   return result.data;
 }
 
-/** Read every refund for a payment, including refunds made outside this app. */
+/**
+ * Read every refund for a payment, including refunds made outside this app.
+ *
+ * PayMongo's List Refunds endpoint rejects a `payment_id` filter (HTTP 400
+ * parameter_invalid), so the history comes from the payment itself, which
+ * embeds its refunds. A missing or malformed `refunds` list is an error, never
+ * an empty history.
+ */
 export async function listPaymentRefunds(config: PaymongoConfig, paymentId: string): Promise<RefundResource[]> {
   if (!/^pay_[A-Za-z0-9]+$/.test(paymentId)) throw new PaymongoApiError("Invalid payment id", 400, null);
-  const refunds: RefundResource[] = [];
-  let after: string | undefined;
-  const seenCursors = new Set<string>();
-  for (let page = 0; page < 100; page++) {
-    // Use PayMongo's documented default page size; not all accounts accept
-    // larger limits. Still walk every page and fail closed on bad pagination.
-    const params = new URLSearchParams({ "data.attributes.payment_id": paymentId });
-    if (after) params.set("data.attributes.after", after);
-    const result = await paymongoRequest<{ data: RefundResource[]; has_more: boolean }>(config, `/refunds?${params}`);
-    if (!Array.isArray(result?.data) || typeof result.has_more !== "boolean") throw new Error("Invalid PayMongo refund history.");
-    refunds.push(...result.data);
-    if (!result.has_more) return refunds;
-    const next = result.data[result.data.length - 1]?.id;
-    if (!next || seenCursors.has(next)) throw new Error("Invalid PayMongo refund pagination.");
-    seenCursors.add(next);
-    after = next;
-  }
-  throw new Error("PayMongo refund history is too long to verify.");
+  const result = await paymongoRequest<{ data?: { id?: string; attributes?: { refunds?: unknown } } }>(config, `/payments/${paymentId}`);
+  const payment = result?.data;
+  if (!payment || payment.id !== paymentId || !Array.isArray(payment.attributes?.refunds)) throw new Error("Invalid PayMongo refund history.");
+  return (payment.attributes.refunds as RefundResource[]).map((refund) => {
+    const attributes = refund?.attributes;
+    // Nested refunds may omit payment_id; they belong to this payment by construction.
+    return attributes && attributes.payment_id === undefined
+      ? { ...refund, attributes: { ...attributes, payment_id: paymentId } }
+      : refund;
+  });
 }
 
 /** Retrieve the authoritative status of a previously accepted refund. */
