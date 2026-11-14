@@ -1,4 +1,5 @@
 import "server-only";
+import { z } from "zod";
 import { phoneError } from "./phone";
 
 /**
@@ -162,7 +163,11 @@ export function validateCreateBooking(input: CreateBookingInput): string | null 
     return "Contact name must be at least 2 characters.";
   }
   
-  if (typeof input.contactEmail !== "string" || !input.contactEmail.includes("@")) {
+  if (
+    typeof input.contactEmail !== "string" ||
+    input.contactEmail.length > 254 ||
+    !z.string().email().safeParse(input.contactEmail.trim()).success
+  ) {
     return "Valid email address is required.";
   }
   
