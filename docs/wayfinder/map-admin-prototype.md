@@ -19,6 +19,7 @@ Every admin screen of the Daet Connect tours admin (all 10 sections plus Dashboa
 - [Research screens C](tickets/04-research-screens-c.md): inventory of Fares (with CSV import), Merch, Dashboard, Analytics is in `research/screens-c.md`.
 - [Shell and nav](tickets/01-shell-and-nav.md): three sidebar groups, breadcrumb + title/primary-button header, filter-chip table lists, narrow-card forms; shell shared if boards can include it, otherwise copied.
 - [Sample data](tickets/05-sample-data.md): one shared dataset in `sample-data.md`; today is 14 Nov 2026; 6 waiting items tie dashboard to lists.
+- [Shared shell include](tickets/06-shared-shell-include.md): yes via `<dc-import>`, but no slots, so two shared components (`Sidebar`, `TopBar`) instead of one shell; not yet rendered.
 
 ## Not yet specified
 - Canvas layout of ~22 boards (grid, naming, order in `canvas.json`).
