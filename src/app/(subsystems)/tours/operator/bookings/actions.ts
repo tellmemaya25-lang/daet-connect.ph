@@ -148,7 +148,8 @@ export async function assignGuideToBooking(
       const scheduleError = scheduleErrorMessage(updateError);
       if (scheduleError) return { success: false, error: scheduleError };
       console.error("Guide assignment error:", updateError);
-      return { success: false, error: "Failed to assign guide" };
+      // A raised rule ("doesn't work with this operator yet", the confirmed-guide lock) is shown as written.
+      return { success: false, error: userFacingDbError(updateError, "Failed to assign guide") };
     }
 
     if (guideId) emailGuideAssigned(bookingId, guideId);

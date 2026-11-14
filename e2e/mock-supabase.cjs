@@ -320,6 +320,35 @@ function build(role) {
       accreditation_notes: null,
     },
   ];
+  // Guide applications (20261207): the mock guide works with op-1 at 30%; a
+  // second guide has just applied to op-1. A second operator takes applications.
+  const APPLICANT = {
+    id: "f66b1fe2-a997-4c0b-be13-22d62cf0dbb7",
+    profile_id: "9b7e5a5e-0000-4000-8000-0000000000c2",
+    accreditation_status: "approved",
+    years_experience: 4,
+    specialties: ["Surfing", "Heritage"],
+    contact_phone: "0917 555 0199",
+    created_at: "2026-10-05T00:00:00Z",
+  };
+  const otherOperator = {
+    id: "0b000000-0000-4000-8000-000000000002",
+    profile_id: "9b7e5a5e-0000-4000-8000-0000000000d2",
+    business_name: "Daet Heritage Walks",
+    business_address: "Daet town proper",
+    business_description: "Walking tours of the old town and the first Rizal monument.",
+    accreditation_status: "approved",
+    created_at: "2026-02-01T00:00:00Z",
+  };
+  const application = (over) => ({
+    message: null, interview_at: null, interview_place: null, interview_link: null, interview_confirmed_at: null,
+    interview_notes: null, revenue_share_pct: null, offered_share_pct: null, decided_note: null,
+    updated_at: "2026-11-10T00:00:00Z", ...over,
+  });
+  const guideApplications = [
+    application({ id: "a0000000-0000-4000-8000-000000000001", guide_id: guides[0].id, operator_id: "op-1", status: "active", revenue_share_pct: "30.00" }),
+    application({ id: "a0000000-0000-4000-8000-000000000002", guide_id: APPLICANT.id, operator_id: "op-1", status: "applied", message: "I have guided surf lessons at Bagasbas for four years." }),
+  ];
   const participants = [
     {
       id: "p1000000-0000-4000-8000-000000000001",
@@ -833,7 +862,7 @@ function build(role) {
         refunded: 466,
       },
       {
-        id: "op-2",
+        id: "0b000000-0000-4000-8000-000000000002",
         business_name: "Calaguas Island Hoppers",
         bookings: 22,
         revenue: 39600,
@@ -1207,8 +1236,9 @@ function build(role) {
     tours_cancellations: cancellations,
     tours_payments: payments,
     tours_payment_proofs: proofs,
-    tours_operators: [operator],
-    tours_guides: guides,
+    tours_operators: [operator, otherOperator],
+    tours_guides: [...guides, APPLICANT],
+    tours_guide_applications: guideApplications,
     profiles: [
       {
         id: "9b7e5a5e-0000-4000-8000-000000000001",
@@ -1216,6 +1246,7 @@ function build(role) {
         full_name: account.full_name,
         avatar_url: account.avatar_url,
       },
+      { id: APPLICANT.profile_id, role: "guide", full_name: "Rosa Mendoza", avatar_url: null },
     ],
     tours_events: events,
     tours_merchandise:
@@ -1641,6 +1672,21 @@ http
             reason: "already_booked",
           },
         ]);
+      if (url.pathname === "/rest/v1/rpc/tours_guide_apply")
+        return send(200, "a0000000-0000-4000-8000-000000000003");
+      if (
+        [
+          "tours_guide_withdraw_application",
+          "tours_guide_confirm_interview",
+          "tours_guide_respond_offer",
+          "tours_operator_schedule_interview",
+          "tours_operator_record_interview",
+          "tours_operator_decline_application",
+          "tours_operator_offer_share",
+          "tours_end_guide_agreement",
+        ].includes(url.pathname.slice("/rest/v1/rpc/".length))
+      )
+        return send(200, null);
       if (url.pathname === "/rest/v1/rpc/tours_request_guide_swap")
         return send(200, "5a000000-0000-4000-8000-000000000009");
       if (

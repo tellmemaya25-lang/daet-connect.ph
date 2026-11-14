@@ -114,6 +114,9 @@ export default async function GuideDashboardPage({ searchParams }: { searchParam
           <ButtonLink href="/tours/guide/earnings" variant="secondary">
             My earnings
           </ButtonLink>
+          <ButtonLink href="/tours/guide/operators" variant="secondary">
+            Operators
+          </ButtonLink>
         </div>
       </div>
 

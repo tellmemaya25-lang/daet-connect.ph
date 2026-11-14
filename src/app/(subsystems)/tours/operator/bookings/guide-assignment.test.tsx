@@ -87,10 +87,11 @@ describe("GuideAssignment: a guest who doesn't need a guide", () => {
     await waitFor(() => expect(mockSetGuideNotNeeded).toHaveBeenCalledWith(bookingId, false));
   });
 
-  it("still offers the request when no guide is approved yet", () => {
+  it("still offers the request when the team has no guides yet, and points to Guides", () => {
     renderAssignment({ availableGuides: [] });
 
-    expect(screen.getByText(/No approved guides available/i)).toBeInTheDocument();
+    expect(screen.getByText(/No guides on your team yet/i)).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Guides" })).toHaveAttribute("href", "/tours/operator/guides");
     expect(screen.getByRole("button", { name: /doesn't need a guide/i })).toBeInTheDocument();
   });
 

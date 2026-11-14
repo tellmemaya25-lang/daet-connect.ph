@@ -98,12 +98,12 @@ export function PickupGuideSettings({
       <section aria-labelledby="guide-heading" className="space-y-3">
         <h3 id="guide-heading" className="font-bold text-daet-ink">Guide fee and area</h3>
         <p className="text-sm text-slate-600 dark:text-slate-400">
-          The guide fee is what the assigned guide earns for this tour; it is counted in your earnings and theirs. The municipality decides which guides are proposed for new bookings.
+          Guides on your team earn the share of the tour price you agreed with them (set on Guides). This fixed fee only applies to a guide who has no agreed share yet. The municipality decides which of your guides are proposed for new bookings.
         </p>
         {guideResult ? <Notice variant={guideResult.ok ? "success" : "error"}>{guideResult.message}</Notice> : null}
         <div className="grid gap-3 sm:grid-cols-2">
           <label className="text-sm font-bold text-daet-ink">
-            Guide fee per tour (₱)
+            Fixed guide fee, if no share is agreed (₱)
             <Input value={fee} inputMode="decimal" placeholder="e.g. 800" onChange={(e) => setFee(e.target.value.replace(/[^\d.,]/g, ""))} />
           </label>
           <label className="text-sm font-bold text-daet-ink">

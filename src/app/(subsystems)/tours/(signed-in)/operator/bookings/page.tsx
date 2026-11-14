@@ -59,12 +59,21 @@ function guideProposalFor(row: Record<string, unknown>, guideName: (id: string |
   return { guideId, guideName: guideName(guideId), by: row.guide_proposed_by === "admin" ? "admin" : "auto", status };
 }
 
-/** Approved guides, with their name and the two specialties the picker shows. */
+/**
+ * The operator's own guides (an active agreement; row security shows an
+ * operator only their applications), with their name and the two specialties
+ * the picker shows. Other guides can't be assigned to this operator's tours.
+ */
 async function loadGuides(supabase: Supabase) {
+  const { data: team, error: teamError } = await supabase.from("tours_guide_applications").select("guide_id").eq("status", "active");
+  if (teamError) console.error("Team fetch error:", teamError);
+  const teamIds = (team ?? []).map((row) => row.guide_id as string);
+  if (!teamIds.length) return [];
   const { data: guideRows, error } = await supabase
     .from("tours_guides")
     .select("id, profile_id, contact_phone, specialties")
     .eq("accreditation_status", "approved")
+    .in("id", teamIds)
     .order("id", { ascending: true });
   if (error) console.error("Guides fetch error:", error);
 

@@ -25,7 +25,7 @@ export default async function GuideAssignmentsPage() {
     <PageFrame adminNav>
       <AdminPageHeading title="Guide assignments" backHref="/tours/admin" backLabel="Admin dashboard" />
       <p className="mb-6 max-w-3xl text-slate-600 dark:text-slate-400">
-        Each new booking is proposed a free guide automatically: first the guides chosen for that package, then guides who serve the package&apos;s municipality, the least busy first. You can assign someone yourself below. Either way, the operator approves the guide before the tour.
+        Each new booking is proposed a free guide automatically from the guides who work with its operator: first the guides chosen for that package, then those who serve the package&apos;s municipality, the least busy first. You can assign someone yourself below. Either way, the operator approves the guide before the tour.
       </p>
 
       {error ? (
@@ -75,7 +75,7 @@ export default async function GuideAssignmentsPage() {
                             : "No guide proposed yet."}
                       </p>
                     </div>
-                    <ProposeGuide bookingId={b.id} guides={guideOptions} current={b.proposedGuideId} />
+                    <ProposeGuide bookingId={b.id} guides={guideOptions.filter((g) => b.teamIds.includes(g.id))} current={b.proposedGuideId} />
                   </li>
                 ))}
               </ul>
@@ -94,7 +94,7 @@ export default async function GuideAssignmentsPage() {
             ) : (
               <div className="space-y-3">
                 {coverage.packages.map((p) => (
-                  <PackageGuidesForm key={p.id} pkg={p} guides={guideOptions} />
+                  <PackageGuidesForm key={p.id} pkg={p} guides={guideOptions.filter((g) => p.teamIds.includes(g.id))} />
                 ))}
               </div>
             )}

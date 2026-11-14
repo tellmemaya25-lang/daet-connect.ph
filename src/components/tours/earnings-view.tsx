@@ -66,7 +66,7 @@ export function GuideEarningsView({ past, upcoming }: { past: GuideEarnings; upc
       </div>
       <EarningsTable title="Your tours" tours={[...upcoming.tours.filter((t) => t.status === "confirmed"), ...past.tours]} />
       <p className="text-sm text-slate-600 dark:text-slate-400">
-        Your fee for a tour is set by its operator and fixed when you are assigned. Operators pay guides directly; this page is your record.
+        Your fee for a tour is your agreed share of its price (pickup fees not counted), or the package&apos;s fixed fee if you haven&apos;t agreed a share with that operator. It is fixed when you are assigned. Operators pay guides directly; this page is your record.
       </p>
     </div>
   );
@@ -190,7 +190,7 @@ export function MoneyEarningsView({ data, perOperator }: { data: MoneyEarnings; 
         )}
       </section>
       <p className="text-sm text-slate-600 dark:text-slate-400">
-        Payments and refunds are counted by the day they were made; bookings and guide fees by the tour date. Guide fees come from each package&apos;s guide fee.
+        Payments and refunds are counted by the day they were made; bookings and guide fees by the tour date. A guide&apos;s fee is their agreed share of the tour price, or the package&apos;s fixed fee before a share is agreed.
       </p>
     </div>
   );
