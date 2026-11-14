@@ -89,6 +89,21 @@ export function peopleAsked(text: string): number | null {
   return Number.isInteger(n) && n >= 1 ? n : null;
 }
 
+/** Everyone coming, adults and children; 0 when the group isn't known yet. */
+export function groupSize(travelers: { adults: number; children: readonly unknown[] } | null | undefined): number {
+  return travelers ? travelers.adults + travelers.children.length : 0;
+}
+
+/** "1 day", "3 travelers". */
+export function countOf(n: number, noun: string): string {
+  return `${n} ${noun}${n === 1 ? "" : "s"}`;
+}
+
+/** The traveller's own dates: a sample plan's `dates` are stand-ins, so theirs are in `realDates`. */
+export function ownDates(context: TripContext | null | undefined): { start: string; end: string } | null | undefined {
+  return context?.sample ? context.realDates : context?.dates;
+}
+
 export function describeTravelers(travelers: NonNullable<TripContext["travelers"]>): string {
   const adults = `${travelers.adults} adult${travelers.adults === 1 ? "" : "s"}`;
   if (!travelers.children.length) return adults;

@@ -8,7 +8,7 @@ import { MIC_PATH, useSpeech } from "@/components/ui/use-speech";
 import { QuestionsCard } from "@/components/assistant/questions-card";
 import { loadTrip, saveTrip, type TripAnswers } from "@/components/assistant/trip-storage";
 import { ASSISTANT_NAME } from "@/lib/tours/assistant/name";
-import type { TripContext } from "@/lib/tours/assistant/context";
+import { countOf, groupSize, type TripContext } from "@/lib/tours/assistant/context";
 import { toManilaDateKey } from "@/lib/tours/events-calendar";
 
 export const TRY_ASKING = [
@@ -37,10 +37,10 @@ export function PlanStart({ signedIn, initialText = "", onSend }: { signedIn: bo
     const message = value.trim();
     if (message) onSend(message.slice(0, 1000));
   };
-  const group = trip.travelers ? trip.travelers.adults + trip.travelers.children.length : 0;
+  const group = groupSize(trip.travelers);
   // A sample trip's dates are stand-ins, so the pill must not show them as the traveller's own.
   const datesLabel = trip.sample ? "Sample plan" : trip.dates ? (trip.dates.start === trip.dates.end ? shortDate(trip.dates.start) : `${shortDate(trip.dates.start)} to ${shortDate(trip.dates.end)}`) : "No dates";
-  const groupLabel = group ? `${group} traveler${group === 1 ? "" : "s"}` : "Travelers";
+  const groupLabel = group ? countOf(group, "traveler") : "Travelers";
 
   return (
     <div className="mx-auto flex w-full max-w-[75rem] flex-col items-center px-4 pb-6 pt-8 sm:px-8 sm:pt-11">
