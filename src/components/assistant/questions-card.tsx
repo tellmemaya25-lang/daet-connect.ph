@@ -8,6 +8,7 @@ import { MAX_ADULTS, MAX_CHILDREN, MAX_TRIP_DAYS, ORIGIN_CHIPS, ownDates, sample
 type Answers = Required<Pick<TripContext, "dates" | "travelers" | "origin">> & Pick<TripContext, "sample" | "realDates">;
 type Errors = Partial<Record<"dates" | "children" | "origin", string>>;
 
+const group = "border-t border-slate-300/40 pt-4";
 const field = "block min-h-11 w-full rounded-xl bg-surface px-3 text-base text-daet-ink focus:outline-none focus:ring-2 focus:ring-blue-600/40";
 const chip = (on: boolean) =>
   `inline-flex min-h-11 items-center rounded-full px-4 text-sm font-bold transition active:scale-[0.98] motion-reduce:transform-none motion-reduce:transition-none ${on ? "bg-blue-600 text-white" : "bg-blue-50 text-blue-800 hover:bg-blue-100 dark:bg-blue-950/40 dark:text-blue-300"}`;
@@ -64,10 +65,10 @@ export function QuestionsCard({ prefill, today, onSubmit, title = "Before I draf
   }
 
   return (
-    <form onSubmit={submit} noValidate aria-label={title} className="min-w-0 space-y-4 rounded-[1.25rem] rounded-bl-md bg-muted p-3">
+    <form onSubmit={submit} noValidate aria-label={title} className="min-w-0 space-y-5 rounded-[1.25rem] rounded-bl-md bg-muted p-3">
       <p className="font-bold text-daet-ink">{title}</p>
 
-      <fieldset className="space-y-2">
+      <fieldset className={`space-y-2 ${group}`}>
         <legend className="text-sm font-bold text-daet-ink">Dates</legend>
         <label className="flex min-h-11 items-center gap-2 text-sm font-semibold text-daet-ink">
           <input type="checkbox" checked={noDates} onChange={(e) => setNoDates(e.target.checked)} className="h-5 w-5 accent-blue-600" />
@@ -99,7 +100,7 @@ export function QuestionsCard({ prefill, today, onSubmit, title = "Before I draf
         {errors.dates ? <p id={`${id}-dates`} role="alert" className="text-sm font-semibold text-red-700 dark:text-red-300">{errors.dates}</p> : null}
       </fieldset>
 
-      <fieldset className="space-y-2">
+      <fieldset className={`space-y-2 ${group}`}>
         <legend className="text-sm font-bold text-daet-ink">Who is coming</legend>
         <div className="flex items-center justify-between gap-2">
           <span className="text-sm text-daet-ink">Adults</span>
@@ -115,24 +116,29 @@ export function QuestionsCard({ prefill, today, onSubmit, title = "Before I draf
             onChange={(n) => setAges((list) => (n > list.length ? [...list, ...Array(n - list.length).fill("")] : list.slice(0, n)))}
           />
         </div>
-        {ages.map((age, i) => (
-          <label key={i} className="block text-sm text-slate-600 dark:text-slate-400">
-            Child {i + 1} age
-            <input
-              inputMode="numeric"
-              pattern="[0-9]*"
-              maxLength={2}
-              value={age}
-              onChange={(e) => setAges((list) => list.map((a, j) => (j === i ? e.target.value.replace(/\D/g, "") : a)))}
-              className={field}
-              aria-invalid={Boolean(errors.children) && age.trim() === ""}
-            />
-          </label>
-        ))}
+        {ages.length ? (
+          <fieldset className="space-y-2 border-t border-slate-300/30 pt-3">
+            <legend className="text-xs font-bold text-slate-600 dark:text-slate-400">Child ages</legend>
+          {ages.map((age, i) => (
+            <label key={i} className="block text-sm text-slate-600 dark:text-slate-400">
+              Child {i + 1} age
+              <input
+                inputMode="numeric"
+                pattern="[0-9]*"
+                maxLength={2}
+                value={age}
+                onChange={(e) => setAges((list) => list.map((a, j) => (j === i ? e.target.value.replace(/\D/g, "") : a)))}
+                className={field}
+                aria-invalid={Boolean(errors.children) && age.trim() === ""}
+              />
+            </label>
+          ))}
+          </fieldset>
+        ) : null}
         {errors.children ? <p role="alert" className="text-sm font-semibold text-red-700 dark:text-red-300">{errors.children}</p> : null}
       </fieldset>
 
-      <fieldset className="space-y-2">
+      <fieldset className={`space-y-2 ${group}`}>
         <legend className="text-sm font-bold text-daet-ink">Travelling from</legend>
         <div className="flex flex-wrap gap-2">
           {ORIGIN_CHIPS.map((name) => (

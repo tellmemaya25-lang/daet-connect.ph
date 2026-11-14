@@ -175,3 +175,19 @@ describe("pageFromPath", () => {
     expect(pageFromPath("/tours/packages/abc/edit")).toBeNull();
   });
 });
+
+describe("the form is three separate groups", () => {
+  it("has Dates, Who is coming and Travelling from groups", () => {
+    render(<QuestionsCard prefill={null} today={TODAY} onSubmit={jest.fn()} />);
+    for (const name of ["Dates", "Who is coming", "Travelling from"]) expect(screen.getByRole("group", { name })).toBeInTheDocument();
+  });
+
+  it("child ages sit in their own Child ages group inside Who is coming, only when children are set", () => {
+    render(<QuestionsCard prefill={null} today={TODAY} onSubmit={jest.fn()} />);
+    expect(screen.queryByRole("group", { name: "Child ages" })).toBeNull();
+    fireEvent.click(screen.getByRole("button", { name: "More children" }));
+    const ages = screen.getByRole("group", { name: "Child ages" });
+    expect(screen.getByRole("group", { name: "Who is coming" })).toContainElement(ages);
+    expect(ages).toContainElement(screen.getByLabelText("Child 1 age"));
+  });
+});
