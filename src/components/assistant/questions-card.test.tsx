@@ -14,6 +14,13 @@ describe("sample plans (decision 35)", () => {
     expect(sampleDates("2026-11-05", 20).end).toBe("2026-11-27");
   });
 
+  it("a sample plan can run up to 14 days", () => {
+    render(<QuestionsCard prefill={null} today={TODAY} onSubmit={jest.fn()} />);
+    fireEvent.click(screen.getByLabelText(/No dates yet/));
+    expect(screen.getByRole("option", { name: "14 days" })).toBeInTheDocument();
+    expect(screen.queryByRole("option", { name: "15 days" })).toBeNull();
+  });
+
   it("No dates yet sends a sample trip without asking for dates", () => {
     const onSubmit = jest.fn();
     render(<QuestionsCard prefill={null} today={TODAY} onSubmit={onSubmit} />);

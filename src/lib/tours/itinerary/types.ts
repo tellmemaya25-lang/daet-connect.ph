@@ -55,7 +55,7 @@ export type Block = VisitBlock | LunchBlock;
 export type PlanDay = { date: string; blocks: Block[] };
 export type Plan = { days: PlanDay[]; totals: { cost: number; travelMinutes: number; visits: number } };
 
-export const MAX_DAYS = 5;
+export const MAX_DAYS = 14;
 export const MAX_GROUP = 30;
 export const LUNCH = { from: 11 * 60 + 30, latestStart: 12 * 60 + 30, until: 13 * 60 + 30, minutes: 60 };
 /** Visits at least this long are day trips that include lunch. */

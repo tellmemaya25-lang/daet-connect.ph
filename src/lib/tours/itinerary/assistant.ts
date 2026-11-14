@@ -120,7 +120,7 @@ export function parseTripRequest(text: string, today: string, current: PlannerIn
   else if (dayCount) days = toNumber(dayCount[1]);
   else if (nights) days = toNumber(nights[1]) + 1;
   else if (/\b(weekend|overnight)\b/.test(t)) days = 2;
-  else if (/\b(a|one) week\b/.test(t)) days = MAX_DAYS;
+  else if (/\b(a|one) week\b/.test(t)) days = 7;
   if (days !== null && Number.isFinite(days) && days >= 1) {
     const clamped = Math.min(MAX_DAYS, days);
     input.days = clamped;
