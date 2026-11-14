@@ -126,15 +126,15 @@ export default async function PackageDetailPage({ params }: PageProps) {
   }
 
   const operatorRow = Array.isArray(pkg.tours_operators) ? pkg.tours_operators[0] : pkg.tours_operators;
-  const [{ data: packageRating }, { data: operatorRating }, { data: reviewRows }, { data: attractionRows }] = await Promise.all([
-    supabase.from("tours_package_ratings").select("review_count, average_rating").eq("package_id", pkg.id).maybeSingle(),
+  // Ratings and reviews are the operator's, across all their trips (owner's request).
+  const [{ data: operatorRating }, { data: reviewRows }, { data: attractionRows }] = await Promise.all([
     operatorRow
       ? supabase.from("tours_operator_ratings").select("review_count, average_rating").eq("operator_id", operatorRow.id).maybeSingle()
       : Promise.resolve({ data: null }),
     supabase
       .from("tours_reviews")
       .select("id, rating, comment, created_at, operator_reply, replied_at, is_hidden")
-      .eq("package_id", pkg.id)
+      .eq(operatorRow ? "operator_id" : "package_id", operatorRow ? operatorRow.id : pkg.id)
       .eq("is_hidden", false)
       .order("created_at", { ascending: false })
       .limit(20),
@@ -143,8 +143,8 @@ export default async function PackageDetailPage({ params }: PageProps) {
       ? supabase.from("tours_attractions").select("name, slug, description, latitude, longitude, photo_url, category").eq("is_active", true)
       : Promise.resolve({ data: [] }),
   ]);
-  const rating = toSummary(packageRating);
   const operatorSummary = toSummary(operatorRating);
+  const rating = operatorSummary;
   const reviews = (reviewRows ?? []) as Review[];
 
   // Get default price or first price variant
@@ -320,7 +320,10 @@ export default async function PackageDetailPage({ params }: PageProps) {
               </p>
               {operatorSummary ? (
                 <p className="mt-1 text-daet-ink/80">
-                  <RatingBadge summary={operatorSummary} compact /> across all their trips
+                  <RatingBadge summary={operatorSummary} compact /> across all their trips{" "}
+                  <a href="#reviews" className="font-bold underline">
+                    See reviews
+                  </a>
                 </p>
               ) : null}
             </section>
@@ -335,7 +338,9 @@ export default async function PackageDetailPage({ params }: PageProps) {
           >
             <div className="flex flex-wrap items-end justify-between gap-3">
               <h2 id="reviews-title" className="text-2xl font-semibold text-daet-ink sm:text-3xl">Traveller reviews</h2>
-              <p className="text-sm text-daet-ink/75">Only travellers who finished this trip can review it.</p>
+              <p className="text-sm text-daet-ink/75">
+                {operatorName ? `For all of ${operatorName}'s trips. ` : ""}Only travellers who finished a trip can review it.
+              </p>
             </div>
             {rating ? (
               <div className="mt-4 grid gap-6 rounded-2xl card-edge bg-surface p-5 sm:grid-cols-[auto_1fr] sm:items-center sm:p-6">

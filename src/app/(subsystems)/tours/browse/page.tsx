@@ -9,7 +9,7 @@ import { isSupabaseConfigured } from "@/lib/supabase/env";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { getAuthUser } from "@/lib/tours/server-auth";
 import { PackageCard } from "@/components/tours/package-card";
-import { toSummary, type RatingSummary } from "@/lib/tours/reviews";
+import { operatorRatingsByPackage } from "@/lib/tours/operator-ratings";
 import { PackageFilters } from "./package-filters";
 import { placePhoto } from "@/lib/tours/trip-board";
 
@@ -101,18 +101,8 @@ export default async function BrowsePackagesPage({
 
   const packagesWithPricing = packages || [];
 
-  // Ratings come from a view so hidden reviews never count.
-  const ratingsById = new Map<string, RatingSummary>();
-  if (packagesWithPricing.length > 0) {
-    const { data: ratingRows } = await supabase
-      .from("tours_package_ratings")
-      .select("package_id, review_count, average_rating")
-      .in("package_id", packagesWithPricing.map((pkg) => pkg.id));
-    for (const row of ratingRows ?? []) {
-      const summary = toSummary(row);
-      if (row.package_id && summary) ratingsById.set(row.package_id, summary);
-    }
-  }
+  // Each tour shows its operator's rating across all their trips.
+  const ratingsById = await operatorRatingsByPackage(supabase, packagesWithPricing.map((pkg) => pkg.id));
 
   // Check if user is logged in
   const user = await userPromise;

@@ -108,7 +108,7 @@ export async function planTrip(ctx: ToolContext, wants: PlanWants) {
     })),
     emptyDays: plan.days.filter((d) => d.blocks.length === 0).length,
     gettingThere: gettingThere?.card ? `On screen: ${gettingThere.card.options.length} listed way(s) from ${gettingThere.from} to Daet with fares; say they are estimates to confirm with the operator.` : `No fares listed from ${gettingThere?.from ?? "their city"}; most people go through Manila or Naga, then bus or van to Daet.`,
-    compareHint: "Each tour card has a Compare panel where the tourist can filter by star rating and sort by price or rating. Ratings are from guest reviews; never invent one.",
+    compareHint: "Each tour card has a Compare panel where the tourist can filter by star rating and sort by price or rating. Ratings are each operator's guest reviews across all their trips; never invent one.",
     bookableTours: packages.map((p) => ({
       title: p.title,
       operator: p.operatorName,

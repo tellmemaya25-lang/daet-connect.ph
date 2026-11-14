@@ -75,3 +75,23 @@ export async function endAgreementAsOperator(id: string, note: string): Promise<
   if (error) return { ok: false, message: userFacingDbError(error, "The agreement could not be ended.") };
   return done("Agreement ended. Tours they already have stay with them; you can't assign them new ones.");
 }
+
+/** Turns automatic assignment on or off: new bookings get the picked guide straight away instead of a proposal. */
+export async function setAutoAssign(on: boolean): Promise<ApplicationResult> {
+  if (typeof on !== "boolean") return { ok: false, message: "Choose on or off." };
+  const supabase = await createSupabaseServerClient();
+  const { error } = await supabase.rpc("tours_operator_set_auto_assign", { p_on: on });
+  if (error) return { ok: false, message: userFacingDbError(error, "The setting could not be saved.") };
+  return done(on ? "Automatic assignment is on. New bookings get a guide straight away." : "Automatic assignment is off. New bookings get a proposed guide for you to approve.");
+}
+
+/** A package's guides in ranked order (first = first choice); team guides only. */
+export async function setPackageGuideRanking(packageId: string, guideIds: string[]): Promise<ApplicationResult> {
+  if (!isUuid(packageId) || !Array.isArray(guideIds) || !guideIds.every(isUuid) || guideIds.length > 20) {
+    return { ok: false, message: "Choose up to 20 guides from your team." };
+  }
+  const supabase = await createSupabaseServerClient();
+  const { error } = await supabase.rpc("tours_operator_set_package_guides", { p_package_id: packageId, p_guide_ids: guideIds });
+  if (error) return { ok: false, message: userFacingDbError(error, "The guides could not be saved.") };
+  return done(guideIds.length ? "Saved. New bookings for this tour try these guides first, in this order." : "Saved. This tour now uses any free guide on your team who serves its area.");
+}
