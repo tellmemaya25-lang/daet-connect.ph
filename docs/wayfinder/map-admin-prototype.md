@@ -14,7 +14,9 @@ Every admin screen of the Daet Connect tours admin (all 10 sections plus Dashboa
 - Never resolve more than one ticket per session, except research.
 
 ## Decisions so far
-(none yet)
+- [Research screens A](tickets/02-research-screens-a.md): inventory of Operators, Packages (list, detail), Reviews, Guides is in `research/screens-a.md`.
+- [Research screens B](tickets/03-research-screens-b.md): inventory of Attractions, Guide places, Events (list, form, status labels) is in `research/screens-b.md`.
+- [Research screens C](tickets/04-research-screens-c.md): inventory of Fares (with CSV import), Merch, Dashboard, Analytics is in `research/screens-c.md`.
 
 ## Not yet specified
 - One board per section (list and form screens): the build tickets. They graduate once the shell and sample-data decisions are made.
