@@ -61,4 +61,36 @@ test.describe("guide applications", () => {
     await expect(page).toHaveTitle(/\S/);
     await checkA11y(page, "operator guides");
   });
+
+  test("an operator manages the team: figures, who needs tours, ranking by tour, auto-assign", async ({ context, page }) => {
+    await signInAs(context, "operator");
+    await visit(page, "/tours/operator/guides", "Guides");
+
+    const table = page.getByRole("table", { name: /Each guide on your team/ });
+    const juan = table.getByRole("row", { name: /Juan Dela Cruz/ });
+    await expect(juan).toContainText("30% share");
+    await expect(juan).toContainText("₱2,400.00");
+    await expect(juan).toContainText("4.8★ (9)");
+    await expect(page.getByRole("heading", { name: "Top guides" }).locator("..")).toContainText("Juan Dela Cruz: 3 tours, ₱8,000.00");
+    await expect(page.getByRole("heading", { name: "Not getting enough tours" }).locator("..")).toContainText("Liza Bautista: 0 tours in 30 days, 9 free days ahead");
+
+    const ranked = page.getByRole("region", { name: "Ranked guides for this tour" });
+    await expect(ranked.getByRole("listitem")).toHaveCount(1);
+    await page.getByRole("region", { name: "Have led this tour" }).getByRole("button", { name: "Add Liza Bautista to this tour" }).click();
+    await ranked.getByRole("button", { name: "Move Liza Bautista up" }).click();
+    await expect(ranked.getByRole("listitem").first()).toContainText("Liza Bautista");
+    await page.getByRole("button", { name: "Save ranking" }).click();
+    await expect(page.getByText("Saved. New bookings for this tour try these guides first, in this order.")).toBeVisible();
+
+    const toggle = page.getByRole("switch", { name: "Assign guides automatically" });
+    await expect(toggle).toHaveAttribute("aria-checked", "false");
+    await toggle.click();
+    await expect(toggle).toHaveAttribute("aria-checked", "true");
+    await expect(page.getByText(/Automatic assignment is on/)).toBeVisible();
+
+    expect(await offScreen(page)).toEqual([]);
+    // An action refreshes the page, and Next streams the title back in; wait for it.
+    await expect(page).toHaveTitle(/\S/);
+    await checkA11y(page, "operator guide management");
+  });
 });

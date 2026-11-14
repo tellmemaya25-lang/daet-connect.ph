@@ -3,6 +3,7 @@ import { ATTRACTION_COLUMNS, toAttraction } from "@/lib/tours/attractions";
 import { groupSameOffers, matchPackages, similarPackages, type PackageCandidate, type PackageMatch } from "@/lib/tours/itinerary/suggest";
 import type { PlannerAttraction } from "@/lib/tours/itinerary/types";
 import type { Rating } from "@/lib/tours/itinerary/compare";
+import { operatorRatingsByPackage } from "@/lib/tours/operator-ratings";
 import { fromPrice } from "@/lib/tours/trip-board";
 import { durationText } from "@/lib/tours/duration";
 
@@ -47,7 +48,7 @@ export type BookablePackage = {
   /** The operator is accredited by the Tourism Office. */
   verified: boolean;
   notIncluded: string[];
-  /** Average review stars; null before the first review. */
+  /** The operator's average review stars across all their trips; null before their first review. */
   rating?: Rating | null;
   /** Other tours to the same places, cheapest first ("Similar choices"). */
   alternatives?: PackageAlternative[];
@@ -115,18 +116,9 @@ export async function loadPackageCandidates(supabase: SupabaseClient): Promise<A
   });
 }
 
-/** Each package's review average and count; empty when ratings can't be read, so planning still works. */
+/** Each package's operator rating (across all their trips), keyed by package; empty when ratings can't be read, so planning still works. */
 async function loadRatings(supabase: SupabaseClient, ids: string[]): Promise<Map<string, Rating>> {
-  if (!ids.length) return new Map();
-  const { data, error } = await supabase.from("tours_package_ratings").select("package_id, review_count, average_rating").in("package_id", ids);
-  if (error) return new Map();
-  const map = new Map<string, Rating>();
-  for (const row of (data ?? []) as Array<{ package_id: string | null; review_count: number | null; average_rating: number | string | null }>) {
-    const count = Number(row.review_count ?? 0);
-    const average = Number(row.average_rating);
-    if (row.package_id && count > 0 && Number.isFinite(average)) map.set(row.package_id, { average, count });
-  }
-  return map;
+  return operatorRatingsByPackage(supabase, ids).catch(() => new Map<string, Rating>());
 }
 
 /** Packages near the planned places, best match first, with their Bookable details. */

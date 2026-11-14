@@ -1672,6 +1672,18 @@ http
             reason: "already_booked",
           },
         ]);
+      // Guide management (20261208): the operator's team figures and settings.
+      if (url.pathname === "/rest/v1/rpc/tours_operator_guide_stats")
+        return send(200, {
+          auto_assign: false,
+          guides: [
+            { id: "f66b1fe2-a997-4c0b-be13-22d62cf0dba6", name: "Juan Dela Cruz", share_pct: "30.00", free_days_30: 6, upcoming: 2, tours_30: 4, completed: 3, earned: "2400.00", revenue: "8000.00", rating: "4.78", reviews: 9, listed_package_ids: ["aa000000-0000-4000-8000-000000000001"], led_package_ids: ["aa000000-0000-4000-8000-000000000001"] },
+            { id: "b2000000-0000-4000-8000-000000000002", name: "Liza Bautista", share_pct: null, free_days_30: 9, upcoming: 0, tours_30: 0, completed: 0, earned: "0", revenue: "0", rating: null, reviews: 0, listed_package_ids: [], led_package_ids: ["aa000000-0000-4000-8000-000000000001"] },
+          ],
+          packages: [{ id: "aa000000-0000-4000-8000-000000000001", title: "Bagasbas Sunrise Surf Lesson", guide_ids: ["f66b1fe2-a997-4c0b-be13-22d62cf0dba6"] }],
+        });
+      if (["tours_operator_set_auto_assign", "tours_operator_set_package_guides"].includes(url.pathname.slice("/rest/v1/rpc/".length)))
+        return send(200, null);
       if (url.pathname === "/rest/v1/rpc/tours_guide_apply")
         return send(200, "a0000000-0000-4000-8000-000000000003");
       if (

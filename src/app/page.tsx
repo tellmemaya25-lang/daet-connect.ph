@@ -17,7 +17,7 @@ import { HomeMap, type MapPlace } from "@/components/home/home-map";
 import { MapBoundary } from "@/components/maps/map-boundary";
 import { PackageCard } from "@/components/tours/package-card";
 import { placePhoto } from "@/lib/tours/trip-board";
-import { toSummary, type RatingSummary } from "@/lib/tours/reviews";
+import { operatorRatingsByPackage } from "@/lib/tours/operator-ratings";
 import { readAccreditationCounts } from "@/lib/tours/accreditation";
 import { PHOTOS, type PhotoKey } from "@/lib/photo-credits";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
@@ -144,19 +144,9 @@ export default async function HomePage() {
   const featuredMerch = (merchResult.data ?? []) as MerchItem[];
   const trips = (tripsResult.data ?? []) as unknown as PackageRow[];
 
-  // Ratings come from a view, so hidden reviews never count — the same source the
-  // browse cards read.
-  const ratingsById = new Map<string, RatingSummary>();
-  if (trips.length > 0) {
-    const { data: ratingRows } = await supabase
-      .from("tours_package_ratings")
-      .select("package_id, review_count, average_rating")
-      .in("package_id", trips.map((trip) => trip.id));
-    for (const row of ratingRows ?? []) {
-      const summary = toSummary(row);
-      if (row.package_id && summary) ratingsById.set(row.package_id, summary);
-    }
-  }
+  // Each trip shows its operator's rating across all their trips — the same
+  // source the browse cards read.
+  const ratingsById = await operatorRatingsByPackage(supabase, trips.map((trip) => trip.id));
 
   // A trip with no cover of its own shows a credited photo of the place it goes
   // to, so the home page has to credit those too.
