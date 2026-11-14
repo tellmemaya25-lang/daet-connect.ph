@@ -1,7 +1,7 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { z } from "zod/v4";
 import { basicReply } from "@/lib/tours/assistant/basic";
-import { daysAsked, isPlanRequest, missingInputs, tripDays, TripContextSchema, type MissingInput, type TripContext } from "@/lib/tours/assistant/context";
+import { daysAsked, isPlanRequest, peopleAsked, missingInputs, tripDays, TripContextSchema, type MissingInput, type TripContext } from "@/lib/tours/assistant/context";
 import { describeItinerary, planTrip, wantsFromText, type ItineraryResult } from "@/lib/tours/assistant/plan-tool";
 import type { AssistantCard, ToolContext } from "@/lib/tours/assistant/tools";
 import { CHANGE_EXAMPLES } from "@/lib/tours/itinerary/assistant";
@@ -132,8 +132,9 @@ export async function* respond(raw: unknown, deps: RespondDeps): AsyncGenerator<
     // words ask for a different length, say which one is being used.
     const asked = daysAsked(latest);
     const saved = trip!.dates ? tripDays(trip!.dates) : 0;
-    if (asked && asked !== saved) {
-      const group = trip!.travelers ? trip!.travelers.adults + trip!.travelers.children.length : 0;
+    const group = trip!.travelers ? trip!.travelers.adults + trip!.travelers.children.length : 0;
+    const people = peopleAsked(latest);
+    if ((asked && asked !== saved) || (people && people !== group)) {
       formNotice = `Using your form details (${saved} day${saved === 1 ? "" : "s"}, ${group} traveler${group === 1 ? "" : "s"})\n\n`;
     }
   }
@@ -206,6 +207,7 @@ export async function* respond(raw: unknown, deps: RespondDeps): AsyncGenerator<
   }
 
   yield { t: "mode", mode: "basic" };
+  if (formNotice) yield { t: "text", v: formNotice };
   if (planning) {
     try {
       const result = await planTrip(ctx, wantsFromText(latest, ctx));

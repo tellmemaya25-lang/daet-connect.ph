@@ -328,6 +328,20 @@ describe("respond", () => {
       expect(said).toContain("Using your form details (3 days, 2 travelers)");
     });
 
+    it("also says so when the words name a different number of people", async () => {
+      const context = { dates: { start: "2026-10-30", end: "2026-10-31" }, travelers: { adults: 2, children: [4, 6] }, origin: { city: "Naga" } };
+      const events = await collect(respond(planAsk(context, "Plan 2 days for 6 people"), deps({ tripQuestions: true, runAi: async (_c, _h, onText) => { onText("Here you go."); return { stopReason: "end_turn" }; } })));
+      expect(events.map((e) => (e.t === "text" ? e.v : "")).join("")).toContain("Using your form details (2 days, 4 travelers)");
+    });
+
+    it("basic mode says so too instead of overriding silently", async () => {
+      const context = { dates: { start: "2026-10-30", end: "2026-11-01" }, travelers: { adults: 2, children: [] }, origin: { city: "Naga" } };
+      const events = await collect(respond(planAsk(context), deps({ tripQuestions: true, aiAllowed: false, runAi: never })));
+      expect(events[0]).toEqual({ t: "mode", mode: "basic" });
+      const said = events.map((e) => (e.t === "text" ? e.v : "")).join("");
+      expect(said).toContain("Using your form details (3 days, 2 travelers)");
+    });
+
     it("says nothing about the form when the words agree with it", async () => {
       const context = { dates: { start: "2026-10-30", end: "2026-10-31" }, travelers: { adults: 2, children: [] }, origin: { city: "Naga" } };
       const events = await collect(respond(planAsk(context), deps({ tripQuestions: true, runAi: async (_c, _h, onText) => { onText("Here you go."); return { stopReason: "end_turn" }; } })));

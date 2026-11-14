@@ -72,6 +72,23 @@ export function daysAsked(text: string): number | null {
   return Number.isInteger(n) && n >= 1 ? n : null;
 }
 
+const PEOPLE_WORDS: Record<string, number> = { ...DAY_WORDS, isang: 1, dalawang: 2, tatlong: 3, apat: 4, limang: 5, anim: 6, pitong: 7, walong: 8 };
+
+/**
+ * How many people the traveller's words name ("for 6 people", "family of 5",
+ * "tatlong tao"), or null when they don't say. Adults alone don't count: the
+ * form's group includes children.
+ */
+export function peopleAsked(text: string): number | null {
+  const t = text.toLowerCase();
+  const word = "\\d{1,2}|one|two|three|four|five|six|seven|eight|nine|ten|isang|dalawang|tatlong|apat|limang|anim|pitong|walong";
+  const m = new RegExp(`\\b(${word})[\\s-]*(?:people|persons?|pax|travell?ers|guests|tao)\\b|\\b(?:family|group|party) of (${word})\\b`).exec(t);
+  if (!m) return null;
+  const raw = m[1] ?? m[2];
+  const n = ({ six: 6, seven: 7, eight: 8, nine: 9, ten: 10, ...PEOPLE_WORDS } as Record<string, number>)[raw] ?? Number(raw);
+  return Number.isInteger(n) && n >= 1 ? n : null;
+}
+
 export function describeTravelers(travelers: NonNullable<TripContext["travelers"]>): string {
   const adults = `${travelers.adults} adult${travelers.adults === 1 ? "" : "s"}`;
   if (!travelers.children.length) return adults;
