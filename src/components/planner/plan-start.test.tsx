@@ -47,6 +47,12 @@ describe("PlanStart", () => {
     expect(screen.getByRole("link", { name: "Recents" })).toHaveAttribute("href", "/tours/my-itineraries");
   });
 
+  it("says 'No dates' on the pill until dates are chosen", () => {
+    render(<PlanStart signedIn onSend={jest.fn()} />);
+    expect(screen.getByRole("button", { name: "No dates" })).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Dates" })).toBeNull();
+  });
+
   it("calls a stored sample trip 'Sample plan', never its stand-in dates", () => {
     // A sample trip stores stand-in dates; they are not the traveller's dates.
     window.localStorage.setItem(
