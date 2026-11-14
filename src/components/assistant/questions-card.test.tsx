@@ -96,10 +96,10 @@ describe("QuestionsCard", () => {
     expect(screen.getByText("Pick your first and last day.")).toBeInTheDocument();
     expect(screen.getByText(/Choose a city/)).toBeInTheDocument();
     fill("First day", "2026-11-10");
-    fill("Last day", "2026-11-20");
+    fill("Last day", "2026-11-24");
     fireEvent.click(screen.getByRole("button", { name: "More children" }));
     fireEvent.click(screen.getByRole("button", { name: "Draft my plan" }));
-    expect(screen.getByText("Plans cover up to 5 days.")).toBeInTheDocument();
+    expect(screen.getByText("Plans cover up to 14 days.")).toBeInTheDocument();
     expect(screen.getByText(/Add each child's age/)).toBeInTheDocument();
     expect(onSubmit).not.toHaveBeenCalled();
   });

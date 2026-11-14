@@ -9,7 +9,7 @@ import { isDateKey } from "@/lib/tours/events-calendar";
  */
 
 export const ORIGIN_CHIPS = ["Manila", "Quezon City", "Naga", "Legazpi", "Cebu"] as const;
-export const MAX_TRIP_DAYS = 5;
+export const MAX_TRIP_DAYS = 14;
 export const MAX_ADULTS = 20;
 export const MAX_CHILDREN = 10;
 

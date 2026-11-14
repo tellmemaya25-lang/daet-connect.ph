@@ -18,9 +18,9 @@ describe("missingInputs", () => {
   it("is empty when everything is filled in", () => {
     expect(missingInputs(full, TODAY)).toEqual([]);
   });
-  it("treats past dates and ranges over five days as missing", () => {
+  it("treats past dates and ranges over fourteen days as missing", () => {
     expect(missingInputs({ ...full, dates: { start: "2026-11-01", end: "2026-11-02" } }, TODAY)).toEqual(["dates"]);
-    expect(missingInputs({ ...full, dates: { start: "2026-11-10", end: "2026-11-20" } }, TODAY)).toEqual(["dates"]);
+    expect(missingInputs({ ...full, dates: { start: "2026-11-10", end: "2026-11-24" } }, TODAY)).toEqual(["dates"]);
     expect(missingInputs({ ...full, dates: { start: "2026-11-12", end: "2026-11-10" } }, TODAY)).toEqual(["dates"]);
   });
   it("counts days inclusively", () => {
