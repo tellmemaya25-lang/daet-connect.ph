@@ -1,6 +1,7 @@
 ---
 label: wayfinder:grilling
 status: open
+claimed-by: claude (this session)
 blocked-by: [02-research-screens-a, 03-research-screens-b, 04-research-screens-c]
 ---
 ## Question
