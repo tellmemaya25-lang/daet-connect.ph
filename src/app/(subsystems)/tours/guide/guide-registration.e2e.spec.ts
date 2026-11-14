@@ -2,7 +2,7 @@ import { expect, test } from "@playwright/test";
 
 const applicant = {
   name: "Maya Santos",
-  phone: "+63 917 123 4567",
+  phone: "09171234567",
   bio: "I have guided visitors around Daet for several years.",
 };
 

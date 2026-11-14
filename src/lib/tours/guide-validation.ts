@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { phoneError } from "./phone";
 
 export const GUIDE_ID_TYPES = [
   { value: "philippine_national_id", label: "Philippine National ID" },
@@ -10,12 +11,10 @@ export const GUIDE_ID_TYPES = [
 
 const GuideProfileSchema = z.object({
   fullName: z.string().trim().min(2, "Enter your full name.").max(160, "Name must be 160 characters or fewer."),
-  contactPhone: z
-    .string()
-    .trim()
-    .min(7, "Enter a contact number with at least 7 digits.")
-    .max(24, "Contact number is too long.")
-    .regex(/^[+\d\s().-]+$/, "Use digits and common phone-number characters only."),
+  contactPhone: z.string().trim().superRefine((value, ctx) => {
+    const problem = phoneError(value);
+    if (problem) ctx.addIssue({ code: "custom", message: problem });
+  }),
   bio: z
     .string()
     .trim()
