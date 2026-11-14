@@ -38,7 +38,8 @@ export function PlanStart({ signedIn, initialText = "", onSend }: { signedIn: bo
     if (message) onSend(message.slice(0, 1000));
   };
   const group = trip.travelers ? trip.travelers.adults + trip.travelers.children.length : 0;
-  const datesLabel = trip.dates ? (trip.dates.start === trip.dates.end ? shortDate(trip.dates.start) : `${shortDate(trip.dates.start)} to ${shortDate(trip.dates.end)}`) : "Dates";
+  // A sample trip's dates are stand-ins, so the pill must not show them as the traveller's own.
+  const datesLabel = trip.sample ? "Sample plan" : trip.dates ? (trip.dates.start === trip.dates.end ? shortDate(trip.dates.start) : `${shortDate(trip.dates.start)} to ${shortDate(trip.dates.end)}`) : "Dates";
   const groupLabel = group ? `${group} traveler${group === 1 ? "" : "s"}` : "Travelers";
 
   return (
