@@ -76,6 +76,24 @@ describe("origin is never a silent default", () => {
   });
 });
 
+describe("invalid choices are blocked up front", () => {
+  it("the submit button waits for an origin and says why", () => {
+    render(<QuestionsCard prefill={null} today={TODAY} onSubmit={jest.fn()} />);
+    expect(screen.getByRole("button", { name: "Draft my plan" })).toBeDisabled();
+    expect(screen.getByText("Choose where you're travelling from to continue.")).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Manila" }));
+    expect(screen.getByRole("button", { name: "Draft my plan" })).toBeEnabled();
+    expect(screen.queryByText("Choose where you're travelling from to continue.")).toBeNull();
+  });
+
+  it("the calendar stops at 14 days from the first day", () => {
+    render(<QuestionsCard prefill={null} today={TODAY} onSubmit={jest.fn()} />);
+    fill("First day", "2026-11-10");
+    expect(screen.getByLabelText("Last day")).toHaveAttribute("min", "2026-11-10");
+    expect(screen.getByLabelText("Last day")).toHaveAttribute("max", "2026-11-23");
+  });
+});
+
 describe("QuestionsCard", () => {
   it("asks for dates, travellers and origin, and sends them together", () => {
     const onSubmit = jest.fn();
@@ -92,12 +110,13 @@ describe("QuestionsCard", () => {
   it("will not draft without each child's age, a valid range, or an origin", () => {
     const onSubmit = jest.fn();
     render(<QuestionsCard prefill={null} today={TODAY} onSubmit={onSubmit} />);
+    fireEvent.click(screen.getByRole("button", { name: "Manila" }));
     fireEvent.click(screen.getByRole("button", { name: "Draft my plan" }));
     expect(screen.getByText("Pick your first and last day.")).toBeInTheDocument();
-    expect(screen.getByText(/Choose a city/)).toBeInTheDocument();
     fill("First day", "2026-11-10");
     fill("Last day", "2026-11-24");
     fireEvent.click(screen.getByRole("button", { name: "More children" }));
+    fireEvent.click(screen.getByRole("button", { name: "Manila" }));
     fireEvent.click(screen.getByRole("button", { name: "Draft my plan" }));
     expect(screen.getByText("Plans cover up to 14 days.")).toBeInTheDocument();
     expect(screen.getByText(/Add each child's age/)).toBeInTheDocument();

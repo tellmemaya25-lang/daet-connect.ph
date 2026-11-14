@@ -2,6 +2,7 @@
 
 import { useId, useState } from "react";
 import { Button } from "@/components/ui/button";
+import { addDays } from "@/lib/tours/itinerary/types";
 import { MAX_ADULTS, MAX_CHILDREN, MAX_TRIP_DAYS, ORIGIN_CHIPS, sampleDates, tripDays, type TripContext } from "@/lib/tours/assistant/context";
 
 type Answers = Required<Pick<TripContext, "dates" | "travelers" | "origin">> & Pick<TripContext, "sample" | "realDates">;
@@ -87,7 +88,7 @@ export function QuestionsCard({ prefill, today, onSubmit, title = "Before I draf
           </label>
           <label className="text-sm text-slate-600 dark:text-slate-400">
             Last day
-            <input type="date" min={start || today} value={end} onChange={(e) => setEnd(e.target.value)} className={field} aria-invalid={Boolean(errors.dates)} />
+            <input type="date" min={start || today} max={start ? addDays(start, MAX_TRIP_DAYS - 1) : undefined} value={end} onChange={(e) => setEnd(e.target.value)} className={field} aria-invalid={Boolean(errors.dates)} />
           </label>
         </div>
         )}
@@ -141,10 +142,11 @@ export function QuestionsCard({ prefill, today, onSubmit, title = "Before I draf
           <input value={other} maxLength={60} onChange={(e) => setOther(e.target.value)} placeholder="Type a city" className={field} aria-invalid={Boolean(errors.origin)} />
         </label>
         {remembered ? <p className="text-sm text-slate-600 dark:text-slate-400">Remembered from your last trip</p> : null}
+        {!origin ? <p className="text-sm text-slate-600 dark:text-slate-400">Choose where you're travelling from to continue.</p> : null}
         {errors.origin ? <p role="alert" className="text-sm font-semibold text-red-700 dark:text-red-300">{errors.origin}</p> : null}
       </fieldset>
 
-      <Button type="submit" className="w-full">
+      <Button type="submit" className="w-full" disabled={!origin}>
         {submitLabel}
       </Button>
     </form>
