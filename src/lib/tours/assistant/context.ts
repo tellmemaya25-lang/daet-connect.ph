@@ -27,6 +27,8 @@ export const TripContextSchema = z.object({
   datesConfirmed: z.boolean().optional(),
   /** "No dates yet" (decision 35): the dates are a typical weekend for a sample plan; it gets real dates before saving. */
   sample: z.boolean().optional(),
+  /** The dates the traveller chose before ticking "No dates yet"; kept so unticking brings them back. */
+  realDates: z.object({ start: dateKey, end: dateKey }).nullable().optional(),
 });
 export type TripContext = z.infer<typeof TripContextSchema>;
 

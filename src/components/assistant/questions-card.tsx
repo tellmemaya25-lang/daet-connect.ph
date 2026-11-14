@@ -4,7 +4,7 @@ import { useId, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { MAX_ADULTS, MAX_CHILDREN, MAX_TRIP_DAYS, ORIGIN_CHIPS, sampleDates, tripDays, type TripContext } from "@/lib/tours/assistant/context";
 
-type Answers = Required<Pick<TripContext, "dates" | "travelers" | "origin">> & { sample?: boolean };
+type Answers = Required<Pick<TripContext, "dates" | "travelers" | "origin">> & Pick<TripContext, "sample" | "realDates">;
 type Errors = Partial<Record<"dates" | "children" | "origin", string>>;
 
 const field = "block min-h-11 w-full rounded-xl bg-surface px-3 text-base text-daet-ink focus:outline-none focus:ring-2 focus:ring-blue-600/40";
@@ -18,8 +18,10 @@ const chip = (on: boolean) =>
  */
 export function QuestionsCard({ prefill, today, onSubmit, title = "Before I draft", submitLabel = "Draft my plan" }: { prefill: TripContext | null; today: string; onSubmit: (answers: Answers) => void; title?: string; submitLabel?: string }) {
   const id = useId();
-  const [start, setStart] = useState(prefill?.dates?.start ?? "");
-  const [end, setEnd] = useState(prefill?.dates?.end ?? "");
+  // A stored sample trip's `dates` are stand-ins; the traveller's own dates are in `realDates`.
+  const ownDates = prefill?.sample ? prefill.realDates : prefill?.dates;
+  const [start, setStart] = useState(ownDates?.start ?? "");
+  const [end, setEnd] = useState(ownDates?.end ?? "");
   // "No dates yet" (decision 35): a sample plan of this many days.
   const [noDates, setNoDates] = useState(Boolean(prefill?.sample));
   const [sampleDays, setSampleDays] = useState(prefill?.sample && prefill.dates ? tripDays(prefill.dates) : 2);
@@ -49,8 +51,9 @@ export function QuestionsCard({ prefill, today, onSubmit, title = "Before I draf
     setErrors(next);
     if (Object.keys(next).length) return;
     const travelers = { adults, children };
-    if (noDates) onSubmit({ dates: sampleDates(today, sampleDays), travelers, origin: { city: origin.slice(0, 60) }, sample: true });
-    else onSubmit({ dates: { start, end }, travelers, origin: { city: origin.slice(0, 60) } });
+    if (noDates) {
+      onSubmit({ dates: sampleDates(today, sampleDays), travelers, origin: { city: origin.slice(0, 60) }, sample: true, ...(days >= 1 ? { realDates: { start, end } } : {}) });
+    } else onSubmit({ dates: { start, end }, travelers, origin: { city: origin.slice(0, 60) } });
   }
 
   return (

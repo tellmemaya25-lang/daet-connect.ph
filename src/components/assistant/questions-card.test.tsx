@@ -3,7 +3,7 @@
 import { fireEvent, render, screen } from "@testing-library/react";
 import "@testing-library/jest-dom";
 import { QuestionsCard } from "@/components/assistant/questions-card";
-import { pageFromPath, sampleDates } from "@/lib/tours/assistant/context";
+import { pageFromPath, sampleDates, type TripContext } from "@/lib/tours/assistant/context";
 
 const TODAY = "2026-11-05";
 const fill = (label: string | RegExp, value: string) => fireEvent.change(screen.getByLabelText(label), { target: { value } });
@@ -23,6 +23,29 @@ describe("sample plans (decision 35)", () => {
     fireEvent.click(screen.getByRole("button", { name: "Manila" }));
     fireEvent.click(screen.getByRole("button", { name: "Draft my plan" }));
     expect(onSubmit).toHaveBeenCalledWith({ dates: { start: "2026-11-14", end: "2026-11-16" }, travelers: { adults: 2, children: [] }, origin: { city: "Manila" }, sample: true });
+  });
+});
+
+describe("real dates survive a sample plan", () => {
+  const REAL = { start: "2026-11-10", end: "2026-11-12" };
+
+  it("a sample submit still carries the dates the traveller typed", () => {
+    const onSubmit = jest.fn();
+    render(<QuestionsCard prefill={null} today={TODAY} onSubmit={onSubmit} />);
+    fill("First day", REAL.start);
+    fill("Last day", REAL.end);
+    fireEvent.click(screen.getByLabelText(/No dates yet/));
+    fireEvent.click(screen.getByRole("button", { name: "Manila" }));
+    fireEvent.click(screen.getByRole("button", { name: "Draft my plan" }));
+    expect(onSubmit).toHaveBeenCalledWith(expect.objectContaining({ sample: true, realDates: REAL }));
+  });
+
+  it("unticking 'No dates yet' on a stored sample trip brings the real dates back", () => {
+    const stored = { dates: { start: "2026-11-14", end: "2026-11-15" }, sample: true, realDates: REAL, travelers: { adults: 2, children: [] }, origin: { city: "Manila" } } as unknown as TripContext;
+    render(<QuestionsCard prefill={stored} today={TODAY} onSubmit={jest.fn()} />);
+    fireEvent.click(screen.getByLabelText(/No dates yet/));
+    expect(screen.getByLabelText("First day")).toHaveValue(REAL.start);
+    expect(screen.getByLabelText("Last day")).toHaveValue(REAL.end);
   });
 });
 
