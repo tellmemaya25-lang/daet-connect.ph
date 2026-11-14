@@ -2,6 +2,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import { ATTRACTION_COLUMNS, toAttraction } from "@/lib/tours/attractions";
 import { groupSameOffers, matchPackages, similarPackages, type PackageCandidate, type PackageMatch } from "@/lib/tours/itinerary/suggest";
 import type { PlannerAttraction } from "@/lib/tours/itinerary/types";
+import type { Rating } from "@/lib/tours/itinerary/compare";
 import { fromPrice } from "@/lib/tours/trip-board";
 import { durationText } from "@/lib/tours/duration";
 
@@ -46,6 +47,8 @@ export type BookablePackage = {
   /** The operator is accredited by the Tourism Office. */
   verified: boolean;
   notIncluded: string[];
+  /** Average review stars; null before the first review. */
+  rating?: Rating | null;
   /** Other tours to the same places, cheapest first ("Similar choices"). */
   alternatives?: PackageAlternative[];
 };
@@ -58,9 +61,12 @@ export type PackageAlternative = {
   duration?: string | null;
   verified: boolean;
   shared: string[];
+  rating?: Rating | null;
+  /** The same tour from another operator, not just one sharing some places. */
+  sameOffer?: boolean;
 };
 
-/** How many similar choices each suggested tour carries. */
+/** How many tours that only share some places each suggested tour carries; the same tour from every other operator is always kept. */
 export const ALTERNATIVES_PER_PACKAGE = 3;
 
 type PackageRow = {
@@ -87,7 +93,9 @@ export async function loadPackageCandidates(supabase: SupabaseClient): Promise<A
     )
     .eq("status", "published")
     .limit(200);
-  return ((data ?? []) as unknown as PackageRow[]).map((pkg) => {
+  const rows = (data ?? []) as unknown as PackageRow[];
+  const ratings = await loadRatings(supabase, rows.map((r) => r.id));
+  return rows.map((pkg) => {
     const operator = one(pkg.tours_operators);
     return {
       id: pkg.id,
@@ -102,8 +110,23 @@ export async function loadPackageCandidates(supabase: SupabaseClient): Promise<A
       duration: durationText(pkg.duration_value ?? null, pkg.duration_type ?? null),
       verified: operator?.accreditation_status === "approved",
       notIncluded: (pkg.tours_package_inclusions ?? []).filter((i) => !i.is_included).map((i) => i.item_text).slice(0, 5),
+      rating: ratings.get(pkg.id) ?? null,
     };
   });
+}
+
+/** Each package's review average and count; empty when ratings can't be read, so planning still works. */
+async function loadRatings(supabase: SupabaseClient, ids: string[]): Promise<Map<string, Rating>> {
+  if (!ids.length) return new Map();
+  const { data, error } = await supabase.from("tours_package_ratings").select("package_id, review_count, average_rating").in("package_id", ids);
+  if (error) return new Map();
+  const map = new Map<string, Rating>();
+  for (const row of (data ?? []) as Array<{ package_id: string | null; review_count: number | null; average_rating: number | string | null }>) {
+    const count = Number(row.review_count ?? 0);
+    const average = Number(row.average_rating);
+    if (row.package_id && count > 0 && Number.isFinite(average)) map.set(row.package_id, { average, count });
+  }
+  return map;
 }
 
 /** Packages near the planned places, best match first, with their Bookable details. */
@@ -117,19 +140,19 @@ export async function bookablePackages(supabase: SupabaseClient, places: Array<{
     Number(byId.get(b.id)?.verified ?? false) - Number(byId.get(a.id)?.verified ?? false) || priceOf(a.id) - priceOf(b.id) || a.title.localeCompare(b.title);
   const groups = groupSameOffers(matchPackages(places, candidates, Infinity), better).slice(0, limit);
   const shown = new Set(groups.flatMap((g) => [g.main.id, ...g.same.map((m) => m.id)]));
-  const alternative = (id: string, shared: string[]) => {
+  const alternative = (id: string, shared: string[], sameOffer: boolean): PackageAlternative => {
     const alt = byId.get(id)!;
-    return { id, title: alt.title, price: alt.price, operatorName: alt.operatorName, duration: alt.duration, verified: alt.verified, shared };
+    return { id, title: alt.title, price: alt.price, operatorName: alt.operatorName, duration: alt.duration, verified: alt.verified, shared, rating: alt.rating, sameOffer };
   };
   return groups.map(({ main, same }) => {
     const extra = byId.get(main.id)!;
-    const sameOffer = same.map((m) => alternative(m.id, m.matched));
+    const sameOffer = same.map((m) => alternative(m.id, m.matched, true));
     const similar = similarPackages(main, places, candidates, shown)
-      .map(({ id, shared }) => alternative(id, shared))
+      .map(({ id, shared }) => alternative(id, shared, false))
       // Most shared places first, then cheapest; unpriced last.
       .sort((a, b) => b.shared.length - a.shared.length || (a.price?.amount ?? Infinity) - (b.price?.amount ?? Infinity));
-    // The same offer from other operators first, then tours that share some of the places.
-    const alternatives = [...sameOffer, ...similar].slice(0, ALTERNATIVES_PER_PACKAGE);
-    return { ...main, price: extra.price, operatorName: extra.operatorName, operatorPhone: extra.operatorPhone, duration: extra.duration, verified: extra.verified, notIncluded: extra.notIncluded, alternatives };
+    // Every other operator's version of the same tour, then a few tours that share some of the places.
+    const alternatives = [...sameOffer, ...similar.slice(0, ALTERNATIVES_PER_PACKAGE)];
+    return { ...main, price: extra.price, operatorName: extra.operatorName, operatorPhone: extra.operatorPhone, duration: extra.duration, verified: extra.verified, notIncluded: extra.notIncluded, rating: extra.rating, alternatives };
   });
 }
