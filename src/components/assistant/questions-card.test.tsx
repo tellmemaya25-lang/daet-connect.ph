@@ -49,6 +49,33 @@ describe("real dates survive a sample plan", () => {
   });
 });
 
+describe("origin is never a silent default", () => {
+  const trip = { dates: { start: "2026-11-10", end: "2026-11-11" }, travelers: { adults: 2, children: [] }, origin: { city: "Legazpi" } } as TripContext;
+  const remembered = "Remembered from your last trip";
+
+  it("a city remembered from a past trip is marked as remembered and can be changed", () => {
+    render(<QuestionsCard prefill={trip} today={TODAY} onSubmit={jest.fn()} />);
+    expect(screen.getByRole("button", { name: "Legazpi" })).toHaveAttribute("aria-pressed", "true");
+    expect(screen.getByText(remembered)).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Cebu" }));
+    expect(screen.queryByText(remembered)).toBeNull();
+  });
+
+  it("with nothing remembered, no city is pressed and nothing says 'remembered'", () => {
+    render(<QuestionsCard prefill={null} today={TODAY} onSubmit={jest.fn()} />);
+    expect(screen.queryByText(remembered)).toBeNull();
+    for (const name of ["Manila", "Quezon City", "Naga", "Legazpi", "Cebu"]) {
+      expect(screen.getByRole("button", { name })).toHaveAttribute("aria-pressed", "false");
+    }
+  });
+
+  it("a typed city that was remembered is marked too", () => {
+    render(<QuestionsCard prefill={{ ...trip, origin: { city: "Davao" } }} today={TODAY} onSubmit={jest.fn()} />);
+    expect(screen.getByLabelText("Somewhere else")).toHaveValue("Davao");
+    expect(screen.getByText(remembered)).toBeInTheDocument();
+  });
+});
+
 describe("QuestionsCard", () => {
   it("asks for dates, travellers and origin, and sends them together", () => {
     const onSubmit = jest.fn();

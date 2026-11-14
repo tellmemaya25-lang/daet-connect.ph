@@ -34,6 +34,8 @@ export function QuestionsCard({ prefill, today, onSubmit, title = "Before I draf
   const [errors, setErrors] = useState<Errors>({});
 
   const origin = other.trim() || city;
+  // A city carried over from a past trip is a suggestion, so say so until the traveller changes it.
+  const remembered = Boolean(prefillCity) && origin === prefillCity;
 
   function submit(event: React.FormEvent) {
     event.preventDefault();
@@ -138,6 +140,7 @@ export function QuestionsCard({ prefill, today, onSubmit, title = "Before I draf
           Somewhere else
           <input value={other} maxLength={60} onChange={(e) => setOther(e.target.value)} placeholder="Type a city" className={field} aria-invalid={Boolean(errors.origin)} />
         </label>
+        {remembered ? <p className="text-sm text-slate-600 dark:text-slate-400">Remembered from your last trip</p> : null}
         {errors.origin ? <p role="alert" className="text-sm font-semibold text-red-700 dark:text-red-300">{errors.origin}</p> : null}
       </fieldset>
 
