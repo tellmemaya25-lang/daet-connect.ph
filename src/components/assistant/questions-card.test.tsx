@@ -94,6 +94,26 @@ describe("invalid choices are blocked up front", () => {
   });
 });
 
+describe("moving the first day keeps the range valid", () => {
+  it("pulls a too-late last day back to 14 days, and a too-early one up to the first day", () => {
+    render(<QuestionsCard prefill={null} today={TODAY} onSubmit={jest.fn()} />);
+    fill("First day", "2026-11-06");
+    fill("Last day", "2026-11-19");
+    fill("First day", "2026-11-08");
+    expect(screen.getByLabelText("Last day")).toHaveValue("2026-11-19");
+    fill("First day", "2026-11-06");
+    fill("Last day", "2026-11-19");
+    fill("Last day", "2026-12-30");
+    expect(screen.getByLabelText("Last day")).toHaveValue("2026-11-19");
+    fill("First day", "2026-11-25");
+    expect(screen.getByLabelText("Last day")).toHaveValue("2026-11-25");
+    fill("Last day", "2026-12-30");
+    expect(screen.getByLabelText("Last day")).toHaveValue("2026-12-08");
+    fill("First day", "2026-11-20");
+    expect(screen.getByLabelText("Last day")).toHaveValue("2026-12-03");
+  });
+});
+
 describe("QuestionsCard", () => {
   it("asks for dates, travellers and origin, and sends them together", () => {
     const onSubmit = jest.fn();
@@ -118,7 +138,6 @@ describe("QuestionsCard", () => {
     fireEvent.click(screen.getByRole("button", { name: "More children" }));
     fireEvent.click(screen.getByRole("button", { name: "Manila" }));
     fireEvent.click(screen.getByRole("button", { name: "Draft my plan" }));
-    expect(screen.getByText("Plans cover up to 14 days.")).toBeInTheDocument();
     expect(screen.getByText(/Add each child's age/)).toBeInTheDocument();
     expect(onSubmit).not.toHaveBeenCalled();
   });

@@ -84,11 +84,11 @@ export function QuestionsCard({ prefill, today, onSubmit, title = "Before I draf
         <div className="grid grid-cols-2 gap-2">
           <label className="text-sm text-slate-600 dark:text-slate-400">
             First day
-            <input type="date" min={today} value={start} onChange={(e) => { setStart(e.target.value); if (!end || end < e.target.value) setEnd(e.target.value); }} className={field} aria-describedby={errors.dates ? `${id}-dates` : undefined} aria-invalid={Boolean(errors.dates)} />
+            <input type="date" min={today} value={start} onChange={(e) => { const first = e.target.value; setStart(first); if (first) setEnd(!end || end < first ? first : lastAllowed(first, end)); }} className={field} aria-describedby={errors.dates ? `${id}-dates` : undefined} aria-invalid={Boolean(errors.dates)} />
           </label>
           <label className="text-sm text-slate-600 dark:text-slate-400">
             Last day
-            <input type="date" min={start || today} max={start ? addDays(start, MAX_TRIP_DAYS - 1) : undefined} value={end} onChange={(e) => setEnd(e.target.value)} className={field} aria-invalid={Boolean(errors.dates)} />
+            <input type="date" min={start || today} max={start ? addDays(start, MAX_TRIP_DAYS - 1) : undefined} value={end} onChange={(e) => setEnd(start ? lastAllowed(start, e.target.value) : e.target.value)} className={field} aria-invalid={Boolean(errors.dates)} />
           </label>
         </div>
         )}
@@ -151,6 +151,12 @@ export function QuestionsCard({ prefill, today, onSubmit, title = "Before I draf
       </Button>
     </form>
   );
+}
+
+/** A last day can run at most MAX_TRIP_DAYS from the first; later picks are pulled back to that day. */
+function lastAllowed(first: string, last: string): string {
+  const latest = addDays(first, MAX_TRIP_DAYS - 1);
+  return last > latest ? latest : last;
 }
 
 function Stepper({ label, value, min, max, onChange }: { label: string; value: number; min: number; max: number; onChange: (n: number) => void }) {
