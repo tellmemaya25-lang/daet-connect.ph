@@ -318,12 +318,20 @@ describe("respond", () => {
       expect(events.some((e) => e.t === "text")).toBe(true);
     });
 
-    it("asks before using saved dates that don't match the days asked for, offering the asked length", async () => {
+    it("the form wins over the words: drafts with the form's dates and says so", async () => {
       const context = { dates: { start: "2026-10-30", end: "2026-11-01" }, travelers: { adults: 2, children: [] }, origin: { city: "Naga" } };
-      const events = await collect(respond(planAsk(context), deps({ tripQuestions: true, runAi: never })));
-      const q = events.find((e) => e.t === "questions");
-      expect(q).toMatchObject({ missing: ["dates"], prefill: { dates: { start: "2026-10-30", end: "2026-10-31" } } });
-      expect(events.find((e) => e.t === "text")).toMatchObject({ v: expect.stringMatching(/You asked for 2 days, but your saved dates cover 3/) });
+      let seen: ToolContext | null = null;
+      const events = await collect(respond(planAsk(context), deps({ tripQuestions: true, runAi: async (c, _h, onText) => { seen = c; onText("Here you go."); return { stopReason: "end_turn" }; } })));
+      expect(events.map((e) => e.t)).not.toContain("questions");
+      expect(seen!.trip?.dates).toEqual(context.dates);
+      const said = events.map((e) => (e.t === "text" ? e.v : "")).join("");
+      expect(said).toContain("Using your form details (3 days, 2 travelers)");
+    });
+
+    it("says nothing about the form when the words agree with it", async () => {
+      const context = { dates: { start: "2026-10-30", end: "2026-10-31" }, travelers: { adults: 2, children: [] }, origin: { city: "Naga" } };
+      const events = await collect(respond(planAsk(context), deps({ tripQuestions: true, runAi: async (_c, _h, onText) => { onText("Here you go."); return { stopReason: "end_turn" }; } })));
+      expect(events.map((e) => (e.t === "text" ? e.v : "")).join("")).not.toContain("Using your form details");
     });
 
     it("drafts with the dates once the traveller has confirmed them", async () => {
