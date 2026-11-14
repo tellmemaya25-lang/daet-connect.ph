@@ -1,5 +1,5 @@
 import type { AttractionCategory } from "@/lib/tours/attractions";
-import { tripDays, type TripContext } from "@/lib/tours/assistant/context";
+import { groupSize, tripDays, type TripContext } from "@/lib/tours/assistant/context";
 import type { PlannerInput } from "@/lib/tours/itinerary/form";
 import { filterAttractions } from "@/lib/tours/itinerary/filter";
 import { scheduleOrder, withTotals } from "@/lib/tours/itinerary/schedule";
@@ -26,7 +26,7 @@ export function contextToInput(
     budgetPerDay: wants.budgetPerDay ?? DEFAULT_BUDGET_PER_DAY,
     interests: wants.interests ?? [],
     pace: wants.pace ?? "normal",
-    groupSize: trip.travelers.adults + trip.travelers.children.length,
+    groupSize: groupSize(trip.travelers),
     dayStart: "08:00",
     dayEnd: "18:00",
   };
