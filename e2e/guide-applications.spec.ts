@@ -24,6 +24,8 @@ test.describe("guide applications", () => {
     await expect(apply.getByRole("status")).toHaveText("Application sent. The operator will set up an interview.");
 
     expect(await offScreen(page)).toEqual([]);
+    // An action refreshes the page, and Next streams the title back in; wait for it.
+    await expect(page).toHaveTitle(/\S/);
     await checkA11y(page, "guide operators");
   });
 
@@ -55,6 +57,8 @@ test.describe("guide applications", () => {
     await expect(team.getByRole("status")).toHaveText("Offer of 35% sent. It applies once the guide accepts.");
 
     expect(await offScreen(page)).toEqual([]);
+    // An action refreshes the page, and Next streams the title back in; wait for it.
+    await expect(page).toHaveTitle(/\S/);
     await checkA11y(page, "operator guides");
   });
 });
