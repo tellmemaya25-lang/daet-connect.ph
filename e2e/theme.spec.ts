@@ -20,7 +20,7 @@ test.describe("dark mode", () => {
     await page.goto("/", { waitUntil: "networkidle" });
     expect(await canvas(page)).toBe(LIGHT_CANVAS);
 
-    await page.getByText("Menu", { exact: true }).click();
+    await page.locator("summary", { hasText: "Menu" }).click();
     const theme = page.getByRole("group", { name: "Theme" });
     await theme.getByText("Dark", { exact: true }).click();
     await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
@@ -30,7 +30,7 @@ test.describe("dark mode", () => {
     await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
     expect(await canvas(page)).toBe(DARK_CANVAS);
 
-    await page.getByText("Menu", { exact: true }).click();
+    await page.locator("summary", { hasText: "Menu" }).click();
     await page.getByRole("group", { name: "Theme" }).getByText("System", { exact: true }).click();
     await expect(page.locator("html")).not.toHaveAttribute("data-theme", /.+/);
     expect(await page.evaluate(() => localStorage.getItem("daet-theme"))).toBeNull();
@@ -50,20 +50,23 @@ test.describe("dark mode", () => {
     expect(await page.evaluate(() => (window as unknown as { __firstTheme: string | null }).__firstTheme)).toBe("dark");
   });
 
-  test("the desktop header button cycles Light, Dark, System", async ({ browser }) => {
+  test("the desktop account menu switches theme", async ({ browser }) => {
     const context = await browser.newContext({ viewport: { width: 1280, height: 800 } });
     await signInAs(context, "tourist");
     const page = await context.newPage();
     await page.goto("/tours/me", { waitUntil: "networkidle" });
-    const button = page.getByRole("button", { name: /^Theme:/ });
-    await expect(button).toHaveAccessibleName("Theme: System. Switch to Light");
-    await button.click();
+    const account = page.getByRole("button", { name: "Your account" });
+    await account.click();
+    const theme = page.getByRole("group", { name: "Theme" });
+    await theme.getByText("Light", { exact: true }).click();
     await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
-    await button.click();
+    await theme.getByText("Dark", { exact: true }).click();
     await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
-    await checkA11y(page, "tourist home in dark mode");
-    await button.click();
+    await checkA11y(page, "tourist home in dark mode with the account menu open");
+    await theme.getByText("System", { exact: true }).click();
     await expect(page.locator("html")).not.toHaveAttribute("data-theme", /.+/);
+    await page.keyboard.press("Escape");
+    await expect(account).toHaveAttribute("aria-expanded", "false");
     await context.close();
   });
 });

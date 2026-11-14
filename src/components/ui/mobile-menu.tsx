@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef } from "react";
-import { LineIcon } from "@/components/ui/icons";
 import { ThemeChoices } from "@/components/ui/theme-toggle";
 import { announceOverlay } from "@/lib/ui-overlay";
 
@@ -26,10 +25,13 @@ export function MobileMenu({ groups }: { groups: Array<{ label: string; links: M
 
   return (
     <details ref={ref} className="group md:hidden" onToggle={(event) => announceOverlay("menu", event.currentTarget.open)}>
-      <summary className="flex min-h-11 min-w-11 cursor-pointer list-none items-center justify-center gap-1.5 rounded-full px-3 text-sm font-bold text-daet-ink hover:bg-muted [&::-webkit-details-marker]:hidden">
-        <LineIcon name="menu" className="h-6 w-6 group-open:hidden" />
-        <LineIcon name="close" className="hidden h-6 w-6 group-open:block" />
-        <span>Menu</span>
+      <summary className="grid min-h-11 min-w-11 cursor-pointer list-none place-items-center rounded-full bg-blue-50 text-blue-700 transition-[background-color,transform] active:scale-90 motion-reduce:transition-none dark:bg-blue-950/40 dark:text-blue-300 [&::-webkit-details-marker]:hidden">
+        <span aria-hidden="true" className="relative block h-3.5 w-5">
+          <span className="absolute left-0 top-0 h-0.5 w-5 rounded-sm bg-current transition-[transform,top] duration-200 motion-reduce:transition-none group-open:top-1.5 group-open:rotate-45" />
+          <span className="absolute left-0 top-1.5 h-0.5 w-5 origin-center rounded-sm bg-current transition-[transform,opacity] duration-150 motion-reduce:transition-none group-open:scale-x-[0.2] group-open:opacity-0" />
+          <span className="absolute left-0 top-3 h-0.5 w-5 rounded-sm bg-current transition-[transform,top] duration-200 motion-reduce:transition-none group-open:top-1.5 group-open:-rotate-45" />
+        </span>
+        <span className="sr-only">Menu</span>
       </summary>
       <nav
         aria-label="Menu"

@@ -51,7 +51,8 @@ for (const role of Object.keys(pages) as Role[]) {
     test("bottom tab bar leads to every dashboard section", async ({ page }) => {
       await page.goto(pages[role][0], { waitUntil: "networkidle" });
       const tabs = page.getByRole("navigation", { name: "Dashboard" }).getByRole("link");
-      await expect(tabs).toHaveCount(5);
+      // Tourists swap Tours (now in the Menu sheet) for a "You" account button.
+      await expect(tabs).toHaveCount(role === "tourist" ? 4 : 5);
       await expect(tabs.first()).toHaveAttribute("aria-current", "page");
     });
   });
@@ -112,7 +113,13 @@ test.describe("sign out", () => {
     test(`${role} can find Sign out in the header at phone width`, async ({ context, page }) => {
       await signInAs(context, role);
       await page.goto(pages[role][0], { waitUntil: "networkidle" });
-      await expect(page.getByRole("banner").getByRole("button", { name: "Sign out" })).toBeVisible();
+      if (role === "tourist") {
+        // Tourists reach it from the You tab.
+        await page.getByRole("navigation", { name: "Dashboard" }).getByRole("button", { name: "You" }).click();
+        await expect(page.getByRole("group", { name: "Your account" }).getByRole("button", { name: "Sign out" })).toBeVisible();
+      } else {
+        await expect(page.getByRole("banner").getByRole("button", { name: "Sign out" })).toBeVisible();
+      }
     });
   }
 

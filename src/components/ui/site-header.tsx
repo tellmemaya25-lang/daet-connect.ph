@@ -1,3 +1,4 @@
+import { AccountMenu } from "@/components/ui/account-menu";
 import { BrandMark } from "@/components/ui/brand-mark";
 import { ButtonLink } from "@/components/ui/button";
 import { LogoutButton } from "@/components/ui/logout-button";
@@ -5,6 +6,7 @@ import { MobileMenu, type MenuLink } from "@/components/ui/mobile-menu";
 import { UnreadMessagesBadge } from "@/components/chat/unread-badge";
 import { SiteNavLink } from "@/components/ui/site-nav-link";
 import { NotificationBell } from "@/components/tours/notification-bell";
+import { LineIcon } from "@/components/ui/icons";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 import type { DashboardRole, Tab } from "@/lib/tours/dashboards";
 
@@ -51,21 +53,30 @@ export function SiteHeader({
   const publicHrefs = new Set(publicLinks.map((link) => link.href));
   const roleLinks = tabs
     .filter((tab) => !publicHrefs.has(tab.href))
-    .map((tab) => ({ href: tab.href, label: tab.label === "Home" ? "My dashboard" : tab.label }));
+    .map((tab) => ({ href: tab.href, label: tab.label === "Home" ? "Dashboard" : tab.label }));
   const adminLinks = showAdminLink ? ADMIN_LINKS : [];
+  // Tourists keep their own links in the account menu; staff keep theirs in the bar.
+  const tourist = signedIn && publicLinks.length > 0;
+  const accountLinks = tourist ? roleLinks : [];
+  const barRoleLinks = tourist ? [] : roleLinks;
+  const planLink = publicLinks.find((link) => link.href === "/tours/plan");
+  const barLinks = planLink ? [planLink, ...publicLinks.filter((link) => link !== planLink)] : publicLinks;
 
   return (
     <header className="relative z-40 bg-surface print:hidden">
       <div className="mx-auto flex min-h-16 max-w-7xl items-center justify-between gap-3 px-4 sm:min-h-20 sm:px-6 lg:px-8">
-        <BrandMark />
-        <nav aria-label="Main navigation" className="hidden min-w-0 flex-1 items-center gap-1 md:flex lg:gap-2">
-          {publicLinks.map((link) => (
+        <div className="lg:flex-1">
+          <BrandMark />
+        </div>
+        <nav aria-label="Main navigation" className="hidden min-w-0 flex-1 items-center gap-1 md:flex lg:flex-none lg:justify-center lg:gap-2">
+          {barLinks.map((link) => (
             <SiteNavLink key={link.href} href={link.href}>
+              {link.href === "/tours/plan" ? <LineIcon name="sparkle" className="mr-2 h-5 w-5" /> : null}
               {link.label}
             </SiteNavLink>
           ))}
           {signedIn
-            ? roleLinks.map((link) => (
+            ? barRoleLinks.map((link) => (
                 <SiteNavLink key={link.href} href={link.href}>
                   {link.label}
                   {link.href === "/tours/messages" ? <UnreadMessagesBadge className="ml-1.5" /> : null}
@@ -78,12 +89,15 @@ export function SiteHeader({
             </SiteNavLink>
           ))}
         </nav>
-        <div className="flex items-center gap-1 sm:gap-2">
-          <ThemeToggle className="hidden md:grid" />
+        <div className="flex items-center gap-1 sm:gap-2 lg:flex-1 lg:justify-end">
+          {signedIn ? null : <ThemeToggle className="hidden md:grid" />}
           {signedIn ? (
             <>
               <NotificationBell />
-              <LogoutButton compact />
+              <span className={tourist ? "hidden sm:contents md:hidden" : "contents md:hidden"}>
+                <LogoutButton compact />
+              </span>
+              <AccountMenu links={accountLinks} />
             </>
           ) : (
             <>
