@@ -17,9 +17,9 @@ Every admin screen of the Daet Connect tours admin (all 10 sections plus Dashboa
 - [Research screens A](tickets/02-research-screens-a.md): inventory of Operators, Packages (list, detail), Reviews, Guides is in `research/screens-a.md`.
 - [Research screens B](tickets/03-research-screens-b.md): inventory of Attractions, Guide places, Events (list, form, status labels) is in `research/screens-b.md`.
 - [Research screens C](tickets/04-research-screens-c.md): inventory of Fares (with CSV import), Merch, Dashboard, Analytics is in `research/screens-c.md`.
+- [Shell and nav](tickets/01-shell-and-nav.md): three sidebar groups, breadcrumb + title/primary-button header, filter-chip table lists, narrow-card forms; shell shared if boards can include it, otherwise copied.
 
 ## Not yet specified
-- One board per section (list and form screens): the build tickets. They graduate once the shell and sample-data decisions are made.
 - Canvas layout of ~22 boards (grid, naming, order in `canvas.json`).
 - Whether the phone board needs admin screens beyond the dashboard.
 
