@@ -61,6 +61,13 @@ describe("origin is never a silent default", () => {
     expect(screen.queryByText(remembered)).toBeNull();
   });
 
+  it("tapping the remembered city itself counts as choosing it, so the label goes", () => {
+    render(<QuestionsCard prefill={trip} today={TODAY} onSubmit={jest.fn()} />);
+    fireEvent.click(screen.getByRole("button", { name: "Legazpi" }));
+    expect(screen.queryByText(remembered)).toBeNull();
+    expect(screen.getByRole("button", { name: "Legazpi" })).toHaveAttribute("aria-pressed", "true");
+  });
+
   it("with nothing remembered, no city is pressed and nothing says 'remembered'", () => {
     render(<QuestionsCard prefill={null} today={TODAY} onSubmit={jest.fn()} />);
     expect(screen.queryByText(remembered)).toBeNull();

@@ -32,11 +32,13 @@ export function QuestionsCard({ prefill, today, onSubmit, title = "Before I draf
   const prefillCity = prefill?.origin?.city ?? "";
   const [city, setCity] = useState<string>(ORIGIN_CHIPS.includes(prefillCity as (typeof ORIGIN_CHIPS)[number]) ? prefillCity : "");
   const [other, setOther] = useState(prefillCity && !ORIGIN_CHIPS.includes(prefillCity as (typeof ORIGIN_CHIPS)[number]) ? prefillCity : "");
+  // Set once the traveller taps a city or types one, even the remembered one.
+  const [chosen, setChosen] = useState(false);
   const [errors, setErrors] = useState<Errors>({});
 
   const origin = other.trim() || city;
   // A city carried over from a past trip is a suggestion, so say so until the traveller changes it.
-  const remembered = Boolean(prefillCity) && origin === prefillCity;
+  const remembered = Boolean(prefillCity) && !chosen && origin === prefillCity;
 
   function submit(event: React.FormEvent) {
     event.preventDefault();
@@ -132,14 +134,14 @@ export function QuestionsCard({ prefill, today, onSubmit, title = "Before I draf
         <legend className="text-sm font-bold text-daet-ink">Travelling from</legend>
         <div className="flex flex-wrap gap-2">
           {ORIGIN_CHIPS.map((name) => (
-            <button key={name} type="button" aria-pressed={!other.trim() && city === name} onClick={() => { setCity(name); setOther(""); }} className={chip(!other.trim() && city === name)}>
+            <button key={name} type="button" aria-pressed={!other.trim() && city === name} onClick={() => { setCity(name); setOther(""); setChosen(true); }} className={chip(!other.trim() && city === name)}>
               {name}
             </button>
           ))}
         </div>
         <label className="block text-sm text-slate-600 dark:text-slate-400">
           Somewhere else
-          <input value={other} maxLength={60} onChange={(e) => setOther(e.target.value)} placeholder="Type a city" className={field} aria-invalid={Boolean(errors.origin)} />
+          <input value={other} maxLength={60} onChange={(e) => { setOther(e.target.value); setChosen(true); }} placeholder="Type a city" className={field} aria-invalid={Boolean(errors.origin)} />
         </label>
         {remembered ? <p className="text-sm text-slate-600 dark:text-slate-400">Remembered from your last trip</p> : null}
         {!origin ? <p className="text-sm text-slate-600 dark:text-slate-400">Choose where you're travelling from to continue.</p> : null}
