@@ -11,7 +11,7 @@ const fill = (label: string | RegExp, value: string) => fireEvent.change(screen.
 describe("sample plans (decision 35)", () => {
   it("stands in a weekend at least a week away, for the asked number of days", () => {
     expect(sampleDates("2026-11-05", 2)).toEqual({ start: "2026-11-14", end: "2026-11-15" });
-    expect(sampleDates("2026-11-05", 9).end).toBe("2026-11-18");
+    expect(sampleDates("2026-11-05", 20).end).toBe("2026-11-27");
   });
 
   it("No dates yet sends a sample trip without asking for dates", () => {
