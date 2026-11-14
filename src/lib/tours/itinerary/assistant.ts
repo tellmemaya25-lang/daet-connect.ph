@@ -331,7 +331,7 @@ export function applyChangeRequest(text: string, plan: Plan, attractions: Planne
   for (const clause of clauses) {
     const dayMatch = /\bday (\d{1,2})\b|\b(first|second|third|fourth|fifth|last) day\b|\b(tomorrow|today)\b/.exec(clause);
     const ordinal = { first: 0, second: 1, third: 2, fourth: 3, fifth: 4 } as Record<string, number>;
-    let dayIndex: number | null = dayMatch ? (dayMatch[1] ? Number(dayMatch[1]) - 1 : dayMatch[2] === "last" ? days.length - 1 : dayMatch[2] ? ordinal[dayMatch[2]] : 0) : null;
+    const dayIndex: number | null = dayMatch ? (dayMatch[1] ? Number(dayMatch[1]) - 1 : dayMatch[2] === "last" ? days.length - 1 : dayMatch[2] ? ordinal[dayMatch[2]] : 0) : null;
     if (dayIndex !== null && (dayIndex < 0 || dayIndex >= days.length)) {
       understoodAny = true;
       failed.push(`your trip has ${days.length} day${days.length > 1 ? "s" : ""}, so there is no day ${dayIndex + 1}`);
