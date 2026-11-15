@@ -230,6 +230,8 @@ export default async function AdminDashboardPage({ searchParams }: { searchParam
             ["/tours/admin/attractions", "Places"],
             ["/tours/admin/guide-places", "Food, stays and fares"],
             ["/tours/admin/reviews", "Reviews"],
+            ["/tours/admin/reports", "Reports and bans"],
+            ["/tours/admin/activity", "Activity log"],
             ["/tours/admin/merch", "Merchandise"],
             ["/tours/admin/guides", "Guides"],
             ["/tours/admin/packages", "Packages"],

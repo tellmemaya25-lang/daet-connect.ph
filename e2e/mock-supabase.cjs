@@ -1682,6 +1682,35 @@ http
           ],
           packages: [{ id: "aa000000-0000-4000-8000-000000000001", title: "Bagasbas Sunrise Surf Lesson", guide_ids: ["f66b1fe2-a997-4c0b-be13-22d62cf0dba6"] }],
         });
+      // Admin moderation, revenue and the activity log (20261211).
+      if (url.pathname === "/rest/v1/rpc/tours_admin_reports")
+        return send(200, [
+          { id: "d1000000-0000-4000-8000-000000000001", type: "review", target_id: "d2000000-0000-4000-8000-000000000001", reason: "fake", details: "We never had this guest.", status: "open", created_at: "2026-11-14T02:00:00Z", reporter: "Bagasbas Coast Tours", target_profile_id: "d3000000-0000-4000-8000-000000000001", target_name: "Rico Santos", target_role: "tourist", target_suspended: false, open_on_target: 2, summary: { rating: 1, comment: "Worst trip ever, total scam.", hidden: false, about: "Bagasbas Coast Tours" } },
+          { id: "d1000000-0000-4000-8000-000000000002", type: "package", target_id: "aa000000-0000-4000-8000-000000000001", reason: "scam", details: "Asked me to pay by bank outside the app.", status: "open", created_at: "2026-11-13T02:00:00Z", reporter: "Ana Cruz", target_profile_id: "d3000000-0000-4000-8000-000000000002", target_name: "Mark Operator", target_role: "operator", target_suspended: false, open_on_target: 1, summary: { title: "Bagasbas Sunrise Surf Lesson", status: "published" } },
+        ]);
+      if (url.pathname === "/rest/v1/rpc/tours_admin_activity")
+        return send(200, [
+          { id: "3", at: "2026-11-15T03:00:00Z", actor_id: "d3000000-0000-4000-8000-000000000002", actor_role: "operator", actor_name: "Mark Operator", action: "update", entity: "tours_bookings", entity_id: "b1", changes: { status: "confirmed" }, notes: null },
+          { id: "a2", at: "2026-11-15T02:00:00Z", actor_id: null, actor_role: "admin", actor_name: "Tourism Office", action: "ban_user", entity: "admin_action", entity_id: "user:x", changes: {}, notes: "Spam reports" },
+          { id: "1", at: "2026-11-15T01:00:00Z", actor_id: null, actor_role: "system", actor_name: null, action: "insert", entity: "tours_payments", entity_id: "p1", changes: { amount: 1200 }, notes: null },
+        ]);
+      if (url.pathname === "/rest/v1/rpc/tours_admin_review_watch")
+        return send(200, {
+          operators: [{ id: "o1", profile_id: "d3000000-0000-4000-8000-000000000002", name: "Bagasbas Coast Tours", suspended: false, reviews: 12, average: "3.9", low: 3, hidden: 1, open_reports: 1 }],
+          guides: [],
+          low_reviews: [],
+        });
+      if (url.pathname === "/rest/v1/rpc/tours_admin_revenue")
+        return send(200, {
+          bookings: 14, guests: 31, booked: "57124.00", average_booking: "4080.29", collected: "90814.00", refunded: "20100.00", pending_payments: "1500.00",
+          statuses: [{ status: "confirmed", count: 8, amount: 32000 }, { status: "cancelled", count: 2, amount: 6000 }],
+          methods: [{ method: "gcash", count: 26, amount: 86994 }, { method: "cash", count: 2, amount: 3020 }],
+          months: [{ month: "2026-10", booked: 18681, collected: 27770, refunded: 8200 }, { month: "2026-11", booked: 38443, collected: 63044, refunded: 11900 }],
+          top_packages: [{ id: "aa000000-0000-4000-8000-000000000001", title: "Bagasbas Sunrise Surf Lesson", operator: "Bagasbas Coast Tours", bookings: 6, booked: 14400 }],
+        });
+      if (url.pathname === "/rest/v1/rpc/tours_admin_clear_expired_bans") return send(200, 0);
+      if (url.pathname === "/rest/v1/rpc/tours_submit_report") return send(200, "d1000000-0000-4000-8000-000000000009");
+      if (["tours_admin_resolve_report", "tours_admin_ban"].includes(url.pathname.slice("/rest/v1/rpc/".length))) return send(200, null);
       // Friends and plans shared with them (20261210).
       if (url.pathname === "/rest/v1/rpc/tours_my_friends")
         return send(200, {

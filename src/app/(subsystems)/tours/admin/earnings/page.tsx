@@ -4,6 +4,8 @@ import { MoneyEarningsView, RangePicker } from "@/components/tours/earnings-view
 import { AdminPageHeading, PromoAdminDenied } from "@/components/tours/promo-admin-denied";
 import { parseAnalyticsRange } from "@/lib/tours/dashboards";
 import { parseMoneyEarnings } from "@/lib/tours/earnings";
+import { parseAdminRevenue } from "@/lib/tours/admin-moderation";
+import { AdminRevenueView } from "@/components/tours/admin-revenue-view";
 import { toManilaDateKey } from "@/lib/tours/events-calendar";
 import { requirePromoAdmin } from "@/lib/tours/promo-admin";
 
@@ -15,7 +17,10 @@ export default async function AdminEarningsPage({ searchParams }: { searchParams
 
   const today = toManilaDateKey(new Date());
   const range = parseAnalyticsRange(await searchParams, today);
-  const { data, error } = await admin.supabase.rpc("tours_earnings", { p_from: range.from, p_to: range.to });
+  const [{ data, error }, revenue] = await Promise.all([
+    admin.supabase.rpc("tours_earnings", { p_from: range.from, p_to: range.to }),
+    admin.supabase.rpc("tours_admin_revenue", { p_from: range.from, p_to: range.to }),
+  ]);
 
   return (
     <PageFrame adminNav>
@@ -26,7 +31,11 @@ export default async function AdminEarningsPage({ searchParams }: { searchParams
           Please try again in a moment.
         </Notice>
       ) : (
-        <MoneyEarningsView data={parseMoneyEarnings(data)} perOperator />
+        <>
+          {revenue.error ? null : <AdminRevenueView data={parseAdminRevenue(revenue.data)} />}
+          <h2 className="mb-3 text-xl font-bold text-daet-ink">By operator and guide</h2>
+          <MoneyEarningsView data={parseMoneyEarnings(data)} perOperator />
+        </>
       )}
     </PageFrame>
   );

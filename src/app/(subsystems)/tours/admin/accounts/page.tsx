@@ -14,6 +14,8 @@ export default async function AdminAccountsPage({ searchParams }: { searchParams
   if (!admin.ok) return <PromoAdminDenied message={admin.error} next="/tours/admin/accounts" />;
 
   const filters = parseAccountFilters(await searchParams);
+  // Timed bans that have run out show as active again (Auth already lets them sign in).
+  await admin.supabase.rpc("tours_admin_clear_expired_bans");
   const { data, error } = await admin.supabase.rpc("tours_admin_list_accounts", {
     p_query: filters.q || null,
     p_role: filters.role || null,

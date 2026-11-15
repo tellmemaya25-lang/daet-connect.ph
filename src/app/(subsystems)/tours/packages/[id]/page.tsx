@@ -18,6 +18,7 @@ import { getAuthenticatedSession } from "@/lib/tours/server-auth";
 import { canStartBooking } from "@/lib/tours/booking-eligibility";
 import { RatingBadge, Stars } from "@/components/tours/star-rating";
 import { ReviewList } from "@/components/tours/review-list";
+import { ReportButton } from "@/components/tours/report/report-button";
 import { distribution, toSummary, type Review } from "@/lib/tours/reviews";
 import { FREE_CANCELLATION_HOURS } from "@/lib/tours/cancellation";
 import { CheckIcon, LineIcon, MapPinIcon, ShieldCheckIcon } from "@/components/ui/icons";
@@ -119,8 +120,11 @@ export default async function PackageDetailPage({ params }: PageProps) {
   // Booking is for tourist accounts. A visitor may start the flow (the booking
   // page asks them to sign in); a signed-in staff account is never offered it.
   let canBook = false;
+  let signedIn = false;
   try {
-    canBook = canStartBooking(await getAuthenticatedSession());
+    const session = await getAuthenticatedSession();
+    canBook = canStartBooking(session);
+    signedIn = Boolean(session.user);
   } catch {
     // Fail closed: package details remain public when the role lookup is unavailable.
   }
@@ -365,8 +369,13 @@ export default async function PackageDetailPage({ params }: PageProps) {
               </div>
             ) : null}
             <div className="mt-4">
-              <ReviewList reviews={reviews} operatorName={operatorName ?? "the operator"} emptyText="No reviews yet. Be the first after your trip." />
+              <ReviewList reviews={reviews} operatorName={operatorName ?? "the operator"} emptyText="No reviews yet. Be the first after your trip." canReport={signedIn} />
             </div>
+            {signedIn ? (
+              <div className="mt-4">
+                <ReportButton type="package" targetId={pkg.id} label="Report this package to the Tourism Office" />
+              </div>
+            ) : null}
           </section>
         </div>
 
