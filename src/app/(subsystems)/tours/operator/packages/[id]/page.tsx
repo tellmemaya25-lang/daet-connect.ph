@@ -5,6 +5,8 @@ import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
 import { MeetingPointForm } from "./meeting-point-form";
 import { PickupGuideSettings } from "./pickup-guide-settings";
+import { DoorPickupSettings } from "./door-pickup-settings";
+import { toPickupVehicles } from "@/lib/tours/door-pickup";
 import { toPickupPoints } from "@/lib/tours/pickup";
 import { PageFrame } from "@/components/ui/page-frame";
 import { Notice } from "@/components/ui/notice";
@@ -162,10 +164,11 @@ export default async function OperatorPackageDetailPage({ params }: PageProps) {
 
   // Pickup points and guide settings live in their own columns; a database
   // without them yet (20261203 not applied) shows a notice instead of failing.
-  const [{ data: guideSettings, error: settingsError }, { data: pickupRows }, { data: guideLinks }] = await Promise.all([
+  const [{ data: guideSettings, error: settingsError }, { data: pickupRows }, { data: guideLinks }, { data: vehicleRows }] = await Promise.all([
     supabase.from("tours_packages").select("guide_fee, municipality").eq("id", pkg.id).maybeSingle(),
     supabase.from("tours_package_pickup_points").select("id, name, fee, fee_per, note, is_active").eq("package_id", pkg.id).order("sort_order"),
     supabase.from("tours_package_guides").select("guide_id, tours_guides ( profile_id, accreditation_status )").eq("package_id", pkg.id).eq("is_active", true),
+    supabase.from("tours_package_pickup_vehicles").select("id, vehicle, label, seats, base_fee, per_km, max_km, is_active").eq("package_id", pkg.id).order("sort_order"),
   ]);
   // The guides the Tourism Office chose for this tour (proposed first for its bookings).
   const linkedProfiles = (guideLinks ?? []).flatMap((link) => {
@@ -458,7 +461,7 @@ export default async function OperatorPackageDetailPage({ params }: PageProps) {
                 <span className="font-bold text-daet-ink">Guides for this tour:</span>{" "}
                 {packageGuides.length
                   ? `${packageGuides.join(", ")}. They are proposed first for new bookings; the Tourism Office chooses them.`
-                  : "none chosen yet. New bookings get a free guide from the municipality below; ask the Tourism Office to choose this tour's guides."}
+                  : "none chosen yet. New bookings get a free guide from your team; ask the Tourism Office to choose this tour's guides."}
               </p>
               <div className="mt-3">
                 <PickupGuideSettings
@@ -468,6 +471,9 @@ export default async function OperatorPackageDetailPage({ params }: PageProps) {
                   guideFee={guideSettings?.guide_fee === null || guideSettings?.guide_fee === undefined ? null : Number(guideSettings.guide_fee)}
                   municipality={guideSettings?.municipality ?? null}
                 />
+              </div>
+              <div className="mt-6 border-t border-line pt-5">
+                <DoorPickupSettings packageId={pkg.id} vehicles={toPickupVehicles(vehicleRows)} hasMeetingPin={pkg.meeting_lat != null && pkg.meeting_lng != null} />
               </div>
             </section>
 

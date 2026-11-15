@@ -22,6 +22,7 @@ export function bookingPrefill(
   const raw = typeof query.pax === "string" ? Number.parseInt(query.pax, 10) : NaN;
   const min = Math.max(1, variant?.min_pax ?? 1);
   const max = variant?.max_pax ?? 50;
-  const pax = Number.isFinite(raw) ? Math.min(Math.max(raw, min), max) : 1;
+  // No group size asked for: start at the smallest the price option allows (a "2 to 50" tour starts at 2, not 1).
+  const pax = Number.isFinite(raw) ? Math.min(Math.max(raw, min), max) : min;
   return { date: chosenDate, pax };
 }

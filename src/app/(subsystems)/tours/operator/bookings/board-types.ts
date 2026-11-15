@@ -66,7 +66,8 @@ export type BoardRow = {
   /** The guide the admin or the system proposed, waiting for the operator (owner's list, item 8). */
   guideProposal?: { guideId: string | null; guideName: string | null; by: "auto" | "admin"; status: "proposed" | "none_available" } | null;
   /** Where the guests are picked up, and what it added to the total. */
-  pickup?: { name: string; fee: number } | null;
+  /** door: where to fetch the guests (door pickup), with the vehicle and road km. */
+  pickup?: { name: string; fee: number; door?: { lat: number; lng: number; vehicle: string | null; km: number | null } | null } | null;
   note: PaymentNote;
   pendingProofs: ReviewableProof[];
   refundable: number;
