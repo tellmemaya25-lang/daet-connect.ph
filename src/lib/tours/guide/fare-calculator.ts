@@ -1,4 +1,4 @@
-import { FARE_MODES, type Fare, type FareLeg, type FareMode, type FareRoute } from "@/lib/tours/guide/fares";
+import { FARE_MODES, cityOf, namesMatch, type Fare, type FareLeg, type FareMode, type FareRoute } from "@/lib/tours/guide/fares";
 
 /**
  * The tourist's fare calculator ("magkano ang pasundo?"): what a group pays to
@@ -118,4 +118,19 @@ export function farePlaces(fares: Fare[]): string[] {
 export function pickPlace(value: unknown, places: string[]): string {
   const v = typeof value === "string" ? value.trim() : "";
   return places.includes(v) ? v : "";
+}
+
+/**
+ * The fare-table place to price a ride to a tour's meeting point: the meeting
+ * point itself when the table names it, else the tour's area, else its town.
+ * `exact` is false when the ride ends near the meeting point, not at it.
+ */
+export function meetingFarePlace(meetingName: string, area: string, places: string[]): { place: string; exact: boolean } | null {
+  const hit = (name: string) => places.find((p) => namesMatch(name, p));
+  // Only the place itself, not its street: "Kalmado office, Vinzons Ave." is not the town of Vinzons.
+  const head = meetingName.split(",")[0].trim();
+  const exact = head ? hit(head) : undefined;
+  if (exact) return { place: exact, exact: true };
+  const near = (area.trim() ? hit(area) : undefined) ?? places.find((p) => cityOf(p) && cityOf(p) === cityOf(area)) ?? places.find((p) => cityOf(p) === "daet");
+  return near ? { place: near, exact: false } : null;
 }

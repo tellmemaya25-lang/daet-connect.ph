@@ -7,7 +7,9 @@ import { formatPeso } from "@/lib/money";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { FARE_COLUMNS, FARE_PER, faresBetween, minutesLabel, toFare } from "@/lib/tours/guide/fares";
-import { MAX_PEOPLE, farePlaces, parsePeople, pickPlace, quoteRoute, type Quote } from "@/lib/tours/guide/fare-calculator";
+import { MAX_PEOPLE, farePlaces, meetingFarePlace, parsePeople, pickPlace, quoteRoute, type Quote } from "@/lib/tours/guide/fare-calculator";
+import { meetingPointOf, meetingTimeLabel } from "@/lib/tours/guide/meeting";
+import { isUuid } from "@/lib/tours/operator-access";
 
 export const metadata = {
   title: "Fare calculator",
@@ -28,12 +30,23 @@ export default async function FareCalculatorPage({ searchParams }: { searchParam
   if (!isSupabaseConfigured()) return <PageFrame><Notice variant="error">The fare calculator is unavailable right now.</Notice></PageFrame>;
   const params = await searchParams;
   const supabase = await createSupabaseServerClient();
-  const { data, error } = await supabase.from("tours_fares").select(FARE_COLUMNS).eq("is_active", true).limit(300);
+  const packageId = isUuid(one(params.package) ?? "") ? (one(params.package) as string) : null;
+  // The fares and (for "to the meeting point") the tour, in one round trip.
+  const [{ data, error }, pkgRes] = await Promise.all([
+    supabase.from("tours_fares").select(FARE_COLUMNS).eq("is_active", true).limit(300),
+    packageId
+      ? supabase.from("tours_packages").select("id, title, location_name, meeting_point_name, meeting_time").eq("id", packageId).eq("status", "published").maybeSingle()
+      : Promise.resolve({ data: null }),
+  ]);
   const fares = (data ?? []).map((row) => toFare(row as Record<string, unknown>));
   const places = farePlaces(fares);
 
+  const pkg = pkgRes.data as { id: string; title: string; location_name: string; meeting_point_name: string | null; meeting_time: string | null } | null;
+  const meeting = pkg ? meetingPointOf(pkg) : null;
+  const meetingTarget = pkg && meeting ? meetingFarePlace(meeting.name, pkg.location_name, places) : null;
+
   const from = pickPlace(one(params.from), places);
-  const to = pickPlace(one(params.to), places);
+  const to = meetingTarget ? meetingTarget.place : pickPlace(one(params.to), places);
   const people = parsePeople(one(params.people));
   const roundTrip = one(params.back) === "1";
   const asked = Boolean(from && to);
@@ -43,7 +56,16 @@ export default async function FareCalculatorPage({ searchParams }: { searchParam
     <PageFrame>
       <div className="mx-auto max-w-3xl space-y-6">
         <div>
-          <h1 className="display-2 text-daet-ink">Fare calculator</h1>
+          <h1 className="display-2 text-daet-ink">{pkg ? "Getting to the meeting point" : "Fare calculator"}</h1>
+          {pkg && meeting ? (
+            <p className="mt-1 font-bold text-daet-ink">
+              {pkg.title}: meet at {meeting.name}
+              {meetingTimeLabel(meeting.time) ? `, ${meetingTimeLabel(meeting.time)}` : ""}.{" "}
+              <Link href={`/tours/packages/${pkg.id}`} className="font-bold text-blue-700 underline underline-offset-4 dark:text-blue-300">
+                Back to the tour
+              </Link>
+            </p>
+          ) : null}
           <p className="mt-1 text-daet-ink/70">How much will it cost to get picked up and brought there? Choose where you are and where you&apos;re going. Fares are from the Daet Tourism Office and can change, so confirm with the driver before you ride.</p>
         </div>
 
@@ -60,16 +82,26 @@ export default async function FareCalculatorPage({ searchParams }: { searchParam
               ))}
             </Select>
           </Field>
-          <Field id="fare-to" label="Take me to">
-            <Select name="to" defaultValue={to} required>
-              <option value="">Choose where you&apos;re going</option>
-              {places.map((p) => (
-                <option key={p} value={p}>
-                  {p}
-                </option>
-              ))}
-            </Select>
-          </Field>
+          {pkg ? (
+            <div>
+              <Input type="hidden" name="package" value={pkg.id} />
+              <p className="text-sm font-bold text-daet-ink">Take me to</p>
+              <p className="mt-1 flex min-h-12 items-center rounded-2xl bg-canvas px-4 text-daet-ink">
+                {meetingTarget ? (meetingTarget.exact ? meeting?.name : `${meetingTarget.place} (near the meeting point)`) : "The meeting point"}
+              </p>
+            </div>
+          ) : (
+            <Field id="fare-to" label="Take me to">
+              <Select name="to" defaultValue={to} required>
+                <option value="">Choose where you&apos;re going</option>
+                {places.map((p) => (
+                  <option key={p} value={p}>
+                    {p}
+                  </option>
+                ))}
+              </Select>
+            </Field>
+          )}
           <Field id="fare-people" label="How many of you?">
             <Input type="number" name="people" min={1} max={MAX_PEOPLE} inputMode="numeric" defaultValue={people} />
           </Field>
@@ -82,6 +114,14 @@ export default async function FareCalculatorPage({ searchParams }: { searchParam
           </div>
         </form>
 
+        {pkg && !meetingTarget ? (
+          <Notice variant="info">The fare table doesn&apos;t list the area of this meeting point yet. Use the tour&apos;s directions link, or ask the operator in Messages.</Notice>
+        ) : null}
+        {meetingTarget && !meetingTarget.exact && asked ? (
+          <Notice variant="info">
+            These fares are to {meetingTarget.place}. The meeting point, {meeting?.name}, is there or close by: show the driver the tour&apos;s directions.
+          </Notice>
+        ) : null}
         {asked ? (
           from === to ? (
             <Notice variant="info">Choose two different places.</Notice>
@@ -96,7 +136,8 @@ export default async function FareCalculatorPage({ searchParams }: { searchParam
           ) : (
             <section aria-labelledby="fare-results" className="space-y-4">
               <h2 id="fare-results" className="text-xl font-bold text-daet-ink">
-                {from} to {to}
+                {from} to {pkg && meetingTarget?.exact ? meeting?.name : to}
+                {pkg ? " (meeting point)" : ""}
                 {roundTrip ? " and back" : ""}, {people} {people === 1 ? "person" : "people"}
               </h2>
               {quotes.map((q, i) => (

@@ -1,5 +1,5 @@
 import { faresBetween, type Fare } from "@/lib/tours/guide/fares";
-import { farePlaces, parsePeople, pickPlace, quoteRoute } from "@/lib/tours/guide/fare-calculator";
+import { farePlaces, meetingFarePlace, parsePeople, pickPlace, quoteRoute } from "@/lib/tours/guide/fare-calculator";
 
 const fare = (over: Partial<Fare>): Fare => ({
   id: Math.random().toString(36),
@@ -62,5 +62,17 @@ describe("fare calculator", () => {
     expect(parsePeople("0")).toBe(1);
     expect(parsePeople("99")).toBe(1);
     expect(parsePeople(["2"])).toBe(2);
+  });
+});
+
+describe("meeting point", () => {
+  const places = ["Bagasbas", "Daet", "Manila (Cubao)", "Vinzons"];
+  it("prices the ride to the meeting point when the fare table names it", () => {
+    expect(meetingFarePlace("Bagasbas Beach", "Daet", places)).toEqual({ place: "Bagasbas", exact: true });
+  });
+  it("falls back to the tour's area, then to Daet, and says it is near", () => {
+    expect(meetingFarePlace("Kalmado office, Vinzons Ave.", "Vinzons", places)).toEqual({ place: "Vinzons", exact: false });
+    expect(meetingFarePlace("Plaza Pakitokit", "Daet town center", places)).toEqual({ place: "Daet", exact: false });
+    expect(meetingFarePlace("Somewhere", "Somewhere", ["Manila (Cubao)"])).toBeNull();
   });
 });

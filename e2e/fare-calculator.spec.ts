@@ -19,3 +19,15 @@ test("a visitor works out what it costs to get from Manila to Bagasbas", async (
   await page.getByRole("button", { name: "Calculate" }).click();
   await expect(page.getByRole("article").first().getByText("₱3,324.00")).toBeVisible();
 });
+
+test("a visitor prices a pickup to a tour's meeting point from the tour page", async ({ page }) => {
+  await page.goto("/tours/packages/aa000000-0000-4000-8000-000000000001", { waitUntil: "networkidle" });
+  await page.getByRole("link", { name: "How much to get picked up and brought there?" }).click();
+  await expect(page.getByRole("heading", { level: 1, name: "Getting to the meeting point" })).toBeVisible();
+  await page.getByLabel("Pick me up at").selectOption("Manila (PITX)");
+  await page.getByRole("button", { name: "Calculate" }).click();
+  await expect(page).toHaveURL(/package=aa000000/);
+  await expect(page.getByRole("heading", { name: /\(meeting point\)/ })).toBeVisible();
+  await expect(page.getByRole("article").first().getByText("Bus → Tricycle")).toBeVisible();
+  await checkA11y(page, "meeting point fares");
+});
