@@ -39,3 +39,14 @@ describe("door pickup", () => {
     expect(validateVehicles([{ vehicle: "boat", label: "", seats: "8", maxKm: "10" }], ["van"])).toMatchObject({ ok: false, error: /type/ });
   });
 });
+
+describe("pickup spot shortcuts", () => {
+  it("keeps places with a usable pin", () => {
+    const { toPickupShortcuts } = jest.requireActual("@/lib/tours/door-pickup") as typeof import("@/lib/tours/door-pickup");
+    expect(toPickupShortcuts([
+      { id: "1", name: "Plaza", latitude: "14.115928", longitude: "122.955202" },
+      { id: "2", name: "No pin", latitude: null, longitude: null },
+      { id: "3", name: "Bad", latitude: "999", longitude: "1" },
+    ])).toEqual([{ id: "1", name: "Plaza", lat: 14.115928, lng: 122.955202 }]);
+  });
+});

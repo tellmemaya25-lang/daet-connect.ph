@@ -609,6 +609,7 @@ function build(role) {
       45,
       "Museum in the old municipal hall facing the Rizal Monument.",
       "Trip.com Daet itinerary (Plus Code 4X73+7WG)",
+      true,
     ),
     A(
       3,

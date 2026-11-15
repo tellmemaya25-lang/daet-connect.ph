@@ -10,8 +10,7 @@ import { bookableDates, type AvailabilityRow } from "@/lib/tours/availability";
 import { toManilaDateKey } from "@/lib/tours/events-calendar";
 import { BookingForm } from "./booking-form";
 import { getAuthenticatedSession } from "@/lib/tours/server-auth";
-import { toPickupPoints } from "@/lib/tours/pickup";
-import { toOfficialRates, toPickupVehicles } from "@/lib/tours/door-pickup";
+import { toOfficialRates, toPickupShortcuts, toPickupVehicles } from "@/lib/tours/door-pickup";
 
 
 type PageProps = {
@@ -96,7 +95,7 @@ export default async function BookPackagePage({ params, searchParams }: PageProp
 
   // Get user profile for pre-filling form
   const today = toManilaDateKey(new Date());
-  const [{ data: profile }, { data: availabilityRows }, { count: openDateCount }, { data: pickupRows }, { data: vehicleRows }, { data: rateRows }] = await Promise.all([
+  const [{ data: profile }, { data: availabilityRows }, { count: openDateCount }, { data: shortcutRows }, { data: vehicleRows }, { data: rateRows }] = await Promise.all([
     supabase.from("profiles").select("full_name").eq("id", user.id).maybeSingle(),
     supabase
       .from("tours_package_availability")
@@ -106,7 +105,8 @@ export default async function BookPackagePage({ params, searchParams }: PageProp
       .order("available_date", { ascending: true }),
     // Any open date (past ones included) switches the package to "open dates only".
     supabase.from("tours_package_availability").select("id", { count: "exact", head: true }).eq("package_id", pkg.id),
-    supabase.from("tours_package_pickup_points").select("id, name, fee, fee_per, note, is_active").eq("package_id", pkg.id).order("sort_order"),
+    // Shortcuts for the pickup pin: Daet places whose map pin was checked.
+    supabase.from("tours_attractions").select("id, name, latitude, longitude").eq("is_active", true).eq("location_verified", true).ilike("municipality", "%daet%").not("latitude", "is", null).order("name").limit(8),
     supabase.from("tours_package_pickup_vehicles").select("id, vehicle, label, seats, max_km, is_active").eq("package_id", pkg.id).order("sort_order"),
     supabase.from("tours_official_pickup_rates").select("vehicle, base_fee, per_km_per_person, source, source_url, effective_on, checked_on"),
   ]);
@@ -156,7 +156,7 @@ export default async function BookPackagePage({ params, searchParams }: PageProp
         <BookingForm
           packageId={pkg.id}
           priceVariants={pkg.tours_package_price_variants || []}
-          pickupPoints={toPickupPoints(pickupRows)}
+          pickupShortcuts={toPickupShortcuts(shortcutRows)}
           meetingPoint={pkg.meeting_point_name?.trim() || null}
           pickupVehicles={toPickupVehicles(vehicleRows, toOfficialRates(rateRows))}
           meetingLatLng={pkg.meeting_lat != null && pkg.meeting_lng != null ? { lat: Number(pkg.meeting_lat), lng: Number(pkg.meeting_lng) } : null}

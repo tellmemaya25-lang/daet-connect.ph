@@ -1,10 +1,11 @@
 "use client";
 
 import { LocationPicker } from "@/components/maps/location-picker";
+import { Button } from "@/components/ui/button";
 import { Checkbox, Field, Input } from "@/components/ui/field";
 import { formatPeso } from "@/lib/money";
 import type { LatLng } from "@/lib/maps/geo";
-import { quoteDoorPickup, vehicleName, vehicleRateLabel, type PickupVehicle } from "@/lib/tours/door-pickup";
+import { quoteDoorPickup, vehicleName, vehicleRateLabel, type PickupShortcut, type PickupVehicle } from "@/lib/tours/door-pickup";
 
 /**
  * Door pickup ("pasundo"): pin where you are, choose the vehicle the operator
@@ -13,6 +14,7 @@ import { quoteDoorPickup, vehicleName, vehicleRateLabel, type PickupVehicle } fr
  */
 export function DoorPickupPicker({
   vehicles,
+  shortcuts = [],
   meeting,
   meetingName,
   pax,
@@ -24,6 +26,7 @@ export function DoorPickupPicker({
   onNote,
 }: {
   vehicles: PickupVehicle[];
+  shortcuts?: PickupShortcut[];
   meeting: LatLng;
   meetingName: string;
   pax: number;
@@ -38,6 +41,18 @@ export function DoorPickupPicker({
     <div className="mt-3 space-y-3 rounded-2xl border border-line p-4">
       <p className="text-sm font-bold text-daet-ink">1. Where should we pick you up?</p>
       <p className="text-xs text-daet-ink/70">Search your hotel or barangay, tap the map, or use your location. We bring you to {meetingName}.</p>
+      {shortcuts.length ? (
+        <div role="group" aria-label="Common pickup spots" className="flex flex-wrap gap-2">
+          {shortcuts.map((s) => {
+            const on = pin?.lat === s.lat && pin?.lng === s.lng;
+            return (
+              <Button key={s.id} type="button" variant={on ? "primary" : "secondary"} aria-pressed={on} onClick={() => { onPin({ lat: s.lat, lng: s.lng }); if (!note.trim()) onNote(s.name); }}>
+                {s.name}
+              </Button>
+            );
+          })}
+        </div>
+      ) : null}
       <LocationPicker latitude={pin?.lat ?? null} longitude={pin?.lng ?? null} onChange={(lat, lng) => onPin({ lat, lng })} className="h-56" />
       <Field id="pickupNote" label="Landmark for the driver (optional)" hint="e.g. Hotel name and room, or the gate color">
         <Input maxLength={200} value={note} onChange={(e) => onNote(e.target.value)} />

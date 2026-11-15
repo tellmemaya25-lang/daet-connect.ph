@@ -94,3 +94,17 @@ export function validateVehicles(drafts: VehicleDraft[], priced: readonly string
   }
   return { ok: true, vehicles };
 }
+
+/** A well-known place to drop the pickup pin on with one tap. */
+export type PickupShortcut = { id: string; name: string; lat: number; lng: number };
+
+type ShortcutRow = { id: string; name: string; latitude: number | string | null; longitude: number | string | null };
+
+/** Places with a usable pin, in the order given. */
+export function toPickupShortcuts(rows: ShortcutRow[] | null | undefined): PickupShortcut[] {
+  return (rows ?? []).flatMap((r) => {
+    const lat = Number(r.latitude);
+    const lng = Number(r.longitude);
+    return r.latitude != null && r.longitude != null && Number.isFinite(lat) && Number.isFinite(lng) && Math.abs(lat) <= 90 && Math.abs(lng) <= 180 ? [{ id: r.id, name: r.name, lat, lng }] : [];
+  });
+}

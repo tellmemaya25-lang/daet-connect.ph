@@ -7,19 +7,22 @@ test.use({ viewport: { width: 1280, height: 900 } });
 const BOOK = "/tours/packages/aa000000-0000-4000-8000-000000000001/book";
 const pesos = (text: string | null) => Number((text ?? "").replace(/[^\d.]/g, ""));
 
-test("choosing a pickup adds its fee to the total", async ({ context, page }) => {
+test("a pickup spot shortcut drops the pin there and prices the van from it", async ({ context, page }) => {
   await signInAs(context, "tourist");
   await page.goto(BOOK, { waitUntil: "networkidle" });
-
-  const summary = page.locator("dl").filter({ hasText: "Pickup" });
-  await expect(page.getByLabel("Pickup location")).toBeVisible();
-  await expect(summary.getByText("Free")).toBeVisible();
   const total = page.getByText("Total", { exact: true }).locator("xpath=following-sibling::span");
   const before = pesos(await total.textContent());
 
-  await page.getByLabel("Pickup location").selectOption({ label: "Mercedes port · ₱300.00 per booking" });
-  await expect(summary.getByText("(Mercedes port)")).toBeVisible();
-  await expect.poll(async () => pesos(await total.textContent())).toBe(before + 300);
+  await page.getByLabel("Pickup location").selectOption({ label: "Pick me up where I am (door pickup)" });
+  // Operator pickup points are gone: only "no pickup" and door pickup.
+  await expect(page.getByLabel("Pickup location").locator("option")).toHaveCount(2);
+  const spot = page.getByRole("group", { name: "Common pickup spots" }).getByRole("button", { name: "Daet Heritage Center and Museum" });
+  await spot.click();
+  await expect(spot).toHaveAttribute("aria-pressed", "true");
+  await expect(page.getByLabel("Landmark for the driver (optional)")).toHaveValue("Daet Heritage Center and Museum");
+  // 0.2 km by road to the meeting point x ₱2.60 x 1 guest = ₱0.52 → ₱1.
+  await page.getByRole("group", { name: "2. Choose the vehicle" }).getByLabel(/Small van/).check();
+  await expect.poll(async () => pesos(await total.textContent())).toBeGreaterThan(before);
 });
 
 test.describe("door pickup", () => {
