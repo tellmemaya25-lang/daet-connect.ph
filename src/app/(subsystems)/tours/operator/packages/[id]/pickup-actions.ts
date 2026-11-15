@@ -59,9 +59,10 @@ export async function saveGuideSettings(packageId: string, guideFee: string, mun
 /** Replaces the package's door-pickup vehicles. Ownership is checked by tours_set_pickup_vehicles. */
 export async function saveDoorPickupVehicles(packageId: string, drafts: VehicleDraft[]): Promise<SettingsResult> {
   if (!isUuid(packageId) || !Array.isArray(drafts)) return { ok: false, message: "This tour could not be found." };
-  const checked = validateVehicles(drafts);
-  if (!checked.ok) return { ok: false, message: checked.error };
   const supabase = await createSupabaseServerClient();
+  const { data: rates } = await supabase.from("tours_official_pickup_rates").select("vehicle");
+  const checked = validateVehicles(drafts, (rates ?? []).map((r) => r.vehicle));
+  if (!checked.ok) return { ok: false, message: checked.error };
   const { error } = await supabase.rpc("tours_set_pickup_vehicles", { p_package_id: packageId, p_vehicles: checked.vehicles });
   if (error) {
     console.error("Save pickup vehicles error:", error);

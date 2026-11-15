@@ -35,10 +35,11 @@ test.describe("door pickup", () => {
     await expect(page.getByText("Pin your location to see the fee.").first()).toBeVisible();
     await page.getByRole("button", { name: "Use my location" }).click();
     const vehicles = page.getByRole("group", { name: "2. Choose the vehicle" });
-    await expect(vehicles.getByText("6.9 km · ₱154.00")).toBeVisible();
-    await vehicles.getByLabel(/Tricycle/).check();
+    await expect(vehicles.getByText("6.9 km · ₱18.00")).toBeVisible();
+    await expect(vehicles.getByText("Tricycle")).toHaveCount(0);
+    await vehicles.getByLabel(/Small van/).check();
     await page.getByLabel("Landmark for the driver (optional)").fill("Surf shop gate");
-    await expect.poll(async () => pesos(await total.textContent())).toBe(before + 154);
+    await expect.poll(async () => pesos(await total.textContent())).toBe(before + 18);
     await expect(page.locator("dl").filter({ hasText: "Pickup" }).getByText("(door pickup, 6.9 km)")).toBeVisible();
   });
 });

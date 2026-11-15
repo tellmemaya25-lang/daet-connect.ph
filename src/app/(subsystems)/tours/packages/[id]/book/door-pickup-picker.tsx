@@ -56,6 +56,7 @@ export function DoorPickupPicker({
                   <span className="flex-1">
                     <span className="font-bold text-daet-ink">{vehicleName(v)}</span>
                     <span className="block text-daet-ink/70">{vehicleRateLabel(v, formatPeso)}</span>
+                    <span className="block text-xs text-daet-ink/60">Source: {v.rate.source}</span>
                     {quote ? (
                       quote.ok ? (
                         <span className="block font-bold text-daet-ink">

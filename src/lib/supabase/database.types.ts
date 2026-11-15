@@ -1967,6 +1967,12 @@ export type Database = {
           },
         ]
       }
+      tours_official_pickup_rates: {
+        Row: { base_fee: number; checked_on: string; effective_on: string | null; per_km_per_person: number; source: string; source_url: string | null; updated_at: string; vehicle: string }
+        Insert: { base_fee?: number; checked_on: string; effective_on?: string | null; per_km_per_person: number; source: string; source_url?: string | null; updated_at?: string; vehicle: string }
+        Update: { base_fee?: number; checked_on?: string; effective_on?: string | null; per_km_per_person?: number; source?: string; source_url?: string | null; updated_at?: string; vehicle?: string }
+        Relationships: []
+      }
       tours_package_pickup_vehicles: {
         Row: { base_fee: number; created_at: string; id: string; is_active: boolean; label: string | null; max_km: number; package_id: string; per_km: number; seats: number; sort_order: number; vehicle: string }
         Insert: { base_fee?: number; created_at?: string; id?: string; is_active?: boolean; label?: string | null; max_km?: number; package_id: string; per_km?: number; seats: number; sort_order?: number; vehicle: string }

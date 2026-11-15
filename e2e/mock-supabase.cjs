@@ -1149,8 +1149,12 @@ function build(role) {
     // The operator's pickup points for the surf lesson, with their fees (owner's list, item 5).
     // Door pickup vehicles for the surf lesson (20261212).
     tours_package_pickup_vehicles: [
-      { id: "dv-1", package_id: PKG, vehicle: "tricycle", label: null, seats: 3, base_fee: 50, per_km: 15, max_km: 10, sort_order: 0, is_active: true },
-      { id: "dv-2", package_id: PKG, vehicle: "van", label: "Aircon van", seats: 12, base_fee: 300, per_km: 25, max_km: 40, sort_order: 1, is_active: true },
+      { id: "dv-1", package_id: PKG, vehicle: "van", label: "Small van", seats: 3, base_fee: 0, per_km: 0, max_km: 10, sort_order: 0, is_active: true },
+      // No official tricycle fare: hidden from guests.
+      { id: "dv-2", package_id: PKG, vehicle: "tricycle", label: null, seats: 3, base_fee: 0, per_km: 0, max_km: 10, sort_order: 1, is_active: true },
+    ],
+    tours_official_pickup_rates: [
+      { vehicle: "van", base_fee: 0, per_km_per_person: 2.6, source: "LTFRB provisional UV Express fare (traditional units), P2.60 per km per passenger", source_url: null, effective_on: "2026-09-28", checked_on: "2026-11-15" },
     ],
     tours_package_pickup_points: [
       { id: "pp-1", package_id: PKG, name: "Daet Town Plaza", fee: 0, fee_per: "booking", note: "In front of the church, 5:30 AM.", sort_order: 0, is_active: true },
