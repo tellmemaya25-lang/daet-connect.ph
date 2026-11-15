@@ -76,6 +76,7 @@ export function accountLinks(
     links.push({ href: "/tours/operator/settings", label: "Payment settings" });
   if (!role || role === "tourist")
     links.push({ href: "/tours/my-bookings", label: "Bookings" });
+  if (role === "tourist") links.push({ href: "/tours/friends", label: "Friends" });
   links.push({ href: "/tours/messages", label: "Messages" });
   if (tabs[0]) links.push({ href: tabs[0].href, label: "Dashboard" });
   return links;

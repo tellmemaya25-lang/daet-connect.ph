@@ -2440,6 +2440,14 @@ export type Database = {
       }
     }
     Functions: {
+      tours_find_people: { Args: { p_query: string }; Returns: Json }
+      tours_friend_itinerary: { Args: { p_itinerary: string }; Returns: Json }
+      tours_itineraries_shared_with_me: { Args: never; Returns: Json }
+      tours_my_friends: { Args: never; Returns: Json }
+      tours_remove_friend: { Args: { p_profile: string }; Returns: undefined }
+      tours_respond_friend_request: { Args: { p_accept: boolean; p_profile: string }; Returns: undefined }
+      tours_send_friend_request: { Args: { p_profile: string }; Returns: string }
+      tours_share_itinerary_with: { Args: { p_friend_ids: string[]; p_itinerary: string }; Returns: number }
       tours_guide_revenue: {
         Args: { p_from: string; p_to: string }
         Returns: Json

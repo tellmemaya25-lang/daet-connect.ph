@@ -115,6 +115,7 @@ describe("accountLinks", () => {
     ).toEqual([
       "/settings",
       "/tours/my-bookings",
+      "/tours/friends",
       "/tours/messages",
       "/tours/me",
     ]);
