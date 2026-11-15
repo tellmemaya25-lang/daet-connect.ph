@@ -141,12 +141,16 @@ test.describe("sign out", () => {
     });
   }
 
-  test("signing out returns to the home page", async ({ context, page }) => {
-    await signInAs(context, "guide");
-    await page.goto("/tours/guide/dashboard", { waitUntil: "networkidle" });
-    await (await signOutButton(page)).click();
-    await expect(page).toHaveURL(/\/$/);
-  });
+  for (const role of ["guide", "tourist"] as Role[]) {
+    test(`${role}: signing out lands on the sign-in page, which says so`, async ({ context, page }) => {
+      await signInAs(context, role);
+      await page.goto(pages[role][0], { waitUntil: "networkidle" });
+      await (await signOutButton(page)).click();
+      await expect(page).toHaveURL(/\/login\?message=/);
+      await expect(page.getByText("You're signed out.")).toBeVisible();
+      await expect(page.getByRole("button", { name: /^(You, y|Y)our account/ })).toHaveCount(0);
+    });
+  }
 
   const framed: Array<[Role, string]> = [
     ["admin", "/tours/admin/packages"],

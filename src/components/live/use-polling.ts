@@ -3,6 +3,9 @@
 import { useEffect, useRef } from "react";
 import { nextDelay } from "@/lib/live/schedule";
 
+/** Same name as SIGNING_OUT_EVENT in logout-button (kept here to avoid importing a UI file). */
+const SIGNING_OUT = "daet:signing-out";
+
 const MIN_GAP_MS = 1000;
 /** Focus, a returning tab or the network coming back only poll when the last poll is this old. */
 const WAKE_GAP_MS = 15_000;
@@ -56,18 +59,25 @@ export function usePolling(task: () => Promise<void>, intervalMs: number, enable
     const onWake = () => (Date.now() - lastStart < WAKE_GAP_MS ? schedule() : void run());
     const onVisible = () => (document.visibilityState === "visible" ? onWake() : clear());
     const onNow = () => void run();
+    // Signing out: stop for good, so no poll can bring the old session back.
+    const onSignOut = () => {
+      stopped = true;
+      clear();
+    };
 
     triggerRef.current = onNow;
     void run();
     document.addEventListener("visibilitychange", onVisible);
     window.addEventListener("focus", onWake);
     window.addEventListener("online", onWake);
+    window.addEventListener(SIGNING_OUT, onSignOut);
     return () => {
       stopped = true;
       clear();
       document.removeEventListener("visibilitychange", onVisible);
       window.removeEventListener("focus", onWake);
       window.removeEventListener("online", onWake);
+      window.removeEventListener(SIGNING_OUT, onSignOut);
     };
   }, [intervalMs, enabled]);
 
