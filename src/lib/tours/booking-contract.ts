@@ -120,6 +120,8 @@ export interface CreateBookingInput {
   specialRequests?: string;
   /** One of the package's pickup points; omitted = meet at the meeting point. */
   pickupPointId?: string | null;
+  /** Door pickup: the vehicle, where to pick the guests up, and a landmark. The database prices it. */
+  doorPickup?: { vehicleId: string; lat: number; lng: number; note?: string } | null;
 }
 
 export interface BookingParticipantInput {
@@ -176,6 +178,14 @@ export function validateCreateBooking(input: CreateBookingInput): string | null 
 
   if (input.pickupPointId != null && !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(input.pickupPointId)) {
     return "Choose a pickup point from the list.";
+  }
+
+  if (input.doorPickup != null) {
+    const d = input.doorPickup;
+    if (input.pickupPointId) return "Choose a pickup point or door pickup, not both.";
+    if (typeof d !== "object" || !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(String(d.vehicleId))) return "Choose a pickup vehicle.";
+    if (!Number.isFinite(d.lat) || !Number.isFinite(d.lng) || Math.abs(d.lat) > 90 || Math.abs(d.lng) > 180) return "Pin where we should pick you up.";
+    if (d.note != null && (typeof d.note !== "string" || d.note.length > 200)) return "Keep the pickup landmark under 200 characters.";
   }
   
   return null;

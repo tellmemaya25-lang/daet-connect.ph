@@ -11,6 +11,7 @@ import { toManilaDateKey } from "@/lib/tours/events-calendar";
 import { BookingForm } from "./booking-form";
 import { getAuthenticatedSession } from "@/lib/tours/server-auth";
 import { toPickupPoints } from "@/lib/tours/pickup";
+import { toOfficialRates, toPickupVehicles } from "@/lib/tours/door-pickup";
 
 
 type PageProps = {
@@ -67,6 +68,8 @@ export default async function BookPackagePage({ params, searchParams }: PageProp
       duration_type,
       cover_image_url,
       meeting_point_name,
+      meeting_lat,
+      meeting_lng,
       status,
       tours_package_price_variants(
         id,
@@ -93,7 +96,7 @@ export default async function BookPackagePage({ params, searchParams }: PageProp
 
   // Get user profile for pre-filling form
   const today = toManilaDateKey(new Date());
-  const [{ data: profile }, { data: availabilityRows }, { count: openDateCount }, { data: pickupRows }] = await Promise.all([
+  const [{ data: profile }, { data: availabilityRows }, { count: openDateCount }, { data: pickupRows }, { data: vehicleRows }, { data: rateRows }] = await Promise.all([
     supabase.from("profiles").select("full_name").eq("id", user.id).maybeSingle(),
     supabase
       .from("tours_package_availability")
@@ -104,6 +107,8 @@ export default async function BookPackagePage({ params, searchParams }: PageProp
     // Any open date (past ones included) switches the package to "open dates only".
     supabase.from("tours_package_availability").select("id", { count: "exact", head: true }).eq("package_id", pkg.id),
     supabase.from("tours_package_pickup_points").select("id, name, fee, fee_per, note, is_active").eq("package_id", pkg.id).order("sort_order"),
+    supabase.from("tours_package_pickup_vehicles").select("id, vehicle, label, seats, max_km, is_active").eq("package_id", pkg.id).order("sort_order"),
+    supabase.from("tours_official_pickup_rates").select("vehicle, base_fee, per_km_per_person, source, source_url, effective_on, checked_on"),
   ]);
   const usesOpenDates = (openDateCount ?? 0) > 0;
 
@@ -153,6 +158,8 @@ export default async function BookPackagePage({ params, searchParams }: PageProp
           priceVariants={pkg.tours_package_price_variants || []}
           pickupPoints={toPickupPoints(pickupRows)}
           meetingPoint={pkg.meeting_point_name?.trim() || null}
+          pickupVehicles={toPickupVehicles(vehicleRows, toOfficialRates(rateRows))}
+          meetingLatLng={pkg.meeting_lat != null && pkg.meeting_lng != null ? { lat: Number(pkg.meeting_lat), lng: Number(pkg.meeting_lng) } : null}
           prefill={prefill}
           dateOptions={usesOpenDates ? bookableDates((availabilityRows ?? []) as AvailabilityRow[], today) : null}
           userProfile={{

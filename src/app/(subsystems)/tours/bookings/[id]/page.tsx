@@ -9,6 +9,7 @@ import { placePhoto } from "@/lib/tours/trip-board";
 import { formatPeso } from "@/lib/money";
 import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
+import { PICKUP_VEHICLES, type PickupVehicleType } from "@/lib/tours/door-pickup";
 import { PageFrame } from "@/components/ui/page-frame";
 import { Notice } from "@/components/ui/notice";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
@@ -349,7 +350,20 @@ export default async function BookingDetailPage({ params, searchParams }: PagePr
             ) : null}
             {booking.pickup_name ? (
               <div className="flex justify-between gap-4">
-                <dt>Pickup at {booking.pickup_name}</dt>
+                <dt>
+                  {(booking as { pickup_km?: number | null }).pickup_km != null ? (
+                    <>
+                      Door pickup
+                      {(booking as { pickup_vehicle?: string | null }).pickup_vehicle
+                        ? ` by ${(PICKUP_VEHICLES[(booking as { pickup_vehicle?: string }).pickup_vehicle as PickupVehicleType] ?? "vehicle").toLowerCase()}`
+                        : ""}
+                      , {(booking as { pickup_km?: number }).pickup_km} km to the meeting point
+                      {(booking as { pickup_note?: string | null }).pickup_note ? <span className="block text-sm text-daet-ink/70">{(booking as { pickup_note?: string }).pickup_note}</span> : null}
+                    </>
+                  ) : (
+                    <>Pickup at {booking.pickup_name}</>
+                  )}
+                </dt>
                 <dd className="font-bold">{Number(booking.pickup_fee) > 0 ? formatPeso(Number(booking.pickup_fee)) : "Free"}</dd>
               </div>
             ) : null}

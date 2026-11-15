@@ -122,6 +122,10 @@ export async function createBooking(input: CreateBookingInput): Promise<CreateBo
         // The database checks it belongs to this package and adds its fee to the total.
         // Sent only when chosen, so booking keeps working on a database without pickups yet.
         ...(input.pickupPointId ? { pickup_point_id: input.pickupPointId } : {}),
+        // Door pickup: the database works out the distance and fee from the pin.
+        ...(input.doorPickup
+          ? { pickup_vehicle_id: input.doorPickup.vehicleId, pickup_lat: input.doorPickup.lat, pickup_lng: input.doorPickup.lng, pickup_note: input.doorPickup.note?.trim() || null }
+          : {}),
         status: "pending",
       })
       .select("id")

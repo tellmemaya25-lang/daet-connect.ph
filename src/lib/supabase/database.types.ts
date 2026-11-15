@@ -360,6 +360,12 @@ export type Database = {
           contact_email: string
           contact_name: string
           contact_phone: string
+          pickup_vehicle_id: string | null
+          pickup_vehicle: string | null
+          pickup_note: string | null
+          pickup_lat: number | null
+          pickup_lng: number | null
+          pickup_km: number | null
           guide_fee_paid_at: string | null
           guide_fee_paid_by: string | null
           created_at: string
@@ -386,6 +392,12 @@ export type Database = {
           contact_email: string
           contact_name: string
           contact_phone: string
+          pickup_vehicle_id: string | null
+          pickup_vehicle: string | null
+          pickup_note: string | null
+          pickup_lat: number | null
+          pickup_lng: number | null
+          pickup_km: number | null
           created_at?: string
           id?: string
           number_of_pax: number
@@ -410,6 +422,12 @@ export type Database = {
           contact_email?: string
           contact_name?: string
           contact_phone?: string
+          pickup_vehicle_id?: string | null
+          pickup_vehicle?: string | null
+          pickup_note?: string | null
+          pickup_lat?: number | null
+          pickup_lng?: number | null
+          pickup_km?: number | null
           guide_fee_paid_at?: string | null
           guide_fee_paid_by?: string | null
           created_at?: string
@@ -1949,6 +1967,18 @@ export type Database = {
           },
         ]
       }
+      tours_official_pickup_rates: {
+        Row: { base_fee: number; checked_on: string; effective_on: string | null; per_km_per_person: number; source: string; source_url: string | null; updated_at: string; vehicle: string }
+        Insert: { base_fee?: number; checked_on: string; effective_on?: string | null; per_km_per_person: number; source: string; source_url?: string | null; updated_at?: string; vehicle: string }
+        Update: { base_fee?: number; checked_on?: string; effective_on?: string | null; per_km_per_person?: number; source?: string; source_url?: string | null; updated_at?: string; vehicle?: string }
+        Relationships: []
+      }
+      tours_package_pickup_vehicles: {
+        Row: { base_fee: number; created_at: string; id: string; is_active: boolean; label: string | null; max_km: number; package_id: string; per_km: number; seats: number; sort_order: number; vehicle: string }
+        Insert: { base_fee?: number; created_at?: string; id?: string; is_active?: boolean; label?: string | null; max_km?: number; package_id: string; per_km?: number; seats: number; sort_order?: number; vehicle: string }
+        Update: { base_fee?: number; created_at?: string; id?: string; is_active?: boolean; label?: string | null; max_km?: number; package_id?: string; per_km?: number; seats?: number; sort_order?: number; vehicle?: string }
+        Relationships: []
+      }
       tours_packages: {
         Row: {
           cover_image_url: string | null
@@ -2440,6 +2470,7 @@ export type Database = {
       }
     }
     Functions: {
+      tours_set_pickup_vehicles: { Args: { p_package_id: string; p_vehicles: Json }; Returns: undefined }
       tours_admin_activity: { Args: { p_actor?: string; p_before?: string; p_entity?: string; p_from?: string; p_limit?: number; p_role?: string; p_to?: string }; Returns: Json }
       tours_admin_ban: { Args: { p_days: number | null; p_reason: string; p_user_id: string }; Returns: string | null }
       tours_admin_clear_expired_bans: { Args: never; Returns: number }

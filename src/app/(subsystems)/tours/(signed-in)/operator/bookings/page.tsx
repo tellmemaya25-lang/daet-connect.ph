@@ -51,6 +51,14 @@ type SearchParams = Promise<{
 
 type Supabase = Awaited<ReturnType<typeof createSupabaseServerClient>>;
 
+/** Door pickup details when the guest pinned where to be fetched. */
+function doorPickupOf(row: Record<string, unknown>) {
+  const lat = row.pickup_lat == null ? NaN : Number(row.pickup_lat);
+  const lng = row.pickup_lng == null ? NaN : Number(row.pickup_lng);
+  if (!Number.isFinite(lat) || !Number.isFinite(lng)) return null;
+  return { lat, lng, vehicle: typeof row.pickup_vehicle === "string" ? row.pickup_vehicle : null, km: row.pickup_km == null ? null : Number(row.pickup_km) };
+}
+
 /** A proposal still waiting on the operator; null once a guide is assigned or nothing was proposed. */
 function guideProposalFor(row: Record<string, unknown>, guideName: (id: string | null) => string | null): BoardRow["guideProposal"] {
   const status = row.guide_proposal_status;
@@ -409,7 +417,11 @@ async function BookingsContent({ searchParams }: { searchParams: SearchParams })
       guideNotNeeded: guideNotNeeded.get(booking.id) ?? null,
       guideProposal: guideProposalFor(booking as Record<string, unknown>, guideName),
       pickup: (booking as { pickup_name?: string | null }).pickup_name
-        ? { name: String((booking as { pickup_name?: string }).pickup_name), fee: round2(Number((booking as { pickup_fee?: unknown }).pickup_fee ?? 0)) }
+        ? {
+            name: String((booking as { pickup_name?: string }).pickup_name),
+            fee: round2(Number((booking as { pickup_fee?: unknown }).pickup_fee ?? 0)),
+            door: doorPickupOf(booking as Record<string, unknown>),
+          }
         : null,
       note: paymentNote({
         totalAmount: booking.total_amount,

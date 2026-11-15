@@ -1,5 +1,7 @@
 "use client";
 
+import { PICKUP_VEHICLES, type PickupVehicleType } from "@/lib/tours/door-pickup";
+
 import { useId, type ReactNode } from "react";
 import Link from "next/link";
 import { badgeTone } from "@/components/ui/badge";
@@ -202,6 +204,20 @@ export function BookingRow({
                     <dt className="text-daet-ink/70">Pickup:</dt>
                     <dd className="min-w-0 break-words text-right font-bold text-daet-ink">
                       {booking.pickup.name} · {booking.pickup.fee > 0 ? formatPeso(booking.pickup.fee) : "Free"}
+                      {booking.pickup.door ? (
+                        <span className="block font-normal">
+                          {booking.pickup.door.vehicle ? `${PICKUP_VEHICLES[booking.pickup.door.vehicle as PickupVehicleType] ?? booking.pickup.door.vehicle}` : "Vehicle"}
+                          {booking.pickup.door.km != null ? ` · ${booking.pickup.door.km} km to the meeting point` : ""} ·{" "}
+                          <a
+                            href={`https://www.google.com/maps/dir/?api=1&destination=${booking.pickup.door.lat},${booking.pickup.door.lng}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="font-bold text-blue-700 underline underline-offset-4 dark:text-blue-300"
+                          >
+                            Directions to the guest<span className="sr-only"> (opens Google Maps)</span>
+                          </a>
+                        </span>
+                      ) : null}
                     </dd>
                   </div>
                 ) : null}

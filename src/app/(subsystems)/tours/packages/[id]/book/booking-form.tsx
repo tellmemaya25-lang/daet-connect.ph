@@ -9,6 +9,9 @@ import { bookingPrefill } from "./prefill";
 import { digitsOnlyPhone, PHONE_DIGITS, PHONE_HINT } from "@/lib/tours/phone";
 import { pickupFee, pickupFeeLabel, type PickupPoint } from "@/lib/tours/pickup";
 import { Select } from "@/components/ui/field";
+import { quoteDoorPickup, type PickupVehicle } from "@/lib/tours/door-pickup";
+import type { LatLng } from "@/lib/maps/geo";
+import { DoorPickupPicker } from "./door-pickup-picker";
 
 interface PriceVariant {
   id: string;
@@ -27,6 +30,9 @@ interface BookingFormProps {
   pickupPoints?: PickupPoint[];
   /** Where guests meet when they take no pickup (the package's meeting point), if listed. */
   meetingPoint?: string | null;
+  /** Door pickup: the vehicles the operator can send, and the meeting point on the map (needed to price it). */
+  pickupVehicles?: PickupVehicle[];
+  meetingLatLng?: LatLng | null;
   /** Open dates when the operator manages availability; null = any future date. */
   dateOptions: DateOption[] | null;
   userProfile: {
@@ -40,7 +46,7 @@ interface BookingFormProps {
 const formatOpenDate = (dateKey: string) =>
   new Date(`${dateKey}T00:00:00Z`).toLocaleDateString("en-PH", { weekday: "short", month: "short", day: "numeric", year: "numeric", timeZone: "UTC" });
 
-export function BookingForm({ packageId, priceVariants, pickupPoints = [], meetingPoint = null, dateOptions, userProfile, prefill = {} }: BookingFormProps) {
+export function BookingForm({ packageId, priceVariants, pickupPoints = [], meetingPoint = null, pickupVehicles = [], meetingLatLng = null, dateOptions, userProfile, prefill = {} }: BookingFormProps) {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -60,7 +66,13 @@ export function BookingForm({ packageId, priceVariants, pickupPoints = [], meeti
   const [contactEmail, setContactEmail] = useState(userProfile.email);
   const [contactPhone, setContactPhone] = useState("");
   const [specialRequests, setSpecialRequests] = useState("");
+  // "" = no pickup, a pickup point's id, or "door" for door pickup.
   const [pickupPointId, setPickupPointId] = useState("");
+  const [doorPin, setDoorPin] = useState<LatLng | null>(null);
+  const [doorVehicleId, setDoorVehicleId] = useState("");
+  const [doorNote, setDoorNote] = useState("");
+  const doorAvailable = pickupVehicles.length > 0 && meetingLatLng !== null;
+  const door = pickupPointId === "door";
 
   // Get selected variant
   const selectedVariant = priceVariants.find((v) => v.id === selectedVariantId);
@@ -82,7 +94,9 @@ export function BookingForm({ packageId, priceVariants, pickupPoints = [], meeti
 
   const tourAmount = calculateTotal();
   const pickup = pickupPoints.find((p) => p.id === pickupPointId) ?? null;
-  const pickupAmount = pickupFee(pickup, numberOfPax);
+  const doorVehicle = door ? (pickupVehicles.find((v) => v.id === doorVehicleId) ?? null) : null;
+  const doorQuote = doorVehicle && doorPin && meetingLatLng ? quoteDoorPickup(doorVehicle, doorPin, meetingLatLng, numberOfPax) : null;
+  const pickupAmount = door ? (doorQuote?.ok ? doorQuote.fee : 0) : pickupFee(pickup, numberOfPax);
   const totalAmount = tourAmount + pickupAmount;
 
   // Get min date (tomorrow in Manila, not in the visitor's or the server's zone)
@@ -113,6 +127,10 @@ export function BookingForm({ packageId, priceVariants, pickupPoints = [], meeti
   // Submit booking
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    if (door && (!doorPin || !doorVehicle || !doorQuote?.ok)) {
+      setError(!doorPin ? "Pin where we should pick you up." : !doorVehicle ? "Choose a pickup vehicle." : "That vehicle can't take this pickup. Choose another one.");
+      return;
+    }
     setIsSubmitting(true);
     setError(null);
 
@@ -126,7 +144,8 @@ export function BookingForm({ packageId, priceVariants, pickupPoints = [], meeti
         contactEmail: contactEmail.trim(),
         contactPhone: contactPhone.trim(),
         specialRequests: specialRequests.trim() || undefined,
-        pickupPointId: pickupPointId || null,
+        pickupPointId: door ? null : pickupPointId || null,
+        doorPickup: door && doorPin && doorVehicle ? { vehicleId: doorVehicle.id, lat: doorPin.lat, lng: doorPin.lng, note: doorNote.trim() || undefined } : null,
       });
 
       if (!result.success) {
@@ -295,13 +314,14 @@ export function BookingForm({ packageId, priceVariants, pickupPoints = [], meeti
 
           {/* Pickup: always shown, so the price never hides a pickup choice or fee. */}
           <div>
-            {pickupPoints.length ? (
+            {pickupPoints.length || doorAvailable ? (
               <>
                 <label htmlFor="pickupPoint" className="block text-sm font-bold text-daet-ink">
                   Pickup location
                 </label>
                 <Select id="pickupPoint" value={pickupPointId} onChange={(e) => setPickupPointId(e.target.value)} aria-describedby="pickupPointHint">
                   <option value="">No pickup: I&apos;ll go to {meetingPoint ?? "the meeting point"} (free)</option>
+                  {doorAvailable ? <option value="door">Pick me up where I am (door pickup)</option> : null}
                   {pickupPoints.map((point) => (
                     <option key={point.id} value={point.id}>
                       {point.name} · {pickupFeeLabel(point, formatPeso)}
@@ -309,8 +329,22 @@ export function BookingForm({ packageId, priceVariants, pickupPoints = [], meeti
                   ))}
                 </Select>
                 <p id="pickupPointHint" className="mt-1 text-xs text-daet-ink/70">
-                  {pickup?.note ?? "Pickup fees are set by the operator and added to your total."}
+                  {door ? "The operator sends a vehicle to your pin and brings you to the meeting point." : (pickup?.note ?? "Pickup fees are set by the operator and added to your total.")}
                 </p>
+                {door && meetingLatLng ? (
+                  <DoorPickupPicker
+                    vehicles={pickupVehicles}
+                    meeting={meetingLatLng}
+                    meetingName={meetingPoint ?? "the meeting point"}
+                    pax={numberOfPax}
+                    pin={doorPin}
+                    onPin={setDoorPin}
+                    vehicleId={doorVehicleId}
+                    onVehicle={setDoorVehicleId}
+                    note={doorNote}
+                    onNote={setDoorNote}
+                  />
+                ) : null}
               </>
             ) : (
               <>
@@ -342,7 +376,9 @@ export function BookingForm({ packageId, priceVariants, pickupPoints = [], meeti
                   Pickup
                   <span className="text-slate-600 dark:text-slate-400">
                     {" "}
-                    {pickup
+                    {door
+                      ? `(door pickup${doorQuote?.ok ? `, ${doorQuote.km} km` : ""})`
+                      : pickup
                       ? `(${pickup.name}${pickup.feePer === "person" && pickup.fee > 0 ? `, ${formatPeso(pickup.fee)} × ${numberOfPax}` : ""})`
                       : `(${meetingPoint ?? "meeting point"})`}
                   </span>

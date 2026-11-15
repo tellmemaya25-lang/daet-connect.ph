@@ -23,6 +23,13 @@ describe("bookingPrefill", () => {
   it("keeps the group within what the price option allows, and defaults to 1", () => {
     expect(bookingPrefill({ pax: "12" }, open, "2026-11-06", variant).pax).toBe(6);
     expect(bookingPrefill({ pax: "1" }, open, "2026-11-06", variant).pax).toBe(2);
-    expect(bookingPrefill({}, open, "2026-11-06", variant).pax).toBe(1);
+    expect(bookingPrefill({}, open, "2026-11-06", variant).pax).toBe(2);
+  });
+});
+
+describe("group size without a planner value", () => {
+  it("starts at the price option's minimum, not 1", () => {
+    expect(bookingPrefill({}, null, "2026-01-01", { min_pax: 2, max_pax: 50 }).pax).toBe(2);
+    expect(bookingPrefill({}, null, "2026-01-01", undefined).pax).toBe(1);
   });
 });
