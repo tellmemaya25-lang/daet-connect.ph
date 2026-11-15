@@ -16,6 +16,8 @@ import { isUuid } from "@/lib/tours/operator-access";
 import { appBaseUrl } from "@/lib/tours/qr-issue";
 import { deleteItinerary } from "../actions";
 import { ShareControls } from "./share-controls";
+import { ShareWithFriends } from "./share-with-friends";
+import { parseFriendLists } from "@/lib/tours/friends";
 import { SaveTripOffline } from "@/components/tours/save-trip-offline";
 import { callOffState } from "@/lib/tours/call-off";
 import { hasTicket } from "@/lib/tours/ticket";
@@ -69,7 +71,14 @@ export default async function ItineraryPage({ params }: { params: Promise<{ id: 
   });
 
   const days = rowsToDays(rows, itinerary.start_date);
-  const tours = await bookableForDays(supabase, days);
+  // The friends picker's data rides along with the tours lookup: one round trip.
+  const [tours, friendsRes, sharesRes] = await Promise.all([
+    bookableForDays(supabase, days),
+    session.role === "tourist" ? supabase.rpc("tours_my_friends") : Promise.resolve({ data: null }),
+    session.role === "tourist" ? supabase.from("tours_itinerary_shares").select("friend_id").eq("itinerary_id", itinerary.id) : Promise.resolve({ data: [] }),
+  ]);
+  const friends = parseFriendLists(friendsRes.data).friends;
+  const sharedWith = ((sharesRes.data ?? []) as Array<{ friend_id: string }>).map((r) => r.friend_id).filter((fid) => friends.some((f) => f.id === fid));
   const group = groupFromPreferences(itinerary.preferences);
   const prefs = (itinerary.preferences ?? {}) as { pace?: string; origin?: string };
   const gettingThere = await gettingThereFrom({ supabase }, prefs.origin);
@@ -266,6 +275,11 @@ export default async function ItineraryPage({ params }: { params: Promise<{ id: 
             <section id="share" aria-labelledby="share-title" className="scroll-mt-24 rounded-2xl bg-surface p-5">
               <h2 id="share-title" className="mb-3 text-lg font-bold text-daet-ink">Share</h2>
               <ShareControls id={itinerary.id} title={itinerary.title} initialToken={itinerary.share_token} baseUrl={appBaseUrl()} />
+              {session.role === "tourist" ? (
+                <div className="mt-4 border-t border-line pt-4">
+                  <ShareWithFriends itineraryId={itinerary.id} friends={friends} initial={sharedWith} />
+                </div>
+              ) : null}
             </section>
           </aside>
         </div>

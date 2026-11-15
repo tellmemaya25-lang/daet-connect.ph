@@ -1682,6 +1682,22 @@ http
           ],
           packages: [{ id: "aa000000-0000-4000-8000-000000000001", title: "Bagasbas Sunrise Surf Lesson", guide_ids: ["f66b1fe2-a997-4c0b-be13-22d62cf0dba6"] }],
         });
+      // Friends and plans shared with them (20261210).
+      if (url.pathname === "/rest/v1/rpc/tours_my_friends")
+        return send(200, {
+          friends: [{ id: "c1000000-0000-4000-8000-000000000001", name: "Bea Santos", avatar_url: null }],
+          incoming: [{ id: "c1000000-0000-4000-8000-000000000002", name: "Carlo Reyes", avatar_url: null }],
+          outgoing: [],
+        });
+      if (url.pathname === "/rest/v1/rpc/tours_itineraries_shared_with_me")
+        return send(200, [{ id: "c2000000-0000-4000-8000-000000000001", title: "Calaguas weekend", start_date: "2026-12-05", end_date: "2026-12-06", owner: "Bea Santos", shared_at: "2026-11-14T00:00:00Z" }]);
+      if (url.pathname === "/rest/v1/rpc/tours_find_people")
+        return send(200, [{ id: "c1000000-0000-4000-8000-000000000003", name: "Dina Cruz", avatar_url: null, status: "none" }]);
+      if (url.pathname === "/rest/v1/rpc/tours_friend_itinerary")
+        return send(200, { title: "Calaguas weekend", start_date: "2026-12-05", end_date: "2026-12-06", summary: "Two days on the island.", owner: "Bea Santos", items: [{ day_number: 1, item_order: 1, kind: "visit", location_name: "Mahabang Buhangin", description: null, tip: null, latitude: 14.45, longitude: 123.08, start_time: "09:00", end_time: "12:00", travel_minutes: 0, attraction_slug: null }] });
+      if (url.pathname === "/rest/v1/rpc/tours_share_itinerary_with") return send(200, 1);
+      if (url.pathname === "/rest/v1/tours_itinerary_shares") return send(200, []);
+      if (["tours_send_friend_request", "tours_respond_friend_request", "tours_remove_friend"].includes(url.pathname.slice("/rest/v1/rpc/".length))) return send(200, null);
       // Guide hours and revenue (20261209).
       if (url.pathname === "/rest/v1/rpc/tours_guide_revenue")
         return send(200, {
