@@ -72,7 +72,7 @@ export default async function GuideDashboardPage({ searchParams }: { searchParam
       .lt("tour_date", `${nextKey}-01`),
     supabase
       .from("tours_guide_availability")
-      .select("available_date, is_available")
+      .select("available_date, is_available, start_time, end_time")
       .eq("guide_id", guide.id)
       .gte("available_date", `${key}-01`)
       .lt("available_date", `${nextKey}-01`),
@@ -91,7 +91,7 @@ export default async function GuideDashboardPage({ searchParams }: { searchParam
   const operators = chatOperators([...(packageLinks ?? []), ...(assignedTours ?? [])]);
   const tourCounts: Record<string, number> = {};
   for (const t of monthTours ?? []) tourCounts[t.tour_date] = (tourCounts[t.tour_date] ?? 0) + 1;
-  const availabilityMap = Object.fromEntries((availability ?? []).map((a) => [a.available_date, a.is_available]));
+  const availabilityMap = Object.fromEntries((availability ?? []).map((a) => [a.available_date, { available: a.is_available, start: a.start_time, end: a.end_time }]));
   const upcomingTours = (upcoming ?? []) as unknown as Array<{ id: string; booking_reference: string; tour_date: string; number_of_pax: number; contact_name: string; tours_packages: { title: string; location_name: string } | { title: string; location_name: string }[] | null }>;
   const todays = upcomingTours.filter((t) => t.tour_date === today);
   const later = upcomingTours.filter((t) => t.tour_date !== today);
@@ -189,7 +189,7 @@ export default async function GuideDashboardPage({ searchParams }: { searchParam
 
         <Card>
           <CardHeader title="Your availability" />
-          <p className="mb-3 text-sm text-daet-ink/70">Choose what a tap marks, then tap days. Tap a marked day again to clear it. Operators can only assign you on days marked available. To give up a day you're already booked on, use “Suggest another guide” on that tour.</p>
+          <p className="mb-3 text-sm text-daet-ink/70">Choose what a tap does, then tap days. Tap a marked day again to clear it. Use “Set hours” to say when you can work that day; operators can only give you tours inside your hours. To give up a day you're already booked on, use “Suggest another guide” on that tour.</p>
           <AvailabilityCalendar
             key={key}
             month={month}

@@ -100,8 +100,19 @@ export async function proxy(request: NextRequest) {
 
 export const config = {
   matcher: [
-    // Skip static assets, the service worker, and endpoints called by servers (no user session).
-    "/((?!_next/static|_next/image|favicon.ico|sw.js|manifest.webmanifest|api/webhooks|api/notifications/push|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico|ics|mjs)$).*)",
+    {
+      // Skip: static assets and images, the service worker and manifest,
+      // robots/sitemap, fonts and other files, and every /api route. API route
+      // handlers read (and refresh) the session themselves, so running this in
+      // front of them doubled the work on every background poll.
+      source:
+        "/((?!_next/static|_next/image|_next/data|api/|favicon.ico|sw.js|manifest.webmanifest|robots.txt|sitemap.xml|.*\\.(?:svg|png|jpg|jpeg|gif|webp|avif|ico|ics|mjs|js|css|map|txt|xml|json|woff2?|ttf|otf)$).*)",
+      // Link prefetches: the real navigation that follows refreshes the session.
+      missing: [
+        { type: "header", key: "next-router-prefetch" },
+        { type: "header", key: "purpose", value: "prefetch" },
+      ],
+    },
   ],
 };
 

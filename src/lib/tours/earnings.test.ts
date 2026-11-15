@@ -1,4 +1,4 @@
-import { parseGuideEarnings, parseMoneyEarnings } from "./earnings";
+import { monthLabel, parseGuideEarnings, parseGuideRevenue, parseMoneyEarnings } from "./earnings";
 
 describe("parseGuideEarnings", () => {
   it("reads the guide's figures and tours, keeping a missing fee as null", () => {
@@ -32,5 +32,31 @@ describe("parseMoneyEarnings", () => {
     expect(m.totals.net).toBe(4900);
     expect(m.operators[0]).toMatchObject({ name: "Kalmado", collected: 7000, guideFees: 1600 });
     expect(m.guides[0]).toEqual({ id: "g1", name: "Ana", completedTours: 2, earned: 1600, expected: 0 });
+  });
+});
+
+describe("parseGuideRevenue", () => {
+  it("reads paid and owed, sorts operators by earnings and months by date", () => {
+    const r = parseGuideRevenue({
+      earned: "1500.00",
+      paid: "900",
+      owed: 600,
+      paid_ids: ["b1", 7],
+      operators: [
+        { id: "o2", name: "Small", share_pct: null, tours: 1, earned: "300", owed: "300" },
+        { id: "o1", name: "Kalmado", share_pct: "30.00", tours: 3, earned: "1200", owed: "300" },
+      ],
+      months: [{ month: "2026-11", tours: 2, earned: 1000 }, { month: "2026-10", tours: 2, earned: 500 }, { month: "bad", tours: 1, earned: 1 }],
+    });
+    expect(r).toMatchObject({ earned: 1500, paid: 900, owed: 600 });
+    expect([...r.paidIds]).toEqual(["b1"]);
+    expect(r.operators.map((o) => o.name)).toEqual(["Kalmado", "Small"]);
+    expect(r.operators[0].sharePct).toBe(30);
+    expect(r.operators[1].sharePct).toBeNull();
+    expect(r.months.map((m) => m.month)).toEqual(["2026-10", "2026-11"]);
+    expect(monthLabel("2026-11")).toMatch(/Nov.*2026/);
+  });
+  it("is empty for nothing", () => {
+    expect(parseGuideRevenue(null)).toMatchObject({ earned: 0, paid: 0, owed: 0, operators: [], months: [] });
   });
 });

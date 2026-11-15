@@ -22,9 +22,9 @@ export const SWAP_STATUS_LABELS: Record<string, string> = {
 
 const MESSAGES: Record<string, string> = {
   "guide_schedule:not_approved": "That guide isn't approved yet.",
-  "guide_schedule:not_available": "That guide hasn't marked the tour date as available. Ask them to update their schedule first.",
-  "guide_schedule:already_booked": "That guide is already on another tour that day.",
-  "guide_schedule:booked_that_day": "You're on a tour that day. Suggest another guide for it before marking the day unavailable.",
+  "guide_schedule:not_available": "That guide isn't available for this tour's date and hours. Ask them to update their schedule first.",
+  "guide_schedule:already_booked": "That guide is already on another tour at that time.",
+  "guide_schedule:booked_that_day": "You're on a tour in those hours. Suggest another guide for it before changing them.",
   "swap:not_your_tour": "Only the guide assigned to this tour can ask for a swap.",
   "swap:tour_closed": "This tour is already past, cancelled or completed.",
   "swap:reason": `Give a short reason (3 to ${SWAP_REASON_MAX} characters).`,

@@ -32,9 +32,23 @@ describe("usePolling", () => {
     renderHook(() => usePolling(task, 1000));
     await flush();
     setVisibility("hidden");
-    await act(async () => { jest.advanceTimersByTime(10_000); });
+    await act(async () => { jest.advanceTimersByTime(20_000); });
     expect(task).toHaveBeenCalledTimes(1);
     setVisibility("visible");
+    await flush();
+    expect(task).toHaveBeenCalledTimes(2);
+  });
+
+  it("does not poll again on focus when the last poll is recent", async () => {
+    const task = jest.fn().mockResolvedValue(undefined);
+    renderHook(() => usePolling(task, 60_000));
+    await flush();
+    await act(async () => { jest.advanceTimersByTime(5_000); });
+    window.dispatchEvent(new Event("focus"));
+    await flush();
+    expect(task).toHaveBeenCalledTimes(1);
+    await act(async () => { jest.advanceTimersByTime(15_000); });
+    window.dispatchEvent(new Event("focus"));
     await flush();
     expect(task).toHaveBeenCalledTimes(2);
   });
