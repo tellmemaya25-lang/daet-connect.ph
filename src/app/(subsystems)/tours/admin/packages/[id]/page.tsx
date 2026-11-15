@@ -52,60 +52,25 @@ export default async function AdminPackageReviewPage({
     );
   }
 
-  // Get operator details separately
-  const { data: operatorData } = await supabase
-    .from('tours_operators')
-    .select('id, business_name, contact_person, contact_phone, contact_email, profile_id')
-    .eq('id', packageData.operator_id)
-    .single();
+  // Everything below depends only on the package, so it loads in one round
+  // trip instead of six in a row. The operator's name comes with the operator.
+  const [{ data: operatorData }, { data: priceVariants }, { data: inclusions }, { data: stops }, { data: gallery }] = await Promise.all([
+    supabase
+      .from('tours_operators')
+      .select('id, business_name, contact_person, contact_phone, contact_email, profile_id, profiles!tours_operators_profile_id_fkey ( full_name )')
+      .eq('id', packageData.operator_id)
+      .single(),
+    supabase.from('tours_package_price_variants').select('*').eq('package_id', id).order('min_pax', { ascending: true }),
+    supabase.from('tours_package_inclusions').select('*').eq('package_id', id).order('display_order', { ascending: true }),
+    supabase.from('tours_package_stops').select('*').eq('package_id', id).order('stop_order', { ascending: true }),
+    supabase.from('tours_package_gallery').select('*').eq('package_id', id).order('display_order', { ascending: true }),
+  ]);
+  const operatorProfile = (Array.isArray(operatorData?.profiles) ? operatorData?.profiles[0] : operatorData?.profiles) ?? null;
 
-  // Get operator profile
-  let operatorProfile = null;
-  if (operatorData?.profile_id) {
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('full_name')
-      .eq('id', operatorData.profile_id)
-      .single();
-    operatorProfile = profile;
-  }
-
-  // Construct the data structure expected by the rest of the component
   const packageWithOperator = {
     ...packageData,
-    tours_operators: operatorData ? {
-      ...operatorData,
-      profiles: operatorProfile,
-    } : null,
+    tours_operators: operatorData ? { ...operatorData, profiles: operatorProfile } : null,
   };
-
-  // Get price variants
-  const { data: priceVariants } = await supabase
-    .from('tours_package_price_variants')
-    .select('*')
-    .eq('package_id', id)
-    .order('min_pax', { ascending: true });
-
-  // Get inclusions
-  const { data: inclusions } = await supabase
-    .from('tours_package_inclusions')
-    .select('*')
-    .eq('package_id', id)
-    .order('display_order', { ascending: true });
-
-  // Get itinerary stops
-  const { data: stops } = await supabase
-    .from('tours_package_stops')
-    .select('*')
-    .eq('package_id', id)
-    .order('stop_order', { ascending: true });
-
-  // Get gallery images
-  const { data: gallery } = await supabase
-    .from('tours_package_gallery')
-    .select('*')
-    .eq('package_id', id)
-    .order('display_order', { ascending: true });
 
   const operator = packageWithOperator.tours_operators;
 

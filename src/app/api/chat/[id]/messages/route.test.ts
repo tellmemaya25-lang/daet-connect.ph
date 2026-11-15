@@ -1,6 +1,6 @@
-const getUser = jest.fn();
+const getClaims = jest.fn();
 jest.mock("@/lib/supabase/env", () => ({ isSupabaseConfigured: () => true }));
-jest.mock("@/lib/supabase/server", () => ({ createSupabaseServerClient: async () => ({ auth: { getUser }, from: jest.fn() }) }));
+jest.mock("@/lib/supabase/server", () => ({ createSupabaseServerClient: async () => ({ auth: { getClaims }, from: jest.fn() }) }));
 jest.mock("@/app/(subsystems)/tours/messages/actions", () => ({ threadExtras: jest.fn() }));
 
 import { GET } from "./route";
@@ -15,7 +15,7 @@ describe("GET /api/chat/[id]/messages", () => {
     expect((await call(ID, "?after=garbage")).status).toBe(400);
   });
   it("returns 401 when signed out", async () => {
-    getUser.mockResolvedValue({ data: { user: null } });
+    getClaims.mockResolvedValue({ data: null });
     expect((await call(ID, "?after=2026-11-06T00:00:00Z")).status).toBe(401);
   });
 });

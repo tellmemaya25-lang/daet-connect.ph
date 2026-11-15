@@ -4,6 +4,8 @@ import { useEffect, useRef } from "react";
 import { nextDelay } from "@/lib/live/schedule";
 
 const MIN_GAP_MS = 1000;
+/** Focus, a returning tab or the network coming back only poll when the last poll is this old. */
+const WAKE_GAP_MS = 15_000;
 
 /**
  * Runs `task` every `intervalMs` while the tab is visible. It pauses when the
@@ -50,20 +52,22 @@ export function usePolling(task: () => Promise<void>, intervalMs: number, enable
         schedule();
       }
     };
-    const onVisible = () => (document.visibilityState === "visible" ? void run() : clear());
+    // Switching tabs or windows fires these often; a poll a few seconds old is fresh enough.
+    const onWake = () => (Date.now() - lastStart < WAKE_GAP_MS ? schedule() : void run());
+    const onVisible = () => (document.visibilityState === "visible" ? onWake() : clear());
     const onNow = () => void run();
 
     triggerRef.current = onNow;
     void run();
     document.addEventListener("visibilitychange", onVisible);
-    window.addEventListener("focus", onNow);
-    window.addEventListener("online", onNow);
+    window.addEventListener("focus", onWake);
+    window.addEventListener("online", onWake);
     return () => {
       stopped = true;
       clear();
       document.removeEventListener("visibilitychange", onVisible);
-      window.removeEventListener("focus", onNow);
-      window.removeEventListener("online", onNow);
+      window.removeEventListener("focus", onWake);
+      window.removeEventListener("online", onWake);
     };
   }, [intervalMs, enabled]);
 

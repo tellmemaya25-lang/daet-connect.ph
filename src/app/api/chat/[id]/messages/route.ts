@@ -20,10 +20,12 @@ export async function GET(request: Request, context: { params: Promise<{ id: str
   if (!after || Number.isNaN(Date.parse(after))) return NextResponse.json({ error: "bad request" }, { status: 400, headers: HEADERS });
 
   const supabase = await createSupabaseServerClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) return NextResponse.json({ error: "unauthorized" }, { status: 401, headers: HEADERS });
+  // getClaims verifies the session token locally against the project's cached
+  // keys (refreshing it when expired); getUser() made a network call to
+  // Supabase Auth on every poll. Row-level security still guards the data.
+  const { data: auth } = await supabase.auth.getClaims();
+  const userId = auth?.claims?.sub ?? null;
+  if (!userId) return NextResponse.json({ error: "unauthorized" }, { status: 401, headers: HEADERS });
 
   const { data, error } = await supabase.from("tours_messages").select(MESSAGE_COLUMNS).eq("conversation_id", id).gt("created_at", after).order("created_at", { ascending: true }).limit(50);
   if (error) return NextResponse.json({ error: "failed" }, { status: 500, headers: HEADERS });

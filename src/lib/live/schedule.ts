@@ -1,8 +1,8 @@
 /** Polling cadence: slow when Realtime is connected, faster when it is not, backing off on errors. */
 export const POLL_LIVE_MS = 30_000;
-export const POLL_OFFLINE_MS = 10_000;
-export const CHAT_POLL_MS = 5_000;
-export const CHAT_POLL_LIVE_MS = 15_000;
+export const POLL_OFFLINE_MS = 20_000;
+export const CHAT_POLL_MS = 10_000;
+export const CHAT_POLL_LIVE_MS = 60_000;
 export const MAX_BACKOFF_MS = 120_000;
 
 export function pollInterval(realtimeConnected: boolean): number {
