@@ -9,6 +9,7 @@ const COLUMNS = [
       { href: "/tours/browse", label: "Trips" },
       { href: "/tours/plan", label: "Plan a trip" },
       { href: "/tours/attractions", label: "Places" },
+      { href: "/tours/fares", label: "Fare calculator" },
       { href: "/tours/events", label: "Events" },
       { href: "/tours/merch", label: "Souvenirs" },
     ],

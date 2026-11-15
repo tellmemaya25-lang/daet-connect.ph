@@ -252,6 +252,12 @@ export default async function PackageDetailPage({ params }: PageProps) {
             <LineIcon name="pin" className="h-5 w-5" /> Directions to the meeting point
             <span className="sr-only"> (opens Google Maps)</span>
           </a>
+          <Link
+            href={`/tours/fares?package=${pkg.id}`}
+            className="mt-3 ml-0 inline-flex min-h-11 items-center gap-2 rounded-full px-5 font-bold text-daet-ink ring-1 ring-inset ring-daet-ink/20 transition hover:bg-muted sm:ml-2"
+          >
+            How much to get picked up and brought there?
+          </Link>
 
           <section aria-labelledby="about-trip" className="mt-12">
             <h2 id="about-trip" className="text-2xl font-semibold text-daet-ink sm:text-3xl">About this trip</h2>

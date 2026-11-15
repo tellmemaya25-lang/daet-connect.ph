@@ -260,6 +260,14 @@ export default async function BookingDetailPage({ params, searchParams }: PagePr
 
         {booking.status === "pending" || booking.status === "confirmed" ? <PushOptIn variant="prompt" /> : null}
 
+        {(booking.status === "pending" || booking.status === "confirmed") && pkg?.id ? (
+          <p className="mb-6">
+            <Link href={`/tours/fares?package=${pkg.id}&people=${booking.number_of_pax}`} className="inline-flex min-h-11 items-center font-bold text-blue-700 underline underline-offset-4 dark:text-blue-300">
+              How much to get picked up and brought to the meeting point?
+            </Link>
+          </p>
+        ) : null}
+
         {showLive ? (
           <LiveShareCard
             bookingId={booking.id}
