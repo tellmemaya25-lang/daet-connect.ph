@@ -3,7 +3,8 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/field";
 import { formatPeso } from "@/lib/money";
 import { RANGE_PRESETS, type AnalyticsRange } from "@/lib/tours/dashboards";
-import type { GuideEarnings, MoneyEarnings } from "@/lib/tours/earnings";
+import { monthLabel, type GuideEarnings, type GuideRevenue, type MoneyEarnings } from "@/lib/tours/earnings";
+import { pctText } from "@/lib/tours/guide-applications";
 
 const day = (key: string) => new Date(`${key}T00:00:00+08:00`).toLocaleDateString("en-PH", { month: "short", day: "numeric", year: "numeric", timeZone: "Asia/Manila" });
 
@@ -55,7 +56,7 @@ export function RangePicker({ path, range, today }: { path: string; range: Analy
 }
 
 /** A guide's pay: fees on completed tours, what confirmed tours will add, and each tour. */
-export function GuideEarningsView({ past, upcoming }: { past: GuideEarnings; upcoming: GuideEarnings }) {
+export function GuideEarningsView({ past, upcoming, revenue }: { past: GuideEarnings; upcoming: GuideEarnings; revenue?: GuideRevenue | null }) {
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
@@ -64,15 +65,78 @@ export function GuideEarningsView({ past, upcoming }: { past: GuideEarnings; upc
         <Stat label="Average per tour" value={past.completedTours ? formatPeso(past.earned / past.completedTours) : "—"} note="completed tours with a fee" />
         <Stat label="Tours without a fee" value={String(past.unpricedTours)} note="ask the operator to set one" />
       </div>
-      <EarningsTable title="Your tours" tours={[...upcoming.tours.filter((t) => t.status === "confirmed"), ...past.tours]} />
+      {revenue ? <GuideRevenueView revenue={revenue} /> : null}
+      <EarningsTable title="Your tours" tours={[...upcoming.tours.filter((t) => t.status === "confirmed"), ...past.tours]} paidIds={revenue?.paidIds} />
       <p className="text-sm text-slate-600 dark:text-slate-400">
-        Your fee for a tour is your agreed share of its price (pickup fees not counted), or the package&apos;s fixed fee if you haven&apos;t agreed a share with that operator. It is fixed when you are assigned. Operators pay guides directly; this page is your record.
+        Your fee for a tour is your agreed share of its price (pickup fees not counted), or the package&apos;s fixed fee if you haven&apos;t agreed a share with that operator. It is fixed when you are assigned. Operators pay guides directly and mark each tour paid here, so you can see what is still owed.
       </p>
     </div>
   );
 }
 
-function EarningsTable({ title, tours }: { title: string; tours: GuideEarnings["tours"] }) {
+/** Revenue tracking: paid vs owed, who you earned it from, and month by month. */
+export function GuideRevenueView({ revenue }: { revenue: GuideRevenue }) {
+  const top = Math.max(1, ...revenue.months.map((m) => m.earned));
+  return (
+    <>
+      <div className="grid grid-cols-2 gap-3 lg:grid-cols-3">
+        <Stat label="Paid to you" value={formatPeso(revenue.paid)} note="marked paid by the operator" />
+        <Stat label="Still owed" value={formatPeso(revenue.owed)} note="completed tours not yet paid" />
+        <Stat label="Operators" value={String(revenue.operators.length)} note="you earned from in this range" />
+      </div>
+      <div className="grid gap-4 lg:grid-cols-2">
+        <section aria-label="By operator" className="rounded-2xl card-edge bg-surface p-5">
+          <h2 className="text-lg font-bold text-daet-ink">By operator</h2>
+          {revenue.operators.length === 0 ? (
+            <p className="mt-2 text-sm text-slate-600 dark:text-slate-400">No completed tours in this range.</p>
+          ) : (
+            <ul className="mt-3 divide-y divide-line">
+              {revenue.operators.map((o) => (
+                <li key={o.id} className="flex flex-wrap items-baseline justify-between gap-2 py-2 text-sm">
+                  <span>
+                    <span className="font-bold text-daet-ink">{o.name}</span>
+                    <span className="text-slate-600 dark:text-slate-400">
+                      {" "}
+                      · {o.tours} tour{o.tours === 1 ? "" : "s"} · {o.sharePct === null ? "fixed fee" : `${pctText(o.sharePct)} share`}
+                    </span>
+                  </span>
+                  <span className="text-right">
+                    <span className="font-bold">{formatPeso(o.earned)}</span>
+                    {o.owed > 0 ? <span className="block text-xs text-amber-800 dark:text-amber-300">{formatPeso(o.owed)} owed</span> : <span className="block text-xs text-green-800 dark:text-green-300">All paid</span>}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </section>
+        <section aria-label="By month" className="rounded-2xl card-edge bg-surface p-5">
+          <h2 className="text-lg font-bold text-daet-ink">By month</h2>
+          {revenue.months.length === 0 ? (
+            <p className="mt-2 text-sm text-slate-600 dark:text-slate-400">No completed tours in this range.</p>
+          ) : (
+            <ul className="mt-3 space-y-2">
+              {revenue.months.map((m) => (
+                <li key={m.month} className="text-sm">
+                  <div className="flex justify-between gap-2">
+                    <span className="font-bold text-daet-ink">{monthLabel(m.month)}</span>
+                    <span>
+                      {formatPeso(m.earned)} <span className="text-slate-600 dark:text-slate-400">· {m.tours} tour{m.tours === 1 ? "" : "s"}</span>
+                    </span>
+                  </div>
+                  <div className="mt-1 h-2 rounded-full bg-muted" aria-hidden="true">
+                    <div className="h-2 rounded-full bg-daet-forest" style={{ width: `${Math.round((m.earned / top) * 100)}%` }} />
+                  </div>
+                </li>
+              ))}
+            </ul>
+          )}
+        </section>
+      </div>
+    </>
+  );
+}
+
+function EarningsTable({ title, tours, paidIds }: { title: string; tours: GuideEarnings["tours"]; paidIds?: Set<string> }) {
   const seen = new Set<string>();
   const rows = tours.filter((t) => (seen.has(t.id) ? false : (seen.add(t.id), true)));
   return (
@@ -90,6 +154,11 @@ function EarningsTable({ title, tours }: { title: string; tours: GuideEarnings["
                 <th scope="col" className="py-2 pr-3">Guests</th>
                 <th scope="col" className="py-2 pr-3">Status</th>
                 <th scope="col" className="py-2 text-right">Your fee</th>
+                {paidIds ? (
+                  <th scope="col" className="py-2 pl-3 text-right">
+                    Paid
+                  </th>
+                ) : null}
               </tr>
             </thead>
             <tbody>
@@ -102,6 +171,7 @@ function EarningsTable({ title, tours }: { title: string; tours: GuideEarnings["
                   <td className="py-2 pr-3">{t.pax}</td>
                   <td className="py-2 pr-3">{t.status === "completed" ? "Completed" : "Confirmed"}</td>
                   <td className="py-2 text-right font-bold">{t.fee === null ? "No fee set" : formatPeso(t.fee)}</td>
+                  {paidIds ? <td className="py-2 pl-3 text-right">{t.status !== "completed" || t.fee === null ? "—" : paidIds.has(t.id) ? "Paid" : "Owed"}</td> : null}
                 </tr>
               ))}
             </tbody>

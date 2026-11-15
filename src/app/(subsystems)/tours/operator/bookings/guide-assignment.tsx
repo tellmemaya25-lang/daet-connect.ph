@@ -182,7 +182,7 @@ export function GuideAssignment({
 
           {selectedGuideId && availability[selectedGuideId] === false && selectedGuideId !== currentGuideId ? (
             <p className="text-sm font-bold text-yellow-800 dark:text-yellow-200">
-              This guide marked the tour date as not available. Message them before assigning.
+              This guide isn&apos;t available for this tour&apos;s hours. Message them before assigning.
             </p>
           ) : null}
 

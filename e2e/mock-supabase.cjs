@@ -811,7 +811,7 @@ function build(role) {
   };
   const guideAvailability = [
     { guide_id: guides[0].id, available_date: addDays(1), is_available: true },
-    { guide_id: guides[0].id, available_date: addDays(2), is_available: true },
+    { guide_id: guides[0].id, available_date: addDays(2), is_available: true, start_time: "08:00:00", end_time: "12:00:00" },
     { guide_id: guides[0].id, available_date: addDays(4), is_available: false },
   ];
   const itineraries = [
@@ -1682,6 +1682,17 @@ http
           ],
           packages: [{ id: "aa000000-0000-4000-8000-000000000001", title: "Bagasbas Sunrise Surf Lesson", guide_ids: ["f66b1fe2-a997-4c0b-be13-22d62cf0dba6"] }],
         });
+      // Guide hours and revenue (20261209).
+      if (url.pathname === "/rest/v1/rpc/tours_guide_revenue")
+        return send(200, {
+          earned: "2400.00",
+          paid: "1600.00",
+          owed: "800.00",
+          paid_ids: [],
+          operators: [{ id: "6895d172-55b4-452e-90b0-64f26501dc1a", name: "Bagasbas Coast Tours", share_pct: "30.00", tours: 3, earned: "2400.00", owed: "800.00" }],
+          months: [{ month: "2026-10", tours: 1, earned: "800.00" }, { month: "2026-11", tours: 2, earned: "1600.00" }],
+        });
+      if (url.pathname === "/rest/v1/rpc/tours_operator_mark_guide_fees_paid") return send(200, 1);
       if (["tours_operator_set_auto_assign", "tours_operator_set_package_guides"].includes(url.pathname.slice("/rest/v1/rpc/".length)))
         return send(200, null);
       if (url.pathname === "/rest/v1/rpc/tours_guide_apply")

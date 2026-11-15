@@ -4,7 +4,7 @@ import { Notice } from "@/components/ui/notice";
 import { PageFrame } from "@/components/ui/page-frame";
 import { GuideEarningsView, RangePicker } from "@/components/tours/earnings-view";
 import { parseAnalyticsRange } from "@/lib/tours/dashboards";
-import { parseGuideEarnings } from "@/lib/tours/earnings";
+import { parseGuideEarnings, parseGuideRevenue } from "@/lib/tours/earnings";
 import { toManilaDateKey } from "@/lib/tours/events-calendar";
 import { addDays } from "@/lib/tours/itinerary/types";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
@@ -22,9 +22,10 @@ export default async function GuideEarningsPage({ searchParams }: { searchParams
   const today = toManilaDateKey(new Date());
   const range = parseAnalyticsRange(await searchParams, today);
   const supabase = await createSupabaseServerClient();
-  const [past, upcoming] = await Promise.all([
+  const [past, upcoming, revenue] = await Promise.all([
     supabase.rpc("tours_earnings", { p_from: range.from, p_to: range.to }),
     supabase.rpc("tours_earnings", { p_from: addDays(today, 1), p_to: addDays(today, 60) }),
+    supabase.rpc("tours_guide_revenue", { p_from: range.from, p_to: range.to }),
   ]);
 
   return (
@@ -39,7 +40,7 @@ export default async function GuideEarningsPage({ searchParams }: { searchParams
           Please try again in a moment.
         </Notice>
       ) : (
-        <GuideEarningsView past={parseGuideEarnings(past.data)} upcoming={parseGuideEarnings(upcoming.data)} />
+        <GuideEarningsView past={parseGuideEarnings(past.data)} upcoming={parseGuideEarnings(upcoming.data)} revenue={revenue.error ? null : parseGuideRevenue(revenue.data)} />
       )}
     </PageFrame>
   );

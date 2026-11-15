@@ -360,6 +360,8 @@ export type Database = {
           contact_email: string
           contact_name: string
           contact_phone: string
+          guide_fee_paid_at: string | null
+          guide_fee_paid_by: string | null
           created_at: string
           id: string
           number_of_pax: number
@@ -408,6 +410,8 @@ export type Database = {
           contact_email?: string
           contact_name?: string
           contact_phone?: string
+          guide_fee_paid_at?: string | null
+          guide_fee_paid_by?: string | null
           created_at?: string
           id?: string
           number_of_pax?: number
@@ -779,23 +783,29 @@ export type Database = {
         Row: {
           available_date: string
           created_at: string
+          end_time: string | null
           guide_id: string
           id: string
           is_available: boolean
+          start_time: string | null
         }
         Insert: {
           available_date: string
           created_at?: string
+          end_time?: string | null
           guide_id: string
           id?: string
           is_available?: boolean
+          start_time?: string | null
         }
         Update: {
           available_date?: string
           created_at?: string
+          end_time?: string | null
           guide_id?: string
           id?: string
           is_available?: boolean
+          start_time?: string | null
         }
         Relationships: [
           {
@@ -2430,6 +2440,14 @@ export type Database = {
       }
     }
     Functions: {
+      tours_guide_revenue: {
+        Args: { p_from: string; p_to: string }
+        Returns: Json
+      }
+      tours_operator_mark_guide_fees_paid: {
+        Args: { p_booking_ids: string[]; p_paid: boolean }
+        Returns: number
+      }
       concurrency_check: {
         Args: { p_cached_updated_at: string; p_package_id: string }
         Returns: {
