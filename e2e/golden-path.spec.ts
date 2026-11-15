@@ -49,6 +49,9 @@ test("tourist → guide → admin walkthrough screens", async ({ browser }) => {
   await guidePage.goto("/tours/guide/dashboard", { waitUntil: "networkidle" });
   await guidePage.getByRole("link", { name: /guest list/i }).first().click();
   await expect(guidePage).toHaveURL(/\/roster$/);
+  // The guide sees where to pick the guests up.
+  await expect(guidePage.getByText("Pick up the guests")).toBeVisible();
+  await expect(guidePage.getByRole("link", { name: /Directions to the guest/ })).toHaveAttribute("href", /destination=14\.113187,122\.954828/);
   await checkA11y(guidePage, "roster");
   await guide.close();
 

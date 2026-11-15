@@ -19,7 +19,8 @@ export const PICKUP_VEHICLES = {
 } as const;
 export type PickupVehicleType = keyof typeof PICKUP_VEHICLES;
 export const isPickupVehicleType = (v: unknown): v is PickupVehicleType => typeof v === "string" && v in PICKUP_VEHICLES;
-export const MAX_PICKUP_VEHICLES = 10;
+/** One pickup vehicle per tour. */
+export const MAX_PICKUP_VEHICLES = 1;
 
 /** An official fare for a vehicle type, with where it came from. */
 export type OfficialRate = { vehicle: PickupVehicleType; baseFee: number; perKmPerPerson: number; source: string; sourceUrl: string | null; effectiveOn: string | null; checkedOn: string };
@@ -79,7 +80,7 @@ export type VehicleInput = { vehicle: PickupVehicleType; label: string | null; s
 /** Checks the operator's list before it is saved; the database checks again. */
 export function validateVehicles(drafts: VehicleDraft[], priced: readonly string[]): { ok: true; vehicles: VehicleInput[] } | { ok: false; error: string } {
   const filled = drafts.filter((d) => d.vehicle || d.seats);
-  if (filled.length > MAX_PICKUP_VEHICLES) return { ok: false, error: `List up to ${MAX_PICKUP_VEHICLES} vehicles.` };
+  if (filled.length > MAX_PICKUP_VEHICLES) return { ok: false, error: "Set one pickup vehicle for this tour." };
   const num = (s: string) => (s.trim() === "" ? NaN : Number(s.replace(/,/g, "")));
   const vehicles: VehicleInput[] = [];
   for (const [i, d] of filled.entries()) {
@@ -93,4 +94,18 @@ export function validateVehicles(drafts: VehicleDraft[], priced: readonly string
     vehicles.push({ vehicle: d.vehicle, label: d.label.trim().slice(0, 80) || null, seats, max_km: Math.round(maxKm * 10) / 10 });
   }
   return { ok: true, vehicles };
+}
+
+/** A well-known place to drop the pickup pin on with one tap. */
+export type PickupShortcut = { id: string; name: string; lat: number; lng: number };
+
+type ShortcutRow = { id: string; name: string; latitude: number | string | null; longitude: number | string | null };
+
+/** Places with a usable pin, in the order given. */
+export function toPickupShortcuts(rows: ShortcutRow[] | null | undefined): PickupShortcut[] {
+  return (rows ?? []).flatMap((r) => {
+    const lat = Number(r.latitude);
+    const lng = Number(r.longitude);
+    return r.latitude != null && r.longitude != null && Number.isFinite(lat) && Number.isFinite(lng) && Math.abs(lat) <= 90 && Math.abs(lng) <= 180 ? [{ id: r.id, name: r.name, lat, lng }] : [];
+  });
 }

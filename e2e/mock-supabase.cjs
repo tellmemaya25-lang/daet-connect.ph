@@ -609,6 +609,7 @@ function build(role) {
       45,
       "Museum in the old municipal hall facing the Rizal Monument.",
       "Trip.com Daet itinerary (Plus Code 4X73+7WG)",
+      true,
     ),
     A(
       3,
@@ -761,6 +762,8 @@ function build(role) {
     ).toFixed(2),
   };
   booking.assigned_guide_id = "f66b1fe2-a997-4c0b-be13-22d62cf0dba6";
+  // The guest asked to be picked up (door pickup), so the guide sees where.
+  Object.assign(booking, { pickup_lat: 14.113187, pickup_lng: 122.954828, pickup_note: "Daet Heritage Center and Museum", pickup_vehicle: "van", pickup_km: 0.2, pickup_name: "Door pickup: Daet Heritage Center and Museum", pickup_fee: 1 });
   const addDays = (n) => {
     const d = new Date(today() + "T00:00:00Z");
     d.setUTCDate(d.getUTCDate() + n);

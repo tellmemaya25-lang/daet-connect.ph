@@ -1,4 +1,5 @@
 import { notFound, redirect } from "next/navigation";
+import { PickupForCrew } from "@/components/tours/pickup-for-crew";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { Notice } from "@/components/ui/notice";
@@ -37,7 +38,7 @@ export default async function GuideRosterPage({ params }: PageProps) {
   // RLS: the tourist, the operator, the assigned guide and admins can read the booking.
   const { data: booking } = await supabase
     .from("tours_bookings")
-    .select("id, user_id, booking_reference, status, payment_status, tour_date, number_of_pax, contact_name, contact_phone, special_requests, tours_packages ( title, location_name )")
+    .select("id, user_id, booking_reference, status, payment_status, tour_date, number_of_pax, contact_name, contact_phone, special_requests, pickup_lat, pickup_lng, pickup_note, pickup_vehicle, pickup_km, tours_packages ( title, location_name )")
     .eq("id", bookingId)
     .maybeSingle();
   if (!booking || booking.user_id === user.id) notFound();
@@ -83,6 +84,7 @@ export default async function GuideRosterPage({ params }: PageProps) {
               <Badge tone="warning">Not checked in</Badge>
             )}
           </div>
+          <PickupForCrew booking={booking} className="mt-3" />
           {booking.special_requests ? (
             <p className="mt-3 rounded-2xl bg-daet-sand/40 p-3 text-sm text-daet-ink">
               <span className="font-bold">Requests:</span> {booking.special_requests}
