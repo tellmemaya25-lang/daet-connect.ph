@@ -1,4 +1,5 @@
 import type React from "react";
+import { PickupForCrew } from "@/components/tours/pickup-for-crew";
 import { Badge } from "@/components/ui/badge";
 import { ButtonLink } from "@/components/ui/button";
 import { LineIcon } from "@/components/ui/icons";
@@ -243,6 +244,13 @@ type AssignedBooking = {
   status: string;
   number_of_pax: number;
   booking_reference: string;
+  contact_name?: string | null;
+  contact_phone?: string | null;
+  pickup_lat?: number | null;
+  pickup_lng?: number | null;
+  pickup_note?: string | null;
+  pickup_vehicle?: string | null;
+  pickup_km?: number | null;
   tours_packages:
     | { title: string | null; location_name: string | null; cover_image_url: string | null; tours_operators: { business_name: string | null; contact_phone: string | null } | Array<{ business_name: string | null; contact_phone: string | null }> | null }
     | Array<{ title: string | null; location_name: string | null; cover_image_url: string | null; tours_operators: { business_name: string | null; contact_phone: string | null } | Array<{ business_name: string | null; contact_phone: string | null }> | null }>
@@ -282,6 +290,7 @@ function TourCard({ booking, today, swap }: { booking: AssignedBooking; today: s
             </div>
           ))}
         </dl>
+        <PickupForCrew booking={booking} className="mt-3" />
         {operator?.contact_phone ? (
           <p className="mt-2 text-sm text-daet-ink/70">
             Operator contact:{" "}
