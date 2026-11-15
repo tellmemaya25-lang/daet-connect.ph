@@ -5,7 +5,6 @@ import { Button } from "@/components/ui/button";
 import { Input, Select } from "@/components/ui/field";
 import { Notice } from "@/components/ui/notice";
 import { MAX_PICKUP_POINTS, type PickupDraft, type PickupPoint } from "@/lib/tours/pickup";
-import { MUNICIPALITIES } from "@/lib/tours/municipalities";
 import { saveGuideSettings, savePickupPoints, type SettingsResult } from "./pickup-actions";
 
 const blank = (): PickupDraft => ({ name: "", fee: "", feePer: "booking", note: "" });
@@ -33,7 +32,8 @@ export function PickupGuideSettings({
     points.length ? points.map((p) => ({ name: p.name, fee: p.fee ? String(p.fee) : "", feePer: p.feePer, note: p.note ?? "" })) : [blank()],
   );
   const [fee, setFee] = useState(guideFee === null ? "" : String(guideFee));
-  const [area, setArea] = useState(municipality ?? "");
+  // Tours are in Daet; the saved municipality is kept as it is and no longer decides guides.
+  const area = municipality ?? "";
   const [pickupResult, setPickupResult] = useState<SettingsResult | null>(null);
   const [guideResult, setGuideResult] = useState<SettingsResult | null>(null);
   const [pending, start] = useTransition();
@@ -96,26 +96,15 @@ export function PickupGuideSettings({
       </section>
 
       <section aria-labelledby="guide-heading" className="space-y-3">
-        <h3 id="guide-heading" className="font-bold text-daet-ink">Guide fee and area</h3>
+        <h3 id="guide-heading" className="font-bold text-daet-ink">Guide fee</h3>
         <p className="text-sm text-slate-600 dark:text-slate-400">
-          Guides on your team earn the share of the tour price you agreed with them (set on Guides). This fixed fee only applies to a guide who has no agreed share yet. The municipality decides which of your guides are proposed for new bookings.
+          Guides on your team earn the share of the tour price you agreed with them (set on Guides). This fixed fee only applies to a guide who has no agreed share yet.
         </p>
         {guideResult ? <Notice variant={guideResult.ok ? "success" : "error"}>{guideResult.message}</Notice> : null}
         <div className="grid gap-3 sm:grid-cols-2">
           <label className="text-sm font-bold text-daet-ink">
             Fixed guide fee, if no share is agreed (₱)
             <Input value={fee} inputMode="decimal" placeholder="e.g. 800" onChange={(e) => setFee(e.target.value.replace(/[^\d.,]/g, ""))} />
-          </label>
-          <label className="text-sm font-bold text-daet-ink">
-            Municipality
-            <Select value={area} onChange={(e) => setArea(e.target.value)}>
-              <option value="">Not set (no automatic guide)</option>
-              {MUNICIPALITIES.map((m) => (
-                <option key={m} value={m}>
-                  {m}
-                </option>
-              ))}
-            </Select>
           </label>
         </div>
         <Button disabled={pending} onClick={() => start(async () => setGuideResult(await saveGuideSettings(packageId, fee, area)))}>

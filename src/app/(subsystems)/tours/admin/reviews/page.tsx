@@ -9,6 +9,8 @@ import { Stars } from "@/components/tours/star-rating";
 import { AdminPageHeading, PromoAdminDenied } from "@/components/tours/promo-admin-denied";
 import { requirePromoAdmin } from "@/lib/tours/promo-admin";
 import { ModerateForm } from "./moderate-form";
+import { BanButtons } from "../reports/ban-buttons";
+import { parseReviewWatch, type WatchRow } from "@/lib/tours/admin-moderation";
 
 export const metadata = { title: "Moderate reviews" };
 
@@ -19,7 +21,7 @@ export default async function AdminReviewsPage({ searchParams }: { searchParams:
   if (!admin.ok) return <PromoAdminDenied message={admin.error} next="/tours/admin/reviews" />;
 
   const params = await searchParams;
-  const filter = params.show === "hidden" ? "hidden" : params.show === "low" ? "low" : "all";
+  const filter = params.show === "hidden" ? "hidden" : params.show === "low" ? "low" : params.show === "watch" ? "watch" : "all";
   const reviewId = typeof params.review === "string" && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(params.review) ? params.review : null;
   let query = admin.supabase
     .from("tours_reviews")
@@ -29,13 +31,18 @@ export default async function AdminReviewsPage({ searchParams }: { searchParams:
   if (reviewId) query = query.eq("id", reviewId);
   else if (filter === "hidden") query = query.eq("is_hidden", true);
   else if (filter === "low") query = query.lte("rating", 2);
-  const { data, error } = await query;
-  const reviews = data ?? [];
+  const [{ data, error }, watchRes] = await Promise.all([
+    filter === "watch" ? Promise.resolve({ data: [], error: null }) : query,
+    filter === "watch" ? admin.supabase.rpc("tours_admin_review_watch", { p_days: 90 }) : Promise.resolve({ data: null, error: null }),
+  ]);
+  const reviews = (data ?? []) as NonNullable<Awaited<typeof query>["data"]>;
+  const watch = parseReviewWatch(watchRes.data);
 
   const tabs = [
     { key: "all", label: "All" },
     { key: "low", label: "1–2 stars" },
     { key: "hidden", label: "Hidden" },
+    { key: "watch", label: "Watch list" },
   ];
 
   return (
@@ -62,7 +69,13 @@ export default async function AdminReviewsPage({ searchParams }: { searchParams:
 
       {error ? <Notice variant="error" className="mb-4">Reviews could not be loaded.</Notice> : null}
 
-      {reviews.length === 0 ? (
+      {filter === "watch" ? (
+        <div className="space-y-8">
+          {watchRes.error ? <Notice variant="error">The watch list could not be loaded.</Notice> : null}
+          <WatchTable title="Operators with low reviews (last 90 days)" rows={watch.operators} />
+          <WatchTable title="Guides with low reviews (last 90 days)" rows={watch.guides} />
+        </div>
+      ) : reviews.length === 0 ? (
         <EmptyState icon={<LineIcon name="star" />} title="No reviews here" />
       ) : (
         <ul className="space-y-4">
@@ -103,5 +116,46 @@ export default async function AdminReviewsPage({ searchParams }: { searchParams:
         </ul>
       )}
     </PageFrame>
+  );
+}
+
+/** Operators or guides ranked by 1–2 star reviews, with their open reports and quick moderation. */
+function WatchTable({ title, rows }: { title: string; rows: WatchRow[] }) {
+  return (
+    <section aria-label={title} className="rounded-2xl card-edge bg-surface p-5">
+      <h2 className="text-lg font-bold text-daet-ink">{title}</h2>
+      {rows.length === 0 ? (
+        <p className="mt-2 text-sm text-daet-ink/70">No one has low reviews in this period.</p>
+      ) : (
+        <ul className="mt-3 divide-y divide-line">
+          {rows.map((r) => (
+            <li key={r.id} className="flex flex-wrap items-start justify-between gap-3 py-3">
+              <div>
+                <p className="font-bold text-daet-ink">
+                  {r.name} {r.suspended ? <Badge tone="danger">Banned</Badge> : null}
+                </p>
+                <p className="text-sm text-daet-ink/70">
+                  {r.low} low review{r.low === 1 ? "" : "s"} · average {r.average ?? "—"} from {r.reviews} · {r.hidden} hidden · {r.openReports} open report{r.openReports === 1 ? "" : "s"}
+                </p>
+                <p className="text-sm">
+                  <Link href="/tours/admin/reviews?show=low" className="font-bold text-blue-700 underline underline-offset-4 dark:text-blue-300">
+                    Low reviews
+                  </Link>
+                  {r.profileId ? (
+                    <>
+                      {" · "}
+                      <Link href={`/tours/admin/activity?actor=${r.profileId}`} className="font-bold text-blue-700 underline underline-offset-4 dark:text-blue-300">
+                        Their activity
+                      </Link>
+                    </>
+                  ) : null}
+                </p>
+              </div>
+              {r.profileId && !r.suspended ? <BanButtons profileId={r.profileId} name={r.name} /> : null}
+            </li>
+          ))}
+        </ul>
+      )}
+    </section>
   );
 }

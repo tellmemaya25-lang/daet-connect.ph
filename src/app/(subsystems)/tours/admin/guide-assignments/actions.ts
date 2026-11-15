@@ -2,26 +2,14 @@
 
 import { revalidatePath } from "next/cache";
 import { userFacingDbError } from "@/lib/tours/db-errors";
-import { isMunicipality } from "@/lib/tours/municipalities";
 import { isUuid } from "@/lib/tours/operator-access";
 import { requirePromoAdmin } from "@/lib/tours/promo-admin";
 
 export type AssignmentResult = { ok: boolean; message: string };
 
-/** The municipalities a guide serves; new bookings there propose them first. */
-export async function setGuideAreas(guideId: string, areas: string[]): Promise<AssignmentResult> {
-  const admin = await requirePromoAdmin();
-  if (!admin.ok) return { ok: false, message: admin.error };
-  if (!isUuid(guideId) || !Array.isArray(areas) || !areas.every(isMunicipality)) return { ok: false, message: "Choose municipalities from the list." };
-  const { error } = await admin.supabase.rpc("tours_admin_set_guide_areas", { p_guide_id: guideId, p_areas: areas });
-  if (error) return { ok: false, message: userFacingDbError(error, "The service areas could not be saved.") };
-  revalidatePath("/tours/admin/guide-assignments");
-  return { ok: true, message: areas.length ? `Serves ${areas.join(", ")}.` : "No service areas: this guide is not proposed automatically." };
-}
-
 /**
  * Proposes a guide for a booking (null = let the system pick the least busy
- * free guide in the package's area). The booking's operator approves it.
+ * free guide on the operator's team). The booking's operator approves it.
  */
 export async function proposeGuide(bookingId: string, guideId: string | null): Promise<AssignmentResult> {
   const admin = await requirePromoAdmin();

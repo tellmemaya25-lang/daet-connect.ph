@@ -11,6 +11,7 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { toSummary } from "@/lib/tours/reviews";
 import { getAuthenticatedSession } from "@/lib/tours/server-auth";
 import { ReplyForm } from "./reply-form";
+import { ReportButton } from "@/components/tours/report/report-button";
 
 export const metadata = { title: "Reviews" };
 
@@ -90,6 +91,7 @@ export default async function OperatorReviewsPage() {
                   ) : null}
                   <div className="mt-3">
                     <ReplyForm reviewId={review.id} current={review.operator_reply} />
+                    <ReportButton type="review" targetId={review.id} label="Report this review as unfair" />
                   </div>
                 </Card>
               </li>

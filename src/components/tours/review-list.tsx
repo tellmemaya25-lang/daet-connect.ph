@@ -1,10 +1,11 @@
 import { Stars } from "@/components/tours/star-rating";
 import type { Review } from "@/lib/tours/reviews";
+import { ReportButton } from "@/components/tours/report/report-button";
 
 const date = (iso: string) => new Date(iso).toLocaleDateString("en-PH", { month: "short", day: "numeric", year: "numeric", timeZone: "Asia/Manila" });
 
 /** Public review cards with the operator's reply. Reviewer names are not shown. */
-export function ReviewList({ reviews, operatorName, emptyText = "No reviews yet." }: { reviews: Review[]; operatorName: string; emptyText?: string }) {
+export function ReviewList({ reviews, operatorName, emptyText = "No reviews yet.", canReport = false }: { reviews: Review[]; operatorName: string; emptyText?: string; canReport?: boolean }) {
   if (reviews.length === 0) return <p className="rounded-2xl card-edge bg-surface p-5 text-daet-ink/80">{emptyText}</p>;
   return (
     <ul className="space-y-4">
@@ -21,6 +22,7 @@ export function ReviewList({ reviews, operatorName, emptyText = "No reviews yet.
               <p className="mt-1 whitespace-pre-line text-daet-ink/80">{review.operator_reply}</p>
             </div>
           ) : null}
+          {canReport ? <ReportButton type="review" targetId={review.id} label="Report this review" /> : null}
         </li>
       ))}
     </ul>

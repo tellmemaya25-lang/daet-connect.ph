@@ -1,9 +1,8 @@
 import { Notice } from "@/components/ui/notice";
 import { PageFrame } from "@/components/ui/page-frame";
 import { AdminPageHeading, PromoAdminDenied } from "@/components/tours/promo-admin-denied";
-import { packagesWithoutGuides, parseCoverage, uncoveredAreas } from "@/lib/tours/guide-coverage";
+import { parseCoverage } from "@/lib/tours/guide-coverage";
 import { requirePromoAdmin } from "@/lib/tours/promo-admin";
-import { GuideAreasForm } from "./guide-areas-form";
 import { PackageGuidesForm } from "./package-guides-form";
 import { ProposeGuide } from "./propose-guide";
 
@@ -17,39 +16,21 @@ export default async function GuideAssignmentsPage() {
 
   const { data, error } = await admin.supabase.rpc("tours_admin_guide_coverage");
   const coverage = parseCoverage(data);
-  const gaps = uncoveredAreas(coverage.areas);
-  const unguided = packagesWithoutGuides(coverage.packages);
   const guideOptions = coverage.guides.map((g) => ({ id: g.id, name: g.name }));
 
   return (
     <PageFrame adminNav>
       <AdminPageHeading title="Guide assignments" backHref="/tours/admin" backLabel="Admin dashboard" />
       <p className="mb-6 max-w-3xl text-slate-600 dark:text-slate-400">
-        Each new booking is proposed a free guide automatically from the guides who work with its operator: first the guides chosen for that package, then those who serve the package&apos;s municipality, the least busy first. You can assign someone yourself below. Either way, the operator approves the guide before the tour.
+        Each new booking is proposed a free guide automatically from the guides on its operator&apos;s team: first the guides chosen for that package, then the rest of the team, the least busy first. You can assign someone yourself below. Either way, the operator approves the guide before the tour.
       </p>
 
       {error ? (
         <Notice variant="error" title="Guide assignments could not be loaded">
-          {error.code === "PGRST202" ? "The database update for guide areas has not been applied yet." : "Please try again in a moment."}
+          {error.code === "PGRST202" ? "The database update for guide assignments has not been applied yet." : "Please try again in a moment."}
         </Notice>
       ) : (
         <div className="space-y-8">
-          {gaps.length ? (
-            <Notice variant="warning" title="Towns with tours but no guide">
-              {gaps.map((a) => a.municipality).join(", ")}. Add a service area to a guide below so these tours get a guide.
-            </Notice>
-          ) : null}
-          {unguided.length ? (
-            <Notice variant="warning" title="Tours that can't get a guide yet">
-              {unguided.map((p) => `${p.title} (${p.operator})`).join(", ")}. Choose guides for them below, or have the operator set their municipality.
-            </Notice>
-          ) : null}
-          {coverage.unplacedPackages ? (
-            <Notice variant="info">
-              {coverage.unplacedPackages} published tour{coverage.unplacedPackages === 1 ? " has" : "s have"} no municipality yet, so no guide is proposed for {coverage.unplacedPackages === 1 ? "it" : "them"}. Operators set it on the package page.
-            </Notice>
-          ) : null}
-
           <section aria-labelledby="waiting-heading">
             <h2 id="waiting-heading" className="mb-3 text-xl font-bold text-daet-ink">
               Upcoming bookings without a guide ({coverage.bookings.length})
@@ -65,13 +46,13 @@ export default async function GuideAssignmentsPage() {
                         {b.title} · {day(b.date)}
                       </p>
                       <p className="text-sm text-slate-600 dark:text-slate-400">
-                        {b.reference} · {b.operator} · {b.pax} guest{b.pax === 1 ? "" : "s"} · {b.municipality ?? "No municipality"} · {b.status}
+                        {b.reference} · {b.operator} · {b.pax} guest{b.pax === 1 ? "" : "s"} · {b.status}
                       </p>
                       <p className="mt-1 text-sm text-daet-ink">
                         {b.proposal === "proposed"
                           ? `${b.proposedBy === "admin" ? "Assigned by the Tourism Office" : "Picked automatically"}: ${b.proposedGuideName ?? "a guide"}, waiting for the operator to approve.`
                           : b.proposal === "none_available"
-                            ? "No free guide in this area that day."
+                            ? "No free guide on the operator’s team at that time."
                             : "No guide proposed yet."}
                       </p>
                     </div>
@@ -87,7 +68,7 @@ export default async function GuideAssignmentsPage() {
               Guides for each package
             </h2>
             <p className="mb-3 text-sm text-slate-600 dark:text-slate-400">
-              These guides are proposed first for the package&apos;s bookings. When all of them are busy, a free guide from the package&apos;s municipality is proposed instead.
+              These guides are proposed first for the package&apos;s bookings. When all of them are busy, another free guide from the operator&apos;s team is proposed instead.
             </p>
             {coverage.packages.length === 0 ? (
               <p className="rounded-2xl bg-surface p-4 text-slate-600 dark:text-slate-400">No published packages yet.</p>
@@ -100,46 +81,6 @@ export default async function GuideAssignmentsPage() {
             )}
           </section>
 
-          <section aria-labelledby="areas-heading">
-            <h2 id="areas-heading" className="mb-3 text-xl font-bold text-daet-ink">
-              Guides per municipality
-            </h2>
-            <div className="overflow-x-auto rounded-2xl card-edge bg-surface p-4">
-              <table className="w-full min-w-[24rem] text-left text-sm">
-                <thead>
-                  <tr className="border-b border-line">
-                    <th scope="col" className="py-2 pr-3">Municipality</th>
-                    <th scope="col" className="py-2 pr-3 text-right">Guides</th>
-                    <th scope="col" className="py-2 text-right">Published tours</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {coverage.areas.map((a) => (
-                    <tr key={a.municipality} className="border-b border-line/60">
-                      <td className="py-2 pr-3 font-bold">{a.municipality}</td>
-                      <td className={`py-2 pr-3 text-right ${a.packages > 0 && a.guides === 0 ? "font-bold text-red-700 dark:text-red-300" : ""}`}>{a.guides}</td>
-                      <td className="py-2 text-right">{a.packages}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </section>
-
-          <section aria-labelledby="guides-heading">
-            <h2 id="guides-heading" className="mb-3 text-xl font-bold text-daet-ink">
-              Service areas by guide
-            </h2>
-            {coverage.guides.length === 0 ? (
-              <p className="rounded-2xl bg-surface p-4 text-slate-600 dark:text-slate-400">No approved guides yet.</p>
-            ) : (
-              <div className="space-y-3">
-                {coverage.guides.map((g) => (
-                  <GuideAreasForm key={g.id} guideId={g.id} name={g.name} areas={g.areas} />
-                ))}
-              </div>
-            )}
-          </section>
         </div>
       )}
     </PageFrame>

@@ -2440,6 +2440,14 @@ export type Database = {
       }
     }
     Functions: {
+      tours_admin_activity: { Args: { p_actor?: string; p_before?: string; p_entity?: string; p_from?: string; p_limit?: number; p_role?: string; p_to?: string }; Returns: Json }
+      tours_admin_ban: { Args: { p_days: number | null; p_reason: string; p_user_id: string }; Returns: string | null }
+      tours_admin_clear_expired_bans: { Args: never; Returns: number }
+      tours_admin_reports: { Args: { p_limit?: number; p_status?: string }; Returns: Json }
+      tours_admin_resolve_report: { Args: { p_id: string; p_note: string; p_status: string }; Returns: undefined }
+      tours_admin_revenue: { Args: { p_from: string; p_to: string }; Returns: Json }
+      tours_admin_review_watch: { Args: { p_days?: number }; Returns: Json }
+      tours_submit_report: { Args: { p_details: string; p_reason: string; p_target: string; p_type: string }; Returns: string }
       tours_find_people: { Args: { p_query: string }; Returns: Json }
       tours_friend_itinerary: { Args: { p_itinerary: string }; Returns: Json }
       tours_itineraries_shared_with_me: { Args: never; Returns: Json }
