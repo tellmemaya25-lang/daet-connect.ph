@@ -48,5 +48,5 @@ export async function saveDoorPickupVehicles(packageId: string, drafts: VehicleD
     return { ok: false, message: userFacingDbError(error, "The pickup vehicles could not be saved. Please try again.") };
   }
   revalidatePackage(packageId);
-  return { ok: true, message: checked.vehicles.length ? `Door pickup on: ${checked.vehicles.length} vehicle${checked.vehicles.length === 1 ? "" : "s"}.` : "Door pickup turned off." };
+  return { ok: true, message: checked.vehicles.length ? "Door pickup on. Guests can ask to be picked up." : "Door pickup turned off." };
 }

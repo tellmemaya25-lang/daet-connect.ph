@@ -68,7 +68,6 @@ export function BookingForm({ packageId, priceVariants, meetingPoint = null, pic
   // "" = no pickup, or "door" for door pickup.
   const [pickupPointId, setPickupPointId] = useState("");
   const [doorPin, setDoorPin] = useState<LatLng | null>(null);
-  const [doorVehicleId, setDoorVehicleId] = useState("");
   const [doorNote, setDoorNote] = useState("");
   const doorAvailable = pickupVehicles.length > 0 && meetingLatLng !== null;
   const door = pickupPointId === "door";
@@ -92,7 +91,8 @@ export function BookingForm({ packageId, priceVariants, meetingPoint = null, pic
   };
 
   const tourAmount = calculateTotal();
-  const doorVehicle = door ? (pickupVehicles.find((v) => v.id === doorVehicleId) ?? null) : null;
+  // One vehicle per tour, set by the operator.
+  const doorVehicle = door ? (pickupVehicles[0] ?? null) : null;
   const doorQuote = doorVehicle && doorPin && meetingLatLng ? quoteDoorPickup(doorVehicle, doorPin, meetingLatLng, numberOfPax) : null;
   const pickupAmount = door ? (doorQuote?.ok ? doorQuote.fee : 0) : 0;
   const totalAmount = tourAmount + pickupAmount;
@@ -126,7 +126,7 @@ export function BookingForm({ packageId, priceVariants, meetingPoint = null, pic
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (door && (!doorPin || !doorVehicle || !doorQuote?.ok)) {
-      setError(!doorPin ? "Pin where we should pick you up." : !doorVehicle ? "Choose a pickup vehicle." : "That vehicle can't take this pickup. Choose another one.");
+      setError(!doorPin ? "Choose where we should pick you up." : "This pickup can't be done: see the note under Pick me up.");
       return;
     }
     setIsSubmitting(true);
@@ -319,22 +319,20 @@ export function BookingForm({ packageId, priceVariants, meetingPoint = null, pic
                 </label>
                 <Select id="pickupPoint" value={pickupPointId} onChange={(e) => setPickupPointId(e.target.value)} aria-describedby="pickupPointHint">
                   <option value="">No pickup: I&apos;ll go to {meetingPoint ?? "the meeting point"} (free)</option>
-                  <option value="door">Pick me up where I am (door pickup)</option>
+                  <option value="door">Yes, pick me up (fee added to my total)</option>
                 </Select>
                 <p id="pickupPointHint" className="mt-1 text-xs text-daet-ink/70">
-                  {door ? "The operator sends a vehicle to your pin and brings you to the meeting point." : "The pickup fee is the official van fare for the distance, added to your total."}
+                  {door ? "The operator's vehicle picks you up and brings you to the meeting point." : "The pickup fee is the official van fare for the distance, added to your total."}
                 </p>
                 {door && meetingLatLng ? (
                   <DoorPickupPicker
-                    vehicles={pickupVehicles}
+                    vehicle={pickupVehicles[0]}
                     shortcuts={pickupShortcuts}
                     meeting={meetingLatLng}
                     meetingName={meetingPoint ?? "the meeting point"}
                     pax={numberOfPax}
                     pin={doorPin}
                     onPin={setDoorPin}
-                    vehicleId={doorVehicleId}
-                    onVehicle={setDoorVehicleId}
                     note={doorNote}
                     onNote={setDoorNote}
                   />

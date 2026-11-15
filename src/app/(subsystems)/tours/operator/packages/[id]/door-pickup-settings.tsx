@@ -26,7 +26,7 @@ export function DoorPickupSettings({ packageId, vehicles, rates, hasMeetingPin }
     <section aria-labelledby="door-pickup-heading" className="space-y-3">
       <h3 id="door-pickup-heading" className="font-bold text-daet-ink">Door pickup (pasundo)</h3>
       <p className="text-sm text-slate-600 dark:text-slate-400">
-        Guests pin where they are; you send a vehicle and bring them to the meeting point. You don&apos;t set the price: the fee is the official fare for the vehicle, per person, for the distance by road from their pin to the meeting point, and it is added to their total.
+        Set the one vehicle you send for guests who want a pickup; you bring them to the meeting point. You don&apos;t set the price: the fee is the official fare for the vehicle, per person, for the distance by road from their pin to the meeting point, and it is added to their total.
       </p>
       {rates.length ? (
         <ul className="space-y-1 text-sm text-slate-600 dark:text-slate-400">
@@ -47,7 +47,7 @@ export function DoorPickupSettings({ packageId, vehicles, rates, hasMeetingPin }
         {drafts.map((d, i) => (
           <li key={i} className="grid gap-2 rounded-2xl border border-line p-3 sm:grid-cols-4">
             <label className="text-sm font-bold text-daet-ink sm:col-span-2">
-              Vehicle {i + 1}
+              Pickup vehicle
               <Select value={d.vehicle} onChange={(e) => update(i, { vehicle: e.target.value })}>
                 <option value="">Choose…</option>
                 {rates.map((r) => (
@@ -70,8 +70,8 @@ export function DoorPickupSettings({ packageId, vehicles, rates, hasMeetingPin }
               <Input value={d.label} maxLength={80} placeholder="e.g. Aircon van" onChange={(e) => update(i, { label: e.target.value })} />
             </label>
             <div className="flex items-end">
-              <Button type="button" variant="ghost" onClick={() => setDrafts((all) => all.filter((_, j) => j !== i))} aria-label={`Remove vehicle ${i + 1}`}>
-                Remove
+              <Button type="button" variant="ghost" onClick={() => setDrafts((all) => all.filter((_, j) => j !== i))} aria-label="Turn off door pickup">
+                Turn off
               </Button>
             </div>
           </li>
@@ -84,7 +84,7 @@ export function DoorPickupSettings({ packageId, vehicles, rates, hasMeetingPin }
           </Button>
         ) : null}
         <Button type="button" disabled={pending} onClick={() => start(async () => setResult(await saveDoorPickupVehicles(packageId, drafts)))}>
-          Save door pickup
+          Save pickup vehicle
         </Button>
       </div>
     </section>
