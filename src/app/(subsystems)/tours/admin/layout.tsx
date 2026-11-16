@@ -2,7 +2,8 @@ import type { ReactNode } from "react";
 import { cookies } from "next/headers";
 import { AdminShell } from "@/components/admin/admin-shell";
 import { QUEUE_HREFS, SIDEBAR_COOKIE } from "@/components/admin/nav";
-import { PageFrame, signedInViewer } from "@/components/ui/page-frame";
+import { Live, PageFrame, signedInViewer } from "@/components/ui/page-frame";
+import { loadNotifications } from "@/lib/tours/notifications-server";
 import { accountLinks, roleTabs } from "@/lib/tours/dashboards";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
@@ -53,20 +54,28 @@ export default async function AdminLayout({
   if (!session?.user || session.role !== "admin")
     return <PageFrame>{children}</PageFrame>;
   const collapsed = (await cookies()).get(SIDEBAR_COOKIE)?.value === "1";
-  const [viewer, counts] = await Promise.all([signedInViewer(), queueCounts()]);
+  const [viewer, counts, notifications] = await Promise.all([
+    signedInViewer(),
+    queueCounts(),
+    loadNotifications(),
+  ]);
   const account = viewer ?? {
     initial: "A",
     name: session.user.email ?? "Admin",
     avatarUrl: null,
   };
   return (
-    <AdminShell
-      initialCollapsed={collapsed}
-      counts={counts}
-      account={account}
-      accountLinks={accountLinks("admin", roleTabs("admin"))}
-    >
-      {children}
-    </AdminShell>
+    // The live poller feeds the bell, the unread-chat badge and the pages' live counts, as PageFrame did.
+    <Live initial={notifications}>
+      <AdminShell
+        initialCollapsed={collapsed}
+        counts={counts}
+        notifications={notifications}
+        account={account}
+        accountLinks={accountLinks("admin", roleTabs("admin"))}
+      >
+        {children}
+      </AdminShell>
+    </Live>
   );
 }

@@ -199,3 +199,13 @@ test("the admin top bar searches records and Ctrl+Space focuses it", async ({ co
   await search.press("Enter");
   await expect(page).toHaveURL(/\/tours\/admin\?q=bagasbas/);
 });
+
+test("the admin top bar has messages and notifications", async ({ context, page }) => {
+  await signInAs(context, "admin");
+  await visit(page, "/tours/admin");
+  await page.setViewportSize({ width: 1400, height: 900 });
+  await expect(page.getByRole("link", { name: /^Messages/ }).first()).toHaveAttribute("href", "/tours/messages");
+  const bell = page.getByRole("button", { name: /^Notifications/ });
+  await bell.click();
+  await expect(page.getByText("Notifications", { exact: true })).toBeVisible();
+});

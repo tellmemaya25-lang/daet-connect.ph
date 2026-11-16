@@ -6,6 +6,9 @@ import { useEffect, useRef, useState, type ReactNode } from "react";
 import { LineIcon } from "@/components/ui/icons";
 import { AccountMenu, type AccountLink } from "@/components/ui/account-menu";
 import { cn } from "@/components/ui/cn";
+import { NotificationBell } from "@/components/tours/notification-bell";
+import { UnreadMessagesBadge } from "@/components/chat/unread-badge";
+import type { LoadedNotifications } from "@/lib/tours/notifications-server";
 import { AdminSearch } from "./admin-search";
 import {
   ADMIN_GROUPS,
@@ -161,12 +164,14 @@ export function AdminShell({
   account,
   accountLinks,
   counts,
+  notifications,
 }: {
   children: ReactNode;
   initialCollapsed: boolean;
   account: { initial: string; name: string; avatarUrl: string | null };
   accountLinks: AccountLink[];
   counts: Record<string, number>;
+  notifications: LoadedNotifications | null;
 }) {
   const pathname = usePathname() ?? "/tours/admin";
   const [collapsed, setCollapsed] = useState(initialCollapsed);
@@ -250,6 +255,18 @@ export function AdminShell({
               </p>
             </div>
             <AdminSearch />
+            <div className="flex items-center gap-1">
+              <Link
+                href="/tours/messages"
+                title="Messages"
+                className="relative grid h-11 w-11 place-items-center rounded-full text-daet-ink hover:bg-muted"
+              >
+                <LineIcon name="message" className="h-6 w-6" />
+                <span className="sr-only">Messages</span>
+                <UnreadMessagesBadge className="absolute right-0 top-0" />
+              </Link>
+              <NotificationBell initial={notifications} />
+            </div>
             <AccountMenu
               initial={account.initial}
               name={account.name}
