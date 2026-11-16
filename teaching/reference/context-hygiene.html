@@ -1,0 +1,11 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Context hygiene cheat sheet</title><link rel="stylesheet" href="../assets/style.css"></head><body>
+<h1>Context hygiene</h1><p class="meta">From <a href="../lessons/0001-notice-and-recover.html">Lesson 1</a></p>
+<table><tr><th>Signal</th><th>Move</th></tr>
+<tr><td>Corrected twice, still wrong</td><td><code>/clear</code> + one better prompt</td></tr>
+<tr><td>Unrelated next task</td><td><code>/clear</code></td></tr>
+<tr><td>Bad detour, good earlier work</td><td><code>/rewind</code> / <code>Esc Esc</code></td></tr>
+<tr><td>Same task, stale history</td><td><code>/compact &lt;focus&gt;</code></td></tr>
+<tr><td>Noisy search / fresh reviewer</td><td>Subagent</td></tr>
+<tr><td>Must survive resets</td><td>Write to AGENTS.md / CONTEXT.md / NOTES.md; keep short</td></tr></table>
+<p class="cite">Sources: <a href="https://code.claude.com/docs/en/best-practices">Claude Code best practices</a>, <a href="https://www.anthropic.com/engineering/effective-context-engineering-for-ai-agents">Anthropic context engineering</a>. Percent thresholds for the "dumb zone" are unsourced folklore.</p></body></html>

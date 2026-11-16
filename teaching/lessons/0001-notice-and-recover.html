@@ -1,0 +1,34 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Lesson 1: Notice and recover</title><link rel="stylesheet" href="../assets/style.css"></head><body>
+<p class="meta">Lesson 1 · ~5 minutes · Mission: ship daet-connect.ph faster · <a href="../reference/context-hygiene.html">Cheat sheet</a></p>
+<h1>Notice the dumb zone, then pick one move</h1>
+
+<h2>The idea</h2>
+<p>Everything in a session (your messages, file reads, tool output, failed attempts) competes for the model's attention. Anthropic calls this an <em>attention budget</em>: as the context grows, "the model's ability to accurately recall information from that context decreases" (<a href="https://www.anthropic.com/engineering/effective-context-engineering-for-ai-agents">Anthropic Engineering</a>). Chroma measured this across 18 models and found reliability falls as input grows even on simple tasks, and worst when irrelevant text looks similar to what you want (<a href="https://research.trychroma.com/context-rot">Context Rot</a>).</p>
+<div class="card"><strong>Two honest caveats.</strong> The decline is gradual, not a cliff, so there is no single magic percentage; community numbers (40–70%) disagree. And Anthropic's current docs say running out of context is "rare" with 1M-token windows, but <code>/clear</code> between tasks is "still worth doing, because a focused context gets you better answers" (<a href="https://code.claude.com/docs/en/best-practices">Best practices</a>). The enemy is <em>clutter</em>, not just size.</div>
+
+<h2>Your win: three signals, three moves</h2>
+<table><tr><th>Signal</th><th>Move</th></tr>
+<tr><td>Same mistake corrected twice, still wrong</td><td><code>/clear</code>, then one new prompt that folds in what you learned</td></tr>
+<tr><td>Finished a task, starting an unrelated one</td><td><code>/clear</code> (costs nothing)</td></tr>
+<tr><td>Went down a bad path, but earlier work was good</td><td><code>/rewind</code> (or <code>Esc</code> twice) to before the detour</td></tr>
+<tr><td>Same task, history is long and stale</td><td><code>/compact</code> with a focus, e.g. "keep the API changes and test commands"</td></tr>
+<tr><td>Noisy search or independent review needed</td><td>Delegate to a subagent; it returns a short summary</td></tr></table>
+<p class="cite">All five from <a href="https://code.claude.com/docs/en/best-practices">Best practices for Claude Code</a>; subagent summaries per <a href="https://www.anthropic.com/engineering/effective-context-engineering-for-ai-agents">Anthropic</a>.</p>
+
+<h2>Make it survive a reset</h2>
+<p>Anything that must outlive <code>/clear</code> belongs in a file: this repo's <code>AGENTS.md</code> and <code>CONTEXT.md</code>, or a scratch <code>NOTES.md</code> (Anthropic's "structured note-taking"). Keep those files short; Anthropic's docs say if a line is getting lost in a long file, "the file needs to be shorter."</p>
+
+<h2>Retrieval practice</h2>
+<p>Answer from memory before peeking at the table.</p>
+<div class="q" data-q='{"q":"Claude has missed the same bug fix twice. What now?","opts":["Correct it a third time","Clear, then rewrite the prompt","Add IMPORTANT in all caps","Ask it to try harder"],"ans":1,"why":"A third correction piles onto two failed attempts it must re-read."}'></div>
+<div class="q" data-q='{"q":"Auth feature is done; you now fix an unrelated Playwright test. What now?","opts":["Continue in this session","Run /compact and continue","Spawn a subagent for it","Run /clear, then start fresh"],"ans":3,"why":"Unrelated history is pure clutter; /clear is free."}'></div>
+<div class="q" data-q='{"q":"You must grep forty files but keep your chat focused. What now?","opts":["Have a subagent search, summarize","Paste every file into chat","Preload every file into AGENTS.md","Run greps inline, keep everything"],"ans":0,"why":"Noisy output stays in the subagent; you get the summary."}'></div>
+
+<h2>Try it on this repo (2 minutes)</h2>
+<p>Next time you start a feature here, write the goal and the done-check in 3 lines before prompting. When you hit a signal above, name it out loud, then do the move. Tell me which one happened.</p>
+
+<h2>Go deeper</h2>
+<p>Primary source: <a href="https://www.anthropic.com/engineering/effective-context-engineering-for-ai-agents"><em>Effective context engineering for AI agents</em></a> (Anthropic). Read the compaction and sub-agent sections first.</p>
+<p class="card"><strong>Ask your teacher.</strong> Anything unclear, or a session that went sideways? Ask in chat; I can walk through what happened and which move fit.</p>
+<script src="../assets/quiz.js"></script></body></html>
