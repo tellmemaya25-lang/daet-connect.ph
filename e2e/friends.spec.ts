@@ -43,4 +43,10 @@ test.describe("friends", () => {
     await expect(start.getByRole("button", { name: "Message" })).toBeVisible();
     await checkA11y(page, "messages friends tab");
   });
+
+  test("the owner opening their own shared link lands on their plan", async ({ context, page }) => {
+    await signInAs(context, "tourist");
+    await page.goto("/tours/friends/plans/5a7e0000-0000-4000-8000-0000000000a1", { waitUntil: "networkidle" });
+    await expect(page).toHaveURL(/\/tours\/my-itineraries\/5a7e0000-0000-4000-8000-0000000000a1$/);
+  });
 });

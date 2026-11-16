@@ -16,7 +16,7 @@ export const metadata: Metadata = { title: "A friend's trip plan", robots: { ind
 
 type FriendPlan = { title: string; start_date: string | null; summary: string | null; owner: string; items: SavedItem[] };
 
-/** A plan a friend shared with you: view only. Others get a 404. */
+/** A plan a friend shared with you: view only. Its owner is sent to their own plan; others get a 404. */
 export default async function FriendPlanPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   if (!isSupabaseConfigured() || !isUuid(id)) notFound();
@@ -25,7 +25,12 @@ export default async function FriendPlanPage({ params }: { params: Promise<{ id:
   const supabase = await createSupabaseServerClient();
   const { data } = await supabase.rpc("tours_friend_itinerary", { p_itinerary: id });
   const plan = data as FriendPlan | null;
-  if (!plan) notFound();
+  if (!plan) {
+    // The owner opening the link they shared (e.g. from the chat) goes to their own plan.
+    const { data: own } = await supabase.from("tours_itineraries").select("id").eq("id", id).eq("tourist_id", session.user.id).maybeSingle();
+    if (own) redirect(`/tours/my-itineraries/${id}`);
+    notFound();
+  }
 
   const days = rowsToDays(plan.items ?? [], plan.start_date);
   const tours = await bookableForDays(supabase, days);
