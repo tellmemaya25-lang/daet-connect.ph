@@ -8,4 +8,8 @@
 <tr><td>Same task, stale history</td><td><code>/compact &lt;focus&gt;</code></td></tr>
 <tr><td>Noisy search / fresh reviewer</td><td>Subagent</td></tr>
 <tr><td>Must survive resets</td><td>Write to AGENTS.md / CONTEXT.md / NOTES.md; keep short</td></tr></table>
+<h2>Survives <code>/compact</code> (Lesson 2)</h2>
+<table><tr><th>Intact</th><th>Lost</th></tr>
+<tr><td>Root CLAUDE.md, unscoped rules, auto memory, plan-mode plan, up to 5 recent files (&le;5k tokens each)</td><td>Chat-typed rules, loaded <code>paths:</code> rules, nested CLAUDE.md, hook-added context</td></tr></table>
+<p>See your session: <code>/context</code>. Edit memory files: <code>/memory</code>. Focused compact: <code>/compact focus on X</code>. Source: <a href="https://code.claude.com/docs/en/context-window.md">Explore the context window</a>, <a href="../lessons/0002-what-survives-a-reset.html">Lesson 2</a>.</p>
 <p class="cite">Sources: <a href="https://code.claude.com/docs/en/best-practices">Claude Code best practices</a>, <a href="https://www.anthropic.com/engineering/effective-context-engineering-for-ai-agents">Anthropic context engineering</a>. Percent thresholds for the "dumb zone" are unsourced folklore.</p></body></html>

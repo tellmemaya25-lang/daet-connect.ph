@@ -1,0 +1,31 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Lesson 2: What survives a reset</title><link rel="stylesheet" href="../assets/style.css"></head><body>
+<p class="meta">Lesson 2 · ~5 minutes · Builds on <a href="0001-notice-and-recover.html">Lesson 1</a> · <a href="../reference/context-hygiene.html">Cheat sheet</a></p>
+<h1>See your context, and know what survives <code>/compact</code></h1>
+
+<h2>The idea</h2>
+<p>Lesson 1 gave you the moves. This one stops you guessing. Claude Code's window holds "your instructions, the files it reads, its own responses, and content that never appears in your terminal" (<a href="https://code.claude.com/docs/en/context-window.md">Explore the context window</a>). Some of it is loaded before you type: CLAUDE.md (AGENTS.md can load in its place), auto memory, MCP tool names and skill descriptions. Every file read adds more.</p>
+<p>To see the real numbers, run <code>/context</code>: "a live breakdown by category with optimization suggestions." Run <code>/memory</code> to open the files it lists.</p>
+
+<h2>Your win: where should this go?</h2>
+<p>After <code>/compact</code> the conversation becomes a summary. What comes back unchanged is only what lives on disk:</p>
+<table><tr><th>Survives intact</th><th>Gets summarized away</th></tr>
+<tr><td>Project-root CLAUDE.md and unscoped rules (re-injected from disk)</td><td>Rules you typed in chat</td></tr>
+<tr><td>Auto memory</td><td>Rules with <code>paths:</code> frontmatter and nested CLAUDE.md, once loaded</td></tr>
+<tr><td>Plan-mode plan</td><td>Context that hooks added earlier</td></tr>
+<tr><td>Up to five most recent files, re-read (a file over 5,000 tokens returns as a path only)</td><td>Everything else you read</td></tr></table>
+<p class="cite">From the "What survives compaction" table in <a href="https://code.claude.com/docs/en/context-window.md">Explore the context window</a>. Path-scoped rules reload on demand when their trigger file is touched again.</p>
+<div class="card"><strong>Rule of thumb.</strong> If losing it would hurt, it must live in a file, not in chat. If it is a hard rule, keep it in the project-root instruction file. Before a long new task, <code>/compact focus on the auth bug fix</code> keeps what you choose rather than "what the automatic pass guesses is important."</div>
+
+<h2>Retrieval practice</h2>
+<div class="q" data-q='{"q":"Which of these survives /compact intact?","opts":["Rule typed in chat","Rules in root CLAUDE.md","Large file you read","Triggered path-scoped rule"],"ans":1,"why":"Project-root instructions are re-injected from disk."}'></div>
+<div class="q" data-q='{"q":"A must-keep rule uses paths: frontmatter and vanished after compaction. Fix?","opts":["Raise autocompact token count","Repeat it in chat","Switch to bigger model","Drop the paths frontmatter"],"ans":3,"why":"Unscoped rules are re-injected; path-scoped ones are summarized away once loaded."}'></div>
+<div class="q" data-q='{"q":"You want a live breakdown of what fills your session. Which?","opts":["Run /memory for breakdown","Run /rewind for breakdown","Run /context for breakdown","Run /clear for breakdown"],"ans":2,"why":"/context shows usage by category; /memory only opens the files."}'></div>
+
+<h2>Try it on this repo (2 minutes)</h2>
+<p>In a real session here, run <code>/context</code> before you type anything. Note the biggest category. <code>AGENTS.md</code> is 19 lines and <code>CONTEXT.md</code> is 84: ask yourself which of your rules must survive a reset, and whether each is in a file that loads. Tell me what you found.</p>
+
+<h2>Go deeper</h2>
+<p>Primary source: <a href="https://code.claude.com/docs/en/context-window.md"><em>Explore the context window</em></a> (Anthropic docs); play the timeline, then read the survival table.</p>
+<p class="card"><strong>Ask your teacher.</strong> Unsure whether something will survive? Describe it in chat and we'll reason it through together.</p>
+<script src="../assets/quiz.js"></script></body></html>

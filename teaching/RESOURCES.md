@@ -9,7 +9,7 @@
 - [Context Rot (Chroma Research)](https://research.trychroma.com/context-rot)
   Empirical study of 18 models: reliability falls as input grows, even on simple tasks, and similar-looking distractors hurt most. Cited via search summary only; the host was not reachable from this session, so read it directly. Use for: evidence that degradation is gradual, not a cliff.
 - [Explore the context window (Anthropic docs)](https://code.claude.com/docs/en/context-window.md)
-  What fills a Claude Code session and when it loads. Not yet read. Use for: lesson on what eats your context.
+  What fills a Claude Code session, what survives `/compact`, `/context` and `/memory`. Read for Lesson 2. Use for: deciding where a rule or note must live.
 
 ## Wisdom (Communities)
 
