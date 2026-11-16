@@ -615,6 +615,23 @@ html.js [data-reveal]:not([data-revealed]) {
   transition-delay: calc(var(--reveal-index, 0) * 60ms);
 }
 
+/* The admin search grows from its icon with a small overshoot (the width easing does the stretch). */
+@keyframes search-bounce {
+  0% {
+    transform: scale(0.94);
+  }
+  55% {
+    transform: scale(1.03);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.search-bounce {
+  animation: search-bounce 420ms var(--ease-out);
+}
+
 @keyframes daet-drift {
   from {
     transform: scale(1.04) translate3d(0, 0, 0);

@@ -192,7 +192,12 @@ test("the admin top bar searches records and Ctrl+Space focuses it", async ({ co
   await signInAs(context, "admin");
   await visit(page, "/tours/admin/attractions");
   await page.setViewportSize({ width: 1400, height: 900 });
-  const search = page.getByRole("search").getByRole("searchbox", { name: "Search records" }).first();
+  const search = page.getByRole("search").getByRole("searchbox", { name: "Search records" });
+  // It rests as an icon; clicking it opens the box, and Escape folds it back.
+  await page.getByRole("button", { name: "Open search" }).click();
+  await expect(search).toBeFocused();
+  await page.keyboard.press("Escape");
+  await expect(page.getByRole("button", { name: "Open search" })).toBeFocused();
   await page.keyboard.press("Control+Space");
   await expect(search).toBeFocused();
   await search.fill("bagasbas");
