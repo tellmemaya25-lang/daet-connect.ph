@@ -12,7 +12,7 @@ import { usePolling } from "@/components/live/use-polling";
 import { useLive } from "@/components/live/live-provider";
 import { CHAT_POLL_LIVE_MS, CHAT_POLL_MS } from "@/lib/live/schedule";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
-import { MESSAGE_MAX_LENGTH, MESSAGE_PAGE_SIZE, mergeMessages, messageTime, presenceOf, senderLabel, type ChatMembers, type ChatMessage } from "@/lib/tours/messaging";
+import { MESSAGE_MAX_LENGTH, MESSAGE_PAGE_SIZE, mergeMessages, messageParts, messageTime, presenceOf, senderLabel, type ChatMembers, type ChatMessage } from "@/lib/tours/messaging";
 import {
   applyReaction,
   bubbleCorners,
@@ -421,7 +421,19 @@ export function ChatWindow(props: ChatWindowProps) {
                         </p>
                       )
                     ) : null}
-                    {message.message_text ? <p className="whitespace-pre-wrap break-words">{message.message_text}</p> : null}
+                    {message.message_text ? (
+                      <p className="whitespace-pre-wrap break-words">
+                        {messageParts(message.message_text).map((part, i) =>
+                          part.href ? (
+                            <Link key={i} href={part.href} className="font-bold underline">
+                              {part.href.startsWith("/tours/friends/plans/") ? "Open the trip plan" : part.text}
+                            </Link>
+                          ) : (
+                            <span key={i}>{part.text}</span>
+                          ),
+                        )}
+                      </p>
+                    ) : null}
                   </div>
                   {message.status ? null : (
                     <button

@@ -609,6 +609,7 @@ export type Database = {
         Row: {
           booking_id: string | null
           created_at: string
+          friend_id: string | null
           guide_id: string | null
           id: string
           kind: string
@@ -619,6 +620,7 @@ export type Database = {
         Insert: {
           booking_id?: string | null
           created_at?: string
+          friend_id?: string | null
           guide_id?: string | null
           id?: string
           kind?: string
@@ -629,6 +631,7 @@ export type Database = {
         Update: {
           booking_id?: string | null
           created_at?: string
+          friend_id?: string | null
           guide_id?: string | null
           id?: string
           kind?: string
@@ -2486,6 +2489,7 @@ export type Database = {
       tours_remove_friend: { Args: { p_profile: string }; Returns: undefined }
       tours_respond_friend_request: { Args: { p_accept: boolean; p_profile: string }; Returns: undefined }
       tours_send_friend_request: { Args: { p_profile: string }; Returns: string }
+      tours_open_friend_conversation: { Args: { p_friend: string }; Returns: string }
       tours_share_itinerary_with: { Args: { p_friend_ids: string[]; p_itinerary: string }; Returns: number }
       tours_guide_revenue: {
         Args: { p_from: string; p_to: string }
