@@ -31,4 +31,16 @@ test.describe("friends", () => {
     await picker.getByRole("button", { name: "Save sharing" }).click();
     await expect(picker.getByRole("status")).toHaveText("Shared with 1 friend.");
   });
+
+  test("Messages has a Friends tab to start a chat with a friend", async ({ context, page }) => {
+    await signInAs(context, "tourist");
+    await page.goto("/tours/messages", { waitUntil: "networkidle" });
+    const tabs = page.getByRole("navigation", { name: "Filter conversations" });
+    await tabs.getByRole("link", { name: "Friends" }).click();
+    await expect(page).toHaveURL(/kind=friends/);
+    const start = page.getByRole("region", { name: "Message a friend" });
+    await expect(start.getByText("Bea Santos")).toBeVisible();
+    await expect(start.getByRole("button", { name: "Message" })).toBeVisible();
+    await checkA11y(page, "messages friends tab");
+  });
 });

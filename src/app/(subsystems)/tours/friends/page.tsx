@@ -8,6 +8,7 @@ import { isSupabaseConfigured } from "@/lib/supabase/env";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { cleanSearch, initials, parseFoundPeople, parseFriendLists, parseSharedPlans, type Person } from "@/lib/tours/friends";
 import { getAuthenticatedSession } from "@/lib/tours/server-auth";
+import { OpenChatButton } from "@/app/(subsystems)/tours/messages/open-chat-button";
 import { answerFriendRequest, removeFriend, sendFriendRequest } from "./actions";
 
 export const metadata = { title: "Friends" };
@@ -121,6 +122,7 @@ export default async function FriendsPage({ searchParams }: { searchParams: Prom
             <ul className="divide-y divide-line">
               {friends.map((p) => (
                 <PersonRow key={p.id} person={p}>
+                  <OpenChatButton target={{ kind: "friends", friendId: p.id }} label="Message" variant="secondary" />
                   <Act action={removeFriend.bind(null, p.id)} label="Remove" variant="ghost" />
                 </PersonRow>
               ))}

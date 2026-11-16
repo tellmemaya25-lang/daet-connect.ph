@@ -47,8 +47,9 @@ export type ChatRole = "tourist" | "operator" | "guide" | "admin";
  * operator_guide: one operator and one guide.
  * operator_admin: one operator and the Tourism Office (every admin).
  * tourist_office: one signed-in person and the Tourism Office (every admin).
+ * friends: two friends (from the Friends page).
  */
-export const CONVERSATION_KINDS = ["booking", "guide_tourist", "operator_guide", "operator_admin", "tourist_office"] as const;
+export const CONVERSATION_KINDS = ["booking", "guide_tourist", "operator_guide", "operator_admin", "tourist_office", "friends"] as const;
 export type ConversationKind = (typeof CONVERSATION_KINDS)[number];
 
 export const KIND_LABELS: Record<ConversationKind, string> = {
@@ -57,6 +58,7 @@ export const KIND_LABELS: Record<ConversationKind, string> = {
   operator_guide: "Operator & guide",
   operator_admin: "Tourism Office",
   tourist_office: "Tourism Office help",
+  friends: "Friends",
 };
 
 export const TOURISM_OFFICE_NAME = "Daet Tourism Office";
@@ -91,7 +93,8 @@ export type ChatTarget =
   | { kind: "guide_tourist"; bookingId: string }
   | { kind: "operator_guide"; guideId?: string; operatorId?: string }
   | { kind: "operator_admin"; operatorId?: string }
-  | { kind: "tourist_office"; touristId?: string };
+  | { kind: "tourist_office"; touristId?: string }
+  | { kind: "friends"; friendId: string };
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -121,6 +124,10 @@ export function chatRpc(target: ChatTarget): { fn: string; args: Record<string, 
       const touristId = id(target.touristId);
       return touristId ? { fn: "tours_open_tourist_office_conversation", args: { p_tourist_id: touristId } } : null;
     }
+    case "friends": {
+      const friendId = id(target.friendId);
+      return friendId ? { fn: "tours_open_friend_conversation", args: { p_friend: friendId } } : null;
+    }
     default:
       return null;
   }
@@ -144,6 +151,9 @@ export type ConversationHeader = {
   guide_id: string | null;
   guide_profile_id: string | null;
   guide_name: string | null;
+  /** Friend chats: the other friend. */
+  friend_profile_id?: string | null;
+  friend_name?: string | null;
 };
 
 export type ThreadView = {
@@ -161,8 +171,8 @@ export function describeThread(header: ConversationHeader, viewerId: string, vie
   const operatorName = header.operator_name ?? "Operator";
   const guideName = header.guide_name ?? null;
   const members: ChatMembers = {
-    touristId: header.tourist_id,
-    touristName: header.tourist_name ?? "Tourist",
+    touristId: header.kind === "friends" ? (header.friend_profile_id ?? null) : header.tourist_id,
+    touristName: header.kind === "friends" ? (header.friend_name ?? "Friend") : (header.tourist_name ?? "Tourist"),
     operatorProfileId: header.operator_profile_id,
     operatorName,
     guideProfileId: header.guide_profile_id,
@@ -208,6 +218,12 @@ export function describeThread(header: ConversationHeader, viewerId: string, vie
       link = null;
       emptyText = isTourist ? "Ask the Daet Tourism Office anything about your visit." : "No messages yet.";
       break;
+    case "friends":
+      title = header.friend_name ?? "Friend";
+      subtitle = "Friend · private chat";
+      link = { href: "/tours/friends", label: "Friends" };
+      emptyText = "Say hello, or share a trip plan from My itineraries.";
+      break;
     default:
       title = header.package_title ?? "Tour booking";
       subtitle = [ref, operatorName, header.tourist_name, header.guide_profile_id ? "guide assigned" : null].filter(Boolean).join(" · ");
@@ -229,9 +245,10 @@ const tourDay = (dateKey: string) =>
   new Date(`${dateKey}T00:00:00Z`).toLocaleDateString("en-PH", { month: "short", day: "numeric", timeZone: "UTC" });
 
 /** Filter chips for the inbox: "All" plus each kind the viewer has, in a fixed order. */
-export function inboxFilters(kinds: string[]): Array<{ kind: ConversationKind | null; label: string }> {
-  const present = CONVERSATION_KINDS.filter((kind) => kinds.includes(kind));
-  if (present.length < 2) return [];
+export function inboxFilters(kinds: string[], { friendsTab = false }: { friendsTab?: boolean } = {}): Array<{ kind: ConversationKind | null; label: string }> {
+  // Tourists always get a Friends tab, so they can start a chat with a friend from it.
+  const present = CONVERSATION_KINDS.filter((kind) => kinds.includes(kind) || (friendsTab && kind === "friends"));
+  if (present.length < 2 && !(friendsTab && present.length === 1)) return [];
   return [{ kind: null, label: "All" }, ...present.map((kind) => ({ kind, label: KIND_LABELS[kind] }))];
 }
 
@@ -318,4 +335,21 @@ export function presenceOf(lastSeen: string | null | undefined, now: number = Da
   if (age <= ONLINE_WINDOW_MS) return { state: "online", label: null };
   const minutes = Math.round(age / 60000);
   return { state: "recent", label: minutes < 60 ? `${minutes}m` : "1h" };
+}
+
+/** A message split into text and in-app links ("/tours/..."), so shared plans can be opened. */
+export type MessagePart = { text: string; href?: string };
+
+export function messageParts(text: string): MessagePart[] {
+  const parts: MessagePart[] = [];
+  const re = /(^|\s)(\/tours\/[A-Za-z0-9/_-]+)/g;
+  let last = 0;
+  for (let m = re.exec(text); m; m = re.exec(text)) {
+    const start = m.index + m[1].length;
+    if (start > last) parts.push({ text: text.slice(last, start) });
+    parts.push({ text: m[2], href: m[2] });
+    last = start + m[2].length;
+  }
+  if (last < text.length) parts.push({ text: text.slice(last) });
+  return parts;
 }

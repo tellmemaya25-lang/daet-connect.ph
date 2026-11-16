@@ -1,4 +1,4 @@
-import { attachmentPath, chatOperators, chatRpc, dayLabel, describeThread, inboxFilters, isConversationKind, mergeMessages, messageTime, parseMessageForm, presenceOf, senderLabel, type ChatMessage, type ChatTarget, type ConversationHeader } from "@/lib/tours/messaging";
+import { attachmentPath, chatOperators, chatRpc, dayLabel, describeThread, inboxFilters, isConversationKind, mergeMessages, messageParts, messageTime, parseMessageForm, presenceOf, senderLabel, type ChatMessage, type ChatTarget, type ConversationHeader } from "@/lib/tours/messaging";
 
 function form(values: Record<string, string | File>): FormData {
   const data = new FormData();
@@ -144,6 +144,8 @@ describe("chat channels", () => {
   it("offers inbox filters only when there is more than one kind", () => {
     expect(inboxFilters(["booking", "booking"])).toEqual([]);
     expect(inboxFilters(["operator_admin", "booking", "nonsense"]).map((f) => f.label)).toEqual(["All", "Booking chats", "Tourism Office"]);
+    expect(inboxFilters(["booking"], { friendsTab: true }).map((f) => f.label)).toEqual(["All", "Booking chats", "Friends"]);
+    expect(inboxFilters([], { friendsTab: true }).map((f) => f.label)).toEqual(["All", "Friends"]);
     expect(isConversationKind("guide_tourist")).toBe(true);
     expect(isConversationKind("x")).toBe(false);
   });
@@ -184,5 +186,20 @@ describe("presenceOf", () => {
     expect(presenceOf(ago(13 * 60_000), now)).toEqual({ state: "recent", label: "13m" });
     expect(presenceOf(ago(2 * 3600_000), now)).toEqual({ state: "offline", label: null });
     expect(presenceOf(null, now)).toEqual({ state: "offline", label: null });
+  });
+});
+
+describe("friend chats", () => {
+  it("opens a chat with a friend", () => {
+    const id = "11111111-1111-4111-8111-111111111111";
+    expect(chatRpc({ kind: "friends", friendId: id })).toEqual({ fn: "tours_open_friend_conversation", args: { p_friend: id } });
+    expect(chatRpc({ kind: "friends", friendId: "nope" })).toBeNull();
+  });
+  it("turns in-app paths in a message into links", () => {
+    expect(messageParts('🗺️ I shared my trip plan "Day 1" with you: /tours/friends/plans/abc-123')).toEqual([
+      { text: '🗺️ I shared my trip plan "Day 1" with you: ' },
+      { text: "/tours/friends/plans/abc-123", href: "/tours/friends/plans/abc-123" },
+    ]);
+    expect(messageParts("see https://x.com/tours/a")).toEqual([{ text: "see https://x.com/tours/a" }]);
   });
 });
