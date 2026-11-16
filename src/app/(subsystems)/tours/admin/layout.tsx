@@ -2,7 +2,8 @@ import type { ReactNode } from "react";
 import { cookies } from "next/headers";
 import { AdminShell } from "@/components/admin/admin-shell";
 import { SIDEBAR_COOKIE } from "@/components/admin/nav";
-import { PageFrame } from "@/components/ui/page-frame";
+import { PageFrame, signedInViewer } from "@/components/ui/page-frame";
+import { accountLinks, roleTabs } from "@/lib/tours/dashboards";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
 import { getAuthenticatedSession } from "@/lib/tours/server-auth";
 
@@ -15,7 +16,7 @@ export default async function AdminLayout({ children }: { children: ReactNode })
   const session = isSupabaseConfigured() ? await getAuthenticatedSession().catch(() => null) : null;
   if (!session?.user || session.role !== "admin") return <PageFrame>{children}</PageFrame>;
   const collapsed = (await cookies()).get(SIDEBAR_COOKIE)?.value === "1";
-  const meta = session.user.user_metadata as { full_name?: unknown } | undefined;
-  const name = typeof meta?.full_name === "string" && meta.full_name ? meta.full_name : session.user.email ?? "Admin";
-  return <AdminShell initialCollapsed={collapsed} name={name}>{children}</AdminShell>;
+  const viewer = await signedInViewer();
+  const account = viewer ?? { initial: "A", name: session.user.email ?? "Admin", avatarUrl: null };
+  return <AdminShell initialCollapsed={collapsed} account={account} accountLinks={accountLinks("admin", roleTabs("admin"))}>{children}</AdminShell>;
 }

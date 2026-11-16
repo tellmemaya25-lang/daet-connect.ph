@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { LineIcon } from "@/components/ui/icons";
-import { LogoutButton } from "@/components/ui/logout-button";
+import { AccountMenu, type AccountLink } from "@/components/ui/account-menu";
 import { cn } from "@/components/ui/cn";
 import { ADMIN_AREAS, SIDEBAR_COOKIE, areaFor } from "./nav";
 
@@ -50,7 +50,17 @@ function Wordmark({ collapsed = false }: { collapsed?: boolean }) {
  * The admin shell: sidebar, top bar and, on phones, a header with a menu drawer.
  * The sidebar collapses only from its button (remembered in a cookie); the top bar never hides on scroll.
  */
-export function AdminShell({ children, initialCollapsed, name }: { children: ReactNode; initialCollapsed: boolean; name: string }) {
+export function AdminShell({
+  children,
+  initialCollapsed,
+  account,
+  accountLinks,
+}: {
+  children: ReactNode;
+  initialCollapsed: boolean;
+  account: { initial: string; name: string; avatarUrl: string | null };
+  accountLinks: AccountLink[];
+}) {
   const pathname = usePathname() ?? "/tours/admin";
   const [collapsed, setCollapsed] = useState(initialCollapsed);
   const [drawer, setDrawer] = useState(false);
@@ -124,20 +134,7 @@ export function AdminShell({ children, initialCollapsed, name }: { children: Rea
             </button>
             <p className="truncate font-serif text-xl font-semibold">{section}</p>
           </div>
-          <details className="relative">
-            <summary className="flex min-h-11 cursor-pointer list-none items-center gap-2 rounded-full px-3 text-sm font-bold hover:bg-muted [&::-webkit-details-marker]:hidden">
-              <LineIcon name="user" />
-              <span className="hidden max-w-40 truncate sm:inline">{name}</span>
-              <span className="sr-only sm:hidden">Account</span>
-            </summary>
-            <div className="absolute right-0 top-full mt-2 w-56 rounded-2xl border border-slate-300 bg-surface p-2 shadow-[var(--shadow-float)]">
-              <p className="px-3 py-2 text-sm text-slate-600">Signed in as {name}</p>
-              <Link href="/" className="flex min-h-11 items-center rounded-xl px-3 text-sm font-bold hover:bg-muted">
-                View the public site
-              </Link>
-              <LogoutButton className="w-full" />
-            </div>
-          </details>
+          <AccountMenu initial={account.initial} name={account.name} avatarUrl={account.avatarUrl} links={accountLinks} />
         </header>
         <main id="main-content" tabIndex={-1} className="mx-auto w-full max-w-7xl px-4 py-6 outline-none sm:px-8 sm:py-8">
           {children}

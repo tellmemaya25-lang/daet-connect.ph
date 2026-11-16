@@ -55,8 +55,17 @@ for (const role of Object.keys(pages) as Role[]) {
         await visit(page, path);
       });
     }
-    test("bottom tab bar leads to every dashboard section", async ({ page }) => {
+    test("navigation leads to every dashboard section", async ({ page }) => {
       await page.goto(pages[role][0], { waitUntil: "networkidle" });
+      if (role === "admin") {
+        // The admin shell has no bottom tab bar: on a phone its menu opens the drawer of admin areas.
+        await page.getByRole("button", { name: "Open menu" }).click();
+        const areas = page.getByRole("dialog", { name: "Admin menu" }).getByRole("navigation", { name: "Admin areas" }).getByRole("link");
+        await expect(areas.first()).toHaveAttribute("aria-current", "page");
+        const hrefs = await areas.evaluateAll((links) => links.map((a) => a.getAttribute("href")));
+        expect(new Set(hrefs).size).toBe(hrefs.length);
+        return;
+      }
       const bar = page.getByRole("navigation", { name: "Dashboard" });
       const tabs = bar.getByRole("link");
       // Tourists' fifth tab is You, the account menu.
@@ -70,16 +79,21 @@ for (const role of Object.keys(pages) as Role[]) {
   });
 }
 
-// Owner's note (image-94): the admin bar drew Analytics twice — once from the
-// admin's own tabs, once from the Tourism Office's links — and reached the
-// approvals queue under two names. A desktop shows the office's links too.
-test("the admin bar lists each destination once", async ({ context, page }) => {
+// Owner's note (image-94): the admin bar drew Analytics twice and reached the
+// approvals queue under two names. The admin shell's sidebar must list each
+// destination once, under one name.
+test("the admin sidebar lists each destination once", async ({ context, page }) => {
   await page.setViewportSize({ width: 1400, height: 900 });
   await signInAs(context, "admin");
   await visit(page, "/tours/admin/attractions");
 
-  const nav = page.getByRole("navigation", { name: "Main navigation" });
-  await expect(nav.getByRole("link")).toHaveText(["Analytics", "Approvals", "Content", "Guides", "Packages"]);
+  const links = page.getByRole("navigation", { name: "Admin areas" }).getByRole("link");
+  const labels = await links.allInnerTexts();
+  const hrefs = await links.evaluateAll((a) => a.map((x) => x.getAttribute("href")));
+  expect(new Set(labels).size).toBe(labels.length);
+  expect(new Set(hrefs).size).toBe(hrefs.length);
+  expect(labels).toEqual(expect.arrayContaining(["Analytics", "Guides", "Packages", "Places"]));
+  await expect(page.getByRole("link", { name: "Places" })).toHaveAttribute("aria-current", "page");
 });
 
 test("/dashboard sends each role home", async ({ browser }) => {

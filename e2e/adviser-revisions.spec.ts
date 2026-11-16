@@ -21,6 +21,15 @@ test.describe("R1: the exploration menu is only for visitors and tourists", () =
     test(`${role} dashboard`, async ({ context, page }) => {
       await signInAs(context, role);
       await page.goto(homes[role], { waitUntil: "networkidle" });
+      if (role === "admin") {
+        // The admin shell has no exploration menu at all: its sidebar lists admin areas only.
+        await page.getByRole("button", { name: "Open menu" }).click();
+        const drawer = page.getByRole("dialog", { name: "Admin menu" });
+        await expect(drawer.getByRole("link", { name: "Souvenirs" })).toHaveCount(0);
+        await expect(drawer.getByRole("link", { name: "Plan a trip" })).toHaveCount(0);
+        await expect(page.getByRole("banner").getByRole("link", { name: "Souvenirs" })).toHaveCount(0);
+        return;
+      }
       const nav = await mainNav(page);
       await expect(nav.getByRole("link", { name: "Souvenirs" })).toHaveCount(role === "tourist" ? 1 : 0);
       await expect(nav.getByRole("link", { name: "Plan a trip" })).toHaveCount(role === "tourist" ? 1 : 0);
