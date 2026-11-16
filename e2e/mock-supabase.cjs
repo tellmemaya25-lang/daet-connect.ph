@@ -1735,6 +1735,8 @@ http
         return send(200, [{ id: "c2000000-0000-4000-8000-000000000001", title: "Calaguas weekend", start_date: "2026-12-05", end_date: "2026-12-06", owner: "Bea Santos", shared_at: "2026-11-14T00:00:00Z" }]);
       if (url.pathname === "/rest/v1/rpc/tours_find_people")
         return send(200, [{ id: "c1000000-0000-4000-8000-000000000003", name: "Dina Cruz", avatar_url: null, status: "none" }]);
+      if (url.pathname === "/rest/v1/rpc/tours_friend_itinerary" && body.includes(SAVED_TRIP_ID))
+        return send(200, null); // the tourist's own plan: not shared *with* them
       if (url.pathname === "/rest/v1/rpc/tours_friend_itinerary")
         return send(200, { title: "Calaguas weekend", start_date: "2026-12-05", end_date: "2026-12-06", summary: "Two days on the island.", owner: "Bea Santos", items: [{ day_number: 1, item_order: 1, kind: "visit", location_name: "Mahabang Buhangin", description: null, tip: null, latitude: 14.45, longitude: 123.08, start_time: "09:00", end_time: "12:00", travel_minutes: 0, attraction_slug: null }] });
       if (url.pathname === "/rest/v1/rpc/tours_share_itinerary_with") return send(200, 1);
