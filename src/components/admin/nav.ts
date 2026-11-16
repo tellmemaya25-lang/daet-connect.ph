@@ -8,7 +8,7 @@ const A = (href: string, label: string, icon: IconName): AdminArea => ({ href: "
 export const ADMIN_GROUPS: { title: string; areas: AdminArea[] }[] = [
   {
     title: "Main",
-    areas: [A("", "Dashboard", "chart"), A("/analytics", "Analytics", "chart"), A("/earnings", "Earnings and revenue", "money"), A("/activity", "Activity log", "receipt")],
+    areas: [A("", "Dashboard", "dashboard"), A("/analytics", "Analytics", "chart"), A("/earnings", "Earnings and revenue", "money"), A("/activity", "Activity log", "receipt")],
   },
   { title: "Queues", areas: [A("/operators", "Operators", "building"), A("/guides", "Guides", "guide"), A("/packages", "Packages", "box")] },
   { title: "People", areas: [A("/accounts", "Accounts and roles", "user"), A("/guide-assignments", "Guide assignments", "guide")] },

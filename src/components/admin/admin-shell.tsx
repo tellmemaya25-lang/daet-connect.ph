@@ -8,16 +8,29 @@ import { AccountMenu, type AccountLink } from "@/components/ui/account-menu";
 import { cn } from "@/components/ui/cn";
 import { ADMIN_GROUPS, SIDEBAR_COOKIE, areaFor } from "./nav";
 
-function NavLinks({ pathname, collapsed = false, onNavigate }: { pathname: string; collapsed?: boolean; onNavigate?: () => void }) {
+function NavLinks({
+  pathname,
+  collapsed = false,
+  onNavigate,
+}: {
+  pathname: string;
+  collapsed?: boolean;
+  onNavigate?: () => void;
+}) {
   const current = areaFor(pathname);
   return (
     <div className="flex flex-col gap-4">
       {ADMIN_GROUPS.map((g) => (
         <div key={g.title} className="flex flex-col gap-1">
           {collapsed ? (
-            <span aria-hidden="true" className="mx-3 mb-1 border-t border-line first:hidden" />
+            <span
+              aria-hidden="true"
+              className="mx-3 mb-1 border-t border-line first:hidden"
+            />
           ) : (
-            <p className="px-3 pb-1 text-xs font-bold text-daet-ink/70">{g.title}</p>
+            <p className="px-3 pb-1 text-xs font-bold text-daet-ink/70">
+              {g.title}
+            </p>
           )}
           <ul className="flex flex-col gap-1">
             {g.areas.map((a) => {
@@ -31,12 +44,18 @@ function NavLinks({ pathname, collapsed = false, onNavigate }: { pathname: strin
                     title={collapsed ? a.label : undefined}
                     className={cn(
                       "flex min-h-11 items-center gap-3 rounded-xl px-3 text-sm font-bold",
-                      on ? "bg-blue-600 text-white" : "text-daet-ink hover:bg-surface hover:text-blue-700",
+                      on
+                        ? "bg-blue-600 text-white"
+                        : "text-daet-ink hover:bg-surface hover:text-blue-700",
                       collapsed && "justify-center px-0",
                     )}
                   >
                     <LineIcon name={a.icon} className="h-5 w-5 flex-none" />
-                    {collapsed ? <span className="sr-only">{a.label}</span> : <span className="truncate">{a.label}</span>}
+                    {collapsed ? (
+                      <span className="sr-only">{a.label}</span>
+                    ) : (
+                      <span className="truncate">{a.label}</span>
+                    )}
                   </Link>
                 </li>
               );
@@ -50,9 +69,15 @@ function NavLinks({ pathname, collapsed = false, onNavigate }: { pathname: strin
 
 function Wordmark({ collapsed = false }: { collapsed?: boolean }) {
   return (
-    <Link href="/tours/admin" className="flex min-h-11 items-center gap-2 font-serif text-lg font-semibold text-daet-ink">
-      <span aria-hidden="true" className="grid h-8 w-8 place-items-center rounded-lg bg-blue-600 text-sm text-white">D</span>
-      {collapsed ? <span className="sr-only">Daet Connect admin</span> : <span>Daet Connect</span>}
+    <Link
+      href="/tours/admin"
+      className="flex min-h-11 items-center gap-2 font-serif text-lg font-semibold text-daet-ink"
+    >
+      {collapsed ? (
+        <span className="sr-only">Daet Connect admin</span>
+      ) : (
+        <span>Daet Connect</span>
+      )}
     </Link>
   );
 }
@@ -112,7 +137,12 @@ export function AdminShell({
           collapsed ? "w-20" : "w-60",
         )}
       >
-        <div className={cn("flex items-center gap-2", collapsed ? "flex-col" : "justify-between")}>
+        <div
+          className={cn(
+            "flex items-center gap-2",
+            collapsed ? "flex-col" : "justify-between",
+          )}
+        >
           <Wordmark collapsed={collapsed} />
           <button
             type="button"
@@ -121,7 +151,7 @@ export function AdminShell({
             aria-label={collapsed ? "Expand menu" : "Collapse menu"}
             className="grid h-11 w-11 place-items-center rounded-xl text-daet-ink/80 hover:bg-surface hover:text-blue-700"
           >
-            <LineIcon name="menu" />
+            <LineIcon name="sidebar" className="h-5 w-5" />
           </button>
         </div>
         <nav aria-label="Admin areas">
@@ -130,31 +160,48 @@ export function AdminShell({
       </aside>
 
       <div className="flex min-w-0 flex-1 flex-col bg-surface">
-        <header className="sticky top-0 z-20 flex min-h-[72px] items-center justify-between gap-4 border-b border-line bg-surface px-4 sm:px-8">
-          <div className="flex min-w-0 items-center gap-2">
-            <button
-              ref={menuButton}
-              type="button"
-              onClick={() => setDrawer(true)}
-              aria-expanded={drawer}
-              aria-controls="admin-drawer"
-              className="grid h-11 w-11 place-items-center rounded-xl text-daet-ink hover:bg-muted lg:hidden"
-            >
-              <LineIcon name="menu" />
-              <span className="sr-only">Open menu</span>
-            </button>
-            <p className="truncate font-serif text-xl font-semibold">{section}</p>
+        <header className="sticky top-0 z-20 border-b border-line bg-surface">
+          <div className="mx-auto flex min-h-[72px] w-full max-w-7xl items-center justify-between gap-4 px-4 sm:px-8">
+            <div className="flex min-w-0 items-center gap-2">
+              <button
+                ref={menuButton}
+                type="button"
+                onClick={() => setDrawer(true)}
+                aria-expanded={drawer}
+                aria-controls="admin-drawer"
+                className="grid h-11 w-11 place-items-center rounded-xl text-daet-ink hover:bg-muted lg:hidden"
+              >
+                <LineIcon name="menu" />
+                <span className="sr-only">Open menu</span>
+              </button>
+              <p className="truncate font-serif text-xl font-semibold lg:hidden">
+                {section}
+              </p>
+            </div>
+            <AccountMenu
+              initial={account.initial}
+              name={account.name}
+              avatarUrl={account.avatarUrl}
+              links={accountLinks}
+            />
           </div>
-          <AccountMenu initial={account.initial} name={account.name} avatarUrl={account.avatarUrl} links={accountLinks} />
         </header>
-        <main id="main-content" tabIndex={-1} className="mx-auto w-full max-w-7xl px-4 py-6 outline-none sm:px-8 sm:py-8">
+        <main
+          id="main-content"
+          tabIndex={-1}
+          className="mx-auto w-full max-w-7xl px-4 py-6 outline-none sm:px-8 sm:py-8"
+        >
           {children}
         </main>
       </div>
 
       {drawer ? (
         <div className="fixed inset-0 z-40 lg:hidden">
-          <div aria-hidden="true" onClick={() => setDrawer(false)} className="absolute inset-0 bg-slate-900/45" />
+          <div
+            aria-hidden="true"
+            onClick={() => setDrawer(false)}
+            className="absolute inset-0 bg-slate-900/45"
+          />
           <aside
             id="admin-drawer"
             role="dialog"
@@ -178,7 +225,10 @@ export function AdminShell({
               </button>
             </div>
             <nav aria-label="Admin areas" className="px-4 pb-6">
-              <NavLinks pathname={pathname} onNavigate={() => setDrawer(false)} />
+              <NavLinks
+                pathname={pathname}
+                onNavigate={() => setDrawer(false)}
+              />
             </nav>
           </aside>
         </div>

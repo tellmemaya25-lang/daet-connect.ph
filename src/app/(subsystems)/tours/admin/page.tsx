@@ -108,6 +108,7 @@ export default async function AdminDashboardPage({ searchParams }: { searchParam
       <div className="mb-8">
         <div className="flex items-center justify-between">
           <div>
+            <p className="mb-2 text-sm font-bold text-daet-ink/70">Dashboard</p>
             <h1 className="display-2 text-daet-ink">Tourism Office</h1>
             <p className="mt-2 text-lg text-daet-ink">
               Welcome back, {profile.full_name || 'Admin'}
