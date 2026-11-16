@@ -88,7 +88,8 @@ test("the admin sidebar lists each destination once", async ({ context, page }) 
   await visit(page, "/tours/admin/attractions");
 
   const links = page.getByRole("navigation", { name: "Admin areas" }).getByRole("link");
-  const labels = await links.allInnerTexts();
+  // A queue link also shows a count badge on its own line; the label is the first line.
+  const labels = (await links.allInnerTexts()).map((t) => t.split("\n")[0]);
   const hrefs = await links.evaluateAll((a) => a.map((x) => x.getAttribute("href")));
   expect(new Set(labels).size).toBe(labels.length);
   expect(new Set(hrefs).size).toBe(hrefs.length);
@@ -185,4 +186,16 @@ test.describe("sign out", () => {
     await expect(page.getByRole("banner").getByRole("link", { name: "Sign in" })).toBeVisible();
     await expect(page.getByRole("button", { name: /^(You, y|Y)our account/ })).toHaveCount(0);
   });
+});
+
+test("the admin top bar searches records and Ctrl+Space focuses it", async ({ context, page }) => {
+  await signInAs(context, "admin");
+  await visit(page, "/tours/admin/attractions");
+  await page.setViewportSize({ width: 1400, height: 900 });
+  const search = page.getByRole("search").getByRole("searchbox", { name: "Search records" }).first();
+  await page.keyboard.press("Control+Space");
+  await expect(search).toBeFocused();
+  await search.fill("bagasbas");
+  await search.press("Enter");
+  await expect(page).toHaveURL(/\/tours\/admin\?q=bagasbas/);
 });

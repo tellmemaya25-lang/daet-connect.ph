@@ -7,7 +7,9 @@ describe("areaFor", () => {
   });
   it("matches nested pages to their area", () => {
     expect(areaFor("/tours/admin/fares/abc/edit")?.label).toBe("Fares");
-    expect(areaFor("/tours/admin/guide-places/new")?.label).toBe("Food and stays");
+    expect(areaFor("/tours/admin/guide-places/new")?.label).toBe(
+      "Food and stays",
+    );
   });
   it("does not confuse areas that share a prefix", () => {
     expect(areaFor("/tours/admin/guides")?.label).toBe("Guides");
@@ -20,6 +22,8 @@ describe("areaFor", () => {
 
 describe("areaFor with newer areas", () => {
   it("keeps guide assignments apart from guides", () => {
-    expect(areaFor("/tours/admin/guide-assignments")?.label).toBe("Guide assignments");
+    expect(areaFor("/tours/admin/guide-assignments")?.label).toBe(
+      "Guide assignments",
+    );
   });
 });

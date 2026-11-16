@@ -6,63 +6,132 @@ import { useEffect, useRef, useState, type ReactNode } from "react";
 import { LineIcon } from "@/components/ui/icons";
 import { AccountMenu, type AccountLink } from "@/components/ui/account-menu";
 import { cn } from "@/components/ui/cn";
-import { ADMIN_GROUPS, SIDEBAR_COOKIE, areaFor } from "./nav";
+import { AdminSearch } from "./admin-search";
+import {
+  ADMIN_GROUPS,
+  COLLAPSIBLE_GROUP,
+  SIDEBAR_COOKIE,
+  areaFor,
+} from "./nav";
 
 function NavLinks({
   pathname,
+  counts,
   collapsed = false,
   onNavigate,
 }: {
   pathname: string;
+  counts: Record<string, number>;
   collapsed?: boolean;
   onNavigate?: () => void;
 }) {
   const current = areaFor(pathname);
+  // The Content group folds away on request; it stays open while one of its pages is current.
+  const [contentOpen, setContentOpen] = useState<boolean | undefined>(
+    undefined,
+  );
   return (
     <div className="flex flex-col gap-4">
-      {ADMIN_GROUPS.map((g) => (
-        <div key={g.title} className="flex flex-col gap-1">
-          {collapsed ? (
-            <span
-              aria-hidden="true"
-              className="mx-3 mb-1 border-t border-line first:hidden"
-            />
-          ) : (
-            <p className="px-3 pb-1 text-xs font-bold text-daet-ink/70">
-              {g.title}
-            </p>
-          )}
-          <ul className="flex flex-col gap-1">
-            {g.areas.map((a) => {
-              const on = current?.href === a.href;
-              return (
-                <li key={a.href}>
-                  <Link
-                    href={a.href}
-                    onClick={onNavigate}
-                    aria-current={on ? "page" : undefined}
-                    title={collapsed ? a.label : undefined}
-                    className={cn(
-                      "flex min-h-11 items-center gap-3 rounded-xl px-3 text-sm font-bold",
-                      on
-                        ? "bg-blue-600 text-white"
-                        : "text-daet-ink hover:bg-surface hover:text-blue-700",
-                      collapsed && "justify-center px-0",
-                    )}
-                  >
-                    <LineIcon name={a.icon} className="h-5 w-5 flex-none" />
-                    {collapsed ? (
-                      <span className="sr-only">{a.label}</span>
-                    ) : (
-                      <span className="truncate">{a.label}</span>
-                    )}
-                  </Link>
-                </li>
-              );
-            })}
-          </ul>
-        </div>
-      ))}
+      {ADMIN_GROUPS.map((g, i) => {
+        const foldable = g.title === COLLAPSIBLE_GROUP && !collapsed;
+        const hasCurrent = g.areas.some((a) => a.href === current?.href);
+        const open = !foldable || (contentOpen ?? hasCurrent);
+        const listId = `admin-nav-${g.title.toLowerCase()}`;
+        return (
+          <div
+            key={g.title}
+            className={cn(
+              "flex flex-col gap-1",
+              i > 0 && "border-t border-line pt-4",
+            )}
+          >
+            {collapsed ? null : foldable ? (
+              <button
+                type="button"
+                aria-expanded={open}
+                aria-controls={listId}
+                onClick={() => setContentOpen(!open)}
+                className="flex min-h-11 items-center justify-between gap-2 rounded-xl px-3 text-left text-sm font-bold text-daet-ink hover:bg-surface"
+              >
+                {g.title}
+                <LineIcon
+                  name="chevron-down"
+                  className={cn(
+                    "h-4 w-4 transition-transform",
+                    open && "rotate-180",
+                  )}
+                />
+              </button>
+            ) : (
+              <p className="px-3 pb-1 text-sm font-bold text-daet-ink/80">
+                {g.title}
+              </p>
+            )}
+            <ul
+              id={listId}
+              className={cn("flex flex-col gap-1", !open && "hidden")}
+            >
+              {g.areas.map((a) => {
+                const on = current?.href === a.href;
+                const count = counts[a.href] ?? 0;
+                const waiting = count > 0 ? `${count} waiting` : "";
+                return (
+                  <li key={a.href}>
+                    <Link
+                      href={a.href}
+                      onClick={onNavigate}
+                      aria-current={on ? "page" : undefined}
+                      aria-label={
+                        waiting ? `${a.label}, ${waiting}` : undefined
+                      }
+                      title={
+                        collapsed
+                          ? waiting
+                            ? `${a.label} (${waiting})`
+                            : a.label
+                          : undefined
+                      }
+                      className={cn(
+                        "relative flex min-h-11 items-center gap-3 rounded-xl border px-3 text-sm font-bold",
+                        on
+                          ? "border-line bg-surface text-daet-ink"
+                          : "border-transparent text-daet-ink hover:bg-surface hover:text-blue-700",
+                        collapsed && "justify-center px-0",
+                      )}
+                    >
+                      {on ? (
+                        <span
+                          aria-hidden="true"
+                          className="absolute left-0 top-2 h-6 w-1 rounded-r bg-blue-600"
+                        />
+                      ) : null}
+                      <LineIcon name={a.icon} className="h-5 w-5 flex-none" />
+                      {collapsed ? (
+                        <span className="sr-only">{a.label}</span>
+                      ) : (
+                        <span className="flex-1 truncate">{a.label}</span>
+                      )}
+                      {count > 0 ? (
+                        <span
+                          aria-hidden="true"
+                          className={cn(
+                            "rounded-full bg-amber-400/50 text-center font-bold leading-5 text-daet-ink",
+                            collapsed
+                              ? "absolute right-0.5 top-0.5 min-w-[18px] text-xs leading-4"
+                              : "min-w-6 px-2 text-sm",
+                          )}
+                        >
+                          {count}
+                        </span>
+                      ) : null}
+                    </Link>
+                  </li>
+                );
+              })}
+            </ul>
+          </div>
+        );
+      })}
     </div>
   );
 }
@@ -91,11 +160,13 @@ export function AdminShell({
   initialCollapsed,
   account,
   accountLinks,
+  counts,
 }: {
   children: ReactNode;
   initialCollapsed: boolean;
   account: { initial: string; name: string; avatarUrl: string | null };
   accountLinks: AccountLink[];
+  counts: Record<string, number>;
 }) {
   const pathname = usePathname() ?? "/tours/admin";
   const [collapsed, setCollapsed] = useState(initialCollapsed);
@@ -155,13 +226,13 @@ export function AdminShell({
           </button>
         </div>
         <nav aria-label="Admin areas">
-          <NavLinks pathname={pathname} collapsed={collapsed} />
+          <NavLinks pathname={pathname} counts={counts} collapsed={collapsed} />
         </nav>
       </aside>
 
       <div className="flex min-w-0 flex-1 flex-col bg-surface">
-        <header className="sticky top-0 z-20 border-b border-line bg-surface">
-          <div className="mx-auto flex min-h-[72px] w-full max-w-7xl items-center justify-between gap-4 px-4 sm:px-8">
+        <header className="sticky top-0 z-20 border-b border-line bg-surface/85 backdrop-blur">
+          <div className="mx-auto flex min-h-[72px] w-full max-w-7xl flex-wrap items-center justify-between gap-x-4 gap-y-2 px-4 py-2 sm:flex-nowrap sm:px-8 sm:py-0">
             <div className="flex min-w-0 items-center gap-2">
               <button
                 ref={menuButton}
@@ -178,6 +249,7 @@ export function AdminShell({
                 {section}
               </p>
             </div>
+            <AdminSearch />
             <AccountMenu
               initial={account.initial}
               name={account.name}
@@ -227,6 +299,7 @@ export function AdminShell({
             <nav aria-label="Admin areas" className="px-4 pb-6">
               <NavLinks
                 pathname={pathname}
+                counts={counts}
                 onNavigate={() => setDrawer(false)}
               />
             </nav>
