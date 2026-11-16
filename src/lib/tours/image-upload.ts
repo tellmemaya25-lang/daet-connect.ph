@@ -55,7 +55,7 @@ export async function uploadPackageImage(
     // Upload to Supabase Storage
     const supabase = await createSupabaseServerClient();
     
-    const { data, error } = await supabase.storage
+    const { error } = await supabase.storage
       .from(BUCKET_NAME)
       .upload(filepath, file, {
         contentType: file.type,
@@ -118,7 +118,7 @@ export async function uploadMultipleImages(
   packageId: string
 ): Promise<UploadImageResult[]> {
   const results = await Promise.all(
-    files.map((file, index) => uploadPackageImage(file, packageId, 'gallery'))
+    files.map((file) => uploadPackageImage(file, packageId, 'gallery'))
   );
 
   return results;

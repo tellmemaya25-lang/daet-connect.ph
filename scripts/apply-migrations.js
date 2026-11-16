@@ -20,14 +20,14 @@ if (!supabaseUrl || !supabaseServiceKey) {
 
 const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-async function applyMigration(migrationPath) {
+async function _applyMigration(migrationPath) {
   console.log(`\n📄 Applying migration: ${path.basename(migrationPath)}`);
   
   try {
     const sql = fs.readFileSync(migrationPath, 'utf8');
     
     // Execute the SQL
-    const { data, error } = await supabase.rpc('exec_sql', { sql_query: sql }).catch(async () => {
+    const { data: _data, error } = await supabase.rpc('exec_sql', { sql_query: sql }).catch(async () => {
       // If exec_sql doesn't exist, try direct execution (for simple queries)
       // Split by semicolon and execute each statement
       const statements = sql
@@ -35,8 +35,8 @@ async function applyMigration(migrationPath) {
         .map(s => s.trim())
         .filter(s => s.length > 0);
       
-      for (const statement of statements) {
-        const result = await supabase.from('_migrations_temp').select('*').limit(0); // Dummy query to test connection
+      for (const _statement of statements) {
+        const _result = await supabase.from('_migrations_temp').select('*').limit(0); // Dummy query to test connection
         // Since we can't execute raw SQL directly, we need to use Supabase SQL editor
         console.log('⚠️  Cannot execute SQL directly via API.');
         console.log('📋 Please copy and paste this SQL into Supabase SQL Editor:');

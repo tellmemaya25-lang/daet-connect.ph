@@ -99,7 +99,6 @@ export default async function AdminPackagesPage() {
   const pendingPackages = packagesWithOperators?.filter(p => p.status === 'pending_review' || p.status === 'pending') || [];
   const publishedPackages = packagesWithOperators?.filter(p => p.status === 'published') || [];
   const archivedPackages = packagesWithOperators?.filter(p => p.status === 'archived') || [];
-  const draftPackages = packagesWithOperators?.filter(p => p.status === 'draft') || [];
 
   return (
     <AdminPage>

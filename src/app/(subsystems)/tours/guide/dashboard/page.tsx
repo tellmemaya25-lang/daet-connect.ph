@@ -189,7 +189,7 @@ export default async function GuideDashboardPage({ searchParams }: { searchParam
 
         <Card>
           <CardHeader title="Your availability" />
-          <p className="mb-3 text-sm text-daet-ink/70">Choose what a tap does, then tap days. Tap a marked day again to clear it. Use “Set hours” to say when you can work that day; operators can only give you tours inside your hours. To give up a day you're already booked on, use “Suggest another guide” on that tour.</p>
+          <p className="mb-3 text-sm text-daet-ink/70">Choose what a tap does, then tap days. Tap a marked day again to clear it. Use “Set hours” to say when you can work that day; operators can only give you tours inside your hours. To give up a day you’re already booked on, use “Suggest another guide” on that tour.</p>
           <AvailabilityCalendar
             key={key}
             month={month}

@@ -159,7 +159,7 @@ export function LiveShareCard({ bookingId, operatorName, operatorPhone, meetingP
       ) : null}
 
       <div className="mt-4 space-y-2">
-        <p className="text-sm font-semibold text-daet-ink/80">What you share. Only your guide and {operatorName ?? "the operator"} see it, and it's deleted when the tour ends.</p>
+        <p className="text-sm font-semibold text-daet-ink/80">What you share. Only your guide and {operatorName ?? "the operator"} see it, and it’s deleted when the tour ends.</p>
         <Toggle
           id="share-trip"
           checked={shareTrip}
@@ -191,7 +191,7 @@ export function LiveShareCard({ bookingId, operatorName, operatorPhone, meetingP
           {openFlare || flareState === "sent" ? (
             <div role="status" className="rounded-2xl bg-red-50 p-4 text-red-900 dark:bg-red-950/40 dark:text-red-200">
               <p className="font-bold">Your guide was told</p>
-              <p className="mt-1 text-sm">We sent your guide and {operatorName ?? "the operator"} your location once. Stay where you are if it's safe; they will contact you.</p>
+              <p className="mt-1 text-sm">We sent your guide and {operatorName ?? "the operator"} your location once. Stay where you are if it’s safe; they will contact you.</p>
               {operatorPhone ? <p className="mt-2 text-sm font-bold">Operator: {operatorPhone}</p> : null}
             </div>
           ) : (
@@ -202,7 +202,7 @@ export function LiveShareCard({ bookingId, operatorName, operatorPhone, meetingP
               <p className="mt-2 text-sm text-daet-ink/70">Sends your location once to your guide and the operator, even if sharing is off.</p>
               {flareState === "failed" ? (
                 <p className="mt-2 text-sm font-bold text-red-700 dark:text-red-300">
-                  Couldn't get your location.{operatorPhone ? ` Call ${operatorPhone}.` : " Message your guide or operator."}
+                  Couldn’t get your location.{operatorPhone ? ` Call ${operatorPhone}.` : " Message your guide or operator."}
                 </p>
               ) : null}
             </>

@@ -25,7 +25,7 @@ export function PaymentSettingsForm({
   bankAccountName: initialBankAccountName,
   paymentInstructions: initialInstructions,
 }: PaymentSettingsFormProps) {
-  const { toast, confirm } = useFeedback();
+  const { toast } = useFeedback();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [gcashNumber, setGcashNumber] = useState(initialGcash || "");
   const [gcashName, setGcashName] = useState(initialGcashName || "");

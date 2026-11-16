@@ -4,7 +4,7 @@ import { Field, Input } from "@/components/ui/field";
 import { formatPeso } from "@/lib/money";
 import React, { useCallback, useState } from "react";
 import { useFeedback } from "@/components/ui/feedback";
-import type { EditPriceVariant, EditPackageStatus, ValidationErrors, StepProps } from "./edit-types";
+import type { EditPriceVariant, StepProps } from "./edit-types";
 import { EDIT_LIMITS } from "./edit-constants";
 import { getEditPermissions } from "./permissions";
 
@@ -22,14 +22,13 @@ type PricingStepProps = StepProps<EditPriceVariant[]>;
  */
 export function PricingStep({
   data,
-  originalData,
   packageStatus,
   onUpdate,
   errors,
   loading,
 }: PricingStepProps) {
   const permissions = getEditPermissions(packageStatus);
-  const { toast, confirm } = useFeedback();
+  const { confirm } = useFeedback();
   const [showAddForm, setShowAddForm] = useState(false);
   const [editingId, setEditingId] = useState<string | undefined>();
   const [formData, setFormData] = useState<Partial<EditPriceVariant>>({

@@ -22,7 +22,7 @@ if (!supabaseUrl || !serviceRoleKey) {
 
 const supabase = createClient(supabaseUrl, serviceRoleKey);
 
-async function applyMigration() {
+async function _applyMigration() {
   try {
     console.log('🚀 Applying gallery constraints migration...\n');
 
@@ -96,7 +96,7 @@ async function applyMigrationRaw() {
 
     // Read the migration file
     const migrationPath = path.join(__dirname, '..', 'supabase', 'migrations', '20250124_add_gallery_constraints.sql');
-    const migrationSQL = fs.readFileSync(migrationPath, 'utf8');
+    const _migrationSQL = fs.readFileSync(migrationPath, 'utf8');
 
     // Extract just the constraint addition statements (non-informational)
     const constraints = [
@@ -113,7 +113,7 @@ async function applyMigrationRaw() {
     for (const constraint of constraints) {
       console.log(`▶️  Executing: ${constraint.substring(0, 70)}...`);
       
-      const { data, error } = await supabase
+      const { data: _data, error: _error } = await supabase
         .from('tours_package_gallery')
         .select('*')
         .limit(0)

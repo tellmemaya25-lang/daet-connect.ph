@@ -388,7 +388,7 @@ export function BookingForm({ packageId, priceVariants, meetingPoint = null, pic
       <section className="rounded-2xl card-edge bg-surface p-6">
         <h2 className="text-xl font-bold text-daet-ink">Contact Information</h2>
         <p className="mt-1 text-sm text-daet-ink/70">
-          We'll use this to confirm your booking
+          We’ll use this to confirm your booking
         </p>
 
         <div className="mt-4 space-y-4">

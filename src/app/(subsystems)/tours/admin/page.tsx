@@ -266,7 +266,7 @@ export default async function AdminDashboardPage({ searchParams }: { searchParam
                     {new Date(activity.created_at).toLocaleString()}
                   </p>
                   {activity.notes && (
-                    <p className="text-sm text-slate-600 dark:text-slate-400 mt-1 italic">"{activity.notes}"</p>
+                    <p className="text-sm text-slate-600 dark:text-slate-400 mt-1 italic">“{activity.notes}”</p>
                   )}
                 </div>
               </div>

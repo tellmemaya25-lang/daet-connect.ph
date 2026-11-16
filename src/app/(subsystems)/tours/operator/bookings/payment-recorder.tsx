@@ -18,12 +18,11 @@ interface PaymentRecorderProps {
 
 export function PaymentRecorder({
   bookingId,
-  bookingReference,
   totalAmount,
   totalPaid,
   paymentStatus,
 }: PaymentRecorderProps) {
-  const { toast, confirm } = useFeedback();
+  const { toast } = useFeedback();
   const uid = useId();
   const [isOpen, setIsOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);

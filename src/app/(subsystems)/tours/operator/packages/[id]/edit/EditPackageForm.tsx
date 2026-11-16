@@ -1,16 +1,15 @@
 "use client";
 
-import React, { useState, useCallback, useMemo, ReactNode } from "react";
+import React, { useState, useCallback, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import type {
   EditPackageRecord,
   EditPackageFormData,
   UpdatePackageResponse,
   ValidationErrors,
-  ActionStatusCode,
 } from "./edit-types";
 import { updatePackageCore, submitPackageForReview } from "./actions";
-import { detectChanges, hasConcurrencyConflict } from "./change-detection";
+import { detectChanges } from "./change-detection";
 import { EDIT_MESSAGES, SUCCESS_TOAST_MS } from "./edit-constants";
 import { getEditPermissions } from "./permissions";
 import { RejectionNotice } from "./RejectionNotice";
@@ -262,7 +261,7 @@ export function EditPackageForm({ packageData }: EditPackageFormProps) {
           }));
         }
       }
-    } catch (error) {
+    } catch {
       setState((prev) => ({
         ...prev,
         isSubmitting: false,
@@ -313,7 +312,7 @@ export function EditPackageForm({ packageData }: EditPackageFormProps) {
           }));
         }
       }
-    } catch (error) {
+    } catch {
       setState((prev) => ({
         ...prev,
         isSubmitting: false,

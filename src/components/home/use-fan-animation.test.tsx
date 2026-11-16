@@ -15,7 +15,6 @@ import {
   toClipPath,
   widthsWithFocus,
   type FanGeometry,
-  type Point,
 } from "./fan-geometry";
 import { useFanAnimation } from "./use-fan-animation";
 

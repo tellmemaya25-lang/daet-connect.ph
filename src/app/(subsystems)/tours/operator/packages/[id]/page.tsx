@@ -13,11 +13,6 @@ import { isSupabaseConfigured } from "@/lib/supabase/env";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { getAuthenticatedSession } from "@/lib/tours/server-auth";
 import { canAccessOperatorDashboard } from "@/lib/tours/operator-access";
-import {
-  OPERATOR_TABLE,
-  OPERATOR_USER_ID_COLUMN,
-  OPERATOR_OWN_STATUS_SELECT,
-} from "@/lib/tours/operator-contract";
 
 
 type PageProps = {
@@ -264,7 +259,7 @@ export default async function OperatorPackageDetailPage({ params }: PageProps) {
         {/* Pending review notice */}
         {pkg.status === "pending_review" && (
           <Notice variant="info" className="mb-6">
-            Your package is under review by the Tourism Office. You'll be notified once it's
+            Your package is under review by the Tourism Office. You’ll be notified once it’s
             approved.
           </Notice>
         )}

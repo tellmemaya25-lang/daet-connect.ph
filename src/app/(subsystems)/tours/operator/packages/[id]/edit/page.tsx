@@ -1,5 +1,4 @@
 import React, { Suspense } from "react";
-import { notFound, redirect } from "next/navigation";
 import { loadPackageForEdit } from "./actions";
 import { EditPackageForm } from "./EditPackageForm";
 import { EDIT_MESSAGES } from "./edit-constants";
@@ -50,7 +49,7 @@ function NotFoundDisplay() {
       <div className="space-y-4">
         <div className="text-6xl font-bold text-slate-200">404</div>
         <h1 className="display-2 text-daet-ink">{EDIT_MESSAGES.notFound}</h1>
-        <p className="text-daet-ink/80">The package you're looking for doesn't exist or has been deleted.</p>
+        <p className="text-daet-ink/80">The package you’re looking for doesn’t exist or has been deleted.</p>
         <Link
           href="/tours/operator/packages"
           className="min-h-11 inline-block mt-6 px-6 py-2 bg-daet-forest text-white rounded-2xl hover:bg-daet-leaf transition"
@@ -71,7 +70,7 @@ function AccessDeniedDisplay() {
       <div className="space-y-4">
         <div className="text-6xl font-bold text-slate-200">403</div>
         <h1 className="display-2 text-daet-ink">{EDIT_MESSAGES.forbidden}</h1>
-        <p className="text-daet-ink/80">You don't have permission to edit this package.</p>
+        <p className="text-daet-ink/80">You don’t have permission to edit this package.</p>
         <Link
           href="/tours/operator/packages"
           className="min-h-11 inline-block mt-6 px-6 py-2 bg-daet-forest text-white rounded-2xl hover:bg-daet-leaf transition"

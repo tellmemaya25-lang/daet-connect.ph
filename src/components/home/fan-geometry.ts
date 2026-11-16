@@ -331,7 +331,7 @@ export function fanGeometry(
     layout,
     fans,
     wedges,
-    points: fans.flatMap((fan, fanIndex) =>
+    points: fans.flatMap((fan) =>
       fanAngles(fan, fanWidths(fan.count, fan.a1 - fan.a0, null)).map(({ a0, a1 }) =>
         wedgePolygon(fan.vp, a0, a1, radius, gap, ARC_POINTS, far.get(fan)),
       ),
