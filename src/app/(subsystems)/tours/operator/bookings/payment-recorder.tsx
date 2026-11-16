@@ -1,7 +1,10 @@
 "use client";
 
+import { badgeTone } from "@/components/ui/badge";
+import { buttonClasses } from "@/components/ui/button";
 import { formatPeso } from "@/lib/money";
-import { useState } from "react";
+import { useId, useState } from "react";
+import { Field, Input, Select, Textarea } from "@/components/ui/field";
 import { useFeedback } from "@/components/ui/feedback";
 import { recordPayment } from "./payment-actions";
 
@@ -21,6 +24,7 @@ export function PaymentRecorder({
   paymentStatus,
 }: PaymentRecorderProps) {
   const { toast, confirm } = useFeedback();
+  const uid = useId();
   const [isOpen, setIsOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [amount, setAmount] = useState("");
@@ -60,17 +64,18 @@ export function PaymentRecorder({
     }
   };
 
+  // Same chip colours as everywhere else: amber while money is owed, green when done.
   const statusColors: Record<string, string> = {
-    unpaid: "bg-red-100 dark:bg-red-900/40 text-red-800 dark:text-red-300",
-    partial: "bg-yellow-100 dark:bg-yellow-900/40 text-yellow-800 dark:text-yellow-200",
-    paid: "bg-green-100 dark:bg-green-900/40 text-green-800 dark:text-green-300",
-    refunded: "bg-muted text-daet-ink",
+    unpaid: badgeTone("warning"),
+    partial: badgeTone("warning"),
+    paid: badgeTone("success"),
+    refunded: badgeTone("neutral"),
   };
 
   const statusLabels: Record<string, string> = {
     unpaid: "Unpaid",
-    partial: "Partially Paid",
-    paid: "Fully Paid",
+    partial: "Part paid",
+    paid: "Paid in full",
     refunded: "Refunded",
   };
 
@@ -79,7 +84,7 @@ export function PaymentRecorder({
       <div className="mb-3 flex items-center justify-between">
         <div>
           <p className="text-sm text-slate-600 dark:text-slate-400">
-            Payment Status
+            Payment status
           </p>
           <span
             className={`mt-1 inline-block rounded-full px-3 py-1 text-xs font-bold ${
@@ -92,57 +97,47 @@ export function PaymentRecorder({
         {paymentStatus !== "paid" && (
           <button
             onClick={() => setIsOpen(!isOpen)}
-            className="inline-flex min-h-11 items-center rounded-full bg-daet-forest px-4 text-sm font-bold text-white transition hover:bg-blue-700"
+            className={buttonClasses({ variant: "secondary" })}
           >
-            {isOpen ? "Cancel" : "Record Payment"}
+            {isOpen ? "Cancel" : "Record payment"}
           </button>
         )}
       </div>
 
       <div className="grid grid-cols-3 gap-3 text-sm">
         <div>
-          <p className="text-daet-ink/70">Total Amount</p>
+          <p className="text-daet-ink/70">Total</p>
           <p className="font-bold text-daet-ink">{formatPeso(totalAmount)}</p>
         </div>
         <div>
-          <p className="text-daet-ink/70">Total Paid</p>
-          <p className="font-bold text-green-700 dark:text-green-300">{formatPeso(totalPaid)}</p>
+          <p className="text-daet-ink/70">Paid</p>
+          <p className="font-bold text-daet-ink">{formatPeso(totalPaid)}</p>
         </div>
         <div>
           <p className="text-daet-ink/70">Remaining</p>
-          <p className="font-bold text-yellow-800 dark:text-yellow-200">{formatPeso(remaining)}</p>
+          {/* Only colour what is still owed; ₱0.00 is not a warning. */}
+          <p className={`font-bold ${remaining > 0 ? "text-yellow-800 dark:text-yellow-200" : "text-daet-ink/70"}`}>{formatPeso(Math.max(0, remaining))}</p>
         </div>
       </div>
 
       {isOpen && (
         <form onSubmit={handleSubmit} className="mt-4 space-y-3 border-t border-daet-ink/10 pt-4">
-          <div>
-            <label className="mb-1 block text-xs font-bold text-daet-ink">
-              Payment Amount (₱) *
-            </label>
-            <input
+          <Field id={`${uid}-amount`} label="Payment amount (₱)" required>
+            <Input
               type="number"
+              inputMode="decimal"
               step="0.01"
               min="0.01"
               max={remaining}
               value={amount}
               onChange={(e) => setAmount(e.target.value)}
               required
-              className="w-full rounded-2xl border border-daet-ink/20 min-h-11 px-3 py-2 text-base focus:border-daet-forest focus:outline-none"
               placeholder={`Max: ${formatPeso(remaining)}`}
             />
-          </div>
+          </Field>
 
-          <div>
-            <label className="mb-1 block text-xs font-bold text-daet-ink">
-              Payment Method *
-            </label>
-            <select
-              value={paymentMethod}
-              onChange={(e) => setPaymentMethod(e.target.value)}
-              required
-              className="w-full rounded-2xl border border-daet-ink/20 min-h-11 px-3 py-2 text-base focus:border-daet-forest focus:outline-none"
-            >
+          <Field id={`${uid}-method`} label="Payment method" required>
+            <Select value={paymentMethod} onChange={(e) => setPaymentMethod(e.target.value)} required>
               <option value="cash">Cash</option>
               <option value="gcash">GCash</option>
               <option value="bank_transfer">Bank Transfer</option>
@@ -150,53 +145,27 @@ export function PaymentRecorder({
               <option value="debit_card">Debit Card</option>
               <option value="paypal">PayPal</option>
               <option value="other">Other</option>
-            </select>
-          </div>
+            </Select>
+          </Field>
 
-          <div>
-            <label className="mb-1 block text-xs font-bold text-daet-ink">
-              Payment Date *
-            </label>
-            <input
-              type="date"
-              value={paymentDate}
-              onChange={(e) => setPaymentDate(e.target.value)}
-              required
-              max={new Date().toISOString().split("T")[0]}
-              className="w-full rounded-2xl border border-daet-ink/20 min-h-11 px-3 py-2 text-base focus:border-daet-forest focus:outline-none"
-            />
-          </div>
+          <Field id={`${uid}-date`} label="Payment date" required>
+            <Input type="date" value={paymentDate} onChange={(e) => setPaymentDate(e.target.value)} required max={new Date().toISOString().split("T")[0]} />
+          </Field>
 
-          <div>
-            <label className="mb-1 block text-xs font-bold text-daet-ink">
-              Reference Number
-            </label>
-            <input
-              type="text"
-              value={referenceNumber}
-              onChange={(e) => setReferenceNumber(e.target.value)}
-              className="w-full rounded-2xl border border-daet-ink/20 min-h-11 px-3 py-2 text-base focus:border-daet-forest focus:outline-none"
-              placeholder="Transaction ID, receipt no, etc."
-            />
-          </div>
+          <Field id={`${uid}-ref`} label="Reference number">
+            <Input type="text" autoComplete="off" value={referenceNumber} onChange={(e) => setReferenceNumber(e.target.value)} placeholder="Transaction ID, receipt no, etc." />
+          </Field>
 
-          <div>
-            <label className="mb-1 block text-xs font-bold text-daet-ink">Notes</label>
-            <textarea
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-              rows={2}
-              className="w-full rounded-2xl border border-daet-ink/20 min-h-11 px-3 py-2 text-base focus:border-daet-forest focus:outline-none"
-              placeholder="Additional notes about this payment..."
-            />
-          </div>
+          <Field id={`${uid}-notes`} label="Notes">
+            <Textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={2} placeholder="Additional notes about this payment..." />
+          </Field>
 
           <button
             type="submit"
             disabled={isSubmitting}
             className="inline-flex min-h-11 items-center justify-center w-full rounded-full bg-daet-forest px-4 py-2 text-sm font-bold text-white transition hover:bg-blue-700 disabled:opacity-50"
           >
-            {isSubmitting ? "Recording..." : "Record Payment"}
+            {isSubmitting ? "Recording…" : "Record payment"}
           </button>
         </form>
       )}

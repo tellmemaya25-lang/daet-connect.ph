@@ -12,7 +12,6 @@ import { FARE_COLUMNS, FARE_MODES, fareLabel, minutesLabel, toFare } from "@/lib
 import { requirePromoAdmin } from "@/lib/tours/promo-admin";
 import { deleteFare, importFaresCsv } from "./actions";
 
-export const dynamic = "force-dynamic";
 export const metadata = { title: "Fares and travel times" };
 
 const TEMPLATE = `${FARE_CSV_COLUMNS.join(",")}\ntricycle,Daet town center,Bagasbas,30,30,person,10,15,"Agree on the fare first",Daet MTO 2026,\n`;
@@ -38,11 +37,11 @@ export default async function AdminFaresPage({ searchParams }: { searchParams: P
       {error ? <Notice variant="error" className="mb-4">Fares could not be loaded.</Notice> : null}
 
       {fares.length === 0 ? (
-        <p className="rounded-2xl bg-surface p-8 text-center text-daet-ink">No fares yet. Add one or import a spreadsheet.</p>
+        <p className="rounded-2xl card-edge bg-surface p-8 text-center text-daet-ink">No fares yet. Add one or import a spreadsheet.</p>
       ) : (
         <ul className="space-y-2">
           {fares.map((fare) => (
-            <li key={fare.id} className="flex flex-col gap-3 rounded-2xl bg-surface p-4 sm:flex-row sm:items-center sm:justify-between">
+            <li key={fare.id} className="flex flex-col gap-3 rounded-2xl card-edge bg-surface p-4 sm:flex-row sm:items-center sm:justify-between">
               <div className="min-w-0">
                 <p className="font-bold text-daet-ink">
                   {fare.from_name} to {fare.to_name}

@@ -2,17 +2,20 @@ import { LineIcon } from "@/components/ui/icons";
 import { ButtonLink } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
 import { PageFrame } from "@/components/ui/page-frame";
+import { SearchBox } from "@/components/ui/search-box";
+import { searchTerm } from "@/components/ui/search-term";
 import { Notice } from "@/components/ui/notice";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-import { PackageCard } from "./package-card";
-import { toSummary, type RatingSummary } from "@/lib/tours/reviews";
+import { getAuthUser } from "@/lib/tours/server-auth";
+import { PackageCard } from "@/components/tours/package-card";
+import { operatorRatingsByPackage } from "@/lib/tours/operator-ratings";
 import { PackageFilters } from "./package-filters";
 import { placePhoto } from "@/lib/tours/trip-board";
 
-export const dynamic = "force-dynamic";
 
 type SearchParams = Promise<{
+  q?: string;
   location?: string;
   minPrice?: string;
   maxPrice?: string;
@@ -37,6 +40,9 @@ export default async function BrowsePackagesPage({
 
   const params = await searchParams;
   const supabase = await createSupabaseServerClient();
+  // Who is looking is needed only at the end, so ask now and let it run beside
+  // the trips query (the shared, cached lookup: the header reuses the answer).
+  const userPromise = getAuthUser();
 
   // Build query - get packages with their price variants (using nested query for better performance)
   let query = supabase
@@ -57,6 +63,10 @@ export default async function BrowsePackagesPage({
     .eq("status", "published");
 
   // Apply filters
+  const q = searchTerm(params.q);
+  if (q) {
+    query = query.or(`title.ilike.%${q}%,location_name.ilike.%${q}%,description.ilike.%${q}%`);
+  }
   if (params.location) {
     query = query.ilike("location_name", `%${params.location}%`);
   }
@@ -91,23 +101,11 @@ export default async function BrowsePackagesPage({
 
   const packagesWithPricing = packages || [];
 
-  // Ratings come from a view so hidden reviews never count.
-  const ratingsById = new Map<string, RatingSummary>();
-  if (packagesWithPricing.length > 0) {
-    const { data: ratingRows } = await supabase
-      .from("tours_package_ratings")
-      .select("package_id, review_count, average_rating")
-      .in("package_id", packagesWithPricing.map((pkg) => pkg.id));
-    for (const row of ratingRows ?? []) {
-      const summary = toSummary(row);
-      if (row.package_id && summary) ratingsById.set(row.package_id, summary);
-    }
-  }
+  // Each tour shows its operator's rating across all their trips.
+  const ratingsById = await operatorRatingsByPackage(supabase, packagesWithPricing.map((pkg) => pkg.id));
 
   // Check if user is logged in
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await userPromise;
 
   // Filter by price range
   let filteredPackages = packagesWithPricing;
@@ -151,7 +149,16 @@ export default async function BrowsePackagesPage({
         ) : null}
       </div>
 
-      <div className="mt-6">
+      <SearchBox
+        action="/tours/browse"
+        label="Search trips"
+        placeholder="Search trips"
+        value={q}
+        keep={{ location: params.location, minPrice: params.minPrice, maxPrice: params.maxPrice, sort: params.sort }}
+        className="mt-6"
+      />
+
+      <div className="mt-4">
         <PackageFilters currentParams={params} />
       </div>
 
@@ -159,7 +166,7 @@ export default async function BrowsePackagesPage({
         <EmptyState
           className="mt-8"
           icon={<LineIcon name="search" />}
-          title={place ? `No trips in ${place} yet` : "No trips match these filters"}
+          title={q ? `No trips match "${q}"` : place ? `No trips in ${place} yet` : "No trips match these filters"}
           description="Try another place or clear the filters. New trips are added as operators are approved."
           action={<ButtonLink href="/tours/browse">Show all trips</ButtonLink>}
         />

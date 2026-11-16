@@ -1,3 +1,4 @@
+import { durationText } from "@/lib/tours/duration";
 import { LineIcon } from "@/components/ui/icons";
 import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
@@ -8,14 +9,17 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { bookableDates, type AvailabilityRow } from "@/lib/tours/availability";
 import { toManilaDateKey } from "@/lib/tours/events-calendar";
 import { BookingForm } from "./booking-form";
+import { getAuthenticatedSession } from "@/lib/tours/server-auth";
+import { toOfficialRates, toPickupShortcuts, toPickupVehicles } from "@/lib/tours/door-pickup";
 
-export const dynamic = "force-dynamic";
 
 type PageProps = {
   params: Promise<{ id: string }>;
+  /** From the trip planner's Book button: the plan day and group size. */
+  searchParams: Promise<{ date?: string | string[]; pax?: string | string[] }>;
 };
 
-export default async function BookPackagePage({ params }: PageProps) {
+export default async function BookPackagePage({ params, searchParams }: PageProps) {
   if (!isSupabaseConfigured()) {
     return (
       <PageFrame>
@@ -27,14 +31,28 @@ export default async function BookPackagePage({ params }: PageProps) {
   }
 
   const { id } = await params;
-  const supabase = await createSupabaseServerClient();
-
-  // Get current user
-  const { data: { user } } = await supabase.auth.getUser();
-  
-  if (!user) {
-    redirect(`/login?next=${encodeURIComponent(`/tours/packages/${id}/book`)}`);
+  const query = await searchParams;
+  const prefill = { date: typeof query.date === "string" ? query.date : undefined, pax: typeof query.pax === "string" ? query.pax : undefined };
+  const back = new URLSearchParams(Object.entries(prefill).filter((e): e is [string, string] => typeof e[1] === "string"));
+  const session = await getAuthenticatedSession();
+  if (!session.user) {
+    redirect(`/login?next=${encodeURIComponent(`/tours/packages/${id}/book${back.size ? `?${back}` : ""}`)}`);
   }
+  if (session.error || !session.role) {
+    return (
+      <PageFrame>
+        <Notice variant="error" title="Your account role could not be verified">
+          Booking is available only to tourist accounts. Please try again later or contact support if this continues.
+        </Notice>
+      </PageFrame>
+    );
+  }
+  if (session.role !== "tourist") {
+    redirect(session.role === "admin" ? "/tours/admin" : "/dashboard");
+  }
+
+  const user = session.user;
+  const supabase = await createSupabaseServerClient();
 
   // Fetch package details with price variants
   const { data: pkg, error } = await supabase
@@ -48,6 +66,9 @@ export default async function BookPackagePage({ params }: PageProps) {
       duration_value,
       duration_type,
       cover_image_url,
+      meeting_point_name,
+      meeting_lat,
+      meeting_lng,
       status,
       tours_package_price_variants(
         id,
@@ -74,7 +95,7 @@ export default async function BookPackagePage({ params }: PageProps) {
 
   // Get user profile for pre-filling form
   const today = toManilaDateKey(new Date());
-  const [{ data: profile }, { data: availabilityRows }, { count: openDateCount }] = await Promise.all([
+  const [{ data: profile }, { data: availabilityRows }, { count: openDateCount }, { data: shortcutRows }, { data: vehicleRows }, { data: rateRows }] = await Promise.all([
     supabase.from("profiles").select("full_name").eq("id", user.id).maybeSingle(),
     supabase
       .from("tours_package_availability")
@@ -84,6 +105,10 @@ export default async function BookPackagePage({ params }: PageProps) {
       .order("available_date", { ascending: true }),
     // Any open date (past ones included) switches the package to "open dates only".
     supabase.from("tours_package_availability").select("id", { count: "exact", head: true }).eq("package_id", pkg.id),
+    // Shortcuts for the pickup pin: Daet places whose map pin was checked.
+    supabase.from("tours_attractions").select("id, name, latitude, longitude").eq("is_active", true).eq("location_verified", true).ilike("municipality", "%daet%").not("latitude", "is", null).order("name").limit(8),
+    supabase.from("tours_package_pickup_vehicles").select("id, vehicle, label, seats, max_km, is_active").eq("package_id", pkg.id).order("sort_order"),
+    supabase.from("tours_official_pickup_rates").select("vehicle, base_fee, per_km_per_person, source, source_url, effective_on, checked_on"),
   ]);
   const usesOpenDates = (openDateCount ?? 0) > 0;
 
@@ -104,20 +129,19 @@ export default async function BookPackagePage({ params }: PageProps) {
         </nav>
 
         {/* Package Header */}
-        <div className="mb-8 rounded-2xl bg-surface p-6">
-          <div className="flex gap-6">
+        <div className="mb-8 rounded-2xl card-edge bg-surface p-6">
+          <div className="flex flex-col gap-4 sm:flex-row sm:gap-6">
             {pkg.cover_image_url && (
               <img
                 src={pkg.cover_image_url}
                 alt={pkg.title}
-                className="h-32 w-48 rounded-2xl object-cover"
+                className="h-48 w-full rounded-2xl object-cover sm:h-32 sm:w-48 sm:shrink-0"
               />
             )}
-            <div className="flex-1">
-              <h1 className="display-2 text-daet-ink">{pkg.title}</h1>
+            <div className="min-w-0 flex-1">
+              <h1 className="display-2 break-words text-daet-ink">{pkg.title}</h1>
               <p className="mt-2 text-sm text-daet-ink/70">
-                <LineIcon name="pin" className="inline-block h-[1.1em] w-[1.1em] align-[-0.15em]" /> {pkg.location_name} · <LineIcon name="clock" className="inline-block h-[1.1em] w-[1.1em] align-[-0.15em]" /> {pkg.duration_value}{" "}
-                {pkg.duration_type === "hours" ? "hours" : "days"}
+                <LineIcon name="pin" className="inline-block h-[1.1em] w-[1.1em] align-[-0.15em]" /> {pkg.location_name} · <LineIcon name="clock" className="inline-block h-[1.1em] w-[1.1em] align-[-0.15em]" /> {durationText(Number(pkg.duration_value), pkg.duration_type) ?? ""}
               </p>
               {Array.isArray(pkg.tours_operators) && pkg.tours_operators[0] && (
                 <p className="mt-1 text-sm font-bold text-daet-forest dark:text-blue-300">
@@ -132,6 +156,11 @@ export default async function BookPackagePage({ params }: PageProps) {
         <BookingForm
           packageId={pkg.id}
           priceVariants={pkg.tours_package_price_variants || []}
+          pickupShortcuts={toPickupShortcuts(shortcutRows)}
+          meetingPoint={pkg.meeting_point_name?.trim() || null}
+          pickupVehicles={toPickupVehicles(vehicleRows, toOfficialRates(rateRows))}
+          meetingLatLng={pkg.meeting_lat != null && pkg.meeting_lng != null ? { lat: Number(pkg.meeting_lat), lng: Number(pkg.meeting_lng) } : null}
+          prefill={prefill}
           dateOptions={usesOpenDates ? bookableDates((availabilityRows ?? []) as AvailabilityRow[], today) : null}
           userProfile={{
             fullName: profile?.full_name || "",

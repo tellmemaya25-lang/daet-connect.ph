@@ -1,5 +1,6 @@
 "use client";
 
+import { Field, Input } from "@/components/ui/field";
 import { formatPeso } from "@/lib/money";
 import React, { useCallback, useState } from "react";
 import { useFeedback } from "@/components/ui/feedback";
@@ -179,6 +180,7 @@ export function PricingStep({
                 <td className="px-4 py-3">
                   <input
                     type="checkbox"
+                    aria-label={`Default price option: ${variant.variantName}`}
                     checked={variant.isDefault}
                     onChange={() => handleSetDefault(variant.id)}
                     disabled={!canEditVariants || loading}
@@ -238,52 +240,39 @@ export function PricingStep({
       {/* Add/Edit Form Modal */}
       {showAddForm && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-surface rounded-2xl max-w-md w-full p-6 max-h-[90vh] overflow-y-auto">
+          <div className="card-edge bg-surface rounded-2xl max-w-md w-full p-6 max-h-[90vh] overflow-y-auto">
             <h3 className="text-lg font-bold text-daet-ink mb-4">
               {editingId ? "Edit Variant" : "Add Variant"}
             </h3>
 
             <div className="space-y-4">
               {/* Variant Name */}
-              <div>
-                <label className="block text-sm font-medium text-daet-ink/80 mb-1">
-                  Variant Name <span className="text-red-500">*</span>
-                </label>
-                <input
+              <Field id="pv-variant-name" label="Variant Name" required>
+<Input
                   type="text"
                   value={formData.variantName || ""}
                   onChange={(e) =>
                     setFormData({ ...formData, variantName: e.target.value })
                   }
                   maxLength={EDIT_LIMITS.variantName.max}
-                  className="w-full px-3 py-2 border border-daet-ink/20 rounded-2xl focus:ring-2 focus:ring-daet-forest/30 outline-none"
-                  placeholder="e.g., Early Bird"
-                />
-              </div>
+                  placeholder="e.g., Early Bird" />
+</Field>
 
               {/* Min Pax */}
-              <div>
-                <label className="block text-sm font-medium text-daet-ink/80 mb-1">
-                  Min Participants <span className="text-red-500">*</span>
-                </label>
-                <input
+              <Field id="pv-min-participants" label="Min Participants" required>
+<Input
                   type="number"
                   min={EDIT_LIMITS.pax.min}
                   max={EDIT_LIMITS.pax.max}
                   value={formData.minPax || ""}
                   onChange={(e) =>
                     setFormData({ ...formData, minPax: parseInt(e.target.value) || 1 })
-                  }
-                  className="w-full px-3 py-2 border border-daet-ink/20 rounded-2xl focus:ring-2 focus:ring-daet-forest/30 outline-none"
-                />
-              </div>
+                  } />
+</Field>
 
               {/* Max Pax */}
-              <div>
-                <label className="block text-sm font-medium text-daet-ink/80 mb-1">
-                  Max Participants
-                </label>
-                <input
+              <Field id="pv-max-participants" label="Max Participants">
+<Input
                   type="number"
                   min={formData.minPax || 1}
                   max={EDIT_LIMITS.pax.max}
@@ -291,17 +280,12 @@ export function PricingStep({
                   onChange={(e) =>
                     setFormData({ ...formData, maxPax: e.target.value ? parseInt(e.target.value) : null })
                   }
-                  className="w-full px-3 py-2 border border-daet-ink/20 rounded-2xl focus:ring-2 focus:ring-daet-forest/30 outline-none"
-                  placeholder="Leave blank for unlimited"
-                />
-              </div>
+                  placeholder="Leave blank for unlimited" />
+</Field>
 
               {/* Price per Pax */}
-              <div>
-                <label className="block text-sm font-medium text-daet-ink/80 mb-1">
-                  Price per Person
-                </label>
-                <input
+              <Field id="pv-price-per-person" label="Price per Person">
+<Input
                   type="number"
                   step="0.01"
                   min={EDIT_LIMITS.price.min}
@@ -310,17 +294,12 @@ export function PricingStep({
                   onChange={(e) =>
                     setFormData({ ...formData, pricePerPax: e.target.value ? parseFloat(e.target.value) : null })
                   }
-                  className="w-full px-3 py-2 border border-daet-ink/20 rounded-2xl focus:ring-2 focus:ring-daet-forest/30 outline-none"
-                  placeholder="e.g., 1500"
-                />
-              </div>
+                  placeholder="e.g., 1500" />
+</Field>
 
               {/* Flat Price */}
-              <div>
-                <label className="block text-sm font-medium text-daet-ink/80 mb-1">
-                  Flat Price
-                </label>
-                <input
+              <Field id="pv-flat-price" label="Flat Price">
+<Input
                   type="number"
                   step="0.01"
                   min={EDIT_LIMITS.price.min}
@@ -329,10 +308,8 @@ export function PricingStep({
                   onChange={(e) =>
                     setFormData({ ...formData, flatPrice: e.target.value ? parseFloat(e.target.value) : null })
                   }
-                  className="w-full px-3 py-2 border border-daet-ink/20 rounded-2xl focus:ring-2 focus:ring-daet-forest/30 outline-none"
-                  placeholder="e.g., 5000"
-                />
-              </div>
+                  placeholder="e.g., 5000" />
+</Field>
 
               {/* Buttons */}
               <div className="flex gap-3 pt-4">

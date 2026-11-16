@@ -51,7 +51,7 @@ export function ReactionPills({ reactions, messageId, viewerId, onToggle, mine }
           onClick={() => onToggle(r.key)}
           aria-pressed={r.mine}
           aria-label={`${REACTIONS[r.key].label}: ${r.count}${r.mine ? ", including you" : ""}`}
-          className={`inline-flex min-h-11 items-center gap-1 rounded-full px-2 text-sm shadow-[var(--shadow-float)] ${r.mine ? "bg-blue-50 dark:bg-blue-950/40 text-blue-800 dark:text-blue-300" : "bg-surface text-daet-ink"}`}
+          className={`inline-flex min-h-11 min-w-11 items-center justify-center gap-1 rounded-full px-2 text-sm shadow-[var(--shadow-float)] ${r.mine ? "bg-blue-50 dark:bg-blue-950/40 text-blue-800 dark:text-blue-300" : "bg-surface text-daet-ink"}`}
         >
           <span aria-hidden="true">{REACTIONS[r.key].emoji}</span>
           {r.count > 1 ? <span className="font-semibold">{r.count}</span> : null}

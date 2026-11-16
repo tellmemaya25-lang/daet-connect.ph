@@ -9,7 +9,6 @@ import { formatEventRange } from "@/lib/tours/events-calendar";
 import { EVENT_CATEGORIES, EVENT_COLUMNS, type TourEvent } from "@/lib/tours/promo-validation";
 import { deleteEvent } from "./actions";
 
-export const dynamic = "force-dynamic";
 export const metadata = { title: "Manage events" };
 
 export default async function AdminEventsPage({
@@ -54,7 +53,7 @@ export default async function AdminEventsPage({
           {events.map((event) => {
             const isPast = Date.parse(event.ends_at) < now;
             return (
-              <li key={event.id} className="flex flex-col gap-3 rounded-2xl bg-surface p-4 sm:flex-row sm:items-center">
+              <li key={event.id} className="flex flex-col gap-3 rounded-2xl card-edge bg-surface p-4 sm:flex-row sm:items-center">
                 <div className="min-w-0 flex-1">
                   <div className="flex flex-wrap items-center gap-2">
                     <span className="rounded-full bg-daet-sand px-2 py-0.5 text-xs font-bold text-daet-forest dark:text-blue-300">{EVENT_CATEGORIES[event.category]}</span>

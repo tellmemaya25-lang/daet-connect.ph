@@ -74,7 +74,7 @@ describe("buildCheckoutSessionBody", () => {
   it("links the session back to the booking", () => {
     expect(body.data.attributes.metadata).toEqual({ booking_id: BOOKING_ID });
     expect(body.data.attributes.reference_number).toBe("BK-20261023-ABC123");
-    expect(body.data.attributes.success_url).toBe(`https://daet.example.com/tours/bookings/${BOOKING_ID}?payment=success`);
+    expect(body.data.attributes.success_url).toBe(`https://daet.example.com/tours/bookings/${BOOKING_ID}/paid`);
     expect(body.data.attributes.cancel_url).toBe(`https://daet.example.com/tours/bookings/${BOOKING_ID}?payment=cancelled`);
   });
 

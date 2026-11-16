@@ -5,6 +5,12 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import type { DateOption } from "@/lib/tours/availability";
 import { createBooking } from "./actions";
+import { bookingPrefill } from "./prefill";
+import { digitsOnlyPhone, PHONE_DIGITS, PHONE_HINT } from "@/lib/tours/phone";
+import { Select } from "@/components/ui/field";
+import { quoteDoorPickup, type PickupShortcut, type PickupVehicle } from "@/lib/tours/door-pickup";
+import type { LatLng } from "@/lib/maps/geo";
+import { DoorPickupPicker } from "./door-pickup-picker";
 
 interface PriceVariant {
   id: string;
@@ -19,32 +25,52 @@ interface PriceVariant {
 interface BookingFormProps {
   packageId: string;
   priceVariants: PriceVariant[];
+  /** Where guests meet when they take no pickup (the package's meeting point), if listed. */
+  meetingPoint?: string | null;
+  /** Door pickup: the vehicles the operator can send, and the meeting point on the map (needed to price it). */
+  pickupVehicles?: PickupVehicle[];
+  /** Well-known places in Daet with verified pins, tapped to drop the pickup pin there. */
+  pickupShortcuts?: PickupShortcut[];
+  meetingLatLng?: LatLng | null;
   /** Open dates when the operator manages availability; null = any future date. */
   dateOptions: DateOption[] | null;
   userProfile: {
     fullName: string;
     email: string;
   };
+  /** ?date and ?pax from the trip planner; checked against open dates and the price option. */
+  prefill?: { date?: string; pax?: string };
 }
 
 const formatOpenDate = (dateKey: string) =>
   new Date(`${dateKey}T00:00:00Z`).toLocaleDateString("en-PH", { weekday: "short", month: "short", day: "numeric", year: "numeric", timeZone: "UTC" });
 
-export function BookingForm({ packageId, priceVariants, dateOptions, userProfile }: BookingFormProps) {
+export function BookingForm({ packageId, priceVariants, meetingPoint = null, pickupVehicles = [], pickupShortcuts = [], meetingLatLng = null, dateOptions, userProfile, prefill = {} }: BookingFormProps) {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   // Form state
-  const [tourDate, setTourDate] = useState(dateOptions?.find((option) => !option.full)?.date ?? "");
-  const [numberOfPax, setNumberOfPax] = useState(1);
   const [selectedVariantId, setSelectedVariantId] = useState(
     priceVariants.find((v) => v.is_default)?.id || priceVariants[0]?.id || ""
   );
+  const [start] = useState(() =>
+    bookingPrefill(prefill, dateOptions, new Date(Date.now() + (8 + 24) * 60 * 60 * 1000).toISOString().split("T")[0], priceVariants.find((v) => v.id === selectedVariantId)),
+  );
+  // With a list of open dates, start empty unless the prefilled date is one of them
+  // (tomorrow usually isn't, which left the dropdown blank).
+  const [tourDate, setTourDate] = useState(dateOptions && !dateOptions.some((option) => option.date === start.date && !option.full) ? "" : start.date);
+  const [numberOfPax, setNumberOfPax] = useState(start.pax);
   const [contactName, setContactName] = useState(userProfile.fullName);
   const [contactEmail, setContactEmail] = useState(userProfile.email);
   const [contactPhone, setContactPhone] = useState("");
   const [specialRequests, setSpecialRequests] = useState("");
+  // "" = no pickup, or "door" for door pickup.
+  const [pickupPointId, setPickupPointId] = useState("");
+  const [doorPin, setDoorPin] = useState<LatLng | null>(null);
+  const [doorNote, setDoorNote] = useState("");
+  const doorAvailable = pickupVehicles.length > 0 && meetingLatLng !== null;
+  const door = pickupPointId === "door";
 
   // Get selected variant
   const selectedVariant = priceVariants.find((v) => v.id === selectedVariantId);
@@ -64,7 +90,12 @@ export function BookingForm({ packageId, priceVariants, dateOptions, userProfile
     return 0;
   };
 
-  const totalAmount = calculateTotal();
+  const tourAmount = calculateTotal();
+  // One vehicle per tour, set by the operator.
+  const doorVehicle = door ? (pickupVehicles[0] ?? null) : null;
+  const doorQuote = doorVehicle && doorPin && meetingLatLng ? quoteDoorPickup(doorVehicle, doorPin, meetingLatLng, numberOfPax) : null;
+  const pickupAmount = door ? (doorQuote?.ok ? doorQuote.fee : 0) : 0;
+  const totalAmount = tourAmount + pickupAmount;
 
   // Get min date (tomorrow in Manila, not in the visitor's or the server's zone)
   const getMinDate = () => {
@@ -94,6 +125,10 @@ export function BookingForm({ packageId, priceVariants, dateOptions, userProfile
   // Submit booking
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    if (door && (!doorPin || !doorVehicle || !doorQuote?.ok)) {
+      setError(!doorPin ? "Choose where we should pick you up." : "This pickup can't be done: see the note under Pick me up.");
+      return;
+    }
     setIsSubmitting(true);
     setError(null);
 
@@ -107,6 +142,8 @@ export function BookingForm({ packageId, priceVariants, dateOptions, userProfile
         contactEmail: contactEmail.trim(),
         contactPhone: contactPhone.trim(),
         specialRequests: specialRequests.trim() || undefined,
+        pickupPointId: null,
+        doorPickup: door && doorPin && doorVehicle ? { vehicleId: doorVehicle.id, lat: doorPin.lat, lng: doorPin.lng, note: doorNote.trim() || undefined } : null,
       });
 
       if (!result.success) {
@@ -125,7 +162,7 @@ export function BookingForm({ packageId, priceVariants, dateOptions, userProfile
 
   if (priceVariants.length === 0) {
     return (
-      <div className="rounded-2xl bg-surface p-6 text-center">
+      <div className="rounded-2xl card-edge bg-surface p-6 text-center">
         <p className="text-daet-ink/70">
           This package does not have pricing configured yet.
         </p>
@@ -147,13 +184,13 @@ export function BookingForm({ packageId, priceVariants, dateOptions, userProfile
       )}
 
       {/* Tour Date */}
-      <section className="rounded-2xl bg-surface p-6">
-        <h2 className="text-xl font-bold text-daet-ink">Select Date</h2>
+      <section className="rounded-2xl card-edge bg-surface p-6">
+        <h2 className="text-xl font-bold text-daet-ink">Pick a date</h2>
         <p className="mt-1 text-sm text-daet-ink/70">Choose your preferred tour date</p>
 
         <div className="mt-4">
           <label htmlFor="tourDate" className="block text-sm font-bold text-daet-ink">
-            Tour Date *
+            Tour date <span className="text-red-600 dark:text-red-300" aria-hidden="true">*</span>
           </label>
           {dateOptions === null ? (
             <>
@@ -181,6 +218,9 @@ export function BookingForm({ packageId, priceVariants, dateOptions, userProfile
                 required
                 className="mt-1 min-h-11 w-full rounded-2xl border border-daet-ink/20 bg-surface px-4 py-2.5 text-base focus:border-daet-forest focus:outline-none focus:ring-2 focus:ring-daet-forest/20"
               >
+                <option value="" disabled>
+                  Select a date
+                </option>
                 {dateOptions.map((option) => (
                   <option key={option.date} value={option.date} disabled={option.full}>
                     {formatOpenDate(option.date)} — {option.full ? "fully booked" : `${option.seatsLeft} seat${option.seatsLeft === 1 ? "" : "s"} left`}
@@ -194,7 +234,7 @@ export function BookingForm({ packageId, priceVariants, dateOptions, userProfile
       </section>
 
       {/* Number of Pax & Price Variant */}
-      <section className="rounded-2xl bg-surface p-6">
+      <section className="rounded-2xl card-edge bg-surface p-6">
         <h2 className="text-xl font-bold text-daet-ink">Group Size & Pricing</h2>
         <p className="mt-1 text-sm text-daet-ink/70">Select number of participants</p>
 
@@ -203,7 +243,7 @@ export function BookingForm({ packageId, priceVariants, dateOptions, userProfile
           {priceVariants.length > 1 && (
             <div>
               <label htmlFor="variant" className="block text-sm font-bold text-daet-ink">
-                Price Option *
+                Price Option <span className="text-red-600 dark:text-red-300" aria-hidden="true">*</span>
               </label>
               <select
                 id="variant"
@@ -228,7 +268,7 @@ export function BookingForm({ packageId, priceVariants, dateOptions, userProfile
           {/* Pax Selection */}
           <div>
             <label htmlFor="pax" className="block text-sm font-bold text-daet-ink">
-              Number of Participants *
+              Number of guests <span className="text-red-600 dark:text-red-300" aria-hidden="true">*</span>
             </label>
             <div className="mt-1 flex items-center gap-3">
               <button
@@ -260,7 +300,7 @@ export function BookingForm({ packageId, priceVariants, dateOptions, userProfile
                 <span aria-hidden="true">+</span>
               </button>
               <span className="text-sm text-daet-ink/70">
-                ({minPax} - {maxPax} pax)
+                ({minPax} to {maxPax} guests)
               </span>
             </div>
             {notEnoughSeats ? (
@@ -270,25 +310,82 @@ export function BookingForm({ packageId, priceVariants, dateOptions, userProfile
             ) : null}
           </div>
 
-          {/* Price Summary */}
-          <div className="rounded-2xl bg-daet-sand/30 p-4">
-            <div className="flex items-baseline justify-between">
-              <span className="text-sm font-bold text-daet-ink">Total Amount:</span>
-              <span className="text-3xl font-bold text-daet-forest dark:text-blue-300">
-                {formatPeso(totalAmount)}
-              </span>
-            </div>
-            {selectedVariant?.price_per_pax && (
-              <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
-                {formatPeso(selectedVariant.price_per_pax)} × {numberOfPax} pax
+          {/* Pickup: always shown, so the price never hides a pickup choice or fee. */}
+          <div>
+            {doorAvailable ? (
+              <>
+                <label htmlFor="pickupPoint" className="block text-sm font-bold text-daet-ink">
+                  Pickup location
+                </label>
+                <Select id="pickupPoint" value={pickupPointId} onChange={(e) => setPickupPointId(e.target.value)} aria-describedby="pickupPointHint">
+                  <option value="">No pickup: I&apos;ll go to {meetingPoint ?? "the meeting point"} (free)</option>
+                  <option value="door">Yes, pick me up (fee added to my total)</option>
+                </Select>
+                <p id="pickupPointHint" className="mt-1 text-xs text-daet-ink/70">
+                  {door ? "The operator's vehicle picks you up and brings you to the meeting point." : "The pickup fee is the official van fare for the distance, added to your total."}
+                </p>
+                {door && meetingLatLng ? (
+                  <DoorPickupPicker
+                    vehicle={pickupVehicles[0]}
+                    shortcuts={pickupShortcuts}
+                    meeting={meetingLatLng}
+                    meetingName={meetingPoint ?? "the meeting point"}
+                    pax={numberOfPax}
+                    pin={doorPin}
+                    onPin={setDoorPin}
+                    note={doorNote}
+                    onNote={setDoorNote}
+                  />
+                ) : null}
+              </>
+            ) : (
+              <>
+              <p className="text-sm font-bold text-daet-ink">Pickup location</p>
+              <p className="mt-1 rounded-2xl bg-muted p-3 text-sm text-daet-ink">
+                This tour has no pickup service. You meet at <span className="font-bold">{meetingPoint ?? "the meeting point the operator sends you"}</span>, so there is no pickup fee.
               </p>
+              </>
             )}
+          </div>
+
+          {/* Price Summary: tour + pickup = total */}
+          <div className="rounded-2xl bg-daet-sand/30 p-4">
+            <dl className="space-y-1 text-sm">
+              <div className="flex justify-between gap-4">
+                <dt className="text-daet-ink">
+                  Tour
+                  {selectedVariant?.price_per_pax ? (
+                    <span className="text-slate-600 dark:text-slate-400">
+                      {" "}
+                      ({formatPeso(selectedVariant.price_per_pax)} × {numberOfPax} guest{numberOfPax === 1 ? "" : "s"})
+                    </span>
+                  ) : null}
+                </dt>
+                <dd className="font-bold text-daet-ink">{formatPeso(tourAmount)}</dd>
+              </div>
+              <div className="flex justify-between gap-4">
+                <dt className="text-daet-ink">
+                  Pickup
+                  <span className="text-slate-600 dark:text-slate-400">
+                    {" "}
+                    {door
+                      ? `(door pickup${doorQuote?.ok ? `, ${doorQuote.km} km` : ""})`
+                      : `(${meetingPoint ?? "meeting point"})`}
+                  </span>
+                </dt>
+                <dd className="font-bold text-daet-ink">{pickupAmount > 0 ? formatPeso(pickupAmount) : "Free"}</dd>
+              </div>
+            </dl>
+            <div className="mt-2 flex items-baseline justify-between border-t border-daet-ink/10 pt-2">
+              <span className="text-sm font-bold text-daet-ink">Total</span>
+              <span className="text-3xl font-bold text-daet-forest dark:text-blue-300">{formatPeso(totalAmount)}</span>
+            </div>
           </div>
         </div>
       </section>
 
       {/* Contact Information */}
-      <section className="rounded-2xl bg-surface p-6">
+      <section className="rounded-2xl card-edge bg-surface p-6">
         <h2 className="text-xl font-bold text-daet-ink">Contact Information</h2>
         <p className="mt-1 text-sm text-daet-ink/70">
           We'll use this to confirm your booking
@@ -297,11 +394,12 @@ export function BookingForm({ packageId, priceVariants, dateOptions, userProfile
         <div className="mt-4 space-y-4">
           <div>
             <label htmlFor="contactName" className="block text-sm font-bold text-daet-ink">
-              Full Name *
+              Full Name <span className="text-red-600 dark:text-red-300" aria-hidden="true">*</span>
             </label>
             <input
               type="text"
               id="contactName"
+              autoComplete="name"
               value={contactName}
               onChange={(e) => setContactName(e.target.value)}
               required
@@ -314,11 +412,12 @@ export function BookingForm({ packageId, priceVariants, dateOptions, userProfile
           <div className="grid gap-4 sm:grid-cols-2">
             <div>
               <label htmlFor="contactEmail" className="block text-sm font-bold text-daet-ink">
-                Email Address *
+                Email Address <span className="text-red-600 dark:text-red-300" aria-hidden="true">*</span>
               </label>
               <input
                 type="email"
                 id="contactEmail"
+                autoComplete="email"
                 value={contactEmail}
                 onChange={(e) => setContactEmail(e.target.value)}
                 required
@@ -329,24 +428,33 @@ export function BookingForm({ packageId, priceVariants, dateOptions, userProfile
 
             <div>
               <label htmlFor="contactPhone" className="block text-sm font-bold text-daet-ink">
-                Phone Number *
+                Phone Number <span className="text-red-600 dark:text-red-300" aria-hidden="true">*</span>
               </label>
               <input
                 type="tel"
                 id="contactPhone"
+                autoComplete="tel"
+                inputMode="numeric"
+                pattern={`[0-9]{${PHONE_DIGITS}}`}
+                maxLength={PHONE_DIGITS}
+                title={PHONE_HINT}
+                aria-describedby="contactPhoneHint"
                 value={contactPhone}
-                onChange={(e) => setContactPhone(e.target.value)}
+                onChange={(e) => setContactPhone(digitsOnlyPhone(e.target.value))}
                 required
-                minLength={10}
+                minLength={PHONE_DIGITS}
                 className="mt-1 w-full rounded-2xl border border-daet-ink/20 min-h-11 px-4 py-2.5 text-base focus:border-daet-forest focus:outline-none focus:ring-2 focus:ring-daet-forest/20"
                 placeholder="09123456789"
               />
+              <p id="contactPhoneHint" className="mt-1 text-sm text-daet-ink/70">
+                {PHONE_HINT}
+              </p>
             </div>
           </div>
 
           <div>
             <label htmlFor="specialRequests" className="block text-sm font-bold text-daet-ink">
-              Special Requests (Optional)
+              Special requests (optional)
             </label>
             <textarea
               id="specialRequests"
@@ -361,7 +469,7 @@ export function BookingForm({ packageId, priceVariants, dateOptions, userProfile
       </section>
 
       {/* Submit */}
-      <div className="flex flex-col gap-4 rounded-2xl bg-surface p-6 sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex flex-col gap-4 rounded-2xl card-edge bg-surface p-6 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <p className="text-sm font-bold text-daet-ink">Ready to book?</p>
           <p className="text-sm text-slate-600 dark:text-slate-400">

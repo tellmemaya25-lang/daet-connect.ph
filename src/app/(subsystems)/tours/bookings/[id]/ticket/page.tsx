@@ -1,3 +1,5 @@
+import { ButtonLink } from "@/components/ui/button";
+import { hasTicket } from "@/lib/tours/ticket";
 import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
 import { Notice } from "@/components/ui/notice";
@@ -9,8 +11,8 @@ import { issueBookingTicket } from "@/lib/tours/qr-issue";
 import { SaveTicketOffline } from "@/components/tours/save-ticket-offline";
 import { MapPinIcon } from "@/components/ui/icons";
 import { PrintTicketButton } from "./print-ticket-button";
+import { getAuthUser } from "@/lib/tours/server-auth";
 
-export const dynamic = "force-dynamic";
 
 type PageProps = { params: Promise<{ id: string }> };
 
@@ -29,14 +31,12 @@ export default async function BookingTicketPage({ params }: PageProps) {
   const { id } = await params;
   if (!isUuid(id)) notFound();
   const supabase = await createSupabaseServerClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getAuthUser();
   if (!user) redirect(`/login?next=${encodeURIComponent(`/tours/bookings/${id}/ticket`)}`);
 
   const { data: booking } = await supabase
     .from("tours_bookings")
-    .select("id, booking_reference, status, tour_date, number_of_pax, contact_name, tours_packages ( title, location_name )")
+    .select("id, booking_reference, status, payment_status, tour_date, number_of_pax, contact_name, tours_packages ( title, location_name )")
     .eq("id", id)
     .eq("user_id", user.id)
     .maybeSingle();
@@ -48,16 +48,25 @@ export default async function BookingTicketPage({ params }: PageProps) {
     </Link>
   );
 
-  if (booking.status !== "confirmed" && booking.status !== "completed") {
+  if (!hasTicket(booking)) {
+    const unpaid = booking.status === "confirmed" || booking.status === "completed";
     return (
       <PageFrame>
         <div className="mx-auto max-w-md">
           {back}
-          <Notice variant="info" className="mt-4" title="Your ticket is not ready yet">
-            {booking.status === "pending"
+          <h1 className="display-2 mt-4 text-daet-ink">Your ticket</h1>
+          <Notice variant="info" className="mt-4" title={unpaid ? "Pay to get your ticket" : "Your ticket is not ready yet"}>
+            {unpaid
+              ? "Your ticket QR appears here once the booking is paid in full. Pay the balance on your booking page."
+              : booking.status === "pending"
               ? "The ticket appears here once the operator confirms your booking."
               : "This booking is no longer active, so it has no ticket."}
           </Notice>
+          {unpaid ? (
+            <ButtonLink href={`/tours/bookings/${booking.id}#payment`} className="mt-4">
+              Pay the balance
+            </ButtonLink>
+          ) : null}
         </div>
       </PageFrame>
     );

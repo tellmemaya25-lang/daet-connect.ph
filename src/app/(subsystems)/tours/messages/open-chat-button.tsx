@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Button, type ButtonVariant } from "@/components/ui/button";
+import { LineIcon } from "@/components/ui/icons";
 import type { ChatTarget } from "@/lib/tours/messaging";
 import { openChat } from "./actions";
 import { openInDock } from "@/components/chat-dock/dock-bus";
@@ -40,6 +41,7 @@ export function OpenChatButton({
           })
         }
       >
+        <LineIcon name="chat" className="h-4 w-4 shrink-0" />
         {label}
       </Button>
       {error ? (

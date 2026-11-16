@@ -7,11 +7,12 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { toManilaDateKey } from "@/lib/tours/events-calendar";
 import { checkInAllowed, getQrSecret, verifyQrToken } from "@/lib/tours/qr-token";
 import { TicketCheckInButton } from "./ticket-check-in-button";
+import { showsCheckIn, ticketMode, verificationNote } from "./ticket-mode";
+import { getAuthUser } from "@/lib/tours/server-auth";
 
-export const dynamic = "force-dynamic";
 export const metadata: Metadata = { title: "Verify QR · CONNECT-Daet", robots: { index: false } };
 
-type PageProps = { params: Promise<{ token: string }> };
+type PageProps = { params: Promise<{ token: string }>; searchParams: Promise<{ mode?: string | string[] }> };
 
 const longDate = (value: string | number | Date) =>
   new Date(value).toLocaleDateString("en-PH", { dateStyle: "long", timeZone: "Asia/Manila" });
@@ -35,8 +36,10 @@ function ResultCard({ tone, title, children }: { tone: "valid" | "invalid" | "ne
   );
 }
 
-export default async function VerifyQrPage({ params }: PageProps) {
-  const { token: rawToken } = await params;
+export default async function VerifyQrPage({ params, searchParams }: PageProps) {
+  const [{ token: rawToken }, query] = await Promise.all([params, searchParams]);
+  // `?mode=verify` is the operator dashboard's scanner: details, no check-in.
+  const mode = ticketMode(query.mode);
   const secret = getQrSecret();
   if (!isSupabaseConfigured() || !secret) {
     return (
@@ -101,9 +104,7 @@ export default async function VerifyQrPage({ params }: PageProps) {
   }
 
   // Booking ticket: details only for the people running the tour.
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getAuthUser();
   const signInLink = (
     <Link href={`/login?next=${encodeURIComponent(`/tours/verify/${rawToken}`)}`} className="inline-flex min-h-11 items-center font-bold text-daet-forest dark:text-blue-300 underline">
       Sign in
@@ -121,7 +122,7 @@ export default async function VerifyQrPage({ params }: PageProps) {
 
   const { data: booking } = await supabase
     .from("tours_bookings")
-    .select("id, user_id, booking_reference, status, tour_date, number_of_pax, contact_name, assigned_guide_id, tours_packages ( title )")
+    .select("id, user_id, booking_reference, status, payment_status, tour_date, number_of_pax, contact_name, assigned_guide_id, tours_packages ( title )")
     .eq("id", claims.id)
     .maybeSingle();
   if (!booking) {
@@ -149,6 +150,10 @@ export default async function VerifyQrPage({ params }: PageProps) {
           <dd className="font-bold text-daet-ink">{booking.booking_reference}</dd>
           <dt className="text-daet-ink/70">Tour date</dt>
           <dd className="font-bold text-daet-ink">{tourDate(booking.tour_date)}</dd>
+          <dt className="text-daet-ink/70">Booking status</dt>
+          <dd className="font-bold capitalize text-daet-ink">{booking.status}</dd>
+          <dt className="text-daet-ink/70">Payment status</dt>
+          <dd className="font-bold capitalize text-daet-ink">{booking.payment_status ?? "unknown"}</dd>
           <dt className="text-daet-ink/70">Guests</dt>
           <dd className="font-bold text-daet-ink">
             {booking.number_of_pax} · {booking.contact_name}
@@ -158,14 +163,12 @@ export default async function VerifyQrPage({ params }: PageProps) {
           <p className="mt-3 font-semibold text-green-800 dark:text-green-300">
             Checked in at {new Date(partyCheckIn.scanned_at).toLocaleTimeString("en-PH", { timeStyle: "short", timeZone: "Asia/Manila" })}
           </p>
-        ) : isTourist ? (
-          <p className="mt-3">Show this QR to your guide on the tour day.</p>
-        ) : rule.ok ? (
+        ) : showsCheckIn({ mode, isTourist, ruleOk: rule.ok }) ? (
           <div className="mt-4">
             <TicketCheckInButton token={decodeURIComponent(rawToken)} />
           </div>
         ) : (
-          <p className="mt-3 font-semibold text-daet-ink">{rule.reason}</p>
+          <p className="mt-3 font-semibold text-daet-ink">{verificationNote({ mode, isTourist, ruleOk: rule.ok, reason: rule.ok ? undefined : rule.reason })}</p>
         )}
         {!isTourist ? (
           <p className="mt-4">

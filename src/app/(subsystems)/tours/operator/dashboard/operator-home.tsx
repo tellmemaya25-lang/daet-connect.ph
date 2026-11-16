@@ -3,14 +3,16 @@ import { formatPeso } from "@/lib/money";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { OpenChatButton } from "@/app/(subsystems)/tours/messages/open-chat-button";
-import { ButtonLink } from "@/components/ui/button";
 import { Card, CardHeader } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
 import { PageFrame } from "@/components/ui/page-frame";
 import { MonthCalendar } from "@/components/tours/month-calendar";
+import { QrVerifyScanner } from "@/components/tours/qr-verify-scanner";
 import { RatingBadge } from "@/components/tours/star-rating";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { bookingsByDay, occupancy } from "@/lib/tours/dashboards";
+import { guideCoverageNote } from "@/lib/tours/guide-not-needed";
+import { loadGuideNotNeeded } from "@/lib/tours/guide-not-needed-server";
 import { currentManilaMonth, formatDayHeading, isDateKey, monthKey, parseMonthParam, shiftMonth, toManilaDateKey } from "@/lib/tours/events-calendar";
 import { summarizeLedger } from "@/lib/tours/ledger";
 import { toSummary } from "@/lib/tours/reviews";
@@ -26,10 +28,13 @@ type DayBooking = {
   number_of_pax: number;
   contact_name: string;
   assigned_guide_id: string | null;
+  /** Filled in from loadGuideNotNeeded(): set when the guest asked to go without a guide. */
+  guide_not_needed_at?: string | null;
   tours_packages: { title: string; operator_id: string } | { title: string; operator_id: string }[] | null;
 };
 
 const STATUS_TONE: Record<string, "success" | "warning" | "info"> = { confirmed: "success", pending: "warning", completed: "info" };
+const STATUS_LABEL: Record<string, string> = { pending: "To confirm", confirmed: "Confirmed", completed: "Completed", cancelled: "Cancelled", rejected: "Declined" };
 
 /** Operator dashboard body: today's tours, booking calendar, month revenue, occupancy, ratings. */
 export async function OperatorHome({ operatorId, searchParams }: { operatorId: string; searchParams: Record<string, string | string[] | undefined> }) {
@@ -73,12 +78,18 @@ export async function OperatorHome({ operatorId, searchParams }: { operatorId: s
     loadOperatorLedger(month),
   ]);
 
-  const bookings = (monthBookings ?? []) as unknown as DayBooking[];
+  const monthRows = (monthBookings ?? []) as unknown as DayBooking[];
+  const todayRows = (todays ?? []) as unknown as DayBooking[];
+  // Its own read, so a database that is a migration behind still draws the page.
+  const guideNotNeeded = await loadGuideNotNeeded(supabase, [...monthRows, ...todayRows].map((b) => b.id));
+  const withGuideRequest = (rows: DayBooking[]): DayBooking[] =>
+    rows.map((row) => ({ ...row, guide_not_needed_at: guideNotNeeded.get(row.id)?.at ?? null }));
+  const bookings = withGuideRequest(monthRows);
   const load = bookingsByDay(bookings);
   const occ = occupancy(availability ?? []);
   const revenue = ledger.ok ? summarizeLedger(ledger.rows) : null;
   const rating = toSummary(ratingRow);
-  const todayList = (todays ?? []) as unknown as DayBooking[];
+  const todayList = withGuideRequest(todayRows);
   const dayList = selectedDay ? bookings.filter((b) => b.tour_date === selectedDay && b.status !== "rejected") : [];
   const title = (b: DayBooking) => (Array.isArray(b.tours_packages) ? b.tours_packages[0]?.title : b.tours_packages?.title) ?? "Tour";
   const monthHref = (m: string) => `/tours/operator/dashboard?month=${m}`;
@@ -89,11 +100,8 @@ export async function OperatorHome({ operatorId, searchParams }: { operatorId: s
         <div>
           <h1 className="display-2 text-daet-ink">{operator?.business_name ?? "Your business"}</h1>
         </div>
+        {/* Bookings and Packages live in the header and tab bar; only what has no other home is here. */}
         <div className="flex flex-wrap gap-2">
-          <ButtonLink href="/tours/operator/bookings">Bookings{pendingCount ? ` (${pendingCount} to confirm)` : ""}</ButtonLink>
-          <ButtonLink href="/tours/operator/packages" variant="secondary">
-            Packages
-          </ButtonLink>
           <OpenChatButton target={{ kind: "operator_admin" }} label="Contact Tourism Office" variant="ghost" />
         </div>
       </div>
@@ -102,7 +110,9 @@ export async function OperatorHome({ operatorId, searchParams }: { operatorId: s
         <Card>
           <p className="text-sm text-slate-600 dark:text-slate-400">Waiting for you</p>
           <p className="mt-1 text-2xl font-bold text-yellow-800 dark:text-yellow-200">{pendingCount ?? 0}</p>
-          <p className="text-sm text-slate-600 dark:text-slate-400">booking request{pendingCount === 1 ? "" : "s"}</p>
+          <Link href="/tours/operator/bookings?status=pending" className="inline-flex min-h-11 items-center font-bold text-daet-forest dark:text-blue-300 hover:underline">
+            {pendingCount === 1 ? "Booking to confirm →" : "Bookings to confirm →"}
+          </Link>
         </Card>
         <Card>
           <p className="text-sm text-slate-600 dark:text-slate-400">Received in {key === monthKey(thisMonth) ? "this month" : key}</p>
@@ -176,6 +186,10 @@ export async function OperatorHome({ operatorId, searchParams }: { operatorId: s
             )}
           </Card>
 
+          <Card>
+            <QrVerifyScanner expectedType="booking" />
+          </Card>
+
           {revenue && revenue.byPackage.length > 0 ? (
             <Card>
               <CardHeader title="Revenue by package" action={<Link href={`/tours/operator/payments/export?month=${key}`} prefetch={false} className="inline-flex min-h-11 items-center font-bold text-daet-forest dark:text-blue-300 hover:underline">Download CSV</Link>} />
@@ -199,11 +213,9 @@ export async function OperatorHome({ operatorId, searchParams }: { operatorId: s
             <CardHeader title="Manage" />
             <div className="grid grid-cols-2 gap-2">
               {[
-                ["/tours/operator/packages", "Packages"],
-                ["/tours/operator/bookings", "Bookings"],
-                ["/tours/operator/payments", "Payments"],
+                ["/tours/operator/guides", "Guides"],
+                ["/tours/operator/live", "Live now"],
                 ["/tours/operator/reviews", "Reviews"],
-                ["/tours/messages", "Messages"],
                 ["/tours/operator/merch", "Merchandise"],
                 ["/tours/operator/settings", "Payment settings"],
               ].map(([href, label]) => (
@@ -224,15 +236,17 @@ function BookingLines({ bookings, title }: { bookings: DayBooking[]; title: (b: 
     <ul className="divide-y divide-daet-ink/10">
       {bookings.map((b) => (
         <li key={b.id} className="flex items-start justify-between gap-2 py-2">
-          <div className="min-w-0">
-            <Link href={`/tours/operator/bookings?status=${b.status}#booking-${b.id}`} className="flex min-h-11 items-center truncate font-bold text-daet-ink hover:underline">
+          <div className="min-w-0 flex-1">
+            {/* Names wrap rather than being cut mid-word. */}
+            <Link href={`/tours/operator/bookings?status=${b.status}#booking-${b.id}`} className="flex min-h-11 items-center font-bold leading-snug text-daet-ink hover:underline">
               {title(b)}
             </Link>
             <p className="truncate text-sm text-slate-600 dark:text-slate-400">
-              {b.booking_reference} · {b.contact_name} · {b.number_of_pax} pax{b.assigned_guide_id ? "" : " · no guide yet"}
+              {b.booking_reference} · {b.contact_name} · {b.number_of_pax} guest{b.number_of_pax === 1 ? "" : "s"}
+              {guideCoverageNote(b)}
             </p>
           </div>
-          <Badge tone={STATUS_TONE[b.status] ?? "neutral"}>{b.status}</Badge>
+          <Badge tone={STATUS_TONE[b.status] ?? "neutral"} className="mt-3 shrink-0">{STATUS_LABEL[b.status] ?? b.status}</Badge>
         </li>
       ))}
     </ul>

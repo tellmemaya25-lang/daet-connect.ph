@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { userFacingDbError } from "@/lib/tours/db-errors";
 import { attachmentPath, chatRpc, describeThread, KIND_LABELS, MESSAGE_ATTACHMENT_BUCKET, MESSAGE_COLUMNS, MESSAGE_PAGE_SIZE, parseMessageForm, type ChatMembers, type ChatMessage, type ChatTarget, type ConversationHeader } from "@/lib/tours/messaging";
-import { getAuthenticatedSession } from "@/lib/tours/server-auth";
+import { getVerifiedSession } from "@/lib/tours/server-auth";
 import { isReactionKey, type Reaction, type ReadMark } from "@/lib/tours/messenger";
 import { isUuid } from "@/lib/tours/operator-access";
 
@@ -102,9 +102,22 @@ export async function reactToMessage(messageId: string, reaction: string | null)
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) return { ok: false, error: "Please sign in again." };
-  const { error } = reaction
-    ? await supabase.from("tours_message_reactions").upsert({ message_id: messageId, reaction }, { onConflict: "message_id,profile_id" })
-    : await supabase.from("tours_message_reactions").delete().eq("message_id", messageId).eq("profile_id", user.id);
+  const table = () => supabase.from("tours_message_reactions");
+  // An upsert also rewrites message_id on conflict, and only `reaction` is
+  // updatable for this table, so change the row first and add it if missing.
+  const change = (value: string) => table().update({ reaction: value }).eq("message_id", messageId).eq("profile_id", user.id).select("message_id");
+  let error: { code?: string } | null;
+  if (reaction) {
+    const updated = await change(reaction);
+    error = updated.error;
+    if (!error && (updated.data ?? []).length === 0) {
+      error = (await table().insert({ message_id: messageId, reaction })).error;
+      // Two quick taps raced to insert: the row exists now, so change it.
+      if (error?.code === "23505") error = (await change(reaction)).error;
+    }
+  } else {
+    error = (await table().delete().eq("message_id", messageId).eq("profile_id", user.id)).error;
+  }
   if (error) {
     console.error("Reaction error:", error);
     return { ok: false, error: "The reaction could not be saved." };
@@ -191,7 +204,7 @@ export async function dockThread(conversationId: string): Promise<DockThread | n
   const { data: rawHeader } = await supabase.rpc("tours_conversation_header", { p_conversation_id: conversationId });
   const header = rawHeader as ConversationHeader | null;
   if (!header) return null;
-  const view = describeThread(header, user.id, (await getAuthenticatedSession()).role);
+  const view = describeThread(header, user.id, (await getVerifiedSession()).role);
   const { data: latest } = await supabase.from("tours_messages").select(MESSAGE_COLUMNS).eq("conversation_id", header.id).order("created_at", { ascending: false }).limit(MESSAGE_PAGE_SIZE);
   const messages = ((latest ?? []) as ChatMessage[]).reverse();
   const [extras, marks] = await Promise.all([threadExtras(header.id, messages), header.is_member ? readMarks(header.id) : Promise.resolve([])]);

@@ -1,8 +1,10 @@
 "use server";
 
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { getVerifiedSession } from "@/lib/tours/server-auth";
 import { validateCreateBooking, type CreateBookingInput } from "@/lib/tours/booking-contract";
 import { userFacingDbError } from "@/lib/tours/db-errors";
+import { emailBookingReceived } from "@/lib/email/notify-booking";
 
 interface CreateBookingResult {
   success: boolean;
@@ -12,22 +14,23 @@ interface CreateBookingResult {
 
 export async function createBooking(input: CreateBookingInput): Promise<CreateBookingResult> {
   try {
-    // Validate input
+    // Writes require a current Supabase Auth session and an authoritative tourist role.
+    const session = await getVerifiedSession();
+    if (!session.user) {
+      return { success: false, error: "You must be logged in to book." };
+    }
+    if (session.error || session.role !== "tourist") {
+      return { success: false, error: session.error ?? "Only tourist accounts can create bookings." };
+    }
+
+    // Validate input only after the role gate, so non-tourists cannot reach any booking work.
     const validationError = validateCreateBooking(input);
     if (validationError) {
       return { success: false, error: validationError };
     }
 
+    const user = session.user;
     const supabase = await createSupabaseServerClient();
-
-    // Get current user
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-
-    if (!user) {
-      return { success: false, error: "You must be logged in to book." };
-    }
 
     // Get package details to verify it exists and is published
     const { data: pkg, error: pkgError } = await supabase
@@ -116,6 +119,11 @@ export async function createBooking(input: CreateBookingInput): Promise<CreateBo
         contact_email: input.contactEmail,
         contact_phone: input.contactPhone,
         special_requests: input.specialRequests || null,
+        // The database checks it belongs to this package and adds its fee to the total.
+        // Door pickup: the database works out the distance and fee from the pin.
+        ...(input.doorPickup
+          ? { pickup_vehicle_id: input.doorPickup.vehicleId, pickup_lat: input.doorPickup.lat, pickup_lng: input.doorPickup.lng, pickup_note: input.doorPickup.note?.trim() || null }
+          : {}),
         status: "pending",
       })
       .select("id")
@@ -128,6 +136,7 @@ export async function createBooking(input: CreateBookingInput): Promise<CreateBo
       return { success: false, error: userFacingDbError(bookingError, "Failed to create booking. Please try again.") };
     }
 
+    emailBookingReceived(booking.id);
 
     return {
       success: true,

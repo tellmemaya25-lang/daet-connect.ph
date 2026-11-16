@@ -10,7 +10,6 @@ import { requirePromoAdmin } from "@/lib/tours/promo-admin";
 import { deleteAttraction } from "./actions";
 import { ImportAttractionsForm } from "./import-form";
 
-export const dynamic = "force-dynamic";
 export const metadata = { title: "Manage attractions" };
 
 export default async function AdminAttractionsPage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
@@ -57,9 +56,9 @@ export default async function AdminAttractionsPage({ searchParams }: { searchPar
       </Card>
 
       {attractions.length === 0 ? (
-        <p className="rounded-2xl bg-surface p-8 text-center text-sm text-daet-ink/70">No attractions yet. Add one or import the Tourism Office list.</p>
+        <p className="rounded-2xl card-edge bg-surface p-8 text-center text-sm text-daet-ink/70">No attractions yet. Add one or import the Tourism Office list.</p>
       ) : (
-        <ul className="divide-y divide-daet-ink/10 overflow-hidden rounded-2xl bg-surface">
+        <ul className="divide-y divide-daet-ink/10 overflow-hidden rounded-2xl card-edge bg-surface">
           {attractions.map((attraction) => (
             <li key={attraction.id} className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between">
               <div className="min-w-0">
@@ -96,7 +95,7 @@ export default async function AdminAttractionsPage({ searchParams }: { searchPar
 
 function Stat({ label, value }: { label: string; value: number }) {
   return (
-    <div className="rounded-2xl bg-surface p-4">
+    <div className="rounded-2xl card-edge bg-surface p-4">
       <p className="text-3xl font-bold text-daet-ink">{value}</p>
       <p className="text-sm text-slate-600 dark:text-slate-400">{label}</p>
     </div>

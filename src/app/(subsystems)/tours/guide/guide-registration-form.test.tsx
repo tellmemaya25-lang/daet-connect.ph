@@ -23,7 +23,7 @@ describe("guide registration steps", () => {
 
   async function completePublicProfile() {
     fireEvent.change(screen.getByLabelText(/Full name/i), { target: { value: "Maya Santos" } });
-    fireEvent.change(screen.getByLabelText(/Contact number/i), { target: { value: "+63 917 123 4567" } });
+    fireEvent.change(screen.getByLabelText(/Contact number/i), { target: { value: "09171234567" } });
     fireEvent.change(screen.getByLabelText(/Guide introduction/i), { target: { value: "I have guided visitors around Daet for several years." } });
     fireEvent.click(screen.getByRole("button", { name: /continue/i }));
     expect(screen.getByText("Identity verification & consent")).toBeInTheDocument();

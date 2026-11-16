@@ -1,4 +1,5 @@
 import { notFound, redirect } from "next/navigation";
+import { PickupForCrew } from "@/components/tours/pickup-for-crew";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { Notice } from "@/components/ui/notice";
@@ -10,8 +11,8 @@ import { isUuid } from "@/lib/tours/operator-access";
 import { checkInAllowed } from "@/lib/tours/qr-token";
 import { OpenChatButton } from "@/app/(subsystems)/tours/messages/open-chat-button";
 import { RosterCheckInButton } from "./roster-check-in-button";
+import { getAuthUser } from "@/lib/tours/server-auth";
 
-export const dynamic = "force-dynamic";
 
 type PageProps = { params: Promise<{ bookingId: string }> };
 
@@ -31,15 +32,13 @@ export default async function GuideRosterPage({ params }: PageProps) {
   const { bookingId } = await params;
   if (!isUuid(bookingId)) notFound();
   const supabase = await createSupabaseServerClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getAuthUser();
   if (!user) redirect(`/login?next=${encodeURIComponent(`/tours/guide/tours/${bookingId}/roster`)}`);
 
   // RLS: the tourist, the operator, the assigned guide and admins can read the booking.
   const { data: booking } = await supabase
     .from("tours_bookings")
-    .select("id, user_id, booking_reference, status, tour_date, number_of_pax, contact_name, contact_phone, special_requests, tours_packages ( title, location_name )")
+    .select("id, user_id, booking_reference, status, payment_status, tour_date, number_of_pax, contact_name, contact_phone, special_requests, pickup_lat, pickup_lng, pickup_note, pickup_vehicle, pickup_km, tours_packages ( title, location_name )")
     .eq("id", bookingId)
     .maybeSingle();
   if (!booking || booking.user_id === user.id) notFound();
@@ -68,14 +67,14 @@ export default async function GuideRosterPage({ params }: PageProps) {
 
         {!rule.ok ? <Notice variant="info" className="mt-4">{rule.reason}</Notice> : null}
 
-        <section className="mt-6 rounded-2xl bg-surface p-5">
+        <section className="mt-6 rounded-2xl card-edge bg-surface p-5">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
               <p className="text-lg font-bold text-daet-ink">{booking.contact_name}</p>
               <p className="text-sm text-daet-ink/65">
                 {booking.booking_reference} · {booking.number_of_pax} guest{booking.number_of_pax === 1 ? "" : "s"}
               </p>
-              <a href={`tel:${booking.contact_phone}`} className="mt-1 inline-block text-sm font-bold text-daet-forest dark:text-blue-300 underline">
+              <a href={`tel:${booking.contact_phone}`} className="inline-flex min-h-11 items-center text-sm font-bold text-daet-forest dark:text-blue-300 underline">
                 {booking.contact_phone}
               </a>
             </div>
@@ -85,6 +84,7 @@ export default async function GuideRosterPage({ params }: PageProps) {
               <Badge tone="warning">Not checked in</Badge>
             )}
           </div>
+          <PickupForCrew booking={booking} className="mt-3" />
           {booking.special_requests ? (
             <p className="mt-3 rounded-2xl bg-daet-sand/40 p-3 text-sm text-daet-ink">
               <span className="font-bold">Requests:</span> {booking.special_requests}
@@ -111,7 +111,7 @@ export default async function GuideRosterPage({ params }: PageProps) {
             <h2 className="mb-3 text-lg font-bold text-daet-ink">
               Guests <span className="text-sm font-bold text-daet-ink/70">({checkedGuests} of {guests.length} present)</span>
             </h2>
-            <ul className="divide-y divide-daet-ink/10 rounded-2xl bg-surface">
+            <ul className="divide-y divide-daet-ink/10 rounded-2xl card-edge bg-surface">
               {guests.map((guest) => {
                 const done = byParticipant.get(guest.id);
                 return (

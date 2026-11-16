@@ -75,7 +75,7 @@ export function CancellationReview({ bookingId, request, late }: { bookingId: st
         <Button onClick={() => decide("approve")} loading={pending}>
           Approve cancellation
         </Button>
-        <Button variant="danger" onClick={() => decide("decline")} disabled={pending}>
+        <Button variant="ghost" onClick={() => decide("decline")} disabled={pending}>
           Decline request
         </Button>
       </div>

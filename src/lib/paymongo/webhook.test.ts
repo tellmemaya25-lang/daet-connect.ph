@@ -1,5 +1,6 @@
 import { buildSignatureHeader } from "@/lib/paymongo/signature";
-import { processPaymongoWebhook, type LedgerInsert, type WebhookStore } from "@/lib/paymongo/webhook";
+import type { RefundResource } from "@/lib/paymongo/refunds";
+import { ledgerRowsFromSession, processPaymongoWebhook, type LedgerInsert, type WebhookStore } from "@/lib/paymongo/webhook";
 
 const SECRET = "whsk_test_secret";
 const NOW = new Date("2026-10-23T10:00:00Z");
@@ -55,6 +56,7 @@ class MemoryStore implements WebhookStore {
     }
     return inserted;
   }
+  reconcileRefund = jest.fn(async (_refund: RefundResource) => {});
   async markProcessed(id: string, outcome: string, bookingId: string | null) {
     this.events.set(id, { processed: true, outcome, bookingId });
   }
@@ -166,4 +168,56 @@ describe("processPaymongoWebhook", () => {
     expect((await deliver("not json")).status).toBe(400);
     expect((await deliver(JSON.stringify({ hello: "world" }))).status).toBe(400);
   });
+});
+
+describe("ledgerRowsFromSession", () => {
+  const BOOKING = "e9466de5-4877-47c1-ac14-d86deeb38b9e";
+  it("turns each paid payment into one ledger row with the booking reference", () => {
+    const session = {
+      id: "cs_abc",
+      attributes: {
+        reference_number: "BK-20261031-DEMOLT",
+        metadata: { booking_id: BOOKING },
+        payments: [
+          { id: "pay_1", attributes: { status: "paid", amount: 300000, paid_at: 1793425800, source: { type: "gcash" } } },
+          { id: "pay_2", attributes: { status: "failed", amount: 300000 } },
+        ],
+      },
+    };
+    const rows = ledgerRowsFromSession({ session, sessionId: "cs_abc", bookingId: BOOKING, now: new Date("2026-10-31T05:50:00Z"), rawEvent: (id) => ({ source: "return", payment_id: id }) });
+    expect(rows).toEqual([
+      expect.objectContaining({
+        booking_id: BOOKING,
+        amount: 3000,
+        payment_method: "gcash",
+        provider: "paymongo",
+        provider_ref: "pay_1",
+        reference_number: "BK-20261031-DEMOLT",
+        notes: "PayMongo checkout cs_abc",
+        raw_event: { source: "return", payment_id: "pay_1" },
+      }),
+    ]);
+  });
+});
+
+
+it("refund events re-fetch authoritative status and process redelivery once", async () => {
+  const store = new MemoryStore();
+  const apiRefund: RefundResource = { id: "ref_1", type: "refund", attributes: { payment_id: "pay_1", amount: 100, status: "succeeded", reason: null } };
+  const retrieveRefund = jest.fn().mockResolvedValue(apiRefund);
+  const body = JSON.stringify({ data: { id: "evt_ref", attributes: { type: "payment.refund.updated", livemode: false, data: { id: "ref_1", type: "refund", attributes: { status: "failed" } } } } });
+  const deps = { webhookSecret: SECRET, mode: "test" as const, retrieveSession: jest.fn(), retrieveRefund, store, now: NOW };
+  const request = { rawBody: body, signatureHeader: buildSignatureHeader(SECRET, T, body, "test") };
+  expect((await processPaymongoWebhook(request, deps)).status).toBe(200);
+  expect(store.reconcileRefund).toHaveBeenCalledWith(apiRefund);
+  expect((await processPaymongoWebhook(request, deps)).body.message).toBe("Duplicate event");
+  expect(retrieveRefund).toHaveBeenCalledTimes(1);
+});
+
+it("a refund webhook lookup failure leaves the event retryable", async () => {
+  const store = new MemoryStore();
+  const body = JSON.stringify({ data: { id: "evt_ref", attributes: { type: "payment.refund.updated", livemode: false, data: { id: "ref_1", type: "refund" } } } });
+  const deps = { webhookSecret: SECRET, mode: "test" as const, retrieveSession: jest.fn(), retrieveRefund: jest.fn().mockRejectedValue(new Error("offline")), store, now: NOW };
+  await expect(processPaymongoWebhook({ rawBody: body, signatureHeader: buildSignatureHeader(SECRET, T, body, "test") }, deps)).rejects.toThrow("offline");
+  expect(store.events.get("evt_ref")?.processed).toBe(false);
 });

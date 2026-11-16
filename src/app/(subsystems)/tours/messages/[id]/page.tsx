@@ -10,8 +10,8 @@ import { InboxList } from "../inbox-list";
 import { LiveInbox } from "../live-inbox";
 import { isUuid } from "@/lib/tours/operator-access";
 import { markConversationRead, readMarks, threadExtras } from "../actions";
+import { getAuthUser } from "@/lib/tours/server-auth";
 
-export const dynamic = "force-dynamic";
 
 type PageProps = { params: Promise<{ id: string }> };
 
@@ -27,9 +27,7 @@ export default async function ConversationPage({ params }: PageProps) {
   const { id } = await params;
   if (!isUuid(id)) notFound();
   const supabase = await createSupabaseServerClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getAuthUser();
   if (!user) redirect(`/login?next=${encodeURIComponent(`/tours/messages/${id}`)}`);
 
   // Members (and admins) get the header; everyone else gets null.
@@ -56,7 +54,7 @@ export default async function ConversationPage({ params }: PageProps) {
             <InboxList rows={inbox} viewerId={user.id} activeId={header.id} />
           </LiveInbox>
         </aside>
-        <div className="h-[calc(100dvh-11rem)] min-h-[30rem] overflow-hidden rounded-2xl bg-surface">
+        <div className="h-[calc(100dvh-11rem)] min-h-[30rem] overflow-hidden rounded-2xl card-edge bg-surface">
           <ChatWindow
             key={header.id}
             conversationId={header.id}
@@ -65,6 +63,7 @@ export default async function ConversationPage({ params }: PageProps) {
             title={view.title}
             subtitle={[KIND_LABELS[header.kind] ?? "Chat", view.subtitle].filter(Boolean).join(" · ")}
             link={view.link}
+            otherLastSeen={inbox.find((row) => row.conversation_id === header.id)?.other_last_seen ?? null}
             initialMessages={messages}
             initialAttachmentUrls={extras.attachmentUrls}
             initialReactions={extras.reactions}

@@ -1,3 +1,7 @@
+import { durationText } from "@/lib/tours/duration";
+import type { MissingInput, TripContext } from "@/lib/tours/assistant/context";
+import type { ItineraryResult } from "@/lib/tours/assistant/plan-tool";
+import { hasTicket } from "@/lib/tours/ticket";
 import { formatPeso } from "@/lib/money";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { toAttraction, ATTRACTION_COLUMNS } from "@/lib/tours/attractions";
@@ -5,7 +9,7 @@ import { bookableDates, type AvailabilityRow } from "@/lib/tours/availability";
 import { STATUS_LABELS, isBookingStatus } from "@/lib/tours/booking-lifecycle";
 import { faqById, FAQS, type FaqLink } from "@/lib/tours/assistant/knowledge";
 import { hoursToText } from "@/lib/tours/opening-hours";
-import { directionsUrl, estimateLeg, formatDistance, formatDuration, type LatLng, type Leg } from "@/lib/maps/geo";
+import { directionsUrl, estimateLeg, formatDistance, formatDuration, haversineMeters, type LatLng, type Leg } from "@/lib/maps/geo";
 import { boatOptionsTo, findBoatLeg, findTransportPlace, TRANSPORT_CHECKED } from "@/lib/tours/assistant/transport";
 import type { CostCard, PlaceCard, TransportCard } from "@/lib/tours/assistant/guide-tools";
 
@@ -30,10 +34,22 @@ export type ToolContext = {
   userId: string | null;
   today: string;
   cards: AssistantCard[];
+  /** Authoritative role gate from the server; booking links are shown only to tourists. */
+  canBook?: boolean;
   /** Road leg between two points (the cached Routes API on the server); an estimate when missing. */
   route?: (from: LatLng, to: LatLng) => Promise<Leg>;
   /** The traveller's location, rounded, when they chose to share it for this message. Never stored. */
   here?: LatLng | null;
+  /** The page it was opened on and the trip answers so far, from the browser. Hints only. */
+  trip?: TripContext | null;
+  /** A photo sent with this message, for the AI only; never stored. */
+  image?: { mimeType: string; data: string } | null;
+  /** Set by plan_trip: the drafted plan the panel shows. */
+  itinerary?: ItineraryResult | null;
+  /** Set by plan_trip when the form still needs answers. */
+  questions?: MissingInput[] | null;
+  /** Short progress labels while a tool runs ("Checking operators"). */
+  onStatus?: (label: string) => void;
 };
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -57,7 +73,6 @@ function priceFrom(variants: VariantRow[] | null | undefined): number | null {
   const prices = (variants ?? []).map((v) => Number(v.price_per_pax ?? v.flat_price)).filter((n) => Number.isFinite(n) && n > 0);
   return prices.length ? Math.min(...prices) : null;
 }
-const durationText = (value: number | null, type: string | null) => (value && type ? `${value} ${type}${value === 1 ? "" : "s"}`.replace(/ss$/, "s") : null);
 
 // ------------------------------------------------------------------ tours
 
@@ -126,7 +141,7 @@ export async function tourDetails(ctx: ToolContext, input: { packageId: string }
   const inclusions = (data.tours_package_inclusions ?? []) as Array<{ item_text: string; is_included: boolean }>;
   const stops = ((data.tours_package_stops ?? []) as Array<{ location_name: string; stop_order: number }>).sort((a, b) => a.stop_order - b.stop_order);
   addCard(ctx, { type: "tour", id: data.id, title: data.title, location: data.location_name, priceFrom: priceFrom(data.tours_package_price_variants as VariantRow[]), duration: durationText(data.duration_value, data.duration_type), href: `/tours/packages/${data.id}` });
-  if (dates.length) addCard(ctx, { type: "link", href: `/tours/packages/${data.id}/book`, label: `Book ${data.title}` });
+  if (dates.length && ctx.canBook) addCard(ctx, { type: "link", href: `/tours/packages/${data.id}/book`, label: `Book ${data.title}` });
   return {
     title: data.title,
     operator: one(data.tours_operators as { business_name: string } | { business_name: string }[] | null)?.business_name ?? null,
@@ -145,7 +160,7 @@ export async function tourDetails(ctx: ToolContext, input: { packageId: string }
     stops: stops.map((s) => s.location_name),
     nextOpenDates: dates.map((d) => ({ date: d.date, seatsLeft: d.seatsLeft })),
     link: `/tours/packages/${data.id}`,
-    bookingLink: `/tours/packages/${data.id}/book`,
+    ...(ctx.canBook ? { bookingLink: `/tours/packages/${data.id}/book` } : {}),
   };
 }
 
@@ -220,12 +235,12 @@ export function bookingCard(row: BookingRow, today: string): BookingCard {
   let nextStep: string;
   if (row.status === "pending") nextStep = "Waiting for the operator to confirm. You'll be notified.";
   else if (row.status === "confirmed" && due > 0 && row.payment_status !== "refunded") {
-    nextStep = `Confirmed. ${formatPeso(due)} left to pay.`;
+    nextStep = `Confirmed. ${formatPeso(due)} left to pay; your ticket QR appears once it is paid in full.`;
     links.push({ href: `/tours/bookings/${row.id}#payment`, label: "Pay now" });
   } else if (row.status === "confirmed") nextStep = row.tour_date >= today ? "Confirmed and paid. Show your ticket QR on the tour day." : "Confirmed. The operator will mark it completed.";
   else if (row.status === "completed") nextStep = "Completed. You can leave a review.";
   else nextStep = row.status === "rejected" ? "Declined by the operator; the reason is on the booking." : "Cancelled. Any refund is arranged by the operator.";
-  if (row.status === "confirmed") links.push({ href: `/tours/bookings/${row.id}/ticket`, label: "Show ticket QR" });
+  if (hasTicket(row) && row.status === "confirmed") links.push({ href: `/tours/bookings/${row.id}/ticket`, label: "Show ticket QR" });
   links.push(view);
   return {
     type: "booking",
@@ -309,10 +324,36 @@ export async function resolvePlace(ctx: ToolContext, name: string): Promise<{ na
   const town = findTransportPlace(term);
   if (town && town.aliases.includes(term.toLowerCase())) return { name: town.name, point: town.point };
   const { data } = await ctx.supabase.from("tours_attractions").select(ATTRACTION_COLUMNS).eq("is_active", true).ilike("name", `%${term}%`).limit(1);
-  const attraction = data?.[0] ? toAttraction(data[0] as Record<string, unknown>) : null;
+  let attraction = data?.[0] ? toAttraction(data[0] as Record<string, unknown>) : null;
+  // "jose rizal" typed without the accent still finds "José Rizal".
+  if (!attraction) attraction = (await listedSights(ctx)).find((a) => plain(a.name).includes(plain(term))) ?? null;
   if (attraction && attraction.latitude !== null && attraction.longitude !== null) return { name: attraction.name, point: { lat: attraction.latitude, lng: attraction.longitude } };
   const place = findTransportPlace(name);
   return place ? { name: place.name, point: place.point } : null;
+}
+
+/** Lowercase without accents or punctuation, for matching names as people type them. */
+const plain = (value: string) =>
+  value
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9 ]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+
+async function listedSights(ctx: ToolContext) {
+  const { data } = await ctx.supabase.from("tours_attractions").select(ATTRACTION_COLUMNS).eq("is_active", true).limit(300);
+  return (data ?? []).map((row) => toAttraction(row as Record<string, unknown>));
+}
+
+/** Listed places to see closest to a point, nearest first, with their distance; the place itself is left out. */
+export async function nearbySights(ctx: ToolContext, point: LatLng, exclude: string | null, limit = 3) {
+  const skip = exclude ? plain(exclude) : null;
+  return (await listedSights(ctx))
+    .flatMap((a) => (a.latitude !== null && a.longitude !== null && plain(a.name) !== skip ? [{ name: a.name, slug: a.slug, meters: haversineMeters(point, { lat: a.latitude, lng: a.longitude }) }] : []))
+    .sort((x, y) => x.meters - y.meters)
+    .slice(0, limit);
 }
 
 const minutesText = ([low, high]: [number, number]) => `about ${formatDuration(low * 60)}–${formatDuration(high * 60)}`;
@@ -360,3 +401,5 @@ export async function travelTime(ctx: ToolContext, input: { from?: string | null
     note: leg.estimated || mode === "walk" ? "Estimated from the map distance; traffic and stops add time." : "From the road route; traffic can add time.",
   };
 }
+
+export { durationText };

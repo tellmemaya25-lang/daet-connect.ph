@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { phoneError } from "./phone";
 
 const OperatorDetailsSchema = z.object({
   businessName: z
@@ -16,12 +17,10 @@ const OperatorDetailsSchema = z.object({
     .trim()
     .email("Enter a valid email address.")
     .max(254, "Email address is too long."),
-  contactPhone: z
-    .string()
-    .trim()
-    .min(7, "Enter a contact number with at least 7 digits.")
-    .max(24, "Contact number is too long.")
-    .regex(/^[+\d\s().-]+$/, "Use digits and common phone-number characters only."),
+  contactPhone: z.string().trim().superRefine((value, ctx) => {
+    const problem = phoneError(value);
+    if (problem) ctx.addIssue({ code: "custom", message: problem });
+  }),
   businessAddress: z
     .string()
     .trim()

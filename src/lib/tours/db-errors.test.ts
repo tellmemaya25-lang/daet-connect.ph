@@ -18,3 +18,19 @@ describe("userFacingDbError", () => {
     expect(userFacingDbError(null, "Nope")).toBe("Nope");
   });
 });
+
+describe("constraint messages", () => {
+  it("explains a second booking for the same tour and day", () => {
+    expect(
+      userFacingDbError({ code: "23505", message: 'duplicate key value violates unique constraint "tours_bookings_one_active_per_tourist"' }, "fallback"),
+    ).toMatch(/already have a booking/);
+  });
+  it("explains a guide already on a tour that day", () => {
+    expect(
+      userFacingDbError({ code: "23505", message: 'duplicate key value violates unique constraint "tours_bookings_one_tour_per_guide_day"' }, "fallback"),
+    ).toMatch(/already has a tour/);
+  });
+  it("keeps other duplicate-key errors behind the fallback", () => {
+    expect(userFacingDbError({ code: "23505", message: 'duplicate key value violates unique constraint "x"' }, "fallback")).toBe("fallback");
+  });
+});

@@ -4,14 +4,15 @@ import Link from "next/link";
 import { Card } from "@/components/ui/card";
 import { Notice } from "@/components/ui/notice";
 import { PageFrame } from "@/components/ui/page-frame";
+import { SoundToggle } from "@/components/tours/sound-toggle";
 import { PushOptIn } from "@/components/tours/push-opt-in";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { LineIcon } from "@/components/ui/icons";
 import { notificationIcon, safeNotificationLink, timeAgo, type NotificationRow } from "@/lib/tours/notifications";
 import { MarkAllReadButton } from "./mark-all-read-button";
+import { getAuthUser } from "@/lib/tours/server-auth";
 
-export const dynamic = "force-dynamic";
 
 export default async function NotificationsPage() {
   if (!isSupabaseConfigured()) {
@@ -23,9 +24,7 @@ export default async function NotificationsPage() {
   }
 
   const supabase = await createSupabaseServerClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getAuthUser();
   if (!user) redirect(`/login?next=${encodeURIComponent("/tours/notifications")}`);
 
   const { data, error } = await supabase
@@ -46,6 +45,9 @@ export default async function NotificationsPage() {
 
         <Card className="mt-6">
           <PushOptIn variant="settings" />
+          <div className="mt-4 border-t border-daet-ink/10 pt-4">
+            <SoundToggle />
+          </div>
         </Card>
 
         {error ? (
@@ -58,7 +60,7 @@ export default async function NotificationsPage() {
               <li key={row.id}>
                 <Link
                   href={safeNotificationLink(row.link)}
-                  className={`flex gap-3 rounded-2xl p-4 transition hover:bg-blue-50 dark:hover:bg-blue-950/40 active:scale-[0.99] ${row.read_at ? "bg-surface" : "bg-blue-50 dark:bg-blue-950/40"}`}
+                  className={`flex gap-3 rounded-2xl p-4 transition hover:bg-blue-50 dark:hover:bg-blue-950/40 active:scale-[0.99] ${row.read_at ? "card-edge bg-surface" : "bg-blue-50 dark:bg-blue-950/40"}`}
                 >
                   <LineIcon name={notificationIcon(row.type)} className="h-6 w-6 text-blue-600 dark:text-blue-300" />
                   <span className="min-w-0 flex-1">

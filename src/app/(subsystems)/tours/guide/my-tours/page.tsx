@@ -1,4 +1,5 @@
 import type React from "react";
+import { PickupForCrew } from "@/components/tours/pickup-for-crew";
 import { Badge } from "@/components/ui/badge";
 import { ButtonLink } from "@/components/ui/button";
 import { LineIcon } from "@/components/ui/icons";
@@ -11,8 +12,8 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { toManilaDateKey } from "@/lib/tours/events-calendar";
 import { isBusyReason } from "@/lib/tours/guide-swap";
 import { SwapRequest, type MySwap } from "./swap-request";
+import { getAuthUser } from "@/lib/tours/server-auth";
 
-export const dynamic = "force-dynamic";
 
 export default async function GuideMyToursPage() {
   if (!isSupabaseConfigured()) {
@@ -28,9 +29,7 @@ export default async function GuideMyToursPage() {
   const supabase = await createSupabaseServerClient();
 
   // Get current user
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getAuthUser();
 
   if (!user) {
     redirect(`/login?next=${encodeURIComponent("/tours/guide/my-tours")}`);
@@ -111,10 +110,13 @@ export default async function GuideMyToursPage() {
     assignedTours?.filter((t) => t.status === "completed" || t.tour_date < today) || [];
 
   // R6: other guides free on each upcoming date, and this guide's latest swap request per tour.
+  // A guide has one tour a day; naming it limits the list to that tour's operator team,
+  // the only guides the operator could approve a swap to.
+  const tourOnDate = new Map(upcomingTours.map((t) => [t.tour_date, t.id]));
   const pickers = new Map(
     await Promise.all(
-      [...new Set(upcomingTours.map((t) => t.tour_date))].map(async (date) => {
-        const { data } = await supabase.rpc("tours_guides_free_on", { p_date: date });
+      [...tourOnDate].map(async ([date, bookingId]) => {
+        const { data } = await supabase.rpc("tours_guides_free_on", { p_date: date, p_exclude_booking: bookingId });
         const rows = ((data ?? []) as Array<{ guide_id: string; full_name: string; reason: string | null }>)
           .filter((r) => r.guide_id !== guide.id)
           .map((r) => ({ id: r.guide_id, full_name: r.full_name, reason: isBusyReason(r.reason) ? r.reason : null }));
@@ -160,7 +162,7 @@ export default async function GuideMyToursPage() {
             { label: "Upcoming", value: upcomingTours.length },
             { label: "Completed", value: completedTours.length },
           ].map((stat) => (
-            <div key={stat.label} className="flex flex-col-reverse rounded-2xl bg-surface p-3 text-center sm:p-4">
+            <div key={stat.label} className="flex flex-col-reverse rounded-2xl card-edge bg-surface p-3 text-center sm:p-4">
               {/* dt before dd for valid markup; flex-col-reverse shows the number on top. */}
               <dt className="text-sm text-daet-ink/70">{stat.label}</dt>
               <dd className="text-2xl font-bold tabular-nums text-daet-ink sm:text-3xl">{stat.value}</dd>
@@ -203,12 +205,12 @@ export default async function GuideMyToursPage() {
               {completedTours.map((booking) => {
                 const pkg = Array.isArray(booking.tours_packages) ? booking.tours_packages[0] : booking.tours_packages;
                 return (
-                  <li key={booking.id} className="flex items-center gap-3 rounded-2xl bg-surface p-3">
+                  <li key={booking.id} className="flex items-center gap-3 rounded-2xl card-edge bg-surface p-3">
                     {pkg?.cover_image_url ? <img src={pkg.cover_image_url} alt="" className="h-16 w-16 shrink-0 rounded-xl object-cover" /> : null}
                     <div className="min-w-0 flex-1">
                       <p className="font-bold text-daet-ink">{pkg?.title || "Tour"}</p>
                       <p className="break-words text-sm text-daet-ink/70">
-                        {shortDate(booking.tour_date, true)} · {booking.number_of_pax} pax · {booking.booking_reference}
+                        {shortDate(booking.tour_date, true)} · {booking.number_of_pax} guest{booking.number_of_pax === 1 ? "" : "s"} · {booking.booking_reference}
                       </p>
                     </div>
                     <Badge tone="info" className="shrink-0">Completed</Badge>
@@ -220,7 +222,7 @@ export default async function GuideMyToursPage() {
         ) : null}
 
         {!assignedTours || assignedTours.length === 0 ? (
-          <div className="mt-8 rounded-2xl bg-surface p-8 text-center">
+          <div className="mt-8 rounded-2xl card-edge bg-surface p-8 text-center">
             <div className="mx-auto mb-4 grid h-16 w-16 place-items-center rounded-full bg-daet-sand text-daet-ink">
               <LineIcon name="calendar" className="h-7 w-7" />
             </div>
@@ -242,6 +244,13 @@ type AssignedBooking = {
   status: string;
   number_of_pax: number;
   booking_reference: string;
+  contact_name?: string | null;
+  contact_phone?: string | null;
+  pickup_lat?: number | null;
+  pickup_lng?: number | null;
+  pickup_note?: string | null;
+  pickup_vehicle?: string | null;
+  pickup_km?: number | null;
   tours_packages:
     | { title: string | null; location_name: string | null; cover_image_url: string | null; tours_operators: { business_name: string | null; contact_phone: string | null } | Array<{ business_name: string | null; contact_phone: string | null }> | null }
     | Array<{ title: string | null; location_name: string | null; cover_image_url: string | null; tours_operators: { business_name: string | null; contact_phone: string | null } | Array<{ business_name: string | null; contact_phone: string | null }> | null }>
@@ -254,7 +263,7 @@ function TourCard({ booking, today, swap }: { booking: AssignedBooking; today: s
   const operator = Array.isArray(pkg?.tours_operators) ? pkg?.tours_operators[0] : pkg?.tours_operators;
   const isToday = booking.tour_date === today;
   return (
-    <article className="overflow-hidden rounded-2xl bg-surface sm:flex">
+    <article className="overflow-hidden rounded-2xl card-edge bg-surface sm:flex">
       {pkg?.cover_image_url ? <img src={pkg.cover_image_url} alt="" className="h-36 w-full object-cover sm:h-auto sm:w-44 sm:shrink-0" /> : null}
       <div className="min-w-0 flex-1 p-4 sm:p-5">
         <div className="flex items-start justify-between gap-3">
@@ -271,7 +280,7 @@ function TourCard({ booking, today, swap }: { booking: AssignedBooking; today: s
         <dl className="mt-3 grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
           {[
             ["Date", shortDate(booking.tour_date)],
-            ["Guests", `${booking.number_of_pax} pax`],
+            ["Guests", `${booking.number_of_pax} guest${booking.number_of_pax === 1 ? "" : "s"}`],
             ["Operator", operator?.business_name || "—"],
             ["Reference", booking.booking_reference],
           ].map(([label, value]) => (
@@ -281,6 +290,7 @@ function TourCard({ booking, today, swap }: { booking: AssignedBooking; today: s
             </div>
           ))}
         </dl>
+        <PickupForCrew booking={booking} className="mt-3" />
         {operator?.contact_phone ? (
           <p className="mt-2 text-sm text-daet-ink/70">
             Operator contact:{" "}

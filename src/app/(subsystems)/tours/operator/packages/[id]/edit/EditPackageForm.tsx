@@ -24,6 +24,7 @@ import { GalleryStep } from "./GalleryStep";
 interface FormState {
   originalData: EditPackageFormData;
   formData: EditPackageFormData;
+  updatedAt: string;
   hasChanges: boolean;
   isSubmitting: boolean;
   submissionError: string | null;
@@ -79,7 +80,7 @@ function Toast({
 function LoadingOverlay() {
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-surface rounded-2xl p-8 flex flex-col items-center gap-4">
+      <div className="card-edge bg-surface rounded-2xl p-8 flex flex-col items-center gap-4">
         <div className="animate-spin">
           <svg className="w-8 h-8 text-daet-leaf dark:text-blue-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
@@ -172,6 +173,7 @@ export function EditPackageForm({ packageData }: EditPackageFormProps) {
   const [state, setState] = useState<FormState>({
     originalData: packageData.formData,
     formData: { ...packageData.formData },
+    updatedAt: packageData.updatedAt,
     hasChanges: false,
     isSubmitting: false,
     submissionError: null,
@@ -194,6 +196,10 @@ export function EditPackageForm({ packageData }: EditPackageFormProps) {
           ...prev,
           formData: updated,
           hasChanges,
+          // Let the operator retry after correcting a server-reported field
+          // error instead of leaving Save disabled with stale validation.
+          submissionError: null,
+          validationErrors: {},
         };
       });
     },
@@ -212,18 +218,25 @@ export function EditPackageForm({ packageData }: EditPackageFormProps) {
     }));
 
     try {
-      const response: UpdatePackageResponse = await updatePackageCore(packageData.id, state.formData, packageData.updatedAt);
+      const response: UpdatePackageResponse = await updatePackageCore(packageData.id, state.formData, state.updatedAt);
 
       if (response.success) {
         setState((prev) => ({
           ...prev,
           originalData: state.formData,
+          updatedAt: response.updatedAt ?? prev.updatedAt,
           hasChanges: false,
           isSubmitting: false,
-          successMessage: EDIT_MESSAGES.saved,
+          successMessage:
+            response.data?.status === "pending_review" ? EDIT_MESSAGES.sentForReview : EDIT_MESSAGES.saved,
           submissionError: null,
           concurrencyError: null,
         }));
+
+        // Refresh server-rendered data while retaining the version returned by
+        // the save, so the next edit uses the new timestamp instead of sending
+        // a stale version and triggering a false concurrency conflict.
+        router.refresh();
 
         // Auto-dismiss success message
         setTimeout(() => {
@@ -256,7 +269,7 @@ export function EditPackageForm({ packageData }: EditPackageFormProps) {
         submissionError: EDIT_MESSAGES.unexpected,
       }));
     }
-  }, [state, packageData.id, packageData.updatedAt]);
+  }, [state, packageData.id, router]);
 
   // Handle Submit for Review
   const handleSubmitForReview = useCallback(async () => {
@@ -270,7 +283,7 @@ export function EditPackageForm({ packageData }: EditPackageFormProps) {
     }));
 
     try {
-      const response: UpdatePackageResponse = await submitPackageForReview(packageData.id, state.formData, packageData.updatedAt);
+      const response: UpdatePackageResponse = await submitPackageForReview(packageData.id, state.formData, state.updatedAt);
 
       if (response.success) {
         setState((prev) => ({
@@ -307,7 +320,7 @@ export function EditPackageForm({ packageData }: EditPackageFormProps) {
         submissionError: EDIT_MESSAGES.unexpected,
       }));
     }
-  }, [state, packageData.id, packageData.updatedAt, router]);
+  }, [state, packageData.id, router]);
 
   // Determine button states
   const isButtonDisabled =
@@ -350,6 +363,15 @@ export function EditPackageForm({ packageData }: EditPackageFormProps) {
       {/* Rejection Notice */}
       {packageData.status === "rejected" && packageData.rejectionReason && (
         <RejectionNotice reason={packageData.rejectionReason} />
+      )}
+
+      {packageData.status === "published" && (
+        <div
+          role="status"
+          className="rounded-2xl border border-amber-300 bg-amber-50 p-4 text-sm text-amber-900 dark:border-amber-800 dark:bg-amber-950/40 dark:text-amber-200"
+        >
+          This package is live. Saving updates the public listing immediately without a review step and may affect existing bookings. If another session saves first, refresh and reapply your changes.
+        </div>
       )}
 
       {/* Concurrency Conflict Banner */}
@@ -456,7 +478,7 @@ export function EditPackageForm({ packageData }: EditPackageFormProps) {
           disabled={isButtonDisabled}
           className="inline-flex min-h-11 items-center justify-center px-6 py-2 border border-daet-ink/20 text-daet-ink/80 rounded-2xl font-medium hover:bg-canvas transition disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          Save as Draft
+          {packageData.status === "published" ? "Save changes" : "Save as Draft"}
         </button>
         {hasPermissionToSubmit && (
           <button

@@ -12,7 +12,7 @@ describe("parsePreferences", () => {
   });
 
   it("reports each problem", () => {
-    const result = parsePreferences({ startDate: "2026-10-01", days: 9, budgetPerDay: -1, pace: "sprint", groupSize: 0, dayStart: "15:00", dayEnd: "17:00" }, today);
+    const result = parsePreferences({ startDate: "2026-10-01", days: 15, budgetPerDay: -1, pace: "sprint", groupSize: 0, dayStart: "15:00", dayEnd: "17:00" }, today);
     expect(result.ok).toBe(false);
     if (result.ok) return;
     expect(Object.keys(result.errors).sort()).toEqual(["budgetPerDay", "dayEnd", "days", "groupSize", "pace", "startDate"]);

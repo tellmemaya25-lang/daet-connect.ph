@@ -1,8 +1,12 @@
+import { durationText } from "@/lib/tours/duration";
 import { LineIcon } from "@/components/ui/icons";
 import { formatPeso } from "@/lib/money";
 import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
 import { MeetingPointForm } from "./meeting-point-form";
+import { PickupGuideSettings } from "./pickup-guide-settings";
+import { DoorPickupSettings } from "./door-pickup-settings";
+import { toOfficialRates, toPickupVehicles } from "@/lib/tours/door-pickup";
 import { PageFrame } from "@/components/ui/page-frame";
 import { Notice } from "@/components/ui/notice";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
@@ -15,7 +19,6 @@ import {
   OPERATOR_OWN_STATUS_SELECT,
 } from "@/lib/tours/operator-contract";
 
-export const dynamic = "force-dynamic";
 
 type PageProps = {
   params: Promise<{ id: string }>;
@@ -158,6 +161,25 @@ export default async function OperatorPackageDetailPage({ params }: PageProps) {
     notFound();
   }
 
+  // Pickup points and guide settings live in their own columns; a database
+  // without them yet (20261203 not applied) shows a notice instead of failing.
+  const [{ data: guideSettings, error: settingsError }, { data: guideLinks }, { data: vehicleRows }, { data: rateRows }] = await Promise.all([
+    supabase.from("tours_packages").select("guide_fee, municipality").eq("id", pkg.id).maybeSingle(),
+    supabase.from("tours_package_guides").select("guide_id, tours_guides ( profile_id, accreditation_status )").eq("package_id", pkg.id).eq("is_active", true),
+    supabase.from("tours_package_pickup_vehicles").select("id, vehicle, label, seats, max_km, is_active").eq("package_id", pkg.id).order("sort_order"),
+    supabase.from("tours_official_pickup_rates").select("vehicle, base_fee, per_km_per_person, source, source_url, effective_on, checked_on"),
+  ]);
+  const officialRates = toOfficialRates(rateRows);
+  // The guides the Tourism Office chose for this tour (proposed first for its bookings).
+  const linkedProfiles = (guideLinks ?? []).flatMap((link) => {
+    const guide = (Array.isArray(link.tours_guides) ? link.tours_guides[0] : link.tours_guides) as { profile_id?: string; accreditation_status?: string } | null;
+    return guide?.profile_id && guide.accreditation_status === "approved" ? [guide.profile_id] : [];
+  });
+  const { data: linkedNames } = linkedProfiles.length
+    ? await supabase.from("profiles").select("full_name").in("id", linkedProfiles)
+    : { data: [] as Array<{ full_name: string | null }> };
+  const packageGuides = (linkedNames ?? []).map((p) => p.full_name?.trim() || "Guide");
+
   // Get default price or first price variant
   const defaultVariant =
     pkg.tours_package_price_variants?.find((v: any) => v.is_default) ||
@@ -289,7 +311,7 @@ export default async function OperatorPackageDetailPage({ params }: PageProps) {
             )}
 
             {/* Basic info */}
-            <div className="mt-6 rounded-2xl bg-surface p-6">
+            <div className="mt-6 rounded-2xl card-edge bg-surface p-6">
               <h2 className="font-bold text-daet-ink">Basic information</h2>
               <dl className="mt-4 space-y-3 text-sm">
                 <div>
@@ -299,8 +321,7 @@ export default async function OperatorPackageDetailPage({ params }: PageProps) {
                 <div>
                   <dt className="font-bold text-daet-ink/70">Duration</dt>
                   <dd className="mt-1 text-daet-ink">
-                    <LineIcon name="clock" className="inline-block h-[1.1em] w-[1.1em] align-[-0.15em]" /> {pkg.duration_value}{" "}
-                    {pkg.duration_type === "hours" ? "hours" : "days"}
+                    <LineIcon name="clock" className="inline-block h-[1.1em] w-[1.1em] align-[-0.15em]" /> {durationText(Number(pkg.duration_value), pkg.duration_type) ?? ""}
                   </dd>
                 </div>
                 <div>
@@ -314,7 +335,7 @@ export default async function OperatorPackageDetailPage({ params }: PageProps) {
 
             {/* Pricing */}
             {pkg.tours_package_price_variants && pkg.tours_package_price_variants.length > 0 && (
-              <div className="mt-6 rounded-2xl bg-surface p-6">
+              <div className="mt-6 rounded-2xl card-edge bg-surface p-6">
                 <h2 className="font-bold text-daet-ink">Pricing variants</h2>
                 <div className="mt-4 space-y-3">
                   {pkg.tours_package_price_variants.map((variant: any) => (
@@ -353,7 +374,7 @@ export default async function OperatorPackageDetailPage({ params }: PageProps) {
 
             {/* Inclusions */}
             {(included.length > 0 || excluded.length > 0) && (
-              <div className="mt-6 rounded-2xl bg-surface p-6">
+              <div className="mt-6 rounded-2xl card-edge bg-surface p-6">
                 <h2 className="font-bold text-daet-ink">Inclusions</h2>
 
                 {included.length > 0 && (
@@ -394,7 +415,7 @@ export default async function OperatorPackageDetailPage({ params }: PageProps) {
 
             {/* Itinerary */}
             {stops.length > 0 && (
-              <div className="mt-6 rounded-2xl bg-surface p-6">
+              <div className="mt-6 rounded-2xl card-edge bg-surface p-6">
                 <h2 className="font-bold text-daet-ink">Itinerary stops</h2>
                 <div className="mt-4 space-y-4">
                   {stops.map((stop: any, idx: number) => (
@@ -421,7 +442,7 @@ export default async function OperatorPackageDetailPage({ params }: PageProps) {
               </div>
             )}
 
-            <section aria-labelledby="meeting-heading" className="mt-6 rounded-2xl bg-surface p-6">
+            <section aria-labelledby="meeting-heading" className="mt-6 rounded-2xl card-edge bg-surface p-6">
               <h2 id="meeting-heading" className="font-bold text-daet-ink">Where guests meet</h2>
               <div className="mt-3">
                 <MeetingPointForm
@@ -434,9 +455,30 @@ export default async function OperatorPackageDetailPage({ params }: PageProps) {
               </div>
             </section>
 
+            <section aria-labelledby="pickup-guide-heading" className="mt-6 rounded-2xl card-edge bg-surface p-6">
+              <h2 id="pickup-guide-heading" className="font-bold text-daet-ink">Pickup &amp; guide</h2>
+              <p className="mt-2 text-sm text-slate-600 dark:text-slate-400">
+                <span className="font-bold text-daet-ink">Guides for this tour:</span>{" "}
+                {packageGuides.length
+                  ? `${packageGuides.join(", ")}. They are proposed first for new bookings; the Tourism Office chooses them.`
+                  : "none chosen yet. New bookings get a free guide from your team; ask the Tourism Office to choose this tour's guides."}
+              </p>
+              <div className="mt-3">
+                <PickupGuideSettings
+                  packageId={pkg.id}
+                  ready={!settingsError}
+                  guideFee={guideSettings?.guide_fee === null || guideSettings?.guide_fee === undefined ? null : Number(guideSettings.guide_fee)}
+                  municipality={guideSettings?.municipality ?? null}
+                />
+              </div>
+              <div className="mt-6 border-t border-line pt-5">
+                <DoorPickupSettings packageId={pkg.id} vehicles={toPickupVehicles(vehicleRows, officialRates)} rates={Object.values(officialRates)} hasMeetingPin={pkg.meeting_lat != null && pkg.meeting_lng != null} />
+              </div>
+            </section>
+
             {/* Gallery */}
             {gallery.length > 0 && (
-              <div className="mt-6 rounded-2xl bg-surface p-6">
+              <div className="mt-6 rounded-2xl card-edge bg-surface p-6">
                 <h2 className="font-bold text-daet-ink">Photo gallery</h2>
                 <div className="mt-4 grid gap-4 sm:grid-cols-2">
                   {gallery.map((img: any) => (
@@ -458,7 +500,7 @@ export default async function OperatorPackageDetailPage({ params }: PageProps) {
 
           {/* Sidebar - Stats */}
           <div className="lg:col-span-1">
-            <div className="sticky top-6 rounded-2xl bg-surface p-6 shadow-[var(--shadow-float)]">
+            <div className="sticky top-[calc(var(--header-h)+1.5rem)] rounded-2xl card-edge bg-surface p-6 shadow-[var(--shadow-float)]">
               <h2 className="font-bold text-daet-ink">Package stats</h2>
 
               <div className="mt-4 space-y-4">

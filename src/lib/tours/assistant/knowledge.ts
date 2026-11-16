@@ -8,7 +8,7 @@ import { TRANSPORT_FAQS } from "@/lib/tours/assistant/transport";
 /**
  * What the travel assistant (F13) knows about how CONNECT-Daet works. Every
  * rule is built from the constants the app itself uses, so the assistant
- * can't drift from the real policy. Used as the `policy` tool for Claude and
+ * can't drift from the real policy. Used as the `policy` tool for the model and
  * answered directly in basic mode.
  */
 
@@ -48,9 +48,9 @@ export const FAQS: Faq[] = [
     title: "Your ticket and check-in",
     keywords: ["ticket", "qr", "qr code", "check in", "checkin", "check-in", "boarding", "show the guide", "e-ticket", "voucher", "tiket"],
     answer: [
-      "When your booking is confirmed, open it and tap Show ticket QR.",
+      "Once your booking is confirmed and paid in full, open it and tap Show ticket QR.",
       "On the tour day, show the QR to your guide; they scan it to check your group in. A screenshot works offline.",
-      "If the QR isn't available, show your booking reference (it starts with BK-) instead.",
+      "Guides can only check in bookings that are paid in full. If the QR won't load, show your booking reference (it starts with BK-) instead.",
     ].join(" "),
     links: [{ href: "/tours/my-bookings", label: "My bookings" }],
   },

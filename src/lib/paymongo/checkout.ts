@@ -99,7 +99,7 @@ export function buildCheckoutSessionBody({
         send_email_receipt: true,
         show_description: true,
         show_line_items: true,
-        success_url: `${bookingUrl}?payment=success`,
+        success_url: `${bookingUrl}/paid`,
         cancel_url: `${bookingUrl}?payment=cancelled`,
         metadata: { booking_id: booking.id },
         ...(Object.keys(billing).length > 0 ? { billing } : {}),

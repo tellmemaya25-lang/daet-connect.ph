@@ -8,7 +8,7 @@ import { ASSISTANT_MAX_LENGTH, TRIP_EXAMPLES } from "@/lib/tours/itinerary/assis
 import type { PlannerInput } from "@/lib/tours/itinerary/form";
 import { interpretTripRequest } from "./actions";
 
-/** "Describe your trip": plain words in, form fields out (Claude when configured, rules otherwise). */
+/** "Describe your trip": plain words in, form fields out (Gemini when configured, rules otherwise). */
 export function DescribeTrip({
   aiAvailable,
   initialText = "",
@@ -37,7 +37,7 @@ export function DescribeTrip({
   }
 
   return (
-    <section aria-labelledby="describe-trip" className="rounded-2xl bg-surface p-5 sm:p-6">
+    <section aria-labelledby="describe-trip" className="rounded-2xl card-edge bg-surface p-5 sm:p-6">
       <h2 id="describe-trip" className="font-display text-2xl font-semibold text-daet-ink">
         Describe your trip
       </h2>

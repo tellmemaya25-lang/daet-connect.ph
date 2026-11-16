@@ -1,16 +1,23 @@
 "use client";
 
-import "maplibre-gl/dist/maplibre-gl.css";
+import "leaflet/dist/leaflet.css";
 import { useEffect, useRef, useState } from "react";
-import type { Map as MapLibreMap, Marker as MapLibreMarker } from "maplibre-gl";
+import { createPortal } from "react-dom";
+import type { Map as LeafletMap, Marker as LeafletMarker, Polyline } from "leaflet";
 import { MARKER_CLASSES, type FreeMapLine, type FreeMapMarker } from "@/components/maps/map-types";
+import { categoryShape } from "@/components/ui/icons";
 import { SketchMap } from "@/components/maps/sketch-map";
 import type { LatLng } from "@/lib/maps/geo";
-import { MAP_ATTRIBUTION, MAP_LOAD_TIMEOUT_MS, MAP_STYLES, workerUrl } from "@/lib/maps/map-style";
+import {
+  DARK_TILE_FILTER,
+  MAP_ATTRIBUTION,
+  MAP_LOAD_TIMEOUT_MS,
+  MAP_TILES,
+  TILE_FAILURES_BEFORE_SKETCH,
+  TILE_MAX_ZOOM,
+} from "@/lib/maps/map-style";
 
-type MapLibre = typeof import("maplibre-gl");
-
-const LINE_SOURCE = "free-map-lines";
+type Leaflet = typeof import("leaflet");
 
 /** Dark when the page is dark: an explicit choice, else the device setting (src/lib/theme.ts). */
 function pageIsDark(): boolean {
@@ -19,65 +26,233 @@ function pageIsDark(): boolean {
   return window.matchMedia("(prefers-color-scheme: dark)").matches;
 }
 
-function lineData(lines: FreeMapLine[]) {
-  return {
-    type: "FeatureCollection" as const,
-    features: lines
-      .filter((line) => line.path.length > 1)
-      .map((line) => ({
-        type: "Feature" as const,
-        properties: { id: line.id, dashed: Boolean(line.dashed) },
-        geometry: { type: "LineString" as const, coordinates: line.path.map((p) => [p.lng, p.lat]) },
-      })),
-  };
+const reducedMotion = () => window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ?? false;
+
+/** Stops on a labelled map (the itinerary): dark dots, and a white pin for the picked one. */
+const STOP_DOT =
+  "grid h-7 w-7 place-items-center rounded-full border-2 border-white bg-slate-900 text-xs font-extrabold text-white";
+const STOP_PIN =
+  "grid h-8 w-8 place-items-center rounded-full border-2 border-slate-900 bg-white text-sm font-extrabold text-slate-900";
+const LABEL_HALO =
+  "text-slate-900 [text-shadow:0_0_2px_#fff,0_0_4px_#fff,0_0_6px_#fff] dark:text-slate-100 dark:[text-shadow:0_0_2px_#0f172a,0_0_4px_#0f172a]";
+
+/**
+ * Hide a pin's name where it would cover a name already shown, so close pins
+ * stay readable when zoomed out. Photo pins and the picked stop go first.
+ */
+export function hideCrowdedNames(root: HTMLElement) {
+  const names = Array.from(root.querySelectorAll<HTMLElement>(".map-name"));
+  names.forEach((n) => (n.style.visibility = ""));
+  const rank = (n: HTMLElement) => (n.closest("[aria-current]") ? 0 : n.parentElement?.querySelector("img") ? 1 : 2);
+  const shown: DOMRect[] = [];
+  for (const n of names.sort((a, b) => rank(a) - rank(b))) {
+    const r = n.getBoundingClientRect();
+    if (r.width === 0 && r.height === 0) continue;
+    if (shown.some((s) => r.left < s.right && r.right > s.left && r.top < s.bottom && r.bottom > s.top)) n.style.visibility = "hidden";
+    else shown.push(r);
+  }
 }
 
-function addLineLayers(map: MapLibreMap, lines: FreeMapLine[]) {
-  if (map.getSource(LINE_SOURCE)) return;
-  map.addSource(LINE_SOURCE, { type: "geojson", data: lineData(lines) });
-  const paint = { "line-color": "#2563eb", "line-width": 4, "line-opacity": 0.85 };
-  map.addLayer({ id: `${LINE_SOURCE}-solid`, type: "line", source: LINE_SOURCE, filter: ["==", ["get", "dashed"], false], layout: { "line-cap": "round", "line-join": "round" }, paint });
-  map.addLayer({ id: `${LINE_SOURCE}-dashed`, type: "line", source: LINE_SOURCE, filter: ["==", ["get", "dashed"], true], layout: { "line-cap": "round" }, paint: { ...paint, "line-dasharray": [2, 1.5] } });
+/** The place's name under a photo pin, on a halo so it reads on any tile. */
+function nameUnder(text: string) {
+  const name = document.createElement("span");
+  name.setAttribute("aria-hidden", "true");
+  name.className = `map-name pointer-events-none absolute left-1/2 top-full mt-1 block w-max max-w-[10rem] -translate-x-1/2 truncate text-center text-[13px] font-bold ${LABEL_HALO}`;
+  name.textContent = text;
+  return name;
 }
 
-function markerElement(m: FreeMapMarker): HTMLElement {
-  const el = document.createElement(m.href ? "a" : "div");
-  if (m.href) (el as HTMLAnchorElement).href = m.href;
-  el.className = MARKER_CLASSES[m.kind];
-  el.textContent = m.label;
+function markerElement(
+  m: FreeMapMarker,
+  active: boolean,
+  labels: boolean,
+  onClick?: (id: string) => void,
+): HTMLElement {
+  // With a click handler the marker is a button that picks the stop; otherwise a link or a picture.
+  const el = document.createElement(onClick ? "button" : m.href ? "a" : "div");
+  if (onClick) {
+    (el as HTMLButtonElement).type = "button";
+    el.addEventListener("click", (event) => {
+      event.stopPropagation();
+      onClick(m.id);
+    });
+    if (active) el.setAttribute("aria-current", "true");
+  } else if (m.href) (el as HTMLAnchorElement).href = m.href;
   el.title = m.title;
-  // aria-label needs a role on a plain element; a link already has one.
-  if (!m.href) el.setAttribute("role", "img");
+  // aria-label needs a role on a plain element; links and buttons already have one.
+  if (!m.href && !onClick) el.setAttribute("role", "img");
   el.setAttribute("aria-label", m.title);
+
+  // A place with its photo in the pin: an orange teardrop with the photo in a
+  // white ring, its point on the place, and the place's name under it.
+  if (m.photo) {
+    // The drop is a square turned 45°, so its point reaches 58px down.
+    el.className = "relative block h-[58px] w-12";
+    const drop = document.createElement("span");
+    drop.setAttribute("aria-hidden", "true");
+    drop.className =
+      "absolute left-0 top-0 h-12 w-12 rotate-45 rounded-[50%_50%_0_50%] bg-orange-500 shadow-[0_4px_12px_rgba(15,23,42,0.4)]";
+    const frame = document.createElement("span");
+    frame.className = "absolute left-[5px] top-[5px] block h-[38px] w-[38px] overflow-hidden rounded-full border-2 border-white bg-orange-100";
+    const img = document.createElement("img");
+    img.src = m.photo.src;
+    img.alt = "";
+    img.decoding = "async";
+    img.className = "h-full w-full object-cover";
+    // Leaflet's stylesheet gives every image in the marker pane `width: auto`, which beats the class above
+    // and leaves a tall photo narrower than its circle. An inline size wins.
+    img.style.width = "100%";
+    img.style.height = "100%";
+    frame.append(img);
+    el.append(drop, frame, nameUnder(m.title));
+    return el;
+  }
+
+  // A category pin (Desktop-Results board): a dark circle with the place's line
+  // icon, the stop number as a white badge on its shoulder, and the name beside it.
+  if (m.icon) {
+    el.setAttribute("aria-label", m.label ? `Stop ${m.label}: ${m.title}${m.subtitle ? `, ${m.subtitle}` : ""}` : m.title);
+    el.className = "relative block";
+    const circle = document.createElement("span");
+    circle.className = `relative grid h-[34px] w-[34px] place-items-center rounded-full border-[2.5px] border-white bg-slate-900 text-white shadow-[0_2px_6px_rgba(15,23,42,0.35)] ${active ? "ring-4 ring-blue-500/70" : ""}`;
+    const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    svg.setAttribute("viewBox", "0 0 24 24");
+    svg.setAttribute("width", "18");
+    svg.setAttribute("height", "18");
+    svg.setAttribute("fill", "none");
+    svg.setAttribute("stroke", "currentColor");
+    svg.setAttribute("stroke-width", "2");
+    svg.setAttribute("stroke-linecap", "round");
+    svg.setAttribute("stroke-linejoin", "round");
+    svg.setAttribute("aria-hidden", "true");
+    const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+    path.setAttribute("d", categoryShape(m.icon));
+    svg.append(path);
+    circle.append(svg);
+    el.append(circle);
+    if (m.label) {
+      const badge = document.createElement("span");
+      badge.setAttribute("aria-hidden", "true");
+      badge.className = "absolute -right-2 -top-2 grid h-[18px] min-w-[18px] place-items-center rounded-full bg-surface px-1 text-[11px] font-extrabold leading-none text-blue-700 dark:text-blue-300 shadow-[0_1px_3px_rgba(15,23,42,0.3)]";
+      badge.textContent = m.label;
+      el.append(badge);
+    }
+    if (labels) {
+      const name = document.createElement("span");
+      name.setAttribute("aria-hidden", "true");
+      name.className = `map-name pointer-events-none absolute left-full top-1/2 ml-2 block w-max max-w-[10rem] -translate-y-1/2 truncate text-[13px] font-bold ${LABEL_HALO}`;
+      name.textContent = m.title;
+      el.append(name);
+    }
+    return el;
+  }
+
+  if (labels && m.kind === "place") {
+    el.className = "relative block";
+    const dot = document.createElement("span");
+    dot.className = `${MARKER_CLASSES.place} bg-orange-500`;
+    dot.textContent = m.label;
+    const name = document.createElement("span");
+    name.setAttribute("aria-hidden", "true");
+    name.className = `map-name pointer-events-none absolute left-full top-1/2 ml-1.5 block w-max max-w-[10rem] -translate-y-1/2 truncate text-[13px] font-bold ${LABEL_HALO}`;
+    name.textContent = m.title;
+    el.append(dot, name);
+    return el;
+  }
+  if (!(labels && m.kind === "stop")) {
+    el.className = MARKER_CLASSES[active && m.kind === "stop" ? "stopActive" : m.kind];
+    el.textContent = m.label;
+    return el;
+  }
+  // Labelled stop: the badge (a pin with a stem and a dot when picked), then its name and kind beside it.
+  // The accessible name holds every visible word in order (number, name, kind), so "click 2" or
+  // "click Bagasbas Beach" works by voice (WCAG 2.5.3, axe label-content-name-mismatch).
+  el.setAttribute("aria-label", `Stop ${m.label}: ${m.title}${m.subtitle ? `, ${m.subtitle}` : ""}`);
+  el.className = "relative flex flex-col items-center";
+  const badge = document.createElement("span");
+  badge.className = active ? STOP_PIN : STOP_DOT;
+  badge.textContent = m.label;
+  el.append(badge, document.createTextNode(" "));
+  if (active) {
+    const stem = document.createElement("span");
+    stem.className = "h-1.5 w-0.5 bg-slate-900";
+    const dot = document.createElement("span");
+    dot.className = "h-2 w-2 rounded-full border border-white bg-slate-900";
+    el.append(stem, dot);
+  }
+  const label = document.createElement("span");
+  label.setAttribute("aria-hidden", "true");
+  label.className = `map-name pointer-events-none absolute left-full top-0 ml-1.5 flex w-max max-w-[10rem] flex-col text-left leading-tight ${LABEL_HALO}`;
+  // The whole name is in the page and CSS shortens it, so the visible words match the accessible name.
+  const name = document.createElement("span");
+  name.className = "block max-w-[9rem] truncate text-xs font-bold";
+  name.textContent = m.title;
+  label.append(name);
+  if (m.subtitle) {
+    const sub = document.createElement("span");
+    sub.className = "text-[11px] font-medium opacity-75";
+    sub.textContent = ` ${m.subtitle}`;
+    label.append(sub);
+  }
+  el.append(label);
   return el;
 }
 
-const signature = (m: FreeMapMarker) => `${m.kind}|${m.label}|${m.title}|${m.href ?? ""}`;
+const signature = (m: FreeMapMarker, active: boolean, clickable: boolean, labels: boolean) =>
+  `${m.kind}|${m.label}|${m.title}|${m.subtitle ?? ""}|${m.href ?? ""}|${m.photo?.src ?? ""}|${m.icon ?? ""}|${active}|${clickable}|${labels}`;
 
-function fit(map: MapLibreMap, points: LatLng[]) {
+/** The round white buttons over the map (Desktop-Results board). */
+const CONTROL = "pointer-events-auto inline-flex h-11 w-11 items-center justify-center bg-surface text-daet-ink shadow-[0_1px_4px_rgba(15,23,42,0.25)] hover:bg-muted focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-600 disabled:opacity-60";
+
+function ControlIcon({ d, size = 20 }: { d: string; size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d={d} />
+    </svg>
+  );
+}
+
+/** The camera after a flight lands: a slow push in, like a drone settling. */
+const DRIFT_ZOOM = 0.6;
+const DRIFT_MS = 5000;
+const easeOutCubic = (t: number) => 1 - Math.pow(1 - t, 3);
+
+const pointsOf = (markers: FreeMapMarker[], lines: FreeMapLine[]): LatLng[] => [
+  ...markers,
+  ...lines.flatMap((line) => line.path),
+];
+
+function fit(map: LeafletMap, points: LatLng[], animate = false) {
   if (points.length === 0) return;
+  const still = animate && !reducedMotion();
   if (points.length === 1) {
-    map.jumpTo({ center: [points[0].lng, points[0].lat], zoom: 15 });
+    map.setView([points[0].lat, points[0].lng], 15, { animate: still });
     return;
   }
-  const lngs = points.map((p) => p.lng);
-  const lats = points.map((p) => p.lat);
+  const lats = points.map((point) => point.lat);
+  const lngs = points.map((point) => point.lng);
   map.fitBounds(
     [
-      [Math.min(...lngs), Math.min(...lats)],
-      [Math.max(...lngs), Math.max(...lats)],
+      [Math.min(...lats), Math.min(...lngs)],
+      [Math.max(...lats), Math.max(...lngs)],
     ],
-    { padding: 56, maxZoom: 16, duration: 0 },
+    { padding: [56, 56], maxZoom: 16, animate: still },
   );
 }
 
 /**
- * Map on free OpenStreetMap tiles (MapLibre + OpenFreeMap, no key). Markers
- * move in place when their positions change. Follows the light/dark theme.
- * If tiles or WebGL aren't available it draws the sketch map instead.
+ * Map on the standard OpenStreetMap tiles, drawn with Leaflet. Markers move in
+ * place when their positions change. Follows the light/dark theme; dark mode
+ * turns the same tiles down (there is no dark OSM raster). If no tile arrives —
+ * no network, or the provider is away — it draws the sketch map instead.
  *
  * `fitKey`: the map frames all markers and lines on load and again whenever
  * this value changes; otherwise it stays where the viewer left it.
+ *
+ * `focusId`: fly to that marker (pulling back, gliding over, diving in, then a
+ * slow drift closer) and mark it active. `labels` names stop markers on the
+ * map. `onMarkerClick` makes markers buttons. `animateFit` eases reframes after
+ * the first one.
  */
 export function FreeMap({
   markers,
@@ -85,95 +260,194 @@ export function FreeMap({
   title,
   fitKey = "",
   className = "h-72 sm:h-96",
+  focusId = null,
+  onMarkerClick,
+  labels = false,
+  animateFit = false,
+  focusOffsetY = 0,
+  wheelZoom = true,
+  onFocusPoint,
+  chip,
+  controls = "full",
+  onCloseFull,
+  onReset,
 }: {
   markers: FreeMapMarker[];
   lines?: FreeMapLine[];
   title: string;
   fitKey?: string;
   className?: string;
+  focusId?: string | null;
+  onMarkerClick?: (id: string) => void;
+  labels?: boolean;
+  animateFit?: boolean;
+  /**
+   * Pixels to sit the focused pin *below* the middle of the map.
+   *
+   * A card drawn over the map needs room above the pin it points at; on a short
+   * card the middle of the map leaves none, and the card would have to cover the
+   * pin instead of pointing at it.
+   */
+  focusOffsetY?: number;
+  /**
+   * Whether the wheel over the map zooms it. On for every map (the owner asked
+   * for scroll to zoom everywhere); a map can still turn it off.
+   */
+  wheelZoom?: boolean;
+  /** A short label in the top-left corner, e.g. "Day 2 route". */
+  chip?: string;
+  /**
+   * The buttons over the map: "full" is expand and show-my-location as well as
+   * zoom; "zoom" only zoom (a map with its own card over it); "none" nothing.
+   */
+  controls?: "full" | "zoom" | "none";
+  /** Set on the full-screen copy of a map (Expand map): its button and Escape close it. */
+  onCloseFull?: () => void;
+  /** Adds a "Show the whole trip" button over the map: it should clear any focus and reframe all markers. */
+  onReset?: () => void;
+  /**
+   * Where the focused marker is right now, in the map's own pixels.
+   *
+   * A card drawn over the map has to sit above that pin with its tail on it, and
+   * a map pans under its own steam — so the position is reported as it moves
+   * (null when there is no pin to point at).
+   */
+  onFocusPoint?: (point: { x: number; y: number } | null) => void;
 }) {
   const container = useRef<HTMLDivElement>(null);
-  const mapRef = useRef<MapLibreMap | null>(null);
-  const libRef = useRef<MapLibre | null>(null);
-  const markerRefs = useRef(new Map<string, { marker: MapLibreMarker; sig: string }>());
+  const mapRef = useRef<LeafletMap | null>(null);
+  const libRef = useRef<Leaflet | null>(null);
+  const markerRefs = useRef(new Map<string, { marker: LeafletMarker; sig: string }>());
+  const lineRefs = useRef(new Map<string, { line: Polyline; sig: string }>());
   const latest = useRef({ markers, lines });
+  const clickRef = useRef(onMarkerClick);
+  const focusPointRef = useRef(onFocusPoint);
+  // Bumped whenever a drift should not start (or should stop): a new focus, the viewer moving the map.
+  const driftToken = useRef(0);
+  const firstFit = useRef(true);
   const [mode, setMode] = useState<"map" | "sketch">("map");
   const [ready, setReady] = useState(false);
+  const [expanded, setExpanded] = useState(false);
+  const [me, setMe] = useState<LatLng | null>(null);
+  const [locating, setLocating] = useState(false);
+  const [notice, setNotice] = useState<string | null>(null);
+  // The viewer's own dot joins the markers once they ask for it.
+  const shown: FreeMapMarker[] = me ? [...markers, { id: "__me", kind: "me", lat: me.lat, lng: me.lng, label: "", title: "Your location" }] : markers;
   latest.current = { markers, lines };
+  clickRef.current = onMarkerClick;
+  focusPointRef.current = onFocusPoint;
+  const clickable = Boolean(onMarkerClick);
 
   // Create the map once.
   useEffect(() => {
     if (mode !== "map" || !container.current) return;
     let cancelled = false;
-    let map: MapLibreMap | null = null;
+    let map: LeafletMap | null = null;
     let timer = 0;
+    let tiles = false;
+    let failedTiles = 0;
     const markersMap = markerRefs.current;
+    const linesMap = lineRefs.current;
     const giveUp = () => {
       if (cancelled) return;
       cancelled = true;
+      window.clearTimeout(timer);
+      // Take the map down and let go of it in the same breath. `setMode` below
+      // re-runs this effect, and its cleanup asks the *same* `map` to remove
+      // itself a second time — which Leaflet refuses with "Map container is
+      // being reused by another instance". That throw came out of a React
+      // effect, reached error.tsx, and took the whole page down: a phone on a
+      // flaky connection lost the home page because a tile host was away.
       map?.remove();
+      map = null;
       mapRef.current = null;
       setReady(false);
       setMode("sketch");
     };
 
-    import("maplibre-gl")
+    import("leaflet")
       .then((lib) => {
         if (cancelled || !container.current) return;
         libRef.current = lib;
-        lib.setWorkerUrl(workerUrl(lib.getVersion()));
-        let dark = pageIsDark();
-        let triedLight = !dark;
-        let loaded = false;
+
+        /** Dark mode has no dark tiles to ask for, so the tiles themselves are turned down. */
+        const paint = () => {
+          const pane = map?.getPane("tilePane");
+          if (pane) pane.style.filter = pageIsDark() ? DARK_TILE_FILTER : "";
+        };
+
         try {
-          map = new lib.Map({
-            container: container.current,
-            style: dark ? MAP_STYLES.dark : MAP_STYLES.light,
-            attributionControl: { compact: true, customAttribution: MAP_ATTRIBUTION },
-            cooperativeGestures: true,
-            center: [122.955, 14.112],
+          map = lib.map(container.current, {
+            center: [14.112, 122.955],
             zoom: 12,
+            // A half-step of zoom, so a flight can land between tile levels.
+            zoomSnap: 0.25,
+            zoomDelta: 0.5,
+            // The page scrolls past the map; the buttons and pinch still zoom it.
+            scrollWheelZoom: false,
+            zoomControl: false,
+            attributionControl: true,
+            // An arriving tile fades in from the map's own ground. On a small card
+            // that fade is a pulse of blank paper every time the camera moves a
+            // level — the flash the owner saw after Next. Tiles simply appear now.
+            fadeAnimation: false,
           });
         } catch {
           giveUp();
           return;
         }
         mapRef.current = map;
-        map.addControl(new lib.NavigationControl({ showCompass: false }), "top-right");
-        timer = window.setTimeout(() => !loaded && giveUp(), MAP_LOAD_TIMEOUT_MS);
 
-        map.on("error", () => {
-          if (loaded) return; // A missing tile later on is fine; the rest of the map still shows.
-          if (!triedLight) {
-            triedLight = true;
-            map?.setStyle(MAP_STYLES.light);
-            return;
-          }
-          giveUp();
-        });
-        // Runs for the first style and after every theme switch.
-        map.on("style.load", () => {
-          if (!map) return;
-          addLineLayers(map, latest.current.lines);
-          if (!loaded) {
-            loaded = true;
-            window.clearTimeout(timer);
-            fit(map, [...latest.current.markers, ...latest.current.lines.flatMap((l) => l.path)]);
-            setReady(true);
-          }
-        });
+        const tiles_ = lib
+          .tileLayer(MAP_TILES.light, {
+            maxZoom: TILE_MAX_ZOOM,
+            attribution: MAP_ATTRIBUTION,
+            crossOrigin: true,
+            detectRetina: true,
+            // Tiles are only swapped once a zoom animation has finished, and the
+            // level already on screen is kept well past the edges: the new tiles
+            // arrive behind the old ones instead of over a hole.
+            updateWhenZooming: false,
+            keepBuffer: 3,
+          })
+          .addTo(map);
 
-        const onTheme = () => {
-          const next = pageIsDark();
-          if (next === dark || !map) return;
-          dark = next;
-          map.setStyle(dark ? MAP_STYLES.dark : MAP_STYLES.light);
+        tiles_.on("tileload", () => {
+          tiles = true;
+          window.clearTimeout(timer);
+        });
+        tiles_.on("tileerror", () => {
+          failedTiles += 1;
+          if (!tiles && failedTiles >= TILE_FAILURES_BEFORE_SKETCH) giveUp();
+        });
+        timer = window.setTimeout(() => !tiles && giveUp(), MAP_LOAD_TIMEOUT_MS);
+
+        // The viewer taking over the camera stops the drift.
+        const stopDrift = () => {
+          driftToken.current += 1;
         };
+        map.on("dragstart", stopDrift);
+        map.on("wheel", stopDrift);
+        map.on("touchstart", stopDrift);
+
+        paint();
+        // The container may still be settling when it mounts (an overlay opening).
+        requestAnimationFrame(() => {
+          // A frame later the map may already be gone — given up on, or the
+          // component unmounted. Leaflet's `invalidateSize` throws on a removed
+          // map, so nothing here runs once the effect has been torn down.
+          if (cancelled || !map) return;
+          map.invalidateSize();
+          fit(map, pointsOf(latest.current.markers, latest.current.lines));
+          setReady(true);
+        });
+
+        const onTheme = () => paint();
         const observer = new MutationObserver(onTheme);
         observer.observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
         const media = window.matchMedia("(prefers-color-scheme: dark)");
         media.addEventListener("change", onTheme);
-        map.once("remove", () => {
+        map.once("unload", () => {
           observer.disconnect();
           media.removeEventListener("change", onTheme);
         });
@@ -185,8 +459,14 @@ export function FreeMap({
       window.clearTimeout(timer);
       markersMap.forEach(({ marker }) => marker.remove());
       markersMap.clear();
+      linesMap.forEach(({ line }) => line.remove());
+      linesMap.clear();
+      // Null unless `giveUp` already took the map down: one removal per map,
+      // whichever of the two paths gets there first.
       map?.remove();
+      map = null;
       mapRef.current = null;
+      setReady(false);
     };
   }, [mode]);
 
@@ -196,16 +476,36 @@ export function FreeMap({
     const lib = libRef.current;
     if (!ready || !map || !lib) return;
     const seen = new Set<string>();
-    for (const m of markers) {
+    for (const m of shown) {
       seen.add(m.id);
+      const active = m.id === focusId;
+      const sig = signature(m, active, clickable, labels);
       const existing = markerRefs.current.get(m.id);
-      if (existing && existing.sig === signature(m)) {
-        existing.marker.setLngLat([m.lng, m.lat]);
+      if (existing && existing.sig === sig) {
+        existing.marker.setLatLng([m.lat, m.lng]);
         continue;
       }
       existing?.marker.remove();
-      const marker = new lib.Marker({ element: markerElement(m) }).setLngLat([m.lng, m.lat]).addTo(map);
-      markerRefs.current.set(m.id, { marker, sig: signature(m) });
+      const element = markerElement(m, active, labels, clickable ? (id) => clickRef.current?.(id) : undefined);
+      // A picked, labelled stop is a pin, and so is a photo pin: its tip (the
+      // bottom) sits on the spot rather than the middle of the marker.
+      const pin = (labels && active && m.kind === "stop") || Boolean(m.photo);
+      // Shrink-wrapped, so a percentage shift is a shift by the marker's own size;
+      // the icon box itself is 0×0, so Leaflet's own anchor maths is out of it.
+      const anchor = document.createElement("div");
+      anchor.className = pin
+        ? "inline-block -translate-x-1/2 -translate-y-full"
+        : "inline-block -translate-x-1/2 -translate-y-1/2";
+      anchor.append(element);
+      const marker = lib
+        .marker([m.lat, m.lng], {
+          icon: lib.divIcon({ html: anchor, className: "daet-marker", iconSize: [0, 0] }),
+          keyboard: false,
+          title: m.title,
+          alt: m.title,
+        })
+        .addTo(map);
+      markerRefs.current.set(m.id, { marker, sig });
     }
     for (const [id, { marker }] of markerRefs.current) {
       if (!seen.has(id)) {
@@ -213,26 +513,286 @@ export function FreeMap({
         markerRefs.current.delete(id);
       }
     }
-  }, [markers, ready]);
+    if (labels && container.current) hideCrowdedNames(container.current);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- `shown` is markers plus `me`
+  }, [markers, me, ready, focusId, clickable, labels]);
 
-  // Lines.
+  // Names re-checked for overlaps after each zoom.
   useEffect(() => {
-    const source = ready ? mapRef.current?.getSource(LINE_SOURCE) : undefined;
-    if (source && "setData" in source) (source as { setData: (d: unknown) => void }).setData(lineData(lines));
+    const map = mapRef.current;
+    const box = container.current;
+    if (!ready || !map || !labels || !box) return;
+    const check = () => hideCrowdedNames(box);
+    map.on("zoomend", check);
+    return () => {
+      map.off?.("zoomend", check);
+    };
+  }, [ready, labels]);
+
+  // The wheel zooms where the map is something being worked in, and scrolls the
+  // page everywhere else.
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!ready || !map?.scrollWheelZoom) return;
+    if (wheelZoom) map.scrollWheelZoom.enable();
+    else map.scrollWheelZoom.disable();
+  }, [ready, wheelZoom]);
+
+  // Where the focused pin is, for a card drawn over the map that has to point
+  // at it. Reported on every pan and zoom: the map moves under its own steam.
+  const focusTarget = focusId ? markers.find((marker) => marker.id === focusId) : undefined;
+  const focusLat = focusTarget?.lat ?? null;
+  const focusLng = focusTarget?.lng ?? null;
+
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!ready || !map) return;
+    if (focusLat === null || focusLng === null) {
+      focusPointRef.current?.(null);
+      return;
+    }
+    // Keyed on the pin's own coordinates, not on the array it arrived in: the
+    // page re-renders while a photo is dragged, and re-subscribing to the map on
+    // every pointer move would be for nothing.
+    const spot: [number, number] = [focusLat, focusLng];
+    const report = () => {
+      const point = map.latLngToContainerPoint(spot);
+      focusPointRef.current?.({ x: point.x, y: point.y });
+    };
+    report();
+    map.on("move zoom viewreset resize", report);
+    return () => {
+      map.off("move zoom viewreset resize", report);
+    };
+  }, [ready, focusLat, focusLng]);
+
+  // Lines: the road legs, a dashed straight line where there is no road.
+  useEffect(() => {
+    const map = mapRef.current;
+    const lib = libRef.current;
+    if (!ready || !map || !lib) return;
+    const seen = new Set<string>();
+    for (const line of lines) {
+      seen.add(line.id);
+      const sig = `${line.dashed ? "dash" : "solid"}|${line.path.map((p) => `${p.lat},${p.lng}`).join(";")}`;
+      const existing = lineRefs.current.get(line.id);
+      if (existing && existing.sig === sig) continue;
+      existing?.line.remove();
+      const drawn = lib
+        .polyline(
+          line.path.map((p) => [p.lat, p.lng] as [number, number]),
+          // A straight leg (no road known, or a boat) is the board's dotted line; a road is solid.
+          line.dashed
+            ? { color: "#2563eb", weight: 3, opacity: 1, dashArray: "2 8", lineCap: "round", lineJoin: "round" }
+            : { color: "#2563eb", weight: 4, opacity: 0.85, lineCap: "round", lineJoin: "round" },
+        )
+        .addTo(map);
+      lineRefs.current.set(line.id, { line: drawn, sig });
+    }
+    for (const [id, { line }] of lineRefs.current) {
+      if (!seen.has(id)) {
+        line.remove();
+        lineRefs.current.delete(id);
+      }
+    }
   }, [lines, ready]);
 
-  // Reframe when asked.
+  // Focus: pull back, glide over and dive in to the picked marker, then drift slowly closer.
   useEffect(() => {
-    if (!ready || !mapRef.current) return;
-    fit(mapRef.current, [...latest.current.markers, ...latest.current.lines.flatMap((l) => l.path)]);
-  }, [fitKey, ready]);
+    const map = mapRef.current;
+    const token = ++driftToken.current;
+    if (!ready || !map || !focusId) return;
+    const m = latest.current.markers.find((marker) => marker.id === focusId);
+    if (!m) return;
+    /**
+     * Where the camera has to be for the pin to sit where it is wanted.
+     *
+     * The zoom is a parameter: the slow push in after the flight changes it every
+     * frame, and a pixel offset means a different piece of the world at another
+     * zoom.
+     */
+    const camera = (zoom: number): [number, number] => {
+      if (!focusOffsetY) return [m.lat, m.lng];
+      const spot = map.project([m.lat, m.lng], zoom).subtract([0, focusOffsetY]);
+      const ll = map.unproject(spot, zoom);
+      return [ll.lat, ll.lng];
+    };
+
+    const center = camera(15.5);
+    if (reducedMotion()) {
+      map.setView(center, 15.5, { animate: false });
+      return;
+    }
+    map.flyTo(center, 15.5, { duration: 1.1, easeLinearity: 0.25 });
+
+    // Leaflet animates the flight itself; the slow push in after it is ours.
+    let raf = 0;
+    map.once("moveend", () => {
+      if (driftToken.current !== token) return;
+      const from = map!.getZoom();
+      const startedAt = performance.now();
+      const step = (now: number) => {
+        if (driftToken.current !== token) return;
+        const t = Math.min(1, (now - startedAt) / DRIFT_MS);
+        const zoom = from + DRIFT_ZOOM * easeOutCubic(t);
+        map!.setView(camera(zoom), zoom, { animate: false });
+        if (t < 1) raf = requestAnimationFrame(step);
+      };
+      raf = requestAnimationFrame(step);
+    });
+    return () => {
+      cancelAnimationFrame(raf);
+      driftToken.current += 1;
+    };
+  }, [focusId, ready, focusOffsetY]);
+
+  // Reframe when asked — but never over a focus. A focus is a camera move of its
+  // own, and two of them at once fight: each takes the zoom somewhere new, each
+  // pulls a fresh level of tiles, and the card flashes blank twice in a row.
+  useEffect(() => {
+    if (!ready || !mapRef.current || focusId) return;
+    fit(mapRef.current, pointsOf(latest.current.markers, latest.current.lines), animateFit && !firstFit.current);
+    firstFit.current = false;
+  }, [fitKey, ready, animateFit, focusId]);
+
+  // The full-screen copy: Escape closes it, and the page behind it doesn't scroll.
+  const closeRef = useRef(onCloseFull);
+  closeRef.current = onCloseFull;
+  const isFull = Boolean(onCloseFull);
+  useEffect(() => {
+    if (!isFull) return;
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && closeRef.current?.();
+    const overflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.body.style.overflow = overflow;
+      document.removeEventListener("keydown", onKey);
+    };
+  }, [isFull]);
+
+  const locate = () => {
+    if (!("geolocation" in navigator)) {
+      setNotice("Your location isn't available on this device.");
+      return;
+    }
+    setLocating(true);
+    setNotice(null);
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        setLocating(false);
+        const here = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+        setMe(here);
+        const map = mapRef.current;
+        if (map) map.setView([here.lat, here.lng], Math.max(map.getZoom(), 14), { animate: !reducedMotion() });
+      },
+      () => {
+        setLocating(false);
+        setNotice("Your location isn't available. Allow location for this site and try again.");
+      },
+      { enableHighAccuracy: false, timeout: 10_000, maximumAge: 120_000 },
+    );
+  };
 
   if (markers.length === 0 && lines.length === 0) return null;
-  if (mode === "sketch") return <SketchMap markers={markers} lines={lines} title={title} />;
+  if (mode === "sketch")
+    return (
+      <div className="relative">
+        <SketchMap markers={markers} lines={lines} title={title} focusId={focusId} pins={labels} />
+        {chip ? <span className="pointer-events-none absolute left-3 top-3 inline-flex min-h-8 items-center rounded-full bg-surface px-3 text-sm font-bold text-daet-ink shadow-[0_1px_4px_rgba(15,23,42,0.2)]">{chip}</span> : null}
+      </div>
+    );
+
+  // The box the map fills. Positioned so the buttons can sit over it; a caller's
+  // own `absolute inset-0` keeps its position (and its size comes from that).
+  const positioned = /\b(absolute|fixed)\b/.test(className);
+  const box = `${positioned ? "" : "relative "}${className}`;
 
   return (
-    <figure>
-      <div ref={container} role="region" aria-label={title} className={`w-full overflow-hidden rounded-2xl bg-muted ${className}`} />
+    // `contents`: the figure draws no box of its own, so a height like `h-full`
+    // on the map's box is measured against the caller's box, not a zero-height figure.
+    <figure className="contents">
+      {/* Expand map: a second copy of the map over the whole page, outside any
+          sticky or clipped box this one sits in (those trap a fixed element under the page). */}
+      {expanded && !isFull
+        ? createPortal(
+            <div className="fixed inset-0 z-[100] bg-slate-900/60 p-3 sm:p-8" onClick={(e) => e.target === e.currentTarget && setExpanded(false)}>
+              <FreeMap
+                markers={markers}
+                lines={lines}
+                title={`${title} (full screen)`}
+                fitKey={fitKey}
+                focusId={focusId}
+                onMarkerClick={onMarkerClick}
+                labels={labels}
+                chip={chip}
+                className="h-full"
+                onCloseFull={() => setExpanded(false)}
+                onReset={onReset}
+                animateFit={animateFit}
+              />
+            </div>,
+            document.body,
+          )
+        : null}
+      <div className={box}>
+        {/* The ground is the map's own land colour, not the page's near-white: it is
+            what shows in the moment before a tile arrives. Inline, because Leaflet's
+            own stylesheet paints `.leaflet-container` grey. */}
+        {/* `isolate` is load-bearing: Leaflet gives its panes z-index 400–700, and
+            without a stacking context here those panes win against the whole page —
+            they painted over the chat dock's left edge. */}
+        <div
+          ref={container}
+          role="region"
+          aria-label={title}
+          className="absolute inset-0 isolate overflow-hidden rounded-2xl"
+          style={{ background: "var(--color-map-ground)" }}
+        />
+        {controls !== "none" ? (
+          <div className="pointer-events-none absolute inset-0 z-10">
+            {chip ? <span className="absolute left-3 top-3 inline-flex min-h-8 items-center rounded-full bg-surface px-3 text-sm font-bold text-daet-ink shadow-[0_1px_4px_rgba(15,23,42,0.2)]">{chip}</span> : null}
+            {controls === "full" ? (
+              <>
+                <button
+                  type="button"
+                  aria-label={isFull ? "Close the full map" : "Expand map"}
+                  onClick={() => (isFull ? onCloseFull?.() : setExpanded(true))}
+                  // Full screen: the close button is an X at the top right, above the location button.
+                  className={`${CONTROL} absolute rounded-full ${isFull ? "right-3 top-3" : `left-3 ${chip ? "top-14" : "top-3"}`}`}
+                >
+                  <ControlIcon d={isFull ? "M6 6l12 12M18 6L6 18" : "M14 4h6v6M10 20H4v-6M20 4l-7 7M4 20l7-7"} />
+                </button>
+                <button type="button" aria-label="Show my location" disabled={locating} onClick={locate} className={`${CONTROL} absolute right-3 ${isFull ? "top-16" : "top-3"} rounded-xl text-blue-600 dark:text-blue-300`}>
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" aria-hidden="true">
+                    <circle cx="12" cy="12" r="6" />
+                    <circle cx="12" cy="12" r="1.8" fill="currentColor" />
+                    <path d="M12 2v3M12 19v3M2 12h3M19 12h3" />
+                  </svg>
+                </button>
+              </>
+            ) : null}
+            <div className="absolute bottom-3 right-3 flex flex-col gap-2">
+              {onReset ? (
+                <button type="button" aria-label="Show the whole trip" title="Show the whole trip" onClick={onReset} className={`${CONTROL} rounded-xl`}>
+                  <ControlIcon d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5" />
+                </button>
+              ) : null}
+              <button type="button" aria-label="Zoom in" onClick={() => mapRef.current?.zoomIn()} className={`${CONTROL} rounded-xl`}>
+                <ControlIcon d="M12 5v14M5 12h14" />
+              </button>
+              <button type="button" aria-label="Zoom out" onClick={() => mapRef.current?.zoomOut()} className={`${CONTROL} rounded-xl`}>
+                <ControlIcon d="M5 12h14" />
+              </button>
+            </div>
+            {notice ? (
+              <p role="status" className="pointer-events-auto absolute inset-x-3 bottom-3 mr-14 rounded-xl bg-surface px-3 py-2 text-sm font-semibold text-daet-ink shadow-[0_1px_4px_rgba(15,23,42,0.2)]">
+                {notice}
+              </p>
+            ) : null}
+          </div>
+        ) : null}
+      </div>
       <ul className="sr-only">
         {markers.map((m) => (
           <li key={m.id}>{m.title}</li>

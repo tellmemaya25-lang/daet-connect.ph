@@ -1,6 +1,7 @@
 import "server-only";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { LedgerInsert, WebhookStore } from "@/lib/paymongo/webhook";
+import { emailPaymentReceived } from "@/lib/email/notify-booking";
 
 /** Webhook persistence through the service-role client (the webhook has no user session). */
 export function createSupabaseWebhookStore(admin: SupabaseClient): WebhookStore {
@@ -33,9 +34,29 @@ export function createSupabaseWebhookStore(admin: SupabaseClient): WebhookStore 
       const { data, error } = await admin
         .from("tours_payments")
         .upsert(rows, { onConflict: "provider,provider_ref", ignoreDuplicates: true })
-        .select("id");
+        .select("id, booking_id, amount");
       if (error) throw new Error(`Could not record payment: ${error.message}`);
+      // Only rows new to the ledger come back, so a retried webhook or the
+      // return page recording the same payment doesn't email twice.
+      const byBooking = new Map<string, number>();
+      for (const row of (data ?? []) as Array<{ booking_id: string; amount: number | string }>) byBooking.set(row.booking_id, (byBooking.get(row.booking_id) ?? 0) + Number(row.amount ?? 0));
+      for (const [bookingId, amount] of byBooking) emailPaymentReceived(bookingId, amount);
       return data?.length ?? 0;
+    },
+
+    async reconcileRefund(refund) {
+      const { data: operation, error } = await admin.from("tours_refund_operations")
+        .select("id, state").eq("provider_ref", refund.id).maybeSingle();
+      if (error) throw new Error(`Could not read refund operation: ${error.message}`);
+      // An external refund, a duplicate event, or a webhook that arrived before
+      // the create response was recorded. Pending operations are also polled.
+      if (!operation || !["sending", "pending"].includes(operation.state)) return;
+      const status = refund.attributes.status === "processing" ? "pending" : refund.attributes.status;
+      const { error: updateError } = await admin.rpc("tours_update_refund_operation", {
+        p_id: operation.id, p_state: status, p_ref: refund.id,
+        p_payment_ref: refund.attributes.payment_id, p_centavos: refund.attributes.amount,
+      });
+      if (updateError) throw new Error(`Could not reconcile refund: ${updateError.message}`);
     },
 
     async markProcessed(eventId, outcome, bookingId) {

@@ -1,12 +1,19 @@
 import { expect, test } from "@playwright/test";
 import { signInAs, visit, type Role } from "./fixtures";
 
+/** Sign out lives in the account menu: the avatar in the header, or the You tab for tourists on phones. */
+async function signOutButton(page: import("@playwright/test").Page) {
+  await page.getByRole("button", { name: /^(You, y|Y)our account/ }).click();
+  return page.getByRole("navigation", { name: "Your account" }).getByRole("button", { name: "Sign out" });
+}
+
 const pages: Record<Role, string[]> = {
   tourist: [
     "/tours/me",
     "/tours/my-bookings",
     "/tours/bookings/e9466de5-4877-47c1-ac14-d86deeb38b9e",
     "/tours/bookings/e9466de5-4877-47c1-ac14-d86deeb38b9e/ticket",
+    "/tours/bookings/a7d1c3e2-5b4f-4c6a-9e8d-1f2a3b4c5d6e/ticket",
     "/tours/messages",
     "/tours/messages?kind=guide_tourist",
     "/tours/messages/cc110000-0000-4000-8000-000000000001",
@@ -50,13 +57,30 @@ for (const role of Object.keys(pages) as Role[]) {
     }
     test("bottom tab bar leads to every dashboard section", async ({ page }) => {
       await page.goto(pages[role][0], { waitUntil: "networkidle" });
-      const tabs = page.getByRole("navigation", { name: "Dashboard" }).getByRole("link");
-      // Tourists swap Tours (now in the Menu sheet) for a "You" account button.
+      const bar = page.getByRole("navigation", { name: "Dashboard" });
+      const tabs = bar.getByRole("link");
+      // Tourists' fifth tab is You, the account menu.
       await expect(tabs).toHaveCount(role === "tourist" ? 4 : 5);
-      await expect(tabs.first()).toHaveAttribute("aria-current", "page");
+      if (role === "tourist") await expect(bar.getByRole("button", { name: /^(You, y|Y)our account/ })).toBeVisible();
+      // A tourist's Home tab leads to the landing page ("/"), and /tours/me, their dashboard, has no tab of
+      // its own, so none is current there (see barTabs). Every other role's first tab is its dashboard.
+      if (role === "tourist") await expect(tabs.first()).toHaveAttribute("href", "/");
+      else await expect(tabs.first()).toHaveAttribute("aria-current", "page");
     });
   });
 }
+
+// Owner's note (image-94): the admin bar drew Analytics twice — once from the
+// admin's own tabs, once from the Tourism Office's links — and reached the
+// approvals queue under two names. A desktop shows the office's links too.
+test("the admin bar lists each destination once", async ({ context, page }) => {
+  await page.setViewportSize({ width: 1400, height: 900 });
+  await signInAs(context, "admin");
+  await visit(page, "/tours/admin/attractions");
+
+  const nav = page.getByRole("navigation", { name: "Main navigation" });
+  await expect(nav.getByRole("link")).toHaveText(["Analytics", "Approvals", "Content", "Guides", "Packages"]);
+});
 
 test("/dashboard sends each role home", async ({ browser }) => {
   const homes: Record<Role, RegExp> = {
@@ -110,25 +134,23 @@ test.describe("messaging channels", () => {
 
 test.describe("sign out", () => {
   for (const role of ["tourist", "operator", "guide", "admin"] as Role[]) {
-    test(`${role} can find Sign out in the header at phone width`, async ({ context, page }) => {
+    test(`${role} can find Sign out in the account menu at phone width`, async ({ context, page }) => {
       await signInAs(context, role);
       await page.goto(pages[role][0], { waitUntil: "networkidle" });
-      if (role === "tourist") {
-        // Tourists reach it from the You tab.
-        await page.getByRole("navigation", { name: "Dashboard" }).getByRole("button", { name: "You" }).click();
-        await expect(page.getByRole("group", { name: "Your account" }).getByRole("button", { name: "Sign out" })).toBeVisible();
-      } else {
-        await expect(page.getByRole("banner").getByRole("button", { name: "Sign out" })).toBeVisible();
-      }
+      await expect(await signOutButton(page)).toBeVisible();
     });
   }
 
-  test("signing out returns to the home page", async ({ context, page }) => {
-    await signInAs(context, "guide");
-    await page.goto("/tours/guide/dashboard", { waitUntil: "networkidle" });
-    await page.getByRole("banner").getByRole("button", { name: "Sign out" }).click();
-    await expect(page).toHaveURL(/\/$/);
-  });
+  for (const role of ["guide", "tourist"] as Role[]) {
+    test(`${role}: signing out lands on the sign-in page, which says so`, async ({ context, page }) => {
+      await signInAs(context, role);
+      await page.goto(pages[role][0], { waitUntil: "networkidle" });
+      await (await signOutButton(page)).click();
+      await expect(page).toHaveURL(/\/login\?message=/);
+      await expect(page.getByText("You're signed out.")).toBeVisible();
+      await expect(page.getByRole("button", { name: /^(You, y|Y)our account/ })).toHaveCount(0);
+    });
+  }
 
   const framed: Array<[Role, string]> = [
     ["admin", "/tours/admin/packages"],
@@ -140,13 +162,13 @@ test.describe("sign out", () => {
     test(`${role} has Sign out on ${path}`, async ({ context, page }) => {
       await signInAs(context, role);
       await page.goto(path, { waitUntil: "networkidle" });
-      await expect(page.getByRole("banner").getByRole("button", { name: "Sign out" })).toBeVisible();
+      await expect(await signOutButton(page)).toBeVisible();
     });
   }
 
   test("signed-out visitors see Sign in instead", async ({ page }) => {
     await page.goto("/tours/attractions", { waitUntil: "networkidle" });
     await expect(page.getByRole("banner").getByRole("link", { name: "Sign in" })).toBeVisible();
-    await expect(page.getByRole("banner").getByRole("button", { name: "Sign out" })).toHaveCount(0);
+    await expect(page.getByRole("button", { name: /^(You, y|Y)our account/ })).toHaveCount(0);
   });
 });

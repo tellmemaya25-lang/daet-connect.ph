@@ -5,7 +5,6 @@ import { requirePromoAdmin } from "@/lib/tours/promo-admin";
 import { EVENT_COLUMNS, type TourEvent } from "@/lib/tours/promo-validation";
 import { EventForm } from "../../event-form";
 
-export const dynamic = "force-dynamic";
 export const metadata = { title: "Edit event" };
 
 export default async function EditEventPage({ params }: { params: Promise<{ id: string }> }) {
@@ -22,7 +21,7 @@ export default async function EditEventPage({ params }: { params: Promise<{ id: 
     <AdminPage>
       <div className="mx-auto max-w-2xl">
         <AdminPageHeading title="Edit event" backHref="/tours/admin/events" backLabel="All events" />
-        <div className="rounded-2xl bg-surface p-5 sm:p-8">
+        <div className="rounded-2xl card-edge bg-surface p-5 sm:p-8">
           <EventForm event={event} attractions={attractions ?? []} />
         </div>
       </div>

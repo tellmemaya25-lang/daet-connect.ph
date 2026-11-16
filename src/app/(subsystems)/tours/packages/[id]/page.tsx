@@ -1,6 +1,8 @@
 import { formatPeso } from "@/lib/money";
 import { notFound } from "next/navigation";
-import { RouteMap } from "@/components/maps/route-map";
+import { StopExplorer } from "@/components/tours/stop-explorer";
+import { HeroCarousel } from "@/components/tours/hero-carousel";
+import { heroPhotos } from "@/lib/tours/hero-photos";
 import { directionsUrl, formatDistance, formatDuration } from "@/lib/maps/geo";
 import { planRoute, type RouteSummary } from "@/lib/maps/routes";
 import Image from "next/image";
@@ -12,15 +14,19 @@ import { PageFrame } from "@/components/ui/page-frame";
 import { Notice } from "@/components/ui/notice";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { getAuthenticatedSession } from "@/lib/tours/server-auth";
+import { canStartBooking } from "@/lib/tours/booking-eligibility";
 import { RatingBadge, Stars } from "@/components/tours/star-rating";
 import { ReviewList } from "@/components/tours/review-list";
+import { ReportButton } from "@/components/tours/report/report-button";
 import { distribution, toSummary, type Review } from "@/lib/tours/reviews";
 import { FREE_CANCELLATION_HOURS } from "@/lib/tours/cancellation";
 import { CheckIcon, LineIcon, MapPinIcon, ShieldCheckIcon } from "@/components/ui/icons";
 import { mapsDirectionsUrl } from "@/lib/tours/guide/maps";
 import { meetingPointOf, meetingTimeLabel } from "@/lib/tours/guide/meeting";
+import { buildStopDetails, type AttractionRef } from "@/lib/tours/stop-details";
+import { ApproxPrice } from "@/components/ui/approx-price";
 
-export const dynamic = "force-dynamic";
 
 type PageProps = {
   params: Promise<{ id: string }>;
@@ -111,22 +117,38 @@ export default async function PackageDetailPage({ params }: PageProps) {
     notFound();
   }
 
+  // Booking is for tourist accounts. A visitor may start the flow (the booking
+  // page asks them to sign in); a signed-in staff account is never offered it.
+  let canBook = false;
+  let signedIn = false;
+  try {
+    const session = await getAuthenticatedSession();
+    canBook = canStartBooking(session);
+    signedIn = Boolean(session.user);
+  } catch {
+    // Fail closed: package details remain public when the role lookup is unavailable.
+  }
+
   const operatorRow = Array.isArray(pkg.tours_operators) ? pkg.tours_operators[0] : pkg.tours_operators;
-  const [{ data: packageRating }, { data: operatorRating }, { data: reviewRows }] = await Promise.all([
-    supabase.from("tours_package_ratings").select("review_count, average_rating").eq("package_id", pkg.id).maybeSingle(),
+  // Ratings and reviews are the operator's, across all their trips (owner's request).
+  const [{ data: operatorRating }, { data: reviewRows }, { data: attractionRows }] = await Promise.all([
     operatorRow
       ? supabase.from("tours_operator_ratings").select("review_count, average_rating").eq("operator_id", operatorRow.id).maybeSingle()
       : Promise.resolve({ data: null }),
     supabase
       .from("tours_reviews")
       .select("id, rating, comment, created_at, operator_reply, replied_at, is_hidden")
-      .eq("package_id", pkg.id)
+      .eq(operatorRow ? "operator_id" : "package_id", operatorRow ? operatorRow.id : pkg.id)
       .eq("is_hidden", false)
       .order("created_at", { ascending: false })
       .limit(20),
+    // Listed places, so a stop that is one gets its photo and a link (a short table).
+    (pkg.tours_package_stops?.length ?? 0) > 0
+      ? supabase.from("tours_attractions").select("name, slug, description, latitude, longitude, photo_url, category").eq("is_active", true)
+      : Promise.resolve({ data: [] }),
   ]);
-  const rating = toSummary(packageRating);
   const operatorSummary = toSummary(operatorRating);
+  const rating = operatorSummary;
   const reviews = (reviewRows ?? []) as Review[];
 
   // Get default price or first price variant
@@ -156,10 +178,13 @@ export default async function PackageDetailPage({ params }: PageProps) {
     }
   }
   const mapPoints = pinnedStops.map((stop: any) => ({ lat: stop.lat, lng: stop.lng, label: stop.location_name }));
+  const stopDetails = buildStopDetails(stops, (attractionRows ?? []) as AttractionRef[]);
   const routeLink = directionsUrl(mapPoints);
 
   // Sort gallery by display order
   const gallery = (pkg.tours_package_gallery || []).sort((a: any, b: any) => a.display_order - b.display_order);
+  // The hero: cover then gallery as a carousel; one photo (or none) stays a plain picture.
+  const photos = heroPhotos(pkg.title, pkg.cover_image_url, gallery);
   const fallbackKey = placePhoto(pkg.title, pkg.location_name);
   const fallback = PHOTOS[fallbackKey];
   const meeting = meetingPointOf(
@@ -177,19 +202,25 @@ export default async function PackageDetailPage({ params }: PageProps) {
   ];
 
   return (
-    <PageFrame credits={pkg.cover_image_url ? [] : [fallbackKey]}>
+    <PageFrame credits={photos.length > 0 ? [] : [fallbackKey]}>
       <Link href="/tours/browse" className="inline-flex min-h-11 items-center gap-1 font-semibold text-blue-700 dark:text-blue-300 hover:underline">
         <LineIcon name="arrowRight" className="h-4 w-4 rotate-180" /> All trips
       </Link>
 
       {/* The trip itself, as big as the screen allows. */}
-      <figure className="relative -mx-4 mt-2 aspect-[4/3] overflow-hidden bg-blue-100 dark:bg-blue-900/40 sm:mx-0 sm:aspect-[16/9] sm:rounded-2xl lg:aspect-[21/9]">
-        {pkg.cover_image_url ? (
-          <img src={pkg.cover_image_url} alt={pkg.title} fetchPriority="high" className="h-full w-full object-cover" />
-        ) : (
-          <Image src={fallback.src} alt={`${pkg.location_name}: ${fallback.alt}`} fill priority sizes="100vw" className="object-cover" />
-        )}
-      </figure>
+      {photos.length > 1 ? (
+        <div className="mt-2">
+          <HeroCarousel photos={photos} title={pkg.title} />
+        </div>
+      ) : (
+        <figure className="relative -mx-4 mt-2 aspect-[4/3] overflow-hidden bg-blue-100 dark:bg-blue-900/40 sm:mx-0 sm:aspect-[16/9] sm:rounded-2xl lg:aspect-[21/9]">
+          {photos.length === 1 ? (
+            <img src={photos[0].src} alt={photos[0].alt} fetchPriority="high" className="h-full w-full object-cover" />
+          ) : (
+            <Image src={fallback.src} alt={`${pkg.location_name}: ${fallback.alt}`} fill priority sizes="100vw" className="object-cover" />
+          )}
+        </figure>
+      )}
 
       <div className="mt-6 grid gap-10 lg:grid-cols-[1fr_22rem] lg:gap-14">
         <div className="min-w-0">
@@ -206,7 +237,7 @@ export default async function PackageDetailPage({ params }: PageProps) {
           {/* The departure line: where to be, how long it takes, what it costs. */}
           <dl className="mt-6 grid gap-2 sm:grid-cols-3">
             {facts.map(([label, value]) => (
-              <div key={label} className="rounded-2xl bg-surface p-4">
+              <div key={label} className="rounded-2xl card-edge bg-surface p-4">
                 <dt className="text-sm font-semibold text-daet-ink/75">{label}</dt>
                 <dd className="mt-1 text-lg font-bold leading-snug text-daet-ink">{value}</dd>
               </div>
@@ -221,6 +252,12 @@ export default async function PackageDetailPage({ params }: PageProps) {
             <LineIcon name="pin" className="h-5 w-5" /> Directions to the meeting point
             <span className="sr-only"> (opens Google Maps)</span>
           </a>
+          <Link
+            href={`/tours/fares?package=${pkg.id}`}
+            className="mt-3 ml-0 inline-flex min-h-11 items-center gap-2 rounded-full px-5 font-bold text-daet-ink ring-1 ring-inset ring-daet-ink/20 transition hover:bg-muted sm:ml-2"
+          >
+            How much to get picked up and brought there?
+          </Link>
 
           <section aria-labelledby="about-trip" className="mt-12">
             <h2 id="about-trip" className="text-2xl font-semibold text-daet-ink sm:text-3xl">About this trip</h2>
@@ -235,7 +272,7 @@ export default async function PackageDetailPage({ params }: PageProps) {
                   <ul className="space-y-3">
                     {included.map((item: any) => (
                       <li key={item.id} className="flex items-start gap-3 text-lg text-daet-ink">
-                        <span className="mt-0.5 grid h-6 w-6 shrink-0 place-items-center rounded-full bg-green-500 text-slate-950">
+                        <span className="mt-0.5 grid h-6 w-6 shrink-0 place-items-center rounded-full bg-green-500 text-slate-950 dark:bg-green-500/20 dark:text-green-300">
                           <CheckIcon className="h-4 w-4" />
                         </span>
                         {item.item_text}
@@ -264,25 +301,8 @@ export default async function PackageDetailPage({ params }: PageProps) {
 
           {stops.length > 0 ? (
             <section aria-labelledby="itinerary" className="mt-12">
-              <h2 id="itinerary" className="text-2xl font-semibold text-daet-ink sm:text-3xl">The route, stop by stop</h2>
-              <ol className="mt-4 space-y-2">
-                {stops.map((stop: any, idx: number) => (
-                  <li key={stop.id} className="flex gap-4 rounded-2xl bg-surface p-4">
-                    <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-blue-600 font-bold text-white">{idx + 1}</span>
-                    <div>
-                      <h3 className="text-lg font-bold text-daet-ink">{stop.location_name}</h3>
-                      {stop.description ? <p className="mt-0.5 text-daet-ink/80">{stop.description}</p> : null}
-                    </div>
-                  </li>
-                ))}
-              </ol>
-            </section>
-          ) : null}
-
-          {mapPoints.length > 0 ? (
-            <section aria-labelledby="route" className="mt-12">
               <div className="flex flex-wrap items-baseline justify-between gap-2">
-                <h2 id="route" className="text-2xl font-semibold text-daet-ink sm:text-3xl">Map</h2>
+                <h2 id="itinerary" className="text-2xl font-semibold text-daet-ink sm:text-3xl">The route, stop by stop</h2>
                 {route ? (
                   <p className="font-semibold text-daet-ink">
                     {route.estimated ? "About " : ""}
@@ -290,20 +310,9 @@ export default async function PackageDetailPage({ params }: PageProps) {
                   </p>
                 ) : null}
               </div>
-              <div className="mt-4 overflow-hidden rounded-2xl bg-surface">
-                <RouteMap points={mapPoints} polylines={route?.legs.map((leg) => leg.polyline) ?? []} connect title={`Route map for ${pkg.title}`} />
+              <div className="mt-4">
+                <StopExplorer stops={stopDetails} legs={route?.legs ?? []} meetingPoint={meetingPoint} title={`Route map for ${pkg.title}`} />
               </div>
-              {route && route.legs.length > 0 ? (
-                <ol className="mt-4 space-y-1 text-daet-ink/90">
-                  {route.legs.map((leg, i) => (
-                    <li key={i}>
-                      <span className="font-bold text-daet-ink">{mapPoints[i].label}</span> to <span className="font-bold text-daet-ink">{mapPoints[i + 1].label}</span>:{" "}
-                      {leg.estimated ? "about " : ""}
-                      {formatDistance(leg.distanceM)}, {formatDuration(leg.durationS)}
-                    </li>
-                  ))}
-                </ol>
-              ) : null}
               {route?.estimated ? <p className="mt-2 text-sm text-daet-ink/75">Some distances are estimated in a straight line; roads and boat crossings may differ.</p> : null}
               {routeLink ? (
                 <a href={routeLink} target="_blank" rel="noopener noreferrer" className="mt-4 inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-blue-50 dark:bg-blue-950/40 px-5 font-bold text-blue-700 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-900/40">
@@ -313,41 +322,38 @@ export default async function PackageDetailPage({ params }: PageProps) {
             </section>
           ) : null}
 
-          {gallery.length > 0 ? (
-            <section aria-labelledby="gallery" className="mt-12">
-              <h2 id="gallery" className="text-2xl font-semibold text-daet-ink sm:text-3xl">Photos</h2>
-              <ul className="-mx-4 mt-4 flex snap-x gap-3 overflow-x-auto px-4 pb-2 sm:mx-0 sm:grid sm:grid-cols-2 sm:overflow-visible sm:px-0">
-                {gallery.map((img: any) => (
-                  <li key={img.id} className="w-[80%] shrink-0 snap-start sm:w-auto">
-                    <img src={img.image_url} alt={img.caption || `Photo of ${pkg.title}`} loading="lazy" className="aspect-[4/3] w-full rounded-2xl object-cover" />
-                    {img.caption ? <p className="mt-2 text-sm text-daet-ink/80">{img.caption}</p> : null}
-                  </li>
-                ))}
-              </ul>
-            </section>
-          ) : null}
-
           {operatorName ? (
-            <section aria-labelledby="operator" className="mt-12 rounded-2xl bg-surface p-5 sm:p-6">
+            <section aria-labelledby="operator" className="mt-12 rounded-2xl card-edge bg-surface p-5 sm:p-6">
               <h2 id="operator" className="text-2xl font-semibold text-daet-ink">Run by {operatorName}</h2>
               <p className="mt-2 flex flex-wrap items-center gap-2 text-daet-ink/80">
                 <ShieldCheckIcon className="h-5 w-5 text-blue-600 dark:text-blue-300" /> Accredited by the Daet Tourism Office
               </p>
               {operatorSummary ? (
                 <p className="mt-1 text-daet-ink/80">
-                  <RatingBadge summary={operatorSummary} compact /> across all their trips
+                  <RatingBadge summary={operatorSummary} compact /> across all their trips{" "}
+                  <a href="#reviews" className="font-bold underline">
+                    See reviews
+                  </a>
                 </p>
               ) : null}
             </section>
           ) : null}
 
-          <section id="reviews" aria-labelledby="reviews-title" className="mt-12">
+          {/* The page's own "#reviews" link would otherwise leave the heading
+              under the sticky bar — the same 37px the booking card lost. */}
+          <section
+            id="reviews"
+            aria-labelledby="reviews-title"
+            className="mt-12 scroll-mt-[calc(var(--header-h)+1.5rem)]"
+          >
             <div className="flex flex-wrap items-end justify-between gap-3">
               <h2 id="reviews-title" className="text-2xl font-semibold text-daet-ink sm:text-3xl">Traveller reviews</h2>
-              <p className="text-sm text-daet-ink/75">Only travellers who finished this trip can review it.</p>
+              <p className="text-sm text-daet-ink/75">
+                {operatorName ? `For all of ${operatorName}'s trips. ` : ""}Only travellers who finished a trip can review it.
+              </p>
             </div>
             {rating ? (
-              <div className="mt-4 grid gap-6 rounded-2xl bg-surface p-5 sm:grid-cols-[auto_1fr] sm:items-center sm:p-6">
+              <div className="mt-4 grid gap-6 rounded-2xl card-edge bg-surface p-5 sm:grid-cols-[auto_1fr] sm:items-center sm:p-6">
                 <div className="sm:pr-4">
                   <p className="font-[family-name:var(--font-display)] text-6xl font-semibold leading-none text-daet-ink">{rating.average.toFixed(1)}</p>
                   <Stars value={rating.average} />
@@ -369,23 +375,37 @@ export default async function PackageDetailPage({ params }: PageProps) {
               </div>
             ) : null}
             <div className="mt-4">
-              <ReviewList reviews={reviews} operatorName={operatorName ?? "the operator"} emptyText="No reviews yet. Be the first after your trip." />
+              <ReviewList reviews={reviews} operatorName={operatorName ?? "the operator"} emptyText="No reviews yet. Be the first after your trip." canReport={signedIn} />
             </div>
+            {signedIn ? (
+              <div className="mt-4">
+                <ReportButton type="package" targetId={pkg.id} label="Report this package to the Tourism Office" />
+              </div>
+            ) : null}
           </section>
         </div>
 
         {/* Booking panel: beside the content on wide screens, a bar at the bottom on phones. */}
-        <aside aria-label="Book this trip" className="hidden lg:block">
-          <div className="sticky top-6 rounded-2xl bg-surface p-6">
+        <aside aria-label={canBook ? "Book this trip" : "Explore more tours"} className="hidden lg:block">
+          {/* Stuck below the sticky header, not under it: the header is
+              translucent, so a card at top-6 showed through it. */}
+          <div className="sticky top-[calc(var(--header-h)+1.5rem)] rounded-2xl card-edge bg-surface p-6">
             <p className="text-sm font-semibold text-daet-ink/75">From</p>
             <p className="text-4xl font-bold text-daet-ink">{formatPeso(displayPrice)}</p>
             <p className="text-daet-ink/80">{priceLabel}</p>
+            <ApproxPrice pesos={displayPrice} />
             {pkg.tours_package_price_variants && pkg.tours_package_price_variants.length > 1 ? (
               <p className="mt-2 text-sm text-daet-ink/80">{pkg.tours_package_price_variants.length} price options</p>
             ) : null}
-            <ButtonLink href={`/tours/packages/${pkg.id}/book`} size="lg" fullWidth className="mt-5">
-              Book this trip
-            </ButtonLink>
+            {canBook ? (
+              <ButtonLink href={`/tours/packages/${pkg.id}/book`} size="lg" fullWidth className="mt-5">
+                Book this trip
+              </ButtonLink>
+            ) : (
+              <ButtonLink href="/tours/browse" size="lg" fullWidth className="mt-5" variant="secondary">
+                Explore tours
+              </ButtonLink>
+            )}
             <ul className="mt-6 space-y-3 text-daet-ink">
               {["Confirmed by the local operator", `Free cancellation up to ${FREE_CANCELLATION_HOURS} hours before`, "Led by an accredited local guide"].map((line) => (
                 <li key={line} className="flex items-start gap-2">
@@ -403,10 +423,17 @@ export default async function PackageDetailPage({ params }: PageProps) {
           <p className="leading-tight">
             <span className="block text-sm text-daet-ink/75">From</span>
             <span className="text-xl font-bold text-daet-ink">{formatPeso(displayPrice)}</span> <span className="text-sm text-daet-ink/75">{priceLabel}</span>
+            <ApproxPrice pesos={displayPrice} className="text-xs" />
           </p>
-          <ButtonLink href={`/tours/packages/${pkg.id}/book`} size="lg" className="shrink-0">
-            Book this trip
-          </ButtonLink>
+          {canBook ? (
+            <ButtonLink href={`/tours/packages/${pkg.id}/book`} size="lg" className="shrink-0">
+              Book this trip
+            </ButtonLink>
+          ) : (
+            <ButtonLink href="/tours/browse" size="lg" className="shrink-0" variant="secondary">
+              Explore tours
+            </ButtonLink>
+          )}
         </div>
       </div>
       <div className="h-20 lg:hidden" aria-hidden="true" />

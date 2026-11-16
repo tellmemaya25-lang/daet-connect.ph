@@ -26,7 +26,7 @@ export function PaymentInstructions({
   operatorPhone,
 }: PaymentInstructionsProps) {
   return (
-    <div className="rounded-2xl bg-surface p-5">
+    <div className="rounded-2xl card-edge bg-surface p-5">
       <div className="mb-3 flex items-center gap-2">
         <span className="text-2xl"><LineIcon name="money" className="inline-block h-[1.1em] w-[1.1em] align-[-0.15em]" /></span>
         <h3 className="text-lg font-bold text-daet-ink">How to pay</h3>
@@ -35,7 +35,7 @@ export function PaymentInstructions({
       <div className="space-y-4">
         {/* Amount to Pay */}
         <div className="rounded-2xl bg-canvas p-4 text-center">
-          <p className="text-sm text-daet-ink/70">Total Amount to Pay</p>
+          <p className="text-sm text-daet-ink/70">Amount to pay</p>
           <p className="text-3xl font-bold text-daet-forest dark:text-blue-300">
             {formatPeso(totalAmount)}
           </p>

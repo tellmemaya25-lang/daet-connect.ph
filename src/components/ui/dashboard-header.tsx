@@ -7,47 +7,12 @@ interface DashboardHeaderProps {
   backHref?: string;
   backLabel?: string;
   children?: React.ReactNode;
-  role?: "admin" | "operator" | "guide" | "tourist";
 }
 
-const ROLE_LINKS: Record<NonNullable<DashboardHeaderProps["role"]>, { href: string; label: string }[]> = {
-  admin: [{ href: "/tours/admin", label: "Dashboard" }],
-  operator: [
-    { href: "/tours/operator/dashboard", label: "Dashboard" },
-    { href: "/tours/operator/packages", label: "Packages" },
-    { href: "/tours/operator/bookings", label: "Bookings" },
-    { href: "/tours/operator/live", label: "Live now" },
-    { href: "/tours/operator/reviews", label: "Reviews" },
-    { href: "/tours/messages", label: "Messages" },
-  ],
-  guide: [
-    { href: "/tours/guide/dashboard", label: "Dashboard" },
-    { href: "/tours/messages", label: "Messages" },
-  ],
-  tourist: [{ href: "/tours/browse", label: "Browse trips" }],
-};
-
-/** A role's quick links as one row of pills, then an optional back link, title and actions. */
-export function DashboardHeader({ title, description, backHref, backLabel = "Back", children, role }: DashboardHeaderProps) {
+/** An optional back link, title and actions. Work areas live in the header and tab bar. */
+export function DashboardHeader({ title, description, backHref, backLabel = "Back", children }: DashboardHeaderProps) {
   return (
     <>
-      {role ? (
-        <nav aria-label="Work areas" className="-mx-4 mb-6 overflow-x-auto px-4 sm:mx-0 sm:px-0">
-          <ul className="flex w-max gap-2">
-            {ROLE_LINKS[role].map((link) => (
-              <li key={link.href}>
-                <Link
-                  href={link.href}
-                  className="inline-flex min-h-11 items-center rounded-full bg-surface px-4 text-[15px] font-bold text-daet-ink transition hover:bg-blue-50 dark:hover:bg-blue-950/40 active:scale-[0.98]"
-                >
-                  {link.label}
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </nav>
-      ) : null}
-
       {title || description || backHref || children ? (
         <div className="mb-8">
           {backHref ? (

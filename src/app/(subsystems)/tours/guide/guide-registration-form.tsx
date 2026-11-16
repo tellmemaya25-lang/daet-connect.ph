@@ -6,6 +6,7 @@ import { Notice } from "@/components/ui/notice";
 import { INITIAL_GUIDE_SUBMISSION_STATE, type GuideActionState, type GuideQrPreviewResult } from "@/lib/tours/guide-action-state";
 import { compressImageFile } from "@/lib/tours/compress-image";
 import { GUIDE_ID_TYPES } from "@/lib/tours/guide-validation";
+import { digitsOnlyPhone, PHONE_DIGITS, PHONE_HINT } from "@/lib/tours/phone";
 import { MAX_GUIDE_ID_DOCUMENT_BYTES } from "@/lib/tours/guide-upload-validation";
 import { prepareGuideQrPreview, submitGuideRegistration } from "@/app/(subsystems)/tours/guide/actions";
 
@@ -211,7 +212,7 @@ export function GuideRegistrationForm({
         </div>
       </div>
 
-      <form ref={formRef} action={formAction} onSubmit={handleSubmit} className="rounded-2xl bg-surface p-5 sm:p-8">
+      <form ref={formRef} action={formAction} onSubmit={handleSubmit} className="rounded-2xl card-edge bg-surface p-5 sm:p-8">
         {rejectionReason ? <Notice variant="warning" title="Updates requested by the Tourism Office" className="mb-6">{rejectionReason}</Notice> : null}
         {state.status === "error" && !state.fieldErrors ? <Notice variant="error" title="We couldn’t submit your application" className="mb-6">{state.message}</Notice> : null}
         {clientError ? <Notice variant="error" title="Please check your application" className="mb-6">{clientError}</Notice> : null}
@@ -230,8 +231,9 @@ export function GuideRegistrationForm({
             <div className="block">
               <label className="block">
               <span className="text-sm font-bold text-daet-ink">Contact number <span className="text-red-600 dark:text-red-300" aria-hidden="true">*</span></span>
-              <input data-guide-step="1" name="contactPhone" type="tel" value={values.contactPhone} onChange={(event) => changeProfile("contactPhone", event.target.value)} required={activeStep === 1} maxLength={24} autoComplete="tel" placeholder="09XX XXX XXXX" aria-invalid={Boolean(fieldErrors.contactPhone)} aria-describedby={fieldErrors.contactPhone ? fieldErrorId("contactPhone") : undefined} className="mt-2 min-h-12 w-full rounded-2xl border border-daet-ink/15 px-4 text-base outline-none focus:border-daet-forest focus:ring-4 focus:ring-daet-forest/10 aria-[invalid=true]:border-red-400 dark:aria-[invalid=true]:border-red-700" />
+              <input data-guide-step="1" name="contactPhone" type="tel" inputMode="numeric" pattern={`[0-9]{${PHONE_DIGITS}}`} title={PHONE_HINT} value={values.contactPhone} onChange={(event) => changeProfile("contactPhone", digitsOnlyPhone(event.target.value))} required={activeStep === 1} maxLength={PHONE_DIGITS} autoComplete="tel" placeholder="09123456789" aria-invalid={Boolean(fieldErrors.contactPhone)} aria-describedby={fieldErrors.contactPhone ? fieldErrorId("contactPhone") : "contactPhone-hint"} className="mt-2 min-h-12 w-full rounded-2xl border border-daet-ink/15 px-4 text-base outline-none focus:border-daet-forest focus:ring-4 focus:ring-daet-forest/10 aria-[invalid=true]:border-red-400 dark:aria-[invalid=true]:border-red-700" />
               </label>
+              {fieldErrors.contactPhone ? null : <p id="contactPhone-hint" className="mt-1 text-sm text-slate-600 dark:text-slate-400">{PHONE_HINT}</p>}
               <FieldError id={fieldErrorId("contactPhone")} message={fieldErrors.contactPhone} />
               </div>
             <div className="block sm:col-span-2">
@@ -300,7 +302,7 @@ export function GuideRegistrationForm({
             <div className="mt-6 grid min-h-64 place-items-center rounded-2xl bg-daet-sand text-sm font-semibold text-daet-ink/70">Preparing QR preview…</div>
           ) : qrPreview?.status === "success" && qrPreview.qrDataUrl ? (
             <div className="mt-6 flex flex-col items-center rounded-2xl bg-canvas p-5 text-center sm:p-8">
-              <div className="rounded-2xl bg-surface p-4"><img src={qrPreview.qrDataUrl} alt="Preview of your guide badge QR code" width={240} height={240} className="h-56 w-56 sm:h-64 sm:w-64" /></div>
+              <div className="rounded-2xl card-edge bg-surface p-4"><img src={qrPreview.qrDataUrl} alt="Preview of your guide badge QR code" width={240} height={240} className="h-56 w-56 sm:h-64 sm:w-64" /></div>
               <p className="mt-4 text-sm font-bold text-daet-ink">Preview only · activates after approval</p>
               <p className="mt-1 max-w-md break-all text-xs leading-5 text-daet-ink/70">No personal or ID data is encoded. Your final badge image is protected until the Tourism Office approves your application.</p>
             </div>

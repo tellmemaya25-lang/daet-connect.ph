@@ -108,6 +108,9 @@ const CATEGORY_SHAPES: Record<string, string> = {
   lunch: "M7 3v7a2 2 0 0 0 2 0V3M8 10v11M17 3c-2.5 1.5-3 5-1 8h1v10",
 };
 
+/** The path of a category's line icon, for maps that draw markers outside React. */
+export const categoryShape = (category: string): string => CATEGORY_SHAPES[category] ?? CATEGORY_SHAPES.park;
+
 /** Line icon for an attraction category (or "lunch"). */
 export function CategoryIcon({ category, className = "h-5 w-5" }: { category: string; className?: string }) {
   return <Icon className={className}>{p(CATEGORY_SHAPES[category] ?? CATEGORY_SHAPES.park)}</Icon>;
@@ -127,6 +130,8 @@ export const ChevronLeftIcon = (props: IconProps) => (
 
 /** General line icons that replace emoji across the UI. */
 const SHAPES = {
+  "chevron-down": "M6 9l6 6 6-6",
+  sparkle: "M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8zM18 16l.8 2.2L21 19l-2.2.8L18 22l-.8-2.2L15 19l2.2-.8z",
   inbox: "M4 13h4l2 3h4l2-3h4M5 5h14l1 8v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1v-5z",
   check: "M5 12l5 5 9-10",
   cancel: "M6 6l12 12M18 6L6 18",
@@ -149,10 +154,13 @@ const SHAPES = {
   settings: "M12 9a3 3 0 1 0 0 6 3 3 0 0 0 0-6zM12 2v3M12 19v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M2 12h3M19 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1",
   menu: "M4 7h16M4 12h16M4 17h16",
   sun: "M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8zM12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4",
-  sparkle: "M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8zM18 16l.8 2.2L21 19l-2.2.8L18 22l-.8-2.2L15 19l2.2-.8z",
   moon: "M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z",
   monitor: "M3 5h18v11H3zM8 20h8M12 16v4",
   close: "M6 6l12 12M18 6L6 18",
+  eye: "M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7-10-7-10-7zM12 9a3 3 0 1 0 0 6 3 3 0 0 0 0-6z",
+  "eye-off": "M3 3l18 18M10.6 10.6a2 2 0 0 0 2.8 2.8M9.9 5.2A10.5 10.5 0 0 1 12 5c6.4 0 10 7 10 7a16.7 16.7 0 0 1-4.2 4.8M6.6 6.6C3.7 8.4 2 12 2 12s3.6 7 10 7c1.1 0 2.1-.2 3-.5",
+  plus: "M12 5v14M5 12h14",
+  more: "M6 12v.01M12 12v.01M18 12v.01",
   arrowRight: "M5 12h14M13 6l6 6-6 6",
   image: "M4 5h16v14H4zM4 16l5-5 4 4 3-3 4 4M15 9.5a1.5 1.5 0 1 0 0-.01",
   pin: "M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21zM12 7a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5z",
@@ -172,6 +180,10 @@ const SHAPES = {
   plate: "M12 5a7 7 0 1 0 0 14 7 7 0 0 0 0-14zM12 9a3 3 0 1 0 0 6 3 3 0 0 0 0-6z",
   warning: "M12 4L2 20h20zM12 10v4M12 17v.01",
   tip: "M9 18h6M10 21h4M12 3a6 6 0 0 0-3.5 10.9c.6.5 1 1.2 1 2.1h5c0-.9.4-1.6 1-2.1A6 6 0 0 0 12 3z",
+  // How people reach Daet (src/lib/getting-here.ts).
+  bus: "M4 5h16a1 1 0 0 1 1 1v9H3V6a1 1 0 0 1 1-1zM3 11h18M7 15v3M17 15v3M7 9h10",
+  plane: "M21 4L3 11l7 2.4L13.4 21zM10 13.4L21 4",
+  van: "M3 7h10l4 4v5H3zM3 11.5h14M6 16v3M15 16v3",
 } as const;
 
 export type IconName = keyof typeof SHAPES;

@@ -4,6 +4,7 @@ import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import { AdminPage } from "@/components/admin/admin-page";
 import { PackageReviewForm } from './package-review-form';
+import { getAuthUser } from "@/lib/tours/server-auth";
 
 export default async function AdminPackageReviewPage({
   params,
@@ -14,7 +15,7 @@ export default async function AdminPackageReviewPage({
   const supabase = await createSupabaseServerClient();
   
   // Check if user is admin
-  const { data: { user } } = await supabase.auth.getUser();
+  const user = await getAuthUser();
   if (!user) redirect('/');
   
   const { data: profile } = await supabase
@@ -51,60 +52,25 @@ export default async function AdminPackageReviewPage({
     );
   }
 
-  // Get operator details separately
-  const { data: operatorData } = await supabase
-    .from('tours_operators')
-    .select('id, business_name, contact_person, contact_phone, contact_email, profile_id')
-    .eq('id', packageData.operator_id)
-    .single();
+  // Everything below depends only on the package, so it loads in one round
+  // trip instead of six in a row. The operator's name comes with the operator.
+  const [{ data: operatorData }, { data: priceVariants }, { data: inclusions }, { data: stops }, { data: gallery }] = await Promise.all([
+    supabase
+      .from('tours_operators')
+      .select('id, business_name, contact_person, contact_phone, contact_email, profile_id, profiles!tours_operators_profile_id_fkey ( full_name )')
+      .eq('id', packageData.operator_id)
+      .single(),
+    supabase.from('tours_package_price_variants').select('*').eq('package_id', id).order('min_pax', { ascending: true }),
+    supabase.from('tours_package_inclusions').select('*').eq('package_id', id).order('display_order', { ascending: true }),
+    supabase.from('tours_package_stops').select('*').eq('package_id', id).order('stop_order', { ascending: true }),
+    supabase.from('tours_package_gallery').select('*').eq('package_id', id).order('display_order', { ascending: true }),
+  ]);
+  const operatorProfile = (Array.isArray(operatorData?.profiles) ? operatorData?.profiles[0] : operatorData?.profiles) ?? null;
 
-  // Get operator profile
-  let operatorProfile = null;
-  if (operatorData?.profile_id) {
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('full_name')
-      .eq('id', operatorData.profile_id)
-      .single();
-    operatorProfile = profile;
-  }
-
-  // Construct the data structure expected by the rest of the component
   const packageWithOperator = {
     ...packageData,
-    tours_operators: operatorData ? {
-      ...operatorData,
-      profiles: operatorProfile,
-    } : null,
+    tours_operators: operatorData ? { ...operatorData, profiles: operatorProfile } : null,
   };
-
-  // Get price variants
-  const { data: priceVariants } = await supabase
-    .from('tours_package_price_variants')
-    .select('*')
-    .eq('package_id', id)
-    .order('min_pax', { ascending: true });
-
-  // Get inclusions
-  const { data: inclusions } = await supabase
-    .from('tours_package_inclusions')
-    .select('*')
-    .eq('package_id', id)
-    .order('display_order', { ascending: true });
-
-  // Get itinerary stops
-  const { data: stops } = await supabase
-    .from('tours_package_stops')
-    .select('*')
-    .eq('package_id', id)
-    .order('stop_order', { ascending: true });
-
-  // Get gallery images
-  const { data: gallery } = await supabase
-    .from('tours_package_gallery')
-    .select('*')
-    .eq('package_id', id)
-    .order('display_order', { ascending: true });
 
   const operator = packageWithOperator.tours_operators;
 
@@ -137,7 +103,7 @@ export default async function AdminPackageReviewPage({
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <label className="block text-sm font-medium text-daet-ink/80 mb-1">Status</label>
+              <p className="block text-sm font-bold text-daet-ink/80 mb-1">Status</p>
               <span className={`inline-flex px-3 py-1 rounded-full text-sm font-medium ${
                 packageWithOperator.status === 'pending_review' ? 'bg-yellow-100 dark:bg-yellow-900/40 text-yellow-800 dark:text-yellow-200' :
                 packageWithOperator.status === 'published' ? 'bg-green-100 dark:bg-green-900/40 text-green-800 dark:text-green-300' :
@@ -149,7 +115,7 @@ export default async function AdminPackageReviewPage({
             </div>
 
             <div className="md:col-span-2">
-              <label className="block text-sm font-medium text-daet-ink/80 mb-1">Description</label>
+              <p className="block text-sm font-bold text-daet-ink/80 mb-1">Description</p>
               <p className="text-daet-ink whitespace-pre-wrap">{packageWithOperator.description}</p>
             </div>
           </div>
@@ -161,22 +127,22 @@ export default async function AdminPackageReviewPage({
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-daet-ink/80 mb-1">Business Name</label>
+              <p className="block text-sm font-bold text-daet-ink/80 mb-1">Business Name</p>
               <p className="text-daet-ink">{operator?.business_name || 'N/A'}</p>
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-daet-ink/80 mb-1">Contact Person</label>
+              <p className="block text-sm font-bold text-daet-ink/80 mb-1">Contact Person</p>
               <p className="text-daet-ink">{operator?.contact_person || 'N/A'}</p>
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-daet-ink/80 mb-1">Contact Number</label>
+              <p className="block text-sm font-bold text-daet-ink/80 mb-1">Contact Number</p>
               <p className="text-daet-ink">{operator?.contact_phone || 'N/A'}</p>
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-daet-ink/80 mb-1">Email</label>
+              <p className="block text-sm font-bold text-daet-ink/80 mb-1">Email</p>
               <p className="text-daet-ink">{operator?.contact_email || 'N/A'}</p>
             </div>
           </div>

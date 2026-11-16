@@ -6,7 +6,6 @@ import { isUuid } from "@/lib/tours/operator-access";
 import { requirePromoAdmin } from "@/lib/tours/promo-admin";
 import { GuidePlaceForm } from "../../guide-place-form";
 
-export const dynamic = "force-dynamic";
 export const metadata = { title: "Edit local guide place" };
 
 export default async function EditGuidePlacePage({ params }: { params: Promise<{ id: string }> }) {
@@ -22,7 +21,7 @@ export default async function EditGuidePlacePage({ params }: { params: Promise<{
     <AdminPage>
       <div className="mx-auto max-w-2xl">
         <AdminPageHeading title="Edit place" backHref="/tours/admin/guide-places" backLabel="All places" />
-        <div className="rounded-2xl bg-surface p-5 sm:p-8">
+        <div className="rounded-2xl card-edge bg-surface p-5 sm:p-8">
           <GuidePlaceForm place={toGuidePlace(data as Record<string, unknown>)} />
         </div>
       </div>

@@ -12,7 +12,6 @@ import { formatPeso, MERCH_CATEGORIES, MERCH_REVIEW_LABELS, MERCH_SUBMISSION_COL
 import { getAuthenticatedSession } from "@/lib/tours/server-auth";
 import { deleteMyMerch } from "./actions";
 
-export const dynamic = "force-dynamic";
 export const metadata = { title: "My merchandise" };
 
 const TONE: Record<MerchSubmission["review_status"], BadgeTone> = { pending: "warning", approved: "success", rejected: "danger" };
@@ -62,7 +61,7 @@ export default async function OperatorMerchPage({ searchParams }: { searchParams
       ) : (
         <ul className="space-y-3">
           {items.map((item) => (
-            <li key={item.id} className="flex flex-col gap-3 rounded-2xl bg-surface p-4 sm:flex-row sm:items-center">
+            <li key={item.id} className="flex flex-col gap-3 rounded-2xl card-edge bg-surface p-4 sm:flex-row sm:items-center">
               <div className="flex min-w-0 flex-1 items-center gap-3">
                 <div className="grid h-16 w-16 shrink-0 place-items-center overflow-hidden rounded-2xl bg-daet-sand text-2xl">
                   {item.image_url ? <img src={item.image_url} alt="" className="h-full w-full object-cover" /> : <span aria-hidden="true"><LineIcon name="bag" className="inline-block h-[1.1em] w-[1.1em] align-[-0.15em]" /></span>}

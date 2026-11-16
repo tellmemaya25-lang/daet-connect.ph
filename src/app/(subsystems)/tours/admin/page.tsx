@@ -1,17 +1,24 @@
+import { LiveCount } from "@/components/live/live-count";
 import { LineIcon } from "@/components/ui/icons";
-import { createSupabaseServerClient } from '@/lib/supabase/server';
-import { redirect } from 'next/navigation';
-import Link from 'next/link';
+import { Notice } from "@/components/ui/notice";
 import { AdminPage } from "@/components/admin/admin-page";
-import { Notice } from '@/components/ui/notice';
+import { Field, Input, Select } from "@/components/ui/field";
+import { createSupabaseAdminClient } from "@/lib/supabase/admin";
+import { isSupabaseAdminConfigured } from "@/lib/supabase/env";
+import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { getAuthUser } from "@/lib/tours/server-auth";
+import { searchTerm } from "@/components/ui/search-term";
+import { ADMIN_SEARCH_STATUSES, ADMIN_SEARCH_TYPES, parseAdminSearchStatus, parseAdminSearchType } from "@/lib/tours/admin-search";
+import { searchAdminRecords, type AdminSearchResult } from "@/lib/tours/admin-search.server";
+import Link from "next/link";
 
-export const dynamic = 'force-dynamic';
+type SearchParams = Promise<Record<string, string | string[] | undefined>>;
 
-export default async function AdminDashboardPage() {
+export default async function AdminDashboardPage({ searchParams }: { searchParams: SearchParams }) {
   const supabase = await createSupabaseServerClient();
   
   // Check if user is admin
-  const { data: { user } } = await supabase.auth.getUser();
+  const user = await getAuthUser();
   if (!user) {
     return (
       <AdminPage>
@@ -44,6 +51,29 @@ export default async function AdminDashboardPage() {
       </AdminPage>
     );
   }
+
+  const params = await searchParams;
+  const query = searchTerm(params.q);
+  const searchType = parseAdminSearchType(params.type);
+  const searchStatus = parseAdminSearchStatus(params.status);
+  const searchResult = query.length >= 2
+    ? await searchAdminRecords({
+        supabase,
+        applicationSupabase: isSupabaseAdminConfigured() ? createSupabaseAdminClient() : supabase,
+        term: query,
+        type: searchType,
+        status: searchStatus,
+      })
+    : null;
+  const searchGroups = searchResult?.results.reduce<Array<{ kind: string; items: AdminSearchResult[] }>>((groups, result) => {
+    let group = groups.find((item) => item.kind === result.kind);
+    if (!group) {
+      group = { kind: result.kind, items: [] };
+      groups.push(group);
+    }
+    group.items.push(result);
+    return groups;
+  }, []) ?? [];
 
   // Get counts of pending items
   const [
@@ -86,159 +116,139 @@ export default async function AdminDashboardPage() {
         </div>
       </div>
 
-      {/* Stats Grid */}
-      <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 mb-8">
-        {/* Pending Operators */}
-        <Link
-          href="/tours/admin/operators"
-          className="block rounded-2xl bg-surface p-6 transition hover:bg-blue-50 dark:hover:bg-blue-950/40 active:scale-[0.99]"
-        >
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="font-bold text-daet-ink">Pending Operators</p>
-              <p className="mt-2 text-4xl font-bold text-daet-ink">{pendingOperators || 0}</p>
-            </div>
-            <div className="grid h-14 w-14 place-items-center rounded-2xl bg-yellow-50 dark:bg-yellow-950/40 text-2xl">
-              <LineIcon name="building" className="inline-block h-[1.1em] w-[1.1em] align-[-0.15em]" />
-            </div>
-          </div>
-          <p className="mt-4 text-slate-600 dark:text-slate-400">Applications awaiting review</p>
-        </Link>
-
-        {/* Pending Guides */}
-        <Link
-          href="/tours/admin/guides"
-          className="block rounded-2xl bg-surface p-6 transition hover:bg-blue-50 dark:hover:bg-blue-950/40 active:scale-[0.99]"
-        >
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="font-bold text-daet-ink">Pending Guides</p>
-              <p className="mt-2 text-4xl font-bold text-daet-ink">{pendingGuides || 0}</p>
-            </div>
-            <div className="grid h-14 w-14 place-items-center rounded-2xl bg-yellow-50 dark:bg-yellow-950/40 text-2xl">
-              <LineIcon name="user" className="inline-block h-[1.1em] w-[1.1em] align-[-0.15em]" />
-            </div>
-          </div>
-          <p className="mt-4 text-slate-600 dark:text-slate-400">Guide applications to verify</p>
-        </Link>
-
-        {/* Pending Packages */}
-        <Link
-          href="/tours/admin/packages"
-          className="block rounded-2xl bg-surface p-6 transition hover:bg-blue-50 dark:hover:bg-blue-950/40 active:scale-[0.99]"
-        >
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="font-bold text-daet-ink">Pending Packages</p>
-              <p className="mt-2 text-4xl font-bold text-daet-ink">{pendingPackages || 0}</p>
-            </div>
-            <div className="grid h-14 w-14 place-items-center rounded-2xl bg-yellow-50 dark:bg-yellow-950/40 text-2xl">
-              <LineIcon name="box" className="inline-block h-[1.1em] w-[1.1em] align-[-0.15em]" />
-            </div>
-          </div>
-          <p className="mt-4 text-slate-600 dark:text-slate-400">Tour packages awaiting approval</p>
-        </Link>
-
-        {/* Published Packages */}
-        <div className="rounded-2xl bg-surface p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="font-bold text-daet-ink">Published Packages</p>
-              <p className="mt-2 text-4xl font-bold text-daet-ink">{publishedPackages || 0}</p>
-            </div>
-            <div className="grid h-14 w-14 place-items-center rounded-2xl bg-green-50 dark:bg-green-950/40 text-2xl">
-              ✓
-            </div>
-          </div>
-          <p className="mt-4 text-slate-600 dark:text-slate-400">Active tour offerings</p>
+      <section id="admin-search" aria-labelledby="admin-search-title" className="mb-8 rounded-2xl card-edge bg-surface p-5 sm:p-6">
+        <div>
+          <h2 id="admin-search-title" className="text-xl font-bold text-daet-ink">Find admin records</h2>
+          <p className="mt-1 max-w-3xl text-sm leading-6 text-daet-ink/70">
+            Search applications, attractions, events, local places, fares, packages, merchandise and reviews. Search results link to the right record or review queue.
+          </p>
         </div>
-
-        {/* Total Bookings */}
-        <div className="rounded-2xl bg-surface p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="font-bold text-daet-ink">Total Bookings</p>
-              <p className="mt-2 text-4xl font-bold text-daet-ink">{totalBookings || 0}</p>
-            </div>
-            <div className="grid h-14 w-14 place-items-center rounded-2xl bg-blue-50 dark:bg-blue-950/40 text-2xl">
-              <LineIcon name="calendar" className="inline-block h-[1.1em] w-[1.1em] align-[-0.15em]" />
-            </div>
+        <form action="/tours/admin" method="get" role="search" className="mt-4 grid gap-3 lg:grid-cols-[minmax(0,1.6fr)_minmax(12rem,1fr)_minmax(12rem,1fr)_auto] lg:items-end">
+          <Field id="admin-search-query" label="Search" required className="block">
+            <Input
+              type="search"
+              name="q"
+              defaultValue={query}
+              minLength={2}
+              maxLength={80}
+              required
+              placeholder="Name, title, route, applicant or review text"
+            />
+          </Field>
+          <Field id="admin-search-type" label="Record type" className="block">
+            <Select name="type" defaultValue={searchType}>
+              {ADMIN_SEARCH_TYPES.map((item) => <option key={item.value} value={item.value}>{item.label}</option>)}
+            </Select>
+          </Field>
+          <Field id="admin-search-status" label="Status" className="block">
+            <Select name="status" defaultValue={searchStatus}>
+              {ADMIN_SEARCH_STATUSES.map((item) => <option key={item.value} value={item.value}>{item.label}</option>)}
+            </Select>
+          </Field>
+          <div className="flex items-center gap-3">
+            <button type="submit" className="inline-flex min-h-12 flex-1 items-center justify-center rounded-full bg-daet-forest px-5 text-sm font-bold text-white transition hover:bg-blue-700 lg:flex-none">Search records</button>
+            {query || searchType !== "all" || searchStatus !== "all" ? <Link href="/tours/admin#admin-search" className="inline-flex min-h-11 items-center text-sm font-bold text-blue-700 underline underline-offset-4 dark:text-blue-300">Clear</Link> : null}
           </div>
-          <p className="mt-4 text-slate-600 dark:text-slate-400">All-time reservations</p>
-        </div>
+        </form>
+        <p className="mt-3 text-xs leading-5 text-daet-ink/65">Search at least 2 characters. Up to 12 matches per record type are shown; narrow by type or status for a shorter list. Application results show pending operator and guide reviews only; private files remain behind their short-lived review links.</p>
+        {query.length === 1 ? <p className="mt-3 text-sm font-semibold text-amber-800 dark:text-amber-200">Enter at least 2 characters to search.</p> : null}
+        {searchResult?.hasError ? <Notice variant="warning" className="mt-4">Some record types could not be searched. The results below may be incomplete.</Notice> : null}
+        {searchResult && searchResult.results.length === 0 ? <p className="mt-5 rounded-xl bg-canvas p-4 text-sm text-daet-ink/70">No records match “{query}” with those filters. Try a different search or status.</p> : null}
+        {searchGroups.length > 0 ? (
+          <div className="mt-5 space-y-5">
+            {searchGroups.map((group) => (
+              <section key={group.kind} aria-label={group.items[0].kindLabel}>
+                <h3 className="mb-2 text-sm font-bold text-daet-ink/65">{group.items[0].kindLabel} <span className="font-normal">({group.items.length}{group.items.length === 12 ? "+" : ""})</span></h3>
+                <ul className="divide-y divide-daet-ink/10 overflow-hidden rounded-xl border border-daet-ink/10">
+                  {group.items.map((result) => (
+                    <li key={`${result.kind}-${result.id}`}>
+                      <Link href={result.href} className="flex min-h-16 flex-col gap-2 bg-canvas px-4 py-3 transition hover:bg-blue-50 dark:hover:bg-blue-950/40 sm:flex-row sm:items-center sm:justify-between">
+                        <span className="min-w-0">
+                          <span className="block truncate font-bold text-daet-ink">{result.title}</span>
+                          <span className="mt-0.5 block truncate text-sm text-daet-ink/70">{result.detail}</span>
+                        </span>
+                        <span className="flex shrink-0 items-center gap-2">
+                          <span className="rounded-full bg-daet-sand px-3 py-1 text-xs font-bold text-daet-forest dark:text-blue-300">{result.status}</span>
+                          <span className="text-sm font-bold text-blue-700 dark:text-blue-300">Open →</span>
+                        </span>
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            ))}
+          </div>
+        ) : null}
+      </section>
+
+      {/* Two figures per row on phones; what waits on the office is amber and links to its queue. */}
+      <div className="mb-8 grid grid-cols-2 gap-3 lg:grid-cols-5">
+        {(
+          [
+            { label: "Operators to review", value: pendingOperators || 0, href: "/tours/admin/operators", icon: "building", waiting: true, live: "adminOperators" as const },
+            { label: "Guides to verify", value: pendingGuides || 0, href: "/tours/admin/guides", icon: "user", waiting: true, live: "adminGuides" as const },
+            { label: "Packages to approve", value: pendingPackages || 0, href: "/tours/admin/packages", icon: "box", waiting: true, live: "adminPackages" as const },
+            { label: "Published packages", value: publishedPackages || 0, href: null, icon: "check", waiting: false },
+            { label: "Bookings, all time", value: totalBookings || 0, href: null, icon: "calendar", waiting: false },
+          ] as const
+        ).map((stat) => {
+          const body = (
+            <>
+              <span className="flex items-start justify-between gap-2">
+                <span className="text-sm text-slate-600 dark:text-slate-400">{stat.label}</span>
+                <LineIcon name={stat.icon} className="h-5 w-5 shrink-0 text-daet-ink/60" />
+              </span>
+              {"live" in stat && stat.live ? (
+                <LiveCount name={stat.live} initial={stat.value} waiting className="mt-1 block text-3xl font-bold" />
+              ) : (
+                <span className="mt-1 block text-3xl font-bold text-daet-ink">{stat.value}</span>
+              )}
+              {stat.href ? <span className="mt-1 block text-sm font-bold text-blue-700 dark:text-blue-300">{stat.value > 0 ? "Review →" : "Open →"}</span> : null}
+            </>
+          );
+          return stat.href ? (
+            <Link key={stat.label} href={stat.href} className="block rounded-2xl card-edge bg-surface p-4 transition hover:bg-blue-50 dark:hover:bg-blue-950/40 active:scale-[0.99]">
+              {body}
+            </Link>
+          ) : (
+            <div key={stat.label} className="rounded-2xl card-edge bg-surface p-4">
+              {body}
+            </div>
+          );
+        })}
       </div>
 
-      {/* Quick Actions */}
-      <div className="rounded-2xl bg-surface p-6 mb-8">
-        <h2 className="text-xl font-bold text-daet-ink mb-4">Quick Actions</h2>
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          <Link
-            href="/tours/admin/analytics"
-            className="inline-flex min-h-11 items-center justify-center rounded-full bg-slate-900 px-6 text-sm font-bold text-white hover:bg-daet-forest transition"
-          >
-            <LineIcon name="chart" className="inline-block h-[1.1em] w-[1.1em] align-[-0.15em]" /> Tourism Analytics
-          </Link>
-          <Link
-            href="/tours/admin/operators"
-            className="inline-flex min-h-11 items-center justify-center rounded-full bg-daet-forest px-6 text-sm font-bold text-white hover:bg-blue-700 transition"
-          >
-            Review Operators
-          </Link>
-          <Link
-            href="/tours/admin/guides"
-            className="inline-flex min-h-11 items-center justify-center rounded-full bg-daet-forest px-6 text-sm font-bold text-white hover:bg-blue-700 transition"
-          >
-            Review Guides
-          </Link>
-          <Link
-            href="/tours/admin/packages"
-            className="inline-flex min-h-11 items-center justify-center rounded-full bg-daet-forest px-6 text-sm font-bold text-white hover:bg-blue-700 transition"
-          >
-            Review Packages
-          </Link>
-          <Link
-            href="/tours/admin/events"
-            className="inline-flex min-h-11 items-center justify-center rounded-full border border-daet-forest/30 px-6 text-sm font-bold text-daet-leaf dark:text-blue-300 hover:bg-daet-forest/5 transition"
-          >
-            Manage Events Calendar
-          </Link>
-          <Link
-            href="/tours/admin/attractions"
-            className="inline-flex min-h-11 items-center justify-center rounded-full border border-daet-forest/30 px-6 text-sm font-bold text-daet-leaf dark:text-blue-300 hover:bg-daet-forest/5 transition"
-          >
-            Manage Attractions
-          </Link>
-          <Link
-            href="/tours/admin/guide-places"
-            className="inline-flex min-h-11 items-center justify-center rounded-full border border-daet-forest/30 px-6 text-sm font-bold text-daet-leaf dark:text-blue-300 hover:bg-daet-forest/5 transition"
-          >
-            Local guide: food, stays, fares
-          </Link>
-          <Link
-            href="/tours/admin/reviews"
-            className="inline-flex min-h-11 items-center justify-center rounded-full border border-daet-forest/30 px-6 text-sm font-bold text-daet-leaf dark:text-blue-300 hover:bg-daet-forest/5 transition"
-          >
-            Moderate Reviews
-          </Link>
-          <Link
-            href="/tours/messages"
-            className="inline-flex min-h-11 items-center justify-center rounded-full border border-daet-forest/30 px-6 text-sm font-bold text-daet-forest dark:text-blue-300 hover:bg-daet-forest/5 transition"
-          >
-            Operator Messages
-          </Link>
-          <Link
-            href="/tours/admin/merch"
-            className="inline-flex min-h-11 items-center justify-center rounded-full border border-daet-forest/30 px-6 text-sm font-bold text-daet-leaf dark:text-blue-300 hover:bg-daet-forest/5 transition"
-          >
-            Manage Merchandise
-          </Link>
+      {/* Analytics, approvals and messages are in the tab bar and header; this lists the rest. */}
+      <div className="mb-8 rounded-2xl card-edge bg-surface p-5 sm:p-6">
+        <h2 className="mb-4 text-xl font-bold text-daet-ink">Manage</h2>
+        <div className="grid grid-cols-2 gap-2 lg:grid-cols-4">
+          {[
+            ["/tours/admin/accounts", "Accounts and roles"],
+            ["/tours/admin/guide-assignments", "Guide assignments"],
+            ["/tours/admin/earnings", "Earnings and revenue"],
+            ["/tours/admin/events", "Events calendar"],
+            ["/tours/admin/attractions", "Places"],
+            ["/tours/admin/guide-places", "Food, stays and fares"],
+            ["/tours/admin/reviews", "Reviews"],
+            ["/tours/admin/reports", "Reports and bans"],
+            ["/tours/admin/activity", "Activity log"],
+            ["/tours/admin/merch", "Merchandise"],
+            ["/tours/admin/guides", "Guides"],
+            ["/tours/admin/packages", "Packages"],
+            ["/tours/admin/emergency", "Emergency numbers"],
+            ["/tours/admin/feedback", "Assistant feedback"],
+          ].map(([href, label]) => (
+            <Link key={href} href={href} className="flex min-h-12 items-center rounded-2xl bg-canvas px-4 font-bold leading-snug text-daet-ink transition hover:bg-blue-50 dark:hover:bg-blue-950/40 active:scale-[0.98]">
+              {label}
+            </Link>
+          ))}
         </div>
       </div>
 
       {/* Recent Activity */}
       {recentActivities && recentActivities.length > 0 && (
-        <div className="rounded-2xl bg-surface p-6">
-          <h2 className="text-xl font-bold text-daet-ink mb-4">Recent Activity</h2>
+        <div className="rounded-2xl card-edge bg-surface p-6">
+          <h2 className="text-xl font-bold text-daet-ink mb-4">Recent activity</h2>
           <div className="space-y-3">
             {recentActivities.map((activity: any) => (
               <div key={activity.id} className="flex items-start gap-3 text-sm">

@@ -15,6 +15,13 @@ export const ADMIN_AREAS: AdminArea[] = [
   { href: "/tours/admin/guide-places", label: "Food and stays", icon: "plate" },
   { href: "/tours/admin/fares", label: "Fares", icon: "ticket" },
   { href: "/tours/admin/merch", label: "Merchandise", icon: "bag" },
+  { href: "/tours/admin/guide-assignments", label: "Guide assignments", icon: "guide" },
+  { href: "/tours/admin/earnings", label: "Earnings and revenue", icon: "money" },
+  { href: "/tours/admin/accounts", label: "Accounts and roles", icon: "user" },
+  { href: "/tours/admin/reports", label: "Reports", icon: "warning" },
+  { href: "/tours/admin/feedback", label: "Assistant feedback", icon: "message" },
+  { href: "/tours/admin/emergency", label: "Emergency numbers", icon: "phone" },
+  { href: "/tours/admin/activity", label: "Activity log", icon: "receipt" },
 ];
 
 /** The area a path belongs to: the longest matching href wins, so /tours/admin only matches itself. */

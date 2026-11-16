@@ -7,8 +7,8 @@ import { isSupabaseConfigured } from "@/lib/supabase/env";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { toManilaDateKey } from "@/lib/tours/events-calendar";
 import { QrScanner } from "./qr-scanner";
+import { getAuthUser } from "@/lib/tours/server-auth";
 
-export const dynamic = "force-dynamic";
 
 export default async function GuideCheckInPage() {
   if (!isSupabaseConfigured()) {
@@ -20,9 +20,7 @@ export default async function GuideCheckInPage() {
   }
 
   const supabase = await createSupabaseServerClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getAuthUser();
   if (!user) redirect(`/login?next=${encodeURIComponent("/tours/guide/check-in")}`);
 
   const { data: guide } = await supabase.from("tours_guides").select("id, accreditation_status").eq("profile_id", user.id).maybeSingle();
@@ -54,7 +52,7 @@ export default async function GuideCheckInPage() {
         <section className="mt-8">
           <h2 className="mb-3 text-lg font-bold text-daet-ink">Today&apos;s groups</h2>
           {tours && tours.length > 0 ? (
-            <ul className="divide-y divide-daet-ink/10 rounded-2xl bg-surface">
+            <ul className="divide-y divide-daet-ink/10 rounded-2xl card-edge bg-surface">
               {tours.map((tour) => {
                 const pkg = Array.isArray(tour.tours_packages) ? tour.tours_packages[0] : tour.tours_packages;
                 const arrived = (tour.tours_checkins ?? []).some((row: { participant_id: string | null }) => row.participant_id === null);
@@ -64,7 +62,7 @@ export default async function GuideCheckInPage() {
                       <span>
                         <span className="block font-bold text-daet-ink">{tour.contact_name}</span>
                         <span className="block text-sm text-slate-600 dark:text-slate-400">
-                          {pkg?.title ?? "Tour"} · {tour.number_of_pax} pax · {tour.booking_reference}
+                          {pkg?.title ?? "Tour"} · {tour.number_of_pax} guest{tour.number_of_pax === 1 ? "" : "s"} · {tour.booking_reference}
                         </span>
                       </span>
                       {arrived ? <Badge tone="success">Checked in</Badge> : <Badge tone="warning">Waiting</Badge>}

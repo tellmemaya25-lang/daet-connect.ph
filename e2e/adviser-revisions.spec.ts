@@ -1,12 +1,12 @@
 import { expect, test } from "@playwright/test";
-import { checkA11y, signInAs, type Role } from "./fixtures";
+import { checkA11y, draftPlan, signInAs, type Role } from "./fixtures";
 
 /** Adviser revisions (docs/ADVISER_REVISIONS.md). */
 test.use({ viewport: { width: 375, height: 812 }, isMobile: true });
 
 /** At phone width the links live in the Menu sheet; open it and return its nav. */
 const mainNav = async (page: import("@playwright/test").Page) => {
-  await page.getByRole("banner").locator("summary", { hasText: "Menu" }).click();
+  await page.getByRole("banner").locator("summary").click();
   return page.getByRole("navigation", { name: "Menu" });
 };
 
@@ -28,20 +28,12 @@ test.describe("R1: the exploration menu is only for visitors and tourists", () =
   }
 });
 
-test("R2: All selects every category in the planner, and again clears them", async ({ page }) => {
+test("R2: the old planner form is gone; the planner asks before drafting", async ({ page }) => {
+  // TRIP_PLANNER_V2 is on by default: interests are read from the request, not chips.
   await page.goto("/tours/plan", { waitUntil: "networkidle" });
-  const interests = page.getByRole("group", { name: "What do you enjoy?" });
-  const all = interests.getByRole("button", { name: "All", exact: true });
-  await expect(all).toHaveAttribute("aria-pressed", "false");
-  await all.click();
-  await expect(all).toHaveAttribute("aria-pressed", "true");
-  for (const chip of await interests.getByRole("button").all()) await expect(chip).toHaveAttribute("aria-pressed", "true");
-  await checkA11y(page, "planner with all categories");
-  await all.click();
-  for (const chip of await interests.getByRole("button").all()) await expect(chip).toHaveAttribute("aria-pressed", "false");
-  await expect(page.getByText("No preference: we'll mix everything.")).toBeVisible();
-  await page.getByRole("button", { name: /plan my trip/i }).click();
-  await expect(page.getByText(/Day 1/).first()).toBeVisible({ timeout: 30_000 });
+  await expect(page.getByRole("group", { name: "What do you enjoy?" })).toHaveCount(0);
+  await draftPlan(page, "Plan a trip with everything: beaches, food, history and nature");
+  await checkA11y(page, "planner with a plan");
 });
 
 test("R3: package prices show two decimals", async ({ page }) => {
@@ -60,7 +52,9 @@ test("R5: the assistant answers travel time in basic mode, with directions", asy
   await expect(dialog.getByRole("link", { name: /Directions: Daet town center → Bagasbas/ })).toHaveAttribute("target", "_blank");
   await dialog.getByLabel("Ask the Daet AI assistant").fill("Paano pumunta sa Daet galing Manila?");
   await dialog.getByRole("button", { name: "Send" }).click();
-  await expect(dialog.getByText(/Bus from Manila \(PITX\) to Daet \(₱801\.00 per person/)).toBeVisible();
+  // A Tagalog question gets a Tagalog answer, each leg with its fare, and a reminder to confirm.
+  await expect(dialog.getByText(/Mula Manila papunta sa Daet/)).toBeVisible();
+  await expect(dialog.getByText(/Bus Manila \(PITX\) → Daet \(₱801\.00 bawat tao/)).toBeVisible();
   await expect(dialog.getByText("Bus: Manila (PITX) to Daet")).toBeVisible();
   await checkA11y(page, "assistant travel answers");
 });
@@ -93,6 +87,8 @@ test.describe("R6: guide schedules and swap requests", () => {
   test("the operator sees the request and why some guides can't be picked", async ({ context, page }) => {
     await signInAs(context, "operator");
     await page.goto("/tours/operator/bookings", { waitUntil: "networkidle" });
+    // The swap request shows inside the booking's own panel.
+    await page.getByRole("button", { name: /Show details for BK-20261023-7F3K2Q/ }).click();
     const request = page.getByRole("region", { name: "Guide swap request" });
     await expect(request.getByText(/asks to hand this tour to another guide/)).toBeVisible();
     await expect(request.getByText("My boat license renewal is on that day.", { exact: false })).toBeVisible();

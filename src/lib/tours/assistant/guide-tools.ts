@@ -2,7 +2,7 @@ import { formatPeso } from "@/lib/money";
 import { formatDistance, type LatLng } from "@/lib/maps/geo";
 import { estimateTripCost, type CostStyle } from "@/lib/tours/guide/costs";
 import { FARE_COLUMNS, FARE_MODES, faresBetween, fareLabel, minutesLabel, toFare, type Fare, type FareRoute } from "@/lib/tours/guide/fares";
-import { mapsDirectionsUrl, mapsPlaceUrl, type MapsMode } from "@/lib/tours/guide/maps";
+import { mapsDirectionsUrl, mapsPlaceUrl, plainPlaceName, type MapsMode } from "@/lib/tours/guide/maps";
 import { meetingPointOf, meetingTimeLabel } from "@/lib/tours/guide/meeting";
 import { distanceToSegmentM, GUIDE_PLACE_COLUMNS, GUIDE_PLACE_KINDS, placeOpenStatus, placePoint, priceLabel, sortByDistance, toGuidePlace, type GuidePlace, type GuidePlaceKind } from "@/lib/tours/guide/places";
 import { addCard, resolvePlace, type ToolContext } from "@/lib/tours/assistant/tools";
@@ -53,7 +53,7 @@ async function loadPlaces(ctx: ToolContext, kinds: GuidePlaceKind[]): Promise<Gu
   return (data ?? []).map((row) => toGuidePlace(row as Record<string, unknown>));
 }
 
-async function loadFares(ctx: ToolContext): Promise<Fare[]> {
+export async function loadFares(ctx: Pick<ToolContext, "supabase">): Promise<Fare[]> {
   const { data, error } = await ctx.supabase.from("tours_fares").select(FARE_COLUMNS).eq("is_active", true).limit(300);
   if (error) throw new Error("fares");
   return (data ?? []).map((row) => toFare(row as Record<string, unknown>));
@@ -81,11 +81,15 @@ export function placeCard(place: GuidePlace & { distanceM?: number | null }, mod
     area: place.address ?? place.municipality,
     price: priceLabel(place, formatPeso),
     status: status.state === "unknown" ? null : status.label,
-    distance: place.distanceM != null ? formatDistance(place.distanceM) : null,
+    // Under 50 m is the place itself ("near Bagasbas" → the Bagasbas eateries), not a distance.
+    distance: place.distanceM != null && place.distanceM >= 50 ? formatDistance(place.distanceM) : null,
     verified: place.verified,
     note: extras.length ? extras.join(". ").slice(0, 200) : null,
     directionsHref: mapsDirectionsUrl(target, mode),
-    mapHref: mapsPlaceUrl(target),
+    // "View on map" asks Google for the place by name in its town, so the map
+    // shows the place's own name; a bare coordinate pin had no name on it.
+    // Directions keep the pin, so the route ends at the right spot.
+    mapHref: mapsPlaceUrl({ name: plainPlaceName(place.name), area: place.municipality }),
   };
 }
 
@@ -147,12 +151,12 @@ export async function foodStops(ctx: ToolContext, input: { from: string; to: str
 
 // ------------------------------------------------------------------ getting there
 
-function transportCard(title: string, routes: FareRoute[]): TransportCard {
+export function transportCard(title: string, routes: FareRoute[]): TransportCard {
   return {
     type: "transport",
     title,
     options: routes.slice(0, 4).map((route) => ({
-      time: minutesLabel(route.minutesMin, route.minutesMax),
+      time: atLeast(minutesLabel(route.minutesMin, route.minutesMax), route.timeComplete),
       legs: route.legs.map((leg) => ({
         mode: FARE_MODES[leg.mode],
         from: leg.from_name,
@@ -167,21 +171,44 @@ function transportCard(title: string, routes: FareRoute[]): TransportCard {
   };
 }
 
-export async function howToGetThere(ctx: ToolContext, input: { from?: string | null; to: string }) {
+const atLeast = (label: string | null, complete: boolean) => (label && !complete ? `at least ${label}` : label);
+
+/** Every listed way between two places, with the transport card and a Google Maps button added for the visitor. */
+export async function tripRoutes(ctx: ToolContext, input: { from?: string | null; to: string }): Promise<FareRoute[]> {
   const to = (input.to ?? "").trim();
-  if (!to) return { error: "Say where you want to go." };
   const from = (input.from ?? "").trim() || null;
   const routes = faresBetween(await loadFares(ctx), from, to);
   if (routes.length) {
     addCard(ctx, transportCard(from ? `${from} to ${to}` : `Ways to ${to}`, routes));
+    addCard(ctx, { type: "link", href: mapsDirectionsUrl({ name: to }, "transit"), label: `Google Maps directions to ${to}`, external: true });
   }
-  addCard(ctx, { type: "link", href: mapsDirectionsUrl({ name: to }, "transit"), label: `Google Maps directions to ${to}`, external: true });
+  return routes;
+}
+
+const pesoTotal = (lo: number | null, hi: number | null, fromOnly: boolean) =>
+  lo === null ? null : fromOnly ? `from ${formatPeso(lo)}` : hi !== null && hi !== lo ? `${formatPeso(lo)}–${formatPeso(hi)}` : formatPeso(lo);
+
+export async function howToGetThere(ctx: ToolContext, input: { from?: string | null; to: string }) {
+  const to = (input.to ?? "").trim();
+  if (!to) return { error: "Say where you want to go." };
+  const from = (input.from ?? "").trim() || null;
+  const routes = await tripRoutes(ctx, { from, to });
+  if (!routes.length) {
+    addCard(ctx, { type: "link", href: mapsDirectionsUrl({ name: to }, "transit"), label: `Google Maps directions to ${to}`, external: true });
+  }
+  const checked = routes.flatMap((r) => r.legs.map((l) => l.checked_on)).sort()[0] ?? null;
   return {
     routes: routes.slice(0, 4).map((r) => ({
-      totalTime: minutesLabel(r.minutesMin, r.minutesMax),
-      legs: r.legs.map((l) => ({ how: FARE_MODES[l.mode], from: l.from_name, to: l.to_name, fare: fareLabel(l, formatPeso) ?? "ask locally", time: minutesLabel(l.minutes_min, l.minutes_max), tip: l.schedule_note, verified: l.verified })),
+      totalTime: atLeast(minutesLabel(r.minutesMin, r.minutesMax), r.timeComplete),
+      totalPerPerson: pesoTotal(r.perPersonMin, r.perPersonMax, r.perPersonFromOnly),
+      sharedCosts: r.sharedLegs.map((l) => `${FARE_MODES[l.mode]} ${l.from_name} to ${l.to_name}: ${fareLabel(l, formatPeso) ?? "ask locally"}`),
+      legs: r.legs.map((l) => ({ how: FARE_MODES[l.mode], from: l.from_name, to: l.to_name, fare: fareLabel(l, formatPeso) ?? "ask locally", time: minutesLabel(l.minutes_min, l.minutes_max), tip: l.schedule_note, source: l.source, verified: l.verified })),
     })),
-    note: routes.length === 0 ? "No fares listed for this route. Use travel_time for the drive, and suggest confirming with the Tourism Office." : "Fares are provisional unless verified; tell them to agree on tricycle fares before riding.",
+    faresCheckedOn: checked,
+    note:
+      routes.length === 0
+        ? "No fares listed for this route. Say so plainly, suggest getting to Manila or Naga first (then bus or van to Daet), use travel_time for a drive, and suggest the Tourism Office."
+        : "These are estimates from public listings, not quotes, and none is verified unless verified is true. Always say so and tell them to confirm with the operator before travelling; agree on tricycle fares before riding.",
   };
 }
 

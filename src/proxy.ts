@@ -1,6 +1,16 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
+import { serverTimingEnabled, serverTimingHeader } from "@/lib/server-timing";
 import { getSupabasePublicConfig, isSupabaseConfigured } from "@/lib/supabase/env";
+
+/**
+ * Pages only a signed-in person can use. A visitor without a session is sent to
+ * the sign-in page here, with a real 307, instead of the page streaming a shell
+ * and then redirecting from inside the stream (a 200 and a client-side jump).
+ * The pages still check for themselves: this only saves the round trip and the
+ * flash. `/tours/plan` is not listed: it works signed out.
+ */
+const SIGNED_IN_ONLY = /^\/tours\/(?:my-bookings|messages|me|operator\/(?:bookings|packages|payments))\/?$/;
 
 /**
  * Refreshes the Supabase auth session on every page request.
@@ -12,6 +22,28 @@ import { getSupabasePublicConfig, isSupabaseConfigured } from "@/lib/supabase/en
  */
 export async function proxy(request: NextRequest) {
   if (!isSupabaseConfigured()) return NextResponse.next({ request });
+
+  // A sign-in code that arrives at the site's root is still a sign-in this
+  // browser can finish: Supabase falls back to the project's Site URL when it
+  // will not accept the address it was handed, and the code lands on `/`. The
+  // verifier that proves the code is ours is a cookie here, so hand it to the
+  // route that exchanges it instead of dropping the visitor home signed out with
+  // nothing to read.
+  const code = request.nextUrl.searchParams.get("code");
+  if (code && request.nextUrl.pathname === "/" && hasSignInVerifier(request)) {
+    const exchange = new URL("/auth/callback", request.nextUrl.origin);
+    exchange.searchParams.set("code", code);
+    return NextResponse.redirect(exchange);
+  }
+
+  // The auth routes end or replace the session themselves, and a silent refresh
+  // in front of them fights that: on `POST /auth/logout` the refresh wrote a
+  // fresh session cookie onto the same response the route was deleting it from,
+  // so the browser kept a session the visitor had just ended. They are left
+  // alone here; the page they redirect to is refreshed as usual.
+  if (/^\/auth\/(oauth|callback|logout)$/.test(request.nextUrl.pathname)) {
+    return NextResponse.next({ request });
+  }
 
   const { url, anonKey } = getSupabasePublicConfig();
   let response = NextResponse.next({ request });
@@ -29,16 +61,62 @@ export async function proxy(request: NextRequest) {
     },
   });
 
-  // Do not run code between createServerClient and getUser(): getUser()
-  // validates the token with Supabase Auth and triggers the refresh.
-  await supabase.auth.getUser();
+  // Do not run code between createServerClient and getClaims(): it loads the
+  // session, refreshes an expired or expiring access token (writing the new
+  // cookies through setAll above) and then verifies the token's signature
+  // against the project's cached public keys, with no request to Supabase Auth
+  // while the token is valid. A project that still signs with a shared secret
+  // (HS256) gets the same network check getUser() made, so nothing is weaker.
+  //
+  // The cost: a session revoked elsewhere is only noticed when its token
+  // expires (an hour by default), not on the next page view. Server actions
+  // and route handlers that write confirm the user with getUser() themselves.
+  const started = performance.now();
+  const { data, error } = await supabase.auth.getClaims();
+  const user = data?.claims?.sub ?? null;
+  const authMs = performance.now() - started;
+
+  // No session, or Supabase Auth refused the token: send the visitor to sign
+  // in. A failure to reach Auth (network, 5xx) is not "signed out": let the
+  // page try and say what went wrong.
+  const refused = typeof error?.status === "number" && error.status >= 400 && error.status < 500;
+  const signedOut = !user && (!error || error.name === "AuthSessionMissingError" || refused);
+  const { pathname } = request.nextUrl;
+  if (signedOut && SIGNED_IN_ONLY.test(pathname) && (request.method === "GET" || request.method === "HEAD")) {
+    const login = new URL("/login", request.nextUrl.origin);
+    login.searchParams.set("next", pathname.replace(/\/$/, ""));
+    const redirect = NextResponse.redirect(login);
+    // Carry any cookie the refresh just cleared.
+    response.cookies.getAll().forEach((cookie) => redirect.cookies.set(cookie));
+    return redirect;
+  }
+
+  // Only the duration, never anything about the person. The rest of the
+  // request's timings are in the function log; see lib/server-timing.ts.
+  if (serverTimingEnabled()) response.headers.set("Server-Timing", serverTimingHeader([{ name: "proxy-auth", ms: authMs }]));
 
   return response;
 }
 
 export const config = {
   matcher: [
-    // Skip static assets, the service worker, and endpoints called by servers (no user session).
-    "/((?!_next/static|_next/image|favicon.ico|sw.js|manifest.webmanifest|api/webhooks|api/notifications/push|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico|ics|mjs)$).*)",
+    {
+      // Skip: static assets and images, the service worker and manifest,
+      // robots/sitemap, fonts and other files, and every /api route. API route
+      // handlers read (and refresh) the session themselves, so running this in
+      // front of them doubled the work on every background poll.
+      source:
+        "/((?!_next/static|_next/image|_next/data|api/|favicon.ico|sw.js|manifest.webmanifest|robots.txt|sitemap.xml|.*\\.(?:svg|png|jpg|jpeg|gif|webp|avif|ico|ics|mjs|js|css|map|txt|xml|json|woff2?|ttf|otf)$).*)",
+      // Link prefetches: the real navigation that follows refreshes the session.
+      missing: [
+        { type: "header", key: "next-router-prefetch" },
+        { type: "header", key: "purpose", value: "prefetch" },
+      ],
+    },
   ],
 };
+
+/** `sb-<ref>-auth-token-code-verifier`, the cookie that binds a code to a browser. */
+function hasSignInVerifier(request: NextRequest): boolean {
+  return request.cookies.getAll().some(({ name }) => /^sb-.*-auth-token-code-verifier$/.test(name));
+}

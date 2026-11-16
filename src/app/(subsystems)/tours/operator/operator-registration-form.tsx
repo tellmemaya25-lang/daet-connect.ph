@@ -10,6 +10,7 @@ import { compressOperatorImage } from "@/lib/tours/compress-image";
 import { MAX_OPERATOR_TOTAL_UPLOAD_BYTES } from "@/lib/tours/operator-upload-validation";
 import { submitOperatorRegistration } from "@/app/(subsystems)/tours/operator/actions";
 import { Notice } from "@/components/ui/notice";
+import { digitsOnlyPhone, PHONE_DIGITS, PHONE_HINT } from "@/lib/tours/phone";
 
 type FileField = "dtiDocument" | "businessPermit" | "gcashQr";
 type DetailsField = "businessName" | "contactPerson" | "contactEmail" | "contactPhone" | "businessAddress";
@@ -231,7 +232,7 @@ export function OperatorRegistrationForm({
         </div>
       </div>
 
-      <form ref={formRef} action={formAction} onSubmit={handleSubmit} className="rounded-2xl bg-surface p-5 sm:p-8">
+      <form ref={formRef} action={formAction} onSubmit={handleSubmit} className="rounded-2xl card-edge bg-surface p-5 sm:p-8">
         {rejectionReason ? (
           <Notice variant="warning" title="A few updates are needed before approval" className="mb-6">
             {rejectionReason}
@@ -301,17 +302,21 @@ export function OperatorRegistrationForm({
                 data-step-field="1"
                 name="contactPhone"
                 type="tel"
+                inputMode="numeric"
+                pattern={`[0-9]{${PHONE_DIGITS}}`}
+                title={PHONE_HINT}
                 value={values.contactPhone}
-                onChange={(event) => updateValue("contactPhone", event.target.value)}
+                onChange={(event) => updateValue("contactPhone", digitsOnlyPhone(event.target.value))}
                 required={activeStep === 1}
-                maxLength={24}
+                maxLength={PHONE_DIGITS}
                 autoComplete="tel"
-                placeholder="09XX XXX XXXX"
+                placeholder="09123456789"
                 aria-invalid={Boolean(fieldErrors.contactPhone)}
-                aria-describedby={fieldErrors.contactPhone ? "contactPhone-error" : undefined}
+                aria-describedby={fieldErrors.contactPhone ? "contactPhone-error" : "contactPhone-hint"}
                 className="mt-2 min-h-12 w-full rounded-2xl border border-daet-ink/15 bg-surface px-4 text-base outline-none transition placeholder:text-daet-ink/35 focus:border-daet-forest focus:ring-4 focus:ring-daet-forest/10 aria-[invalid=true]:border-red-400 dark:aria-[invalid=true]:border-red-700"
               />
               </label>
+              {fieldErrors.contactPhone ? null : <p id="contactPhone-hint" className="mt-1 text-sm text-daet-ink/70">{PHONE_HINT}</p>}
               <FieldError id="contactPhone-error" message={fieldErrors.contactPhone} />
               </div>
 

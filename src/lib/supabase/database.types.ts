@@ -360,6 +360,14 @@ export type Database = {
           contact_email: string
           contact_name: string
           contact_phone: string
+          pickup_vehicle_id: string | null
+          pickup_vehicle: string | null
+          pickup_note: string | null
+          pickup_lat: number | null
+          pickup_lng: number | null
+          pickup_km: number | null
+          guide_fee_paid_at: string | null
+          guide_fee_paid_by: string | null
           created_at: string
           id: string
           number_of_pax: number
@@ -384,6 +392,12 @@ export type Database = {
           contact_email: string
           contact_name: string
           contact_phone: string
+          pickup_vehicle_id: string | null
+          pickup_vehicle: string | null
+          pickup_note: string | null
+          pickup_lat: number | null
+          pickup_lng: number | null
+          pickup_km: number | null
           created_at?: string
           id?: string
           number_of_pax: number
@@ -408,6 +422,14 @@ export type Database = {
           contact_email?: string
           contact_name?: string
           contact_phone?: string
+          pickup_vehicle_id?: string | null
+          pickup_vehicle?: string | null
+          pickup_note?: string | null
+          pickup_lat?: number | null
+          pickup_lng?: number | null
+          pickup_km?: number | null
+          guide_fee_paid_at?: string | null
+          guide_fee_paid_by?: string | null
           created_at?: string
           id?: string
           number_of_pax?: number
@@ -779,23 +801,29 @@ export type Database = {
         Row: {
           available_date: string
           created_at: string
+          end_time: string | null
           guide_id: string
           id: string
           is_available: boolean
+          start_time: string | null
         }
         Insert: {
           available_date: string
           created_at?: string
+          end_time?: string | null
           guide_id: string
           id?: string
           is_available?: boolean
+          start_time?: string | null
         }
         Update: {
           available_date?: string
           created_at?: string
+          end_time?: string | null
           guide_id?: string
           id?: string
           is_available?: boolean
+          start_time?: string | null
         }
         Relationships: [
           {
@@ -1939,6 +1967,18 @@ export type Database = {
           },
         ]
       }
+      tours_official_pickup_rates: {
+        Row: { base_fee: number; checked_on: string; effective_on: string | null; per_km_per_person: number; source: string; source_url: string | null; updated_at: string; vehicle: string }
+        Insert: { base_fee?: number; checked_on: string; effective_on?: string | null; per_km_per_person: number; source: string; source_url?: string | null; updated_at?: string; vehicle: string }
+        Update: { base_fee?: number; checked_on?: string; effective_on?: string | null; per_km_per_person?: number; source?: string; source_url?: string | null; updated_at?: string; vehicle?: string }
+        Relationships: []
+      }
+      tours_package_pickup_vehicles: {
+        Row: { base_fee: number; created_at: string; id: string; is_active: boolean; label: string | null; max_km: number; package_id: string; per_km: number; seats: number; sort_order: number; vehicle: string }
+        Insert: { base_fee?: number; created_at?: string; id?: string; is_active?: boolean; label?: string | null; max_km?: number; package_id: string; per_km?: number; seats: number; sort_order?: number; vehicle: string }
+        Update: { base_fee?: number; created_at?: string; id?: string; is_active?: boolean; label?: string | null; max_km?: number; package_id?: string; per_km?: number; seats?: number; sort_order?: number; vehicle?: string }
+        Relationships: []
+      }
       tours_packages: {
         Row: {
           cover_image_url: string | null
@@ -2430,6 +2470,31 @@ export type Database = {
       }
     }
     Functions: {
+      tours_set_pickup_vehicles: { Args: { p_package_id: string; p_vehicles: Json }; Returns: undefined }
+      tours_admin_activity: { Args: { p_actor?: string; p_before?: string; p_entity?: string; p_from?: string; p_limit?: number; p_role?: string; p_to?: string }; Returns: Json }
+      tours_admin_ban: { Args: { p_days: number | null; p_reason: string; p_user_id: string }; Returns: string | null }
+      tours_admin_clear_expired_bans: { Args: never; Returns: number }
+      tours_admin_reports: { Args: { p_limit?: number; p_status?: string }; Returns: Json }
+      tours_admin_resolve_report: { Args: { p_id: string; p_note: string; p_status: string }; Returns: undefined }
+      tours_admin_revenue: { Args: { p_from: string; p_to: string }; Returns: Json }
+      tours_admin_review_watch: { Args: { p_days?: number }; Returns: Json }
+      tours_submit_report: { Args: { p_details: string; p_reason: string; p_target: string; p_type: string }; Returns: string }
+      tours_find_people: { Args: { p_query: string }; Returns: Json }
+      tours_friend_itinerary: { Args: { p_itinerary: string }; Returns: Json }
+      tours_itineraries_shared_with_me: { Args: never; Returns: Json }
+      tours_my_friends: { Args: never; Returns: Json }
+      tours_remove_friend: { Args: { p_profile: string }; Returns: undefined }
+      tours_respond_friend_request: { Args: { p_accept: boolean; p_profile: string }; Returns: undefined }
+      tours_send_friend_request: { Args: { p_profile: string }; Returns: string }
+      tours_share_itinerary_with: { Args: { p_friend_ids: string[]; p_itinerary: string }; Returns: number }
+      tours_guide_revenue: {
+        Args: { p_from: string; p_to: string }
+        Returns: Json
+      }
+      tours_operator_mark_guide_fees_paid: {
+        Args: { p_booking_ids: string[]; p_paid: boolean }
+        Returns: number
+      }
       concurrency_check: {
         Args: { p_cached_updated_at: string; p_package_id: string }
         Returns: {
@@ -2473,6 +2538,13 @@ export type Database = {
         Args: { p_from: string; p_to: string }
         Returns: Json
       }
+      tours_accreditation_counts: {
+        Args: never
+        Returns: {
+          guides: number
+          operators: number
+        }[]
+      }
       tours_badge_lookup: {
         Args: { p_guide_id: string }
         Returns: {
@@ -2506,6 +2578,9 @@ export type Database = {
           last_message: string
           last_message_at: string
           last_sender_id: string
+          other_avatar_url: string
+          other_last_seen: string
+          other_profile_id: string
           subtitle: string
           title: string
           unread: number

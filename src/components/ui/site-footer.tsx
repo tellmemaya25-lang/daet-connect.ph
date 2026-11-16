@@ -9,6 +9,7 @@ const COLUMNS = [
       { href: "/tours/browse", label: "Trips" },
       { href: "/tours/plan", label: "Plan a trip" },
       { href: "/tours/attractions", label: "Places" },
+      { href: "/tours/fares", label: "Fare calculator" },
       { href: "/tours/events", label: "Events" },
       { href: "/tours/merch", label: "Souvenirs" },
     ],
@@ -16,6 +17,7 @@ const COLUMNS = [
   {
     label: "Help",
     links: [
+      { href: "/tours/faq", label: "Common questions" },
       { href: "/tours/help", label: "Daet AI assistant" },
       { href: "/tours/my-bookings", label: "My bookings" },
       { href: "/login", label: "Sign in" },
@@ -35,7 +37,7 @@ export function SiteFooter({ credits = [], compact = false, className = "" }: { 
   if (compact) {
     return (
       <footer className={`mx-auto max-w-7xl px-4 py-8 text-sm text-daet-ink/80 sm:px-6 lg:px-8 print:hidden ${className}`}>
-        CONNECT-Daet · Tourism in Daet, Camarines Norte ·{" "}
+        CONNECT-DAET · Tourism in Daet, Camarines Norte ·{" "}
         <Link href="/tours/help" className="font-bold text-blue-700 dark:text-blue-300 underline underline-offset-2">
           Help (24/7 assistant)
         </Link>
@@ -61,8 +63,11 @@ export function SiteFooter({ credits = [], compact = false, className = "" }: { 
             </nav>
           ))}
         </div>
-        <p className="mt-14 font-[family-name:var(--font-display)] text-[clamp(2.5rem,11vw,10rem)] font-semibold leading-[0.9] tracking-[-0.04em] text-white">
-          CONNECT-Daet
+        {/* The wordmark at the header's own size, not a full-bleed headline
+            (owner's note, image-90): the close of the page should read as the
+            same name that opened it, not as a second billboard. */}
+        <p className="mt-14 font-[family-name:var(--font-display)] text-lg font-semibold tracking-tight text-white sm:text-xl">
+          CONNECT-DAET
         </p>
         <p className="mt-4 max-w-2xl text-slate-300">
           Tours, places and events in Daet, Camarines Norte, run by local operators and guides accredited by the Daet Tourism Office.

@@ -22,7 +22,7 @@ export type LiveBookingState = {
 
 const EMPTY: LiveBookingState = { loading: true, session: null, positions: [], flares: [], consents: [], window: null, error: null };
 /** Fallback refresh in case a Realtime signal is missed. */
-const REFRESH_MS = 30_000;
+const REFRESH_MS = 60_000;
 
 /**
  * Everything live about one booking, read through RLS (each viewer sees only
@@ -66,7 +66,8 @@ export function useLiveBooking(bookingId: string): LiveBookingState & { refresh:
     void load();
     const supabase = (supabaseRef.current ??= createSupabaseBrowserClient());
     const channel = supabase.channel(`tour-live:${bookingId}`, { config: { private: true } }).on("broadcast", { event: "changed" }, refresh).subscribe();
-    const interval = window.setInterval(() => void load(), REFRESH_MS);
+    // Realtime broadcasts drive updates; this is only a safety net, and never while the tab is hidden.
+    const interval = window.setInterval(() => document.visibilityState === "visible" && void load(), REFRESH_MS);
     const onVisible = () => document.visibilityState === "visible" && void load();
     document.addEventListener("visibilitychange", onVisible);
     return () => {

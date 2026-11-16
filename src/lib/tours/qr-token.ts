@@ -87,13 +87,16 @@ export function ticketExpiry(tourDate: string): number {
   return Math.floor(manilaDayStartUtc(tourDate).getTime() / 1000) + 86400;
 }
 
-export type CheckInBooking = { status: string; tour_date: string };
+export type CheckInBooking = { status: string; tour_date: string; payment_status: string | null };
 export type CheckInCheck = { ok: true } | { ok: false; reason: string };
 
 /** Same rules as the tours_check_in database function. */
 export function checkInAllowed(booking: CheckInBooking, today: string): CheckInCheck {
   if (booking.status !== "confirmed") {
     return { ok: false, reason: booking.status === "pending" ? "This booking is not confirmed yet." : `This booking is ${booking.status}.` };
+  }
+  if (booking.payment_status !== "paid") {
+    return { ok: false, reason: "This booking isn't paid in full yet, so it can't be checked in." };
   }
   if (booking.tour_date !== today) {
     return { ok: false, reason: booking.tour_date > today ? "Check-in opens on the tour date." : "This tour date has passed." };

@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { checkA11y, signInAs } from "./fixtures";
+import { checkA11y, draftPlan, signInAs } from "./fixtures";
 
 /**
  * The evaluator walkthrough, screen by screen: plan → book → pay → check-in →
@@ -14,8 +14,7 @@ test("tourist → guide → admin walkthrough screens", async ({ browser }) => {
 
   // 1. Plan a trip and get a schedule.
   await page.goto("/tours/plan", { waitUntil: "networkidle" });
-  await page.getByRole("button", { name: /plan my trip/i }).click();
-  await expect(page.getByText(/Day 1/).first()).toBeVisible({ timeout: 30_000 });
+  await draftPlan(page);
   await checkA11y(page, "plan result");
 
   // 2. Open a package and reach the booking form with open dates.
@@ -30,7 +29,10 @@ test("tourist → guide → admin walkthrough screens", async ({ browser }) => {
   await expect(page.getByRole("link", { name: /show ticket qr/i }).first()).toBeVisible();
   await page.getByRole("link", { name: /^pay ₱/i }).first().click();
   await expect(page).toHaveURL(/#payment$/);
-  await expect(page.getByRole("heading", { name: /pay for this tour/i })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Next step" })).toBeVisible();
+  // No PayMongo keys in e2e, so paying the operator directly is the main button; it opens the instructions.
+  await page.getByRole("button", { name: "See how to pay the operator" }).click();
+  await expect(page.getByLabel("Reference number")).toBeVisible();
 
   // 4. Completed tour: the review form is offered.
   await page.goto("/tours/bookings/b-done", { waitUntil: "networkidle" });
@@ -47,6 +49,9 @@ test("tourist → guide → admin walkthrough screens", async ({ browser }) => {
   await guidePage.goto("/tours/guide/dashboard", { waitUntil: "networkidle" });
   await guidePage.getByRole("link", { name: /guest list/i }).first().click();
   await expect(guidePage).toHaveURL(/\/roster$/);
+  // The guide sees where to pick the guests up.
+  await expect(guidePage.getByText("Pick up the guests")).toBeVisible();
+  await expect(guidePage.getByRole("link", { name: /Directions to the guest/ })).toHaveAttribute("href", /destination=14\.113187,122\.954828/);
   await checkA11y(guidePage, "roster");
   await guide.close();
 

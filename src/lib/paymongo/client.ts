@@ -1,6 +1,7 @@
 import "server-only";
 import { resolveAppUrl } from "@/lib/app-url";
 import { parsePaymentMethods, type PaymongoMethod } from "@/lib/paymongo/checkout";
+import type { RefundResource } from "@/lib/paymongo/refunds";
 import type { SignatureMode } from "@/lib/paymongo/signature";
 
 const API_BASE = "https://api.paymongo.com/v1";
@@ -79,5 +80,64 @@ export async function createCheckoutSession(config: PaymongoConfig, body: unknow
 export async function retrieveCheckoutSession(config: PaymongoConfig, id: string): Promise<CheckoutSessionResource> {
   if (!/^cs_[A-Za-z0-9]+$/.test(id)) throw new PaymongoApiError("Invalid checkout session id", 400, null);
   const result = await paymongoRequest<{ data: CheckoutSessionResource }>(config, `/checkout_sessions/${id}`);
+  return result.data;
+}
+
+/**
+ * Refunds a PayMongo payment (docs.paymongo.com/reference/refund-resource).
+ * `amount` is centavos and must not exceed what that payment has left after
+ * its earlier refunds; `refunds.ts` works the split out.
+ */
+export async function createRefund(
+  config: PaymongoConfig,
+  input: { paymentId: string; amountCentavos: number; reason: string; notes?: string; idempotencyKey: string },
+): Promise<RefundResource> {
+  if (!/^pay_[A-Za-z0-9]+$/.test(input.paymentId)) throw new PaymongoApiError("Invalid payment id", 400, null);
+  if (!Number.isInteger(input.amountCentavos) || input.amountCentavos < 100) {
+    throw new PaymongoApiError("PayMongo's smallest refund is ₱1.00", 400, null);
+  }
+  const result = await paymongoRequest<{ data: RefundResource }>(config, "/refunds", {
+    method: "POST",
+    headers: { "Idempotency-Key": input.idempotencyKey },
+    body: JSON.stringify({
+      data: {
+        attributes: {
+          amount: input.amountCentavos,
+          payment_id: input.paymentId,
+          reason: input.reason,
+          ...(input.notes ? { notes: input.notes.slice(0, 255) } : {}),
+        },
+      },
+    }),
+  });
+  return result.data;
+}
+
+/**
+ * Read every refund for a payment, including refunds made outside this app.
+ *
+ * PayMongo's List Refunds endpoint rejects a `payment_id` filter (HTTP 400
+ * parameter_invalid), so the history comes from the payment itself, which
+ * embeds its refunds. A missing or malformed `refunds` list is an error, never
+ * an empty history.
+ */
+export async function listPaymentRefunds(config: PaymongoConfig, paymentId: string): Promise<RefundResource[]> {
+  if (!/^pay_[A-Za-z0-9]+$/.test(paymentId)) throw new PaymongoApiError("Invalid payment id", 400, null);
+  const result = await paymongoRequest<{ data?: { id?: string; attributes?: { refunds?: unknown } } }>(config, `/payments/${paymentId}`);
+  const payment = result?.data;
+  if (!payment || payment.id !== paymentId || !Array.isArray(payment.attributes?.refunds)) throw new Error("Invalid PayMongo refund history.");
+  return (payment.attributes.refunds as RefundResource[]).map((refund) => {
+    const attributes = refund?.attributes;
+    // Nested refunds may omit payment_id; they belong to this payment by construction.
+    return attributes && attributes.payment_id === undefined
+      ? { ...refund, attributes: { ...attributes, payment_id: paymentId } }
+      : refund;
+  });
+}
+
+/** Retrieve the authoritative status of a previously accepted refund. */
+export async function retrieveRefund(config: PaymongoConfig, id: string): Promise<RefundResource> {
+  if (!/^ref_[A-Za-z0-9]+$/.test(id)) throw new PaymongoApiError("Invalid refund id", 400, null);
+  const result = await paymongoRequest<{ data: RefundResource }>(config, `/refunds/${id}`);
   return result.data;
 }

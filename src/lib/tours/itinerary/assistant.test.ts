@@ -62,7 +62,9 @@ describe("parseTripRequest", () => {
   });
 
   it("caps long trips and keeps the form when nothing is recognised", () => {
-    expect(parseTripRequest("10 days, packed", TODAY, base).input).toMatchObject({ days: 5, pace: "packed" });
+    expect(parseTripRequest("30 days, packed", TODAY, base).input).toMatchObject({ days: 14, pace: "packed" });
+    expect(parseTripRequest("10 days", TODAY, base).input.days).toBe(10);
+    expect(parseTripRequest("a week in Daet", TODAY, base).input.days).toBe(7);
     expect(parseTripRequest("hello there", TODAY, base)).toEqual({ input: base, understood: [] });
   });
 
@@ -71,7 +73,7 @@ describe("parseTripRequest", () => {
       fc.property(fc.string({ maxLength: 600 }), (text) => {
         const { input } = parseTripRequest(text, TODAY, base);
         expect(input.days).toBeGreaterThanOrEqual(1);
-        expect(input.days).toBeLessThanOrEqual(5);
+        expect(input.days).toBeLessThanOrEqual(14);
         expect(input.groupSize).toBeGreaterThanOrEqual(1);
         expect(input.budgetPerDay).toBeGreaterThanOrEqual(0);
         expect(input.startDate >= TODAY).toBe(true);
@@ -85,10 +87,10 @@ describe("mergeTripFields (model output)", () => {
   it("keeps only valid values and ignores the rest", () => {
     const { input, understood } = mergeTripFields(
       base,
-      { startDate: "2020-01-01", days: 9, groupSize: 0, budgetPerDay: -5, interests: ["beach", "casino"], pace: "turbo", dayStart: "7am", dayEnd: "16:30", understood: ["Beach trip", "", 42 as unknown as string] },
+      { startDate: "2020-01-01", days: 99, groupSize: 0, budgetPerDay: -5, interests: ["beach", "casino"], pace: "turbo", dayStart: "7am", dayEnd: "16:30", understood: ["Beach trip", "", 42 as unknown as string] },
       TODAY,
     );
-    expect(input).toEqual({ ...base, startDate: TODAY, days: 5, groupSize: 1, budgetPerDay: 0, interests: ["beach"], dayEnd: "16:30" });
+    expect(input).toEqual({ ...base, startDate: TODAY, days: 14, groupSize: 1, budgetPerDay: 0, interests: ["beach"], dayEnd: "16:30" });
     expect(understood).toEqual(["Beach trip"]);
   });
 });

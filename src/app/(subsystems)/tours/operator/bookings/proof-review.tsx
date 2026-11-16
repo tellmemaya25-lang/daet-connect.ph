@@ -5,6 +5,7 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { LineIcon } from "@/components/ui/icons";
 import { Field, Textarea } from "@/components/ui/field";
 import { ConfirmDialog, Modal } from "@/components/ui/modal";
 import { Notice } from "@/components/ui/notice";
@@ -64,22 +65,23 @@ export function ProofReview({ proofs }: { proofs: ReviewableProof[] }) {
       {result ? <Notice variant={result.tone} className="mb-3">{result.text}</Notice> : null}
       <ul className="space-y-3">
         {proofs.map((proof) => (
-          <li key={proof.id} className="rounded-2xl bg-surface p-3 text-sm">
+          <li key={proof.id} className="rounded-2xl card-edge bg-surface p-3 text-sm">
             <div className="flex flex-wrap items-baseline justify-between gap-2">
               <span className="text-base font-bold text-daet-ink">{peso(proof.amount)}</span>
               <span className="text-daet-ink/70">
                 {isProofMethod(proof.payment_method) ? PROOF_METHODS[proof.payment_method] : proof.payment_method} · Ref {proof.reference_number}
               </span>
             </div>
-            <div className="mt-3 grid grid-cols-3 gap-2">
-              <Button variant="ghost" onClick={() => viewReceipt(proof.id)} disabled={pending}>
-                View
-              </Button>
-              <Button variant="danger" onClick={() => setRejecting(proof)} disabled={pending}>
-                Reject
+            {/* Look at the receipt first; approving is the main step, rejecting asks for a reason. */}
+            <div className="mt-3 grid gap-2 sm:grid-cols-[1fr_auto_auto]">
+              <Button variant="secondary" onClick={() => viewReceipt(proof.id)} disabled={pending}>
+                <LineIcon name="receipt" className="h-4 w-4" /> View receipt
               </Button>
               <Button onClick={() => setApproving(proof)} disabled={pending}>
                 Approve
+              </Button>
+              <Button variant="ghost" onClick={() => setRejecting(proof)} disabled={pending}>
+                Reject…
               </Button>
             </div>
           </li>

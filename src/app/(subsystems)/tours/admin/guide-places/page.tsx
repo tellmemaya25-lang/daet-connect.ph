@@ -12,7 +12,6 @@ import { GUIDE_PLACE_COLUMNS, GUIDE_PLACE_KINDS, isGuidePlaceKind, priceLabel, t
 import { requirePromoAdmin } from "@/lib/tours/promo-admin";
 import { deleteGuidePlace, importGuidePlacesCsv } from "./actions";
 
-export const dynamic = "force-dynamic";
 export const metadata = { title: "Local guide places" };
 
 const TEMPLATE = `${PLACE_CSV_COLUMNS.join(",")}\neatery,Example Carinderia,Daet,Vinzons Ave,,,80,150,meal,"Bicol express, laing",family,Daily 07:00-20:00,,"Home-style Bicolano food",Daet MTO 2026,,\n`;
@@ -73,11 +72,11 @@ export default async function AdminGuidePlacesPage({ searchParams }: { searchPar
       </nav>
 
       {places.length === 0 ? (
-        <p className="rounded-2xl bg-surface p-8 text-center text-daet-ink">No places yet. Add one or import a spreadsheet.</p>
+        <p className="rounded-2xl card-edge bg-surface p-8 text-center text-daet-ink">No places yet. Add one or import a spreadsheet.</p>
       ) : (
         <ul className="space-y-2">
           {places.map((place) => (
-            <li key={place.id} className="flex flex-col gap-3 rounded-2xl bg-surface p-4 sm:flex-row sm:items-center sm:justify-between">
+            <li key={place.id} className="flex flex-col gap-3 rounded-2xl card-edge bg-surface p-4 sm:flex-row sm:items-center sm:justify-between">
               <div className="min-w-0">
                 <p className="font-bold text-daet-ink">{place.name}</p>
                 <p className="text-sm text-slate-600 dark:text-slate-400">
@@ -116,7 +115,7 @@ export default async function AdminGuidePlacesPage({ searchParams }: { searchPar
 
 function Stat({ label, value }: { label: string; value: number }) {
   return (
-    <div className="rounded-2xl bg-surface p-4">
+    <div className="rounded-2xl card-edge bg-surface p-4">
       <p className="text-3xl font-bold text-daet-ink">{value}</p>
       <p className="text-sm text-slate-600 dark:text-slate-400">{label}</p>
     </div>

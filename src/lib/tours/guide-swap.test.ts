@@ -2,8 +2,8 @@ import { BUSY_LABELS, isBusyReason, scheduleErrorMessage, validateSwapReason } f
 
 describe("guide swaps (R6)", () => {
   it("turns database rule codes into plain messages", () => {
-    expect(scheduleErrorMessage({ message: "guide_schedule:already_booked" })).toMatch(/another tour that day/);
-    expect(scheduleErrorMessage({ message: "guide_schedule:not_available" })).toMatch(/hasn't marked the tour date/);
+    expect(scheduleErrorMessage({ message: "guide_schedule:already_booked" })).toMatch(/another tour at that time/);
+    expect(scheduleErrorMessage({ message: "guide_schedule:not_available" })).toMatch(/isn.t available for this tour.s date and hours/);
     expect(scheduleErrorMessage({ message: "guide_schedule:booked_that_day" })).toMatch(/Suggest another guide/);
     expect(scheduleErrorMessage({ message: "swap:already_pending" })).toMatch(/already a swap request/);
     expect(scheduleErrorMessage({ message: "duplicate key value" })).toBeNull();

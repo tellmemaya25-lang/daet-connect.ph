@@ -1,4 +1,6 @@
-import { dockClose, dockMinimize, dockOpen } from "@/components/chat-dock/dock-bus";
+/** @jest-environment jsdom */
+
+import { DOCK_BUSY_EVENT, dockClose, dockMinimize, dockOpen, setDockBusy, visibleHeads } from "@/components/chat-dock/dock-bus";
 
 describe("chat dock", () => {
   it("keeps two chats open, newest first, and folds older ones into heads", () => {
@@ -11,11 +13,28 @@ describe("chat dock", () => {
     expect(s).toEqual({ open: ["a", "c"], heads: ["b"] });
   });
 
+  it("announces whether a window is on screen, so the floating pill can stand down", () => {
+    const heard: boolean[] = [];
+    const listen = (event: Event) => heard.push(Boolean((event as CustomEvent<{ busy: boolean }>).detail.busy));
+    window.addEventListener(DOCK_BUSY_EVENT, listen);
+    setDockBusy(true);
+    setDockBusy(false);
+    window.removeEventListener(DOCK_BUSY_EVENT, listen);
+    expect(heard).toEqual([true, false]);
+  });
+
   it("minimizes to a head and closes completely", () => {
     let s = { open: ["a", "b"], heads: ["c"] };
     s = dockMinimize(s, "a");
     expect(s).toEqual({ open: ["b"], heads: ["a", "c"] });
     s = dockClose(s, "a");
     expect(s).toEqual({ open: ["b"], heads: ["c"] });
+  });
+});
+
+describe("visibleHeads", () => {
+  it("never draws a head for the assistant", () => {
+    expect(visibleHeads(["ai", "c1", "c2"])).toEqual(["c1", "c2"]);
+    expect(visibleHeads(["ai"])).toEqual([]);
   });
 });

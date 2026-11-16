@@ -5,9 +5,9 @@ export function BrandMark() {
   return (
     <Link
       href="/"
-      className="inline-flex min-h-11 shrink-0 items-center rounded-full font-[family-name:var(--font-display)] text-xl font-semibold tracking-tight text-daet-ink sm:text-2xl"
+      className="inline-flex min-h-11 shrink-0 items-center rounded-full font-[family-name:var(--font-display)] text-lg font-semibold tracking-tight text-daet-ink sm:text-xl dark:text-white"
     >
-      CONNECT-Daet
+      CONNECT-DAET
       <span className="sr-only"> home</span>
     </Link>
   );

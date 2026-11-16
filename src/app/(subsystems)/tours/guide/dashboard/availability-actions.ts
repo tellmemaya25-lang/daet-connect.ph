@@ -6,6 +6,7 @@ import { userFacingDbError } from "@/lib/tours/db-errors";
 import { isDateKey, toManilaDateKey } from "@/lib/tours/events-calendar";
 import type { AvailabilityState } from "@/lib/tours/dashboards";
 import { scheduleErrorMessage } from "@/lib/tours/guide-swap";
+import { parseHours } from "@/lib/tours/guide-hours";
 
 const MAX_DAYS_AHEAD = 366;
 
@@ -30,8 +31,31 @@ export async function setGuideAvailability(date: string, state: AvailabilityStat
       ? await supabase.from("tours_guide_availability").delete().eq("guide_id", guide.id).eq("available_date", date)
       : await supabase
           .from("tours_guide_availability")
-          .upsert({ guide_id: guide.id, available_date: date, is_available: state === "available" }, { onConflict: "guide_id,available_date" });
+          .upsert({ guide_id: guide.id, available_date: date, is_available: state === "available", start_time: null, end_time: null }, { onConflict: "guide_id,available_date" });
   if (error) return { success: false, error: scheduleErrorMessage(error) ?? userFacingDbError(error, "Your availability could not be saved.") };
+  revalidatePath("/tours/guide/dashboard");
+  return { success: true };
+}
+
+/**
+ * Guide sets the hours they can work on a day (both empty: all day). The day
+ * becomes available. A tour already booked outside the new hours blocks it.
+ */
+export async function setGuideHours(date: string, start: string, end: string): Promise<{ success: boolean; error?: string }> {
+  const hours = parseHours(start, end);
+  if (!hours.ok) return { success: false, error: hours.error };
+  if (!isDateKey(date) || date < toManilaDateKey(new Date())) return { success: false, error: "Choose today or a later day." };
+  const supabase = await createSupabaseServerClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { success: false, error: "Please sign in again." };
+  const { data: guide } = await supabase.from("tours_guides").select("id, accreditation_status").eq("profile_id", user.id).maybeSingle();
+  if (!guide || guide.accreditation_status !== "approved") return { success: false, error: "Only approved guides can set availability." };
+  const { error } = await supabase
+    .from("tours_guide_availability")
+    .upsert({ guide_id: guide.id, available_date: date, is_available: true, start_time: hours.start, end_time: hours.end }, { onConflict: "guide_id,available_date" });
+  if (error) return { success: false, error: scheduleErrorMessage(error) ?? userFacingDbError(error, "Your hours could not be saved.") };
   revalidatePath("/tours/guide/dashboard");
   return { success: true };
 }

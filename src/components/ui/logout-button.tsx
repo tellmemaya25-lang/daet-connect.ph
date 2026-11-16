@@ -2,12 +2,24 @@
 
 import { useState } from "react";
 import { cn } from "@/components/ui/cn";
+import { createSupabaseBrowserClient } from "@/lib/supabase/client";
+import { isSupabaseConfigured } from "@/lib/supabase/env";
+
+/** Fired before signing out: background polls stop so none can write the old session back. */
+export const SIGNING_OUT_EVENT = "daet:signing-out";
 
 /**
- * Signs out through POST /auth/logout, then loads the home page fresh so no
- * signed-in data (or Realtime subscription) survives in the tab.
+ * Signs out, then loads the sign-in page fresh so no signed-in data (or Realtime
+ * subscription) survives in the tab. In order:
+ *   1. stop this tab's background polls (they can refresh the session and
+ *      write its cookie back while the sign-out is in flight);
+ *   2. pause the browser client's token refresh timer;
+ *   3. POST /auth/logout, which ends the session on the server for every
+ *      device and clears the cookies on its reply (it needs the cookies, so
+ *      the browser copy is not cleared before it);
+ *   4. clear the browser client's in-memory copy of the session.
  */
-export function LogoutButton({ className, compact = false }: { className?: string; compact?: boolean }) {
+export function LogoutButton({ className, compact = false, menu = false }: { className?: string; compact?: boolean; /** A plain row in the account menu. */ menu?: boolean }) {
   const [pending, setPending] = useState(false);
   const [failed, setFailed] = useState(false);
 
@@ -16,15 +28,44 @@ export function LogoutButton({ className, compact = false }: { className?: strin
     setPending(true);
     setFailed(false);
     try {
-      const response = await fetch("/auth/logout", { method: "POST" });
+      window.dispatchEvent(new Event(SIGNING_OUT_EVENT));
+      const browser = isSupabaseConfigured() ? createSupabaseBrowserClient() : null;
+      // No token refresh while the server ends the session: a refresh now could write it back.
+      await browser?.auth.stopAutoRefresh().catch(() => undefined);
+      const response = await fetch("/auth/logout", { method: "POST", cache: "no-store", credentials: "same-origin" });
       if (!response.ok) throw new Error(String(response.status));
+      // The server ended it everywhere; drop this tab's in-memory copy too.
+      await browser?.auth.signOut({ scope: "local" }).catch(() => undefined);
       // Saved tickets belong to the signed-in user; do not leave them on a shared phone.
       if ("caches" in window) await caches.delete("daet-tickets-v1").catch(() => false);
-      window.location.assign("/");
+      // To the sign-in page, which says so: for a tourist the home page is their
+      // Home tab, so landing there looked like nothing had happened. replace():
+      // Back must not return to a signed-in page from the cache.
+      window.location.replace(`/login?message=${encodeURIComponent("You're signed out.")}`);
     } catch {
       setFailed(true);
       setPending(false);
     }
+  }
+
+  if (menu) {
+    return (
+      <>
+        <button
+          type="button"
+          onClick={signOut}
+          disabled={pending}
+          className={cn("flex min-h-12 w-full items-center rounded-xl px-4 text-left text-base text-daet-ink hover:bg-muted disabled:cursor-wait disabled:opacity-60", className)}
+        >
+          {pending ? "Signing out…" : "Sign out"}
+        </button>
+        {failed ? (
+          <p role="alert" className="mx-2 mb-1 rounded-xl bg-red-50 px-3 py-2 text-sm font-semibold text-red-800 dark:bg-red-950/40 dark:text-red-300">
+            Sign-out failed. Check your connection and try again.
+          </p>
+        ) : null}
+      </>
+    );
   }
 
   return (

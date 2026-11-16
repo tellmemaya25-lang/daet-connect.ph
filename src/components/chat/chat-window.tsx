@@ -3,12 +3,16 @@
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { loadOlderMessages, markConversationRead, reactToMessage, sendMessage, signAttachments } from "@/app/(subsystems)/tours/messages/actions";
+import { PresenceBadge, presenceText } from "@/components/chat/presence-badge";
 import { ReactionBar, ReactionPills } from "@/components/chat/reactions";
 import { TypingDots } from "@/components/assistant/assistant-chat";
 import { LineIcon } from "@/components/ui/icons";
 import { Notice } from "@/components/ui/notice";
+import { usePolling } from "@/components/live/use-polling";
+import { useLive } from "@/components/live/live-provider";
+import { CHAT_POLL_LIVE_MS, CHAT_POLL_MS } from "@/lib/live/schedule";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
-import { MESSAGE_MAX_LENGTH, MESSAGE_PAGE_SIZE, mergeMessages, messageTime, senderLabel, type ChatMembers, type ChatMessage } from "@/lib/tours/messaging";
+import { MESSAGE_MAX_LENGTH, MESSAGE_PAGE_SIZE, mergeMessages, messageTime, presenceOf, senderLabel, type ChatMembers, type ChatMessage } from "@/lib/tours/messaging";
 import {
   applyReaction,
   bubbleCorners,
@@ -35,6 +39,8 @@ export type ChatWindowProps = {
   members: ChatMembers;
   title: string;
   subtitle?: string | null;
+  /** The other person's last-seen time, for the status under the name. */
+  otherLastSeen?: string | null;
   link?: { href: string; label: string } | null;
   initialMessages: ChatMessage[];
   initialAttachmentUrls: Record<string, string>;
@@ -126,6 +132,37 @@ export function ChatWindow(props: ChatWindowProps) {
       void supabase.removeChannel(channel);
     };
   }, [conversationId, viewerId, announceRead]);
+
+  // Safety net: always ask for anything newer (every 5s without Realtime, every 15s with it), since a connected channel can still miss an event.
+  const latestAt = useRef<string | null>(null);
+  latestAt.current = messages.filter((m) => !m.draft).at(-1)?.created_at ?? null;
+  const knownIds = useRef<Set<string>>(new Set());
+  knownIds.current = new Set(messages.map((m) => m.id));
+  const { trigger: pollChat } = usePolling(
+    async () => {
+      const after = latestAt.current;
+      if (!after) return;
+      const response = await fetch(`/api/chat/${conversationId}/messages?after=${encodeURIComponent(after)}`, { cache: "no-store", credentials: "same-origin" });
+      if (!response.ok) throw new Error(`messages ${response.status}`);
+      const page = (await response.json()) as { messages: ChatMessage[]; reactions: Reaction[]; quoted: ChatMessage[]; attachmentUrls: Record<string, string> };
+      // Only what this chat does not have yet counts as news; anything else must not mark the chat read again.
+      const have = knownIds.current;
+      page.messages = page.messages.filter((m) => !have.has(m.id));
+      if (page.messages.length === 0) return;
+      setMessages((current) => mergeMessages(current, page.messages) as ThreadMessage[]);
+      setQuoted((q) => ({ ...q, ...Object.fromEntries(page.quoted.map((m) => [m.id, m])) }));
+      setUrls((current) => ({ ...current, ...page.attachmentUrls }));
+      setReactions((current) => [...current.filter((r) => !page.reactions.some((n) => n.message_id === r.message_id && n.profile_id === r.profile_id)), ...page.reactions]);
+      if (page.messages.some((m) => m.sender_id !== viewerId) && document.visibilityState === "visible") announceRead();
+    },
+    live === "live" ? CHAT_POLL_LIVE_MS : CHAT_POLL_MS,
+  );
+  // The shared poll noticing a new message anywhere asks this chat to catch up now.
+  const chatStamp = useLive()?.summary.chatStamp ?? null;
+  useEffect(() => {
+    if (chatStamp) pollChat();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [chatStamp]);
 
   // Typing dots, the online dot and "seen" pings: a private channel for members only.
   useEffect(() => {
@@ -288,6 +325,8 @@ export function ChatWindow(props: ChatWindowProps) {
     },
   });
 
+  const stored = presenceOf(props.otherLastSeen);
+  const status = online ? ({ state: "online", label: null } as const) : stored;
   const headingId = `chat-title-${conversationId}`;
   const Heading = props.headingLevel === 1 ? "h1" : "h2";
 
@@ -301,14 +340,14 @@ export function ChatWindow(props: ChatWindowProps) {
         ) : null}
         <span className="relative shrink-0" aria-hidden="true">
           <span className={`grid ${compact ? "h-8 w-8 bg-white/20" : "h-10 w-10 bg-blue-100 dark:bg-blue-900/40 text-blue-800 dark:text-blue-300"} place-items-center rounded-full font-bold`}>{props.title.slice(0, 1).toUpperCase()}</span>
-          {online ? <span className="absolute -bottom-0.5 -right-0.5 h-3.5 w-3.5 rounded-full border-2 border-white bg-green-500" /> : null}
+          <PresenceBadge presence={status} ring={compact ? "border-blue-600" : "border-surface"} />
         </span>
         <div className="min-w-0 flex-1">
           <Heading id={headingId} className={`truncate font-bold ${compact ? "text-base" : "text-lg text-daet-ink"}`}>
             {props.title}
           </Heading>
           <p className={`truncate text-sm ${compact ? "text-white/90" : "text-slate-600 dark:text-slate-400"}`} aria-live="polite">
-            {typingNow.length ? "typing…" : online ? "Active now" : live === "offline" ? "Offline: refresh to see new messages" : props.subtitle}
+            {typingNow.length ? "typing…" : presenceText(status) ?? (live === "offline" ? "Reconnecting…" : props.subtitle)}
           </p>
         </div>
         {props.link && !compact ? (
@@ -328,7 +367,7 @@ export function ChatWindow(props: ChatWindowProps) {
           const el = e.currentTarget;
           stickToBottom.current = el.scrollHeight - el.scrollTop - el.clientHeight < 80;
         }}
-        className="min-h-0 flex-1 overflow-y-auto bg-surface px-3 py-3"
+        className="scrollbar-quiet min-h-0 flex-1 overflow-y-auto overflow-x-hidden bg-surface px-3 py-3"
       >
         {hasMore ? (
           <div className="mb-3 flex justify-center">
@@ -365,7 +404,7 @@ export function ChatWindow(props: ChatWindowProps) {
                       <button
                         type="button"
                         onClick={() => message.reply_to_id && jumpTo(message.reply_to_id)}
-                        className={`mb-1 block w-full rounded-xl px-2 py-1 text-left text-sm ${mine ? "bg-blue-800 text-white" : "bg-surface text-slate-700 dark:text-slate-300"}`}
+                        className={`mb-1 block w-full rounded-xl px-2 py-1 text-left text-sm ${mine ? "bg-blue-800 text-white" : "card-edge bg-surface text-slate-700 dark:text-slate-300"}`}
                       >
                         <span className="block text-xs font-bold">{reply ? `Replying to ${senderLabel(reply.sender_id, viewerId, members)}` : "Reply"}</span>
                         <span className="line-clamp-2">{quotePreview(reply)}</span>

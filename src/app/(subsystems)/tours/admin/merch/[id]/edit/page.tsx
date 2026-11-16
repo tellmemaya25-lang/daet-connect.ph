@@ -5,7 +5,6 @@ import { requirePromoAdmin } from "@/lib/tours/promo-admin";
 import { MERCH_COLUMNS, type MerchItem } from "@/lib/tours/promo-validation";
 import { MerchForm } from "../../merch-form";
 
-export const dynamic = "force-dynamic";
 export const metadata = { title: "Edit product" };
 
 export default async function EditMerchPage({ params }: { params: Promise<{ id: string }> }) {
@@ -21,7 +20,7 @@ export default async function EditMerchPage({ params }: { params: Promise<{ id: 
     <AdminPage>
       <div className="mx-auto max-w-2xl">
         <AdminPageHeading title="Edit product" backHref="/tours/admin/merch" backLabel="All products" />
-        <div className="rounded-2xl bg-surface p-5 sm:p-8">
+        <div className="rounded-2xl card-edge bg-surface p-5 sm:p-8">
           <MerchForm item={item} />
         </div>
       </div>

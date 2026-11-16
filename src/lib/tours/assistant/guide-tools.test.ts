@@ -27,7 +27,11 @@ const TABLES = {
     fare({ id: "f1", from_name: "Manila (PITX)", to_name: "Daet", fare_min: 801, fare_max: 801, minutes_min: 540, minutes_max: 720 }),
     fare({ id: "f2", mode: "tricycle", from_name: "Daet town center", to_name: "Bagasbas", fare_min: 30, fare_max: 30, minutes_min: 10, minutes_max: 15, schedule_note: "Agree on the fare first." }),
   ],
-  tours_attractions: [{ id: "a1", name: "Bagasbas Beach", slug: "bagasbas-beach", category: "beach", municipality: "Daet", latitude: 14.131583, longitude: 122.985083, is_active: true }],
+  tours_attractions: [
+    { id: "a1", name: "Bagasbas Beach", slug: "bagasbas-beach", category: "beach", municipality: "Daet", latitude: 14.131583, longitude: 122.985083, is_active: true },
+    { id: "a2", name: "First José Rizal Monument", slug: "first-rizal-monument", category: "heritage", municipality: "Daet", latitude: 14.1131, longitude: 122.9545, is_active: true },
+    { id: "a3", name: "Daet Heritage Center", slug: "daet-heritage-center", category: "heritage", municipality: "Daet", latitude: 14.1128, longitude: 122.9560, is_active: true },
+  ],
   tours_packages: [
     {
       id: "aa000000-0000-4000-8000-000000000001", title: "Calaguas Day Trip", location_name: "Calaguas", status: "published",
@@ -43,9 +47,11 @@ const ctx = (over: Partial<ToolContext> = {}): ToolContext => ({ supabase: fakeS
 
 describe("guide intents (basic mode)", () => {
   it("reads place questions", () => {
-    expect(readPlaceQuestion("Where to eat near Bagasbas?")).toEqual({ kind: "eatery", near: "bagasbas", budget: false });
+    expect(readPlaceQuestion("Where to eat near Bagasbas?")).toEqual({ kind: "eatery", near: "bagasbas", budget: false, sights: false });
+    expect(readPlaceQuestion("What's near First José Rizal Monument? Food and places to see.")).toEqual({ kind: "eatery", near: "first jose rizal monument", budget: false, sights: true });
+    expect(readPlaceQuestion("Food near the town plaza for 4 people")).toMatchObject({ near: "the town plaza" });
     expect(readPlaceQuestion("Saan pwede kumain malapit dito?")).toMatchObject({ kind: "eatery", near: "me" });
-    expect(readPlaceQuestion("cheap hotel in Daet")).toEqual({ kind: "lodging", near: "daet", budget: true });
+    expect(readPlaceQuestion("cheap hotel in Daet")).toEqual({ kind: "lodging", near: "daet", budget: true, sights: false });
     expect(readPlaceQuestion("open dates for Calaguas")).toBeNull();
   });
 
@@ -118,7 +124,12 @@ describe("basic mode as a local guide", () => {
   it("answers food, directions, cost and meeting questions without the AI", async () => {
     const c = ctx();
     expect(await basicReply("Where to eat near Bagasbas?", c)).toMatch(/^Food near bagasbas: Bagasbas Beach eateries/);
-    expect(await basicReply("Paano pumunta sa Bagasbas from Manila?", ctx())).toMatch(/^Bus from Manila \(PITX\) to Daet \(₱801\.00 per person, 9–12 h\), then Tricycle/);
+    // A Tagalog question gets a Tagalog answer: each leg, the total per person, and a reminder to confirm.
+    const directions = await basicReply("Paano pumunta sa Bagasbas from Manila?", ctx());
+    expect(directions).toMatch(/^Mula Manila papunta sa Bagasbas/);
+    expect(directions).toContain("1. Bus Manila (PITX) → Daet (₱801.00 bawat tao, 9–12 oras) → Tricycle Daet town center → Bagasbas (₱30.00 bawat tao");
+    expect(directions).toContain("Kabuuan: ₱831.00 bawat tao");
+    expect(directions).toMatch(/kumpirmahin muna/);
     expect(await basicReply("Budget for 2 days in Bagasbas from Manila?", ctx())).toMatch(/^Estimated total ₱/);
     expect(await basicReply("Where do we meet for my tour?", ctx({ userId: "u1" }))).toMatch(/meet at Vinzons fish port at 5:30 AM on 2026-11-04/);
     expect(await basicReply("Saan pwede kumain malapit dito?", ctx())).toMatch(/Use my location/);
@@ -135,5 +146,28 @@ describe("assistant setup", () => {
     const prompt = assistantSystemPrompt({ today: "2026-10-29", signedIn: false });
     expect(prompt).toMatch(/Daet AI assistant/);
     expect(prompt).toMatch(/never name a restaurant, hotel, fare or price from memory/);
+  });
+});
+
+describe("food and places to see near a named place (basic mode)", () => {
+  it("reads the place from its own clause, finds it without the accent, and lists the closest food and sights", async () => {
+    const { basicReply } = await import("@/lib/tours/assistant/basic");
+    const c = ctx();
+    const reply = await basicReply("What's near First José Rizal Monument? Food and places to see.", c);
+    expect(reply).toMatch(/^Food near First José Rizal Monument: Town Carinderia, \d+ m/);
+    expect(reply).toMatch(/Places to see nearby: Daet Heritage Center \(\d+ m\)/);
+    expect(reply).not.toMatch(/Places to see nearby: First José Rizal Monument/);
+    expect(c.cards).toContainEqual(expect.objectContaining({ type: "link", href: "/tours/attractions/daet-heritage-center" }));
+  });
+});
+
+describe("place card map links", () => {
+  it("opens Google Maps on the place by name (so the map shows it), and directions at its pin", async () => {
+    const { placeCard } = await import("@/lib/tours/assistant/guide-tools");
+    const card = placeCard({ ...(TABLES.tours_guide_places[1] as unknown as Parameters<typeof placeCard>[0]), distanceM: 20 });
+    expect(new URL(card.mapHref).searchParams.get("query")).toBe("Town Carinderia, Daet, Camarines Norte");
+    expect(card.directionsHref).toContain("destination=14.112500%2C122.955500");
+    // 20 m is the place itself, not a distance.
+    expect(card.distance).toBeNull();
   });
 });

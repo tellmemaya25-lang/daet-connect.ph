@@ -3,7 +3,6 @@ import { AdminPageHeading, PromoAdminDenied } from "@/components/tours/promo-adm
 import { requirePromoAdmin } from "@/lib/tours/promo-admin";
 import { GuidePlaceForm } from "../guide-place-form";
 
-export const dynamic = "force-dynamic";
 export const metadata = { title: "New local guide place" };
 
 export default async function NewGuidePlacePage() {
@@ -14,7 +13,7 @@ export default async function NewGuidePlacePage() {
     <AdminPage>
       <div className="mx-auto max-w-2xl">
         <AdminPageHeading title="New place" backHref="/tours/admin/guide-places" backLabel="All places" />
-        <div className="rounded-2xl bg-surface p-5 sm:p-8">
+        <div className="rounded-2xl card-edge bg-surface p-5 sm:p-8">
           <GuidePlaceForm />
         </div>
       </div>

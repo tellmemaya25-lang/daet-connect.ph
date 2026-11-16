@@ -1,11 +1,13 @@
 "use client";
 
+import { Field, Textarea } from "@/components/ui/field";
 import { LineIcon } from "@/components/ui/icons";
 import React, { useCallback, useState } from "react";
 import { useFeedback } from "@/components/ui/feedback";
 import type { EditInclusion, EditPackageStatus, ValidationErrors, StepProps } from "./edit-types";
 import { EDIT_LIMITS } from "./edit-constants";
 import { getEditPermissions } from "./permissions";
+import { withDisplayOrder } from "./edit-order";
 
 type InclusionsStepProps = StepProps<EditInclusion[]>;
 
@@ -37,13 +39,13 @@ export function InclusionsStep({
     isIncluded: true,
   });
 
-  const canAddItems = permissions.inclusions.add;
   const canEditItems = permissions.inclusions.editText;
   const canRemoveItems = permissions.inclusions.remove;
   const canToggleIncluded = permissions.inclusions.toggleIncluded;
 
   const inclusions = data.filter((i) => i.isIncluded);
   const exclusions = data.filter((i) => !i.isIncluded);
+  const canAddItems = permissions.inclusions.add;
 
   const getInclusionErrors = useCallback(() => {
     const stepErrors: Record<string, string> = {};
@@ -59,12 +61,15 @@ export function InclusionsStep({
     if (!formData.text.trim()) {
       return;
     }
+    if (!editingId && !canAddItems) return;
 
     const newItem: EditInclusion = {
       id: editingId || `new-${Date.now()}`,
       text: formData.text,
       isIncluded: formData.isIncluded,
-      displayOrder: editingId ? data.find((i) => i.id === editingId)?.displayOrder ?? data.length : data.length,
+      displayOrder: editingId
+        ? data.find((i) => i.id === editingId)?.displayOrder ?? data.length + 1
+        : data.length + 1,
     };
 
     let updated: EditInclusion[];
@@ -74,11 +79,11 @@ export function InclusionsStep({
       updated = [...data, newItem];
     }
 
-    onUpdate(updated);
+    onUpdate(withDisplayOrder(updated));
     setShowAddForm(false);
     setEditingId(undefined);
     setFormData({ text: "", isIncluded: true });
-  }, [formData, editingId, data, onUpdate]);
+  }, [formData, editingId, data, onUpdate, canAddItems]);
 
   const handleEdit = useCallback((item: EditInclusion) => {
     setFormData({ text: item.text, isIncluded: item.isIncluded });
@@ -92,7 +97,7 @@ export function InclusionsStep({
         toast("At least one inclusion is required.", "error");
         return;
       }
-      onUpdate(data.filter((i) => i.id !== id));
+      onUpdate(withDisplayOrder(data.filter((i) => i.id !== id)));
     },
     [data, onUpdate]
   );
@@ -118,18 +123,13 @@ export function InclusionsStep({
       const [removed] = newItems.splice(index, 1);
       newItems.splice(direction === "up" ? index - 1 : index + 1, 0, removed);
 
-      const reordered = newItems.map((item, i) => ({
-        ...item,
-        displayOrder: i,
-      }));
-
-      // Merge back with other items and sort
+      // Merge back with the other group, then number the whole list 1..n
       const merged = [
-        ...reordered.map((item) => ({ ...item, isIncluded: items[0]?.isIncluded })),
+        ...newItems.map((item) => ({ ...item, isIncluded: items[0]?.isIncluded })),
         ...data.filter((i) => i.isIncluded !== items[0]?.isIncluded),
       ];
 
-      onUpdate(merged);
+      onUpdate(withDisplayOrder(merged));
     },
     [data, onUpdate]
   );
@@ -177,6 +177,7 @@ export function InclusionsStep({
                     type="text"
                     value={item.text}
                     onChange={() => {}}
+                    aria-label={`Item ${index + 1}`}
                     className="flex-1 px-2 py-1 border border-daet-ink/20 rounded-2xl bg-surface"
                     disabled
                   />
@@ -306,33 +307,26 @@ export function InclusionsStep({
       {/* Add/Edit Form Modal */}
       {showAddForm && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-surface rounded-2xl max-w-md w-full p-6">
+          <div className="card-edge bg-surface rounded-2xl max-w-md w-full p-6">
             <h3 className="text-lg font-bold text-daet-ink mb-4">
               {editingId ? "Edit Item" : "Add Item"}
             </h3>
 
             <div className="space-y-4">
-              {/* Item Text */}
-              <div>
-                <label className="block text-sm font-medium text-daet-ink/80 mb-1">
-                  Description <span className="text-red-500">*</span>
-                </label>
-                <textarea
+              <Field id="inc-description" label="Description" required hint={`${formData.text.length}/${EDIT_LIMITS.inclusionText.max}`}>
+                <Textarea
                   value={formData.text}
                   onChange={(e) => setFormData({ ...formData, text: e.target.value })}
                   maxLength={EDIT_LIMITS.inclusionText.max}
                   rows={3}
-                  className="w-full px-3 py-2 border border-daet-ink/20 rounded-2xl focus:ring-2 focus:ring-daet-forest/30 outline-none resize-none"
+                  className="resize-none"
                   placeholder="e.g., Hotel accommodation"
                 />
-                <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
-                  {formData.text.length}/{EDIT_LIMITS.inclusionText.max}
-                </p>
-              </div>
+              </Field>
 
               {/* Is Included Toggle */}
-              <div>
-                <label className="block text-sm font-medium text-daet-ink/80 mb-2">Status</label>
+              <fieldset>
+                <legend className="mb-2 block text-sm font-bold text-daet-ink">Status</legend>
                 <div className="flex items-center gap-4">
                   <label className="flex items-center gap-2 cursor-pointer">
                     <input
@@ -353,7 +347,7 @@ export function InclusionsStep({
                     <span className="text-sm text-daet-ink/80">Excluded</span>
                   </label>
                 </div>
-              </div>
+              </fieldset>
 
               {/* Buttons */}
               <div className="flex gap-3 pt-4">
@@ -383,7 +377,8 @@ export function InclusionsStep({
       {/* Help text */}
       {inclusions.length === 0 && (
         <div className="p-3 bg-yellow-50 dark:bg-yellow-950/40 rounded-2xl text-sm text-yellow-800 dark:text-yellow-200">
-          <LineIcon name="warning" className="inline-block h-[1.1em] w-[1.1em] align-[-0.15em]" /> At least one inclusion is required before submitting for review.
+          <LineIcon name="warning" className="inline-block h-[1.1em] w-[1.1em] align-[-0.15em]" />{" "}
+          At least one item marked Included is required before saving.
         </div>
       )}
     </div>

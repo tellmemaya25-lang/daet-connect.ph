@@ -1,3 +1,4 @@
+import { LiveCount } from "@/components/live/live-count";
 import { LineIcon } from "@/components/ui/icons";
 import Link from "next/link";
 import { redirect } from "next/navigation";
@@ -17,7 +18,6 @@ import { OpenChatButton } from "@/app/(subsystems)/tours/messages/open-chat-butt
 import { chatOperators } from "@/lib/tours/messaging";
 import { AvailabilityCalendar } from "./availability-calendar";
 
-export const dynamic = "force-dynamic";
 
 export default async function GuideDashboardPage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
   const searchParamsValue = await searchParams;
@@ -72,7 +72,7 @@ export default async function GuideDashboardPage({ searchParams }: { searchParam
       .lt("tour_date", `${nextKey}-01`),
     supabase
       .from("tours_guide_availability")
-      .select("available_date, is_available")
+      .select("available_date, is_available, start_time, end_time")
       .eq("guide_id", guide.id)
       .gte("available_date", `${key}-01`)
       .lt("available_date", `${nextKey}-01`),
@@ -91,7 +91,7 @@ export default async function GuideDashboardPage({ searchParams }: { searchParam
   const operators = chatOperators([...(packageLinks ?? []), ...(assignedTours ?? [])]);
   const tourCounts: Record<string, number> = {};
   for (const t of monthTours ?? []) tourCounts[t.tour_date] = (tourCounts[t.tour_date] ?? 0) + 1;
-  const availabilityMap = Object.fromEntries((availability ?? []).map((a) => [a.available_date, a.is_available]));
+  const availabilityMap = Object.fromEntries((availability ?? []).map((a) => [a.available_date, { available: a.is_available, start: a.start_time, end: a.end_time }]));
   const upcomingTours = (upcoming ?? []) as unknown as Array<{ id: string; booking_reference: string; tour_date: string; number_of_pax: number; contact_name: string; tours_packages: { title: string; location_name: string } | { title: string; location_name: string }[] | null }>;
   const todays = upcomingTours.filter((t) => t.tour_date === today);
   const later = upcomingTours.filter((t) => t.tour_date !== today);
@@ -111,6 +111,12 @@ export default async function GuideDashboardPage({ searchParams }: { searchParam
           <ButtonLink href="/tours/guide/my-qr" variant="secondary">
             <LineIcon name="idcard" className="inline-block h-[1.1em] w-[1.1em] align-[-0.15em]" /> My QR badge
           </ButtonLink>
+          <ButtonLink href="/tours/guide/earnings" variant="secondary">
+            My earnings
+          </ButtonLink>
+          <ButtonLink href="/tours/guide/operators" variant="secondary">
+            Operators
+          </ButtonLink>
         </div>
       </div>
 
@@ -118,6 +124,9 @@ export default async function GuideDashboardPage({ searchParams }: { searchParam
         <div className="space-y-6">
           <Card>
             <CardHeader description={formatDayHeading(today)} title="Today" />
+            <p className="mb-3 text-sm text-daet-ink/70">
+              <LiveCount name="guideToday" initial={todays.length} className="font-bold" /> today · <LiveCount name="guideUpcoming" initial={upcomingTours.length} className="font-bold" /> upcoming
+            </p>
             {todays.length === 0 ? (
               <p className="text-sm text-daet-ink/70">No tours assigned to you today.</p>
             ) : (
@@ -126,17 +135,15 @@ export default async function GuideDashboardPage({ searchParams }: { searchParam
                   <li key={t.id} className="rounded-2xl bg-daet-sand/40 p-3">
                     <p className="font-bold text-daet-ink">{pkgTitle(t)}</p>
                     <p className="break-words text-sm text-slate-600 dark:text-slate-400">
-                      {t.booking_reference} · {t.contact_name} · {t.number_of_pax} pax
+                      {t.booking_reference} · {t.contact_name} · {t.number_of_pax} guest{t.number_of_pax === 1 ? "" : "s"}
                     </p>
+                    {/* Scanning lives in the Scan tickets button above and the Scan tab, so the row stays on one line. */}
                     <div className="mt-2 flex flex-wrap gap-2">
-                      <ButtonLink href={`/tours/guide/tours/${t.id}/live`}>
+                      <ButtonLink href={`/tours/guide/tours/${t.id}/live`} className="px-5">
                         <LineIcon name="pin" className="h-4 w-4" /> Live map
                       </ButtonLink>
-                      <ButtonLink href={`/tours/guide/tours/${t.id}/roster`} variant="secondary">
+                      <ButtonLink href={`/tours/guide/tours/${t.id}/roster`} variant="secondary" className="px-5">
                         Guest list
-                      </ButtonLink>
-                      <ButtonLink href="/tours/guide/check-in" variant="secondary">
-                        Scan
                       </ButtonLink>
                     </div>
                   </li>
@@ -171,7 +178,7 @@ export default async function GuideDashboardPage({ searchParams }: { searchParam
                   <li key={t.id} className="py-2">
                     <p className="font-bold text-daet-ink">{pkgTitle(t)}</p>
                     <p className="text-sm text-slate-600 dark:text-slate-400">
-                      {formatDayHeading(t.tour_date)} · {t.number_of_pax} pax
+                      {formatDayHeading(t.tour_date)} · {t.number_of_pax} guest{t.number_of_pax === 1 ? "" : "s"}
                     </p>
                   </li>
                 ))}
@@ -182,7 +189,7 @@ export default async function GuideDashboardPage({ searchParams }: { searchParam
 
         <Card>
           <CardHeader title="Your availability" />
-          <p className="mb-3 text-sm text-daet-ink/70">Tap a day to mark it available, tap again for not available, and once more to clear it. Operators can only assign you on days marked available. To give up a day you're already booked on, use “Suggest another guide” on that tour.</p>
+          <p className="mb-3 text-sm text-daet-ink/70">Choose what a tap does, then tap days. Tap a marked day again to clear it. Use “Set hours” to say when you can work that day; operators can only give you tours inside your hours. To give up a day you're already booked on, use “Suggest another guide” on that tour.</p>
           <AvailabilityCalendar
             key={key}
             month={month}

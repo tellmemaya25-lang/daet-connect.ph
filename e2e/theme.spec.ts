@@ -2,7 +2,9 @@ import { expect, test } from "@playwright/test";
 import { checkA11y, signInAs } from "./fixtures";
 
 const canvas = (page: import("@playwright/test").Page) => page.evaluate(() => getComputedStyle(document.body).backgroundColor);
-const LIGHT_CANVAS = "rgb(248, 250, 252)";
+// White, sampled from the owner's FAQ reference (image-46): the light theme's
+// ground is the card's own white, and cards carry a hairline instead of a tone.
+const LIGHT_CANVAS = "rgb(255, 255, 255)";
 const DARK_CANVAS = "rgb(11, 18, 32)";
 
 test.describe("dark mode", () => {
@@ -16,11 +18,82 @@ test.describe("dark mode", () => {
     await context.close();
   });
 
+  test("the ticket sits in the dark theme instead of blazing out of it", async ({ browser }) => {
+    // The owner's own dark band (image-67): the paper is a slate blue well off
+    // the near-black page — not the reference's cream — and the card of moves
+    // sits under it, darker than the paper it is printed on.
+    const context = await browser.newContext({ colorScheme: "dark", viewport: { width: 1280, height: 900 } });
+    const page = await context.newPage();
+    await page.goto("/", { waitUntil: "networkidle" });
+
+    const paper = await page
+      .locator("[data-ticket-shape] .ticket-shape")
+      .evaluate((element) => getComputedStyle(element).backgroundColor);
+    expect(paper, "the owner's slate paper, not the reference's cream").toBe("rgb(51, 69, 97)");
+
+    const [field, ink] = await page.locator("[data-ticket-panel]").evaluate((element) => [
+      getComputedStyle(element).backgroundColor,
+      getComputedStyle(element).color,
+    ]);
+    expect(field, "under the paper, not its white").toBe("rgb(22, 38, 72)");
+    expect(ink, "the theme's own ink on it").toBe("rgb(226, 232, 240)");
+
+    // And the photograph is seated in the theme with a fifth of the page's
+    // ground (the layer is display:none in light mode).
+    const scrim = await page.locator("[data-ticket-photo] > div").first().evaluate((element) => ({
+      display: getComputedStyle(element).display,
+      paint: getComputedStyle(element).backgroundColor,
+    }));
+    expect(scrim.display, "over the picture in dark mode").toBe("block");
+    expect(scrim.paint, "a dark wash, not a clear one").not.toBe("rgba(0, 0, 0, 0)");
+
+    await context.close();
+  });
+
+  test("the way back to the top is a blue button with a white arrow on both papers", async ({ browser }) => {
+    // The owner's note (image-48): the old dark button vanished on the dark page,
+    // so it is the brand's blue, with a white arrow, in both themes.
+    const context = await browser.newContext({ colorScheme: "dark", viewport: { width: 390, height: 844 } });
+    const page = await context.newPage();
+    await page.goto("/", { waitUntil: "networkidle" });
+
+    const up = page.getByRole("button", { name: "Back to top" });
+    await expect(up).toHaveCount(0);
+    await page.evaluate(() => window.scrollTo({ top: window.innerHeight * 2, behavior: "instant" }));
+    await expect(up).toBeVisible();
+
+    // Chrome serialises a token's colour in the space it was written in, so the
+    // button is compared with the brand's blue rendered from the same class.
+    const read = () =>
+      page.evaluate(() => {
+        const button = document.querySelector('button[aria-label="Back to top"]')!;
+        const probe = document.createElement("span");
+        probe.className = "bg-blue-600";
+        document.body.appendChild(probe);
+        const value = { fill: getComputedStyle(button).backgroundColor, brand: getComputedStyle(probe).backgroundColor, arrow: getComputedStyle(button.querySelector("svg")!).color };
+        probe.remove();
+        return value;
+      });
+
+    for (const theme of ["dark", "light"]) {
+      await page.evaluate((t) => {
+        document.documentElement.dataset.theme = t;
+      }, theme);
+      // The button eases its colour over 150ms.
+      await page.waitForTimeout(400);
+      const colours = await read();
+      expect(colours.fill, `blue on the ${theme} paper`).toBe(colours.brand);
+      expect(colours.arrow, `white arrow on the ${theme} paper`).toBe("rgb(255, 255, 255)");
+    }
+
+    await context.close();
+  });
+
   test("the phone menu switches theme, and the choice survives a reload", async ({ page }) => {
     await page.goto("/", { waitUntil: "networkidle" });
     expect(await canvas(page)).toBe(LIGHT_CANVAS);
 
-    await page.locator("summary", { hasText: "Menu" }).click();
+    await page.getByRole("banner").locator("summary").click();
     const theme = page.getByRole("group", { name: "Theme" });
     await theme.getByText("Dark", { exact: true }).click();
     await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
@@ -30,7 +103,7 @@ test.describe("dark mode", () => {
     await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
     expect(await canvas(page)).toBe(DARK_CANVAS);
 
-    await page.locator("summary", { hasText: "Menu" }).click();
+    await page.getByRole("banner").locator("summary").click();
     await page.getByRole("group", { name: "Theme" }).getByText("System", { exact: true }).click();
     await expect(page.locator("html")).not.toHaveAttribute("data-theme", /.+/);
     expect(await page.evaluate(() => localStorage.getItem("daet-theme"))).toBeNull();
@@ -50,23 +123,38 @@ test.describe("dark mode", () => {
     expect(await page.evaluate(() => (window as unknown as { __firstTheme: string | null }).__firstTheme)).toBe("dark");
   });
 
-  test("the desktop account menu switches theme", async ({ browser }) => {
+  test("the desktop header button cycles Light, Dark, System", async ({ browser }) => {
+    const context = await browser.newContext({ viewport: { width: 1280, height: 800 } });
+    const page = await context.newPage();
+    await page.goto("/tours/browse", { waitUntil: "networkidle" });
+    const button = page.getByRole("button", { name: /^Theme:/ });
+    await expect(button).toHaveAccessibleName("Theme: System. Switch to Light");
+    await button.click();
+    await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
+    await button.click();
+    await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
+    await checkA11y(page, "trips in dark mode");
+    await button.click();
+    await expect(page.locator("html")).not.toHaveAttribute("data-theme", /.+/);
+    await context.close();
+  });
+
+  test("signed in, Dark mode is a switch in the account menu", async ({ browser }) => {
     const context = await browser.newContext({ viewport: { width: 1280, height: 800 } });
     await signInAs(context, "tourist");
     const page = await context.newPage();
     await page.goto("/tours/me", { waitUntil: "networkidle" });
-    const account = page.getByRole("button", { name: "Your account" });
-    await account.click();
-    const theme = page.getByRole("group", { name: "Theme" });
-    await theme.getByText("Light", { exact: true }).click();
-    await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
-    await theme.getByText("Dark", { exact: true }).click();
+    await expect(page.getByRole("button", { name: /^Theme:/ })).toHaveCount(0);
+    await page.getByRole("button", { name: /^(You, y|Y)our account/ }).click();
+    const dark = page.getByRole("switch", { name: "Dark mode" });
+    await expect(dark).toHaveAttribute("aria-checked", "false");
+    await dark.click();
+    await expect(dark).toHaveAttribute("aria-checked", "true");
     await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
-    await checkA11y(page, "tourist home in dark mode with the account menu open");
-    await theme.getByText("System", { exact: true }).click();
-    await expect(page.locator("html")).not.toHaveAttribute("data-theme", /.+/);
-    await page.keyboard.press("Escape");
-    await expect(account).toHaveAttribute("aria-expanded", "false");
+    expect(await canvas(page)).toBe(DARK_CANVAS);
+    await checkA11y(page, "account menu in dark mode");
+    await dark.click();
+    await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
     await context.close();
   });
 });

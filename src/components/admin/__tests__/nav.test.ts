@@ -17,3 +17,9 @@ describe("areaFor", () => {
     expect(areaFor("/tours/admin/unknown")).toBeUndefined();
   });
 });
+
+describe("areaFor with newer areas", () => {
+  it("keeps guide assignments apart from guides", () => {
+    expect(areaFor("/tours/admin/guide-assignments")?.label).toBe("Guide assignments");
+  });
+});

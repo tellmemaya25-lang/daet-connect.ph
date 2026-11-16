@@ -8,7 +8,7 @@ import { validatePlan } from "@/lib/tours/itinerary/validate";
 /**
  * Trip assistant (F7c): plain-language requests, in English or Taglish.
  * "Describe your trip" fills the planner form; "Ask the assistant" edits a
- * plan. These rule-based versions always work; when Claude is configured
+ * plan. These rule-based versions always work; when Gemini is configured
  * it handles the wording instead (llm.ts), and both end in the same
  * merge-and-validate steps here, so nothing invalid reaches the tourist.
  */
@@ -120,7 +120,7 @@ export function parseTripRequest(text: string, today: string, current: PlannerIn
   else if (dayCount) days = toNumber(dayCount[1]);
   else if (nights) days = toNumber(nights[1]) + 1;
   else if (/\b(weekend|overnight)\b/.test(t)) days = 2;
-  else if (/\b(a|one) week\b/.test(t)) days = MAX_DAYS;
+  else if (/\b(a|one) week\b/.test(t)) days = 7;
   if (days !== null && Number.isFinite(days) && days >= 1) {
     const clamped = Math.min(MAX_DAYS, days);
     input.days = clamped;
@@ -331,7 +331,7 @@ export function applyChangeRequest(text: string, plan: Plan, attractions: Planne
   for (const clause of clauses) {
     const dayMatch = /\bday (\d{1,2})\b|\b(first|second|third|fourth|fifth|last) day\b|\b(tomorrow|today)\b/.exec(clause);
     const ordinal = { first: 0, second: 1, third: 2, fourth: 3, fifth: 4 } as Record<string, number>;
-    let dayIndex: number | null = dayMatch ? (dayMatch[1] ? Number(dayMatch[1]) - 1 : dayMatch[2] === "last" ? days.length - 1 : dayMatch[2] ? ordinal[dayMatch[2]] : 0) : null;
+    const dayIndex: number | null = dayMatch ? (dayMatch[1] ? Number(dayMatch[1]) - 1 : dayMatch[2] === "last" ? days.length - 1 : dayMatch[2] ? ordinal[dayMatch[2]] : 0) : null;
     if (dayIndex !== null && (dayIndex < 0 || dayIndex >= days.length)) {
       understoodAny = true;
       failed.push(`your trip has ${days.length} day${days.length > 1 ? "s" : ""}, so there is no day ${dayIndex + 1}`);

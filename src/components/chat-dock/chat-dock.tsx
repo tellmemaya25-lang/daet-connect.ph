@@ -3,12 +3,12 @@
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { dockThread, type DockThread } from "@/app/(subsystems)/tours/messages/actions";
-import { AssistantChat } from "@/components/assistant/assistant-chat";
+import { AssistantPane } from "@/components/assistant/assistant-pane";
 import { AiAvatar } from "@/components/chat/ai-avatar";
 import { ChatWindow } from "@/components/chat/chat-window";
 import { LineIcon } from "@/components/ui/icons";
 import { ASSISTANT_NAME } from "@/lib/tours/assistant/name";
-import { dockClose, dockMinimize, dockOpen, DOCK_OPEN_EVENT, setDockActive } from "@/components/chat-dock/dock-bus";
+import { dockClose, dockMinimize, dockOpen, DOCK_OPEN_EVENT, setDockActive, setDockBusy, visibleHeads } from "@/components/chat-dock/dock-bus";
 
 const STORAGE_KEY = "daet-dock-v1";
 const WIDE = "(min-width: 1024px)";
@@ -51,6 +51,16 @@ export function ChatDock() {
     return () => setDockActive(false);
   }, [active]);
 
+  // Tell the floating assistant pill whether a window is on screen: it sits in
+  // the corner an open window occupies, so it stands down until the dock folds
+  // back into heads.
+  const hasWindow = state.open.length > 0;
+  useEffect(() => {
+    if (!active) return;
+    setDockBusy(hasWindow);
+    return () => setDockBusy(false);
+  }, [active, hasWindow]);
+
   useEffect(() => {
     try {
       window.localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
@@ -74,7 +84,9 @@ export function ChatDock() {
   const setTitle = (id: string, value: string) => setState((s) => (s.titles[id] === value ? s : { ...s, titles: { ...s.titles, [id]: value } }));
 
   return (
-    <div aria-label="Open chats" role="region" className="pointer-events-none fixed bottom-0 right-24 z-40 hidden items-end gap-3 lg:flex print:hidden">
+    // z-[900]: above every layer the page itself paints (the map's mini card is
+    // z-[800], the header z-40). The dock is site chrome, not page content.
+    <div aria-label="Open chats" role="region" className="pointer-events-none fixed bottom-0 right-24 z-[900] hidden items-end gap-3 lg:flex print:hidden">
       {[...state.open].reverse().map((id) => (
         <div key={id} className="pointer-events-auto flex h-[30rem] w-[22rem] flex-col overflow-hidden rounded-t-2xl bg-surface shadow-[var(--shadow-float)]">
           {id === "ai" ? (
@@ -89,9 +101,9 @@ export function ChatDock() {
           )}
         </div>
       ))}
-      {state.heads.length ? (
+      {visibleHeads(state.heads).length ? (
         <ul className="pointer-events-auto mb-24 flex flex-col gap-2" aria-label="Minimised chats">
-          {state.heads.map((id) => (
+          {visibleHeads(state.heads).map((id) => (
             <li key={id} className="group relative">
               <button
                 type="button"
@@ -119,14 +131,14 @@ export function ChatDock() {
 }
 
 function WindowControls({ name, onMinimize, onClose, href }: { name: string; onMinimize: () => void; onClose: () => void; href: string }) {
-  const btn = "grid h-11 w-11 shrink-0 place-items-center rounded-full text-white hover:bg-white/15";
+  const btn = "grid h-9 w-9 shrink-0 place-items-center rounded-full text-white hover:bg-white/15";
   return (
     <span className="flex shrink-0">
       <a href={href} aria-label={`Open ${name} full screen`} className={btn}>
         <LineIcon name="arrowRight" className="h-5 w-5 -rotate-45" />
       </a>
       <button type="button" onClick={onMinimize} aria-label={`Minimise ${name}`} className={btn}>
-        <span aria-hidden="true" className="h-0.5 w-4 rounded bg-surface" />
+        <span aria-hidden="true" className="h-0.5 w-4 rounded bg-current" />
       </button>
       <button type="button" onClick={onClose} aria-label={`Close ${name}`} className={btn}>
         <LineIcon name="close" className="h-5 w-5" />
@@ -192,15 +204,10 @@ function ThreadDockWindow({ id, onLoaded, onMinimize, onClose }: { id: string; o
 function AiDockWindow({ onMinimize, onClose }: { onMinimize: () => void; onClose: () => void }) {
   return (
     <section aria-label={ASSISTANT_NAME} className="flex h-full min-h-0 flex-col">
-      <header className="flex items-center gap-2 bg-blue-600 px-2 py-1.5 text-white">
-        <AiAvatar size="sm" />
-        <div className="min-w-0 flex-1">
-          <h2 className="truncate text-base font-bold">{ASSISTANT_NAME}</h2>
-          <p className="truncate text-sm text-white/90">Your local guide · always on</p>
-        </div>
-        <WindowControls name={ASSISTANT_NAME} href="/tours/messages/ai" onMinimize={onMinimize} onClose={onClose} />
-      </header>
-      <AssistantChat signedIn autoFocus />
+      <AssistantPane
+        header={{ controls: <WindowControls name={ASSISTANT_NAME} href="/tours/messages/ai" onMinimize={onMinimize} onClose={onClose} /> }}
+        chat={{ signedIn: true, autoFocus: true }}
+      />
     </section>
   );
 }

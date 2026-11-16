@@ -8,19 +8,19 @@ import {
   INITIAL_GUIDE_REVIEW_STATE,
   INITIAL_GUIDE_SUBMISSION_STATE,
 } from "@/lib/tours/guide-action-state";
-import { getAuthenticatedSession } from "@/lib/tours/server-auth";
+import { getVerifiedSession } from "@/lib/tours/server-auth";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { auditGuideSensitiveAccess } from "@/lib/tours/guide-audit";
 
 jest.mock("server-only", () => ({}));
-jest.mock("@/lib/tours/server-auth", () => ({ getAuthenticatedSession: jest.fn() }));
+jest.mock("@/lib/tours/server-auth", () => ({ getVerifiedSession: jest.fn() }));
 jest.mock("@/lib/supabase/admin", () => ({ createSupabaseAdminClient: jest.fn() }));
 jest.mock("@/lib/supabase/server", () => ({ createSupabaseServerClient: jest.fn() }));
 jest.mock("@/lib/tours/guide-audit", () => ({ auditGuideSensitiveAccess: jest.fn() }));
 jest.mock("next/cache", () => ({ revalidatePath: jest.fn() }));
 
-const mockGetSession = getAuthenticatedSession as jest.MockedFunction<typeof getAuthenticatedSession>;
+const mockGetSession = getVerifiedSession as jest.MockedFunction<typeof getVerifiedSession>;
 const mockCreateAdmin = createSupabaseAdminClient as jest.MockedFunction<typeof createSupabaseAdminClient>;
 const mockCreateSessionClient = createSupabaseServerClient as jest.MockedFunction<typeof createSupabaseServerClient>;
 const mockAudit = auditGuideSensitiveAccess as jest.MockedFunction<typeof auditGuideSensitiveAccess>;
@@ -38,7 +38,7 @@ function makeFormData(entries: Record<string, string> = {}): FormData {
 function makeGuideApplicationFormData() {
   const data = makeFormData({
     fullName: "Maya Santos",
-    contactPhone: "+63 917 123 4567",
+    contactPhone: "09171234567",
     bio: "I have guided visitors around Daet for several years.",
     idType: "philippine_national_id",
     idNumber: "1234-5678-9012",
@@ -112,7 +112,7 @@ describe("guide registration Server Action", () => {
     expect(publicQuery.insert).toHaveBeenCalledWith(expect.objectContaining({
       id: guideId,
       profile_id: applicantId,
-      contact_phone: "+63 917 123 4567",
+      contact_phone: "09171234567",
       bio: "I have guided visitors around Daet for several years.",
       consent_full_id_display: true,
       consent_given_at: expect.any(String),

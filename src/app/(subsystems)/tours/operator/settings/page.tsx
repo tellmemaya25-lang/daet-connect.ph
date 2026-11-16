@@ -8,7 +8,6 @@ import { getAuthenticatedSession } from "@/lib/tours/server-auth";
 import { OPERATOR_TABLE, OPERATOR_USER_ID_COLUMN } from "@/lib/tours/operator-contract";
 import { PaymentSettingsForm } from "./payment-settings-form";
 
-export const dynamic = "force-dynamic";
 
 export default async function OperatorSettingsPage() {
   if (!isSupabaseConfigured()) {
@@ -80,14 +79,14 @@ export default async function OperatorSettingsPage() {
         <div className="mb-6">
           <Link
             href="/tours/operator/dashboard"
-            className="inline-flex items-center gap-2 text-sm font-bold text-daet-ink/70 transition hover:text-daet-ink"
+            className="inline-flex min-h-11 items-center gap-2 text-sm font-bold text-daet-ink/70 transition hover:text-daet-ink"
           >
             ← Back to Dashboard
           </Link>
         </div>
 
         {/* Business Info */}
-        <div className="mb-6 rounded-2xl bg-surface p-6">
+        <div className="mb-6 rounded-2xl card-edge bg-surface p-6">
           <h2 className="mb-4 text-xl font-bold text-daet-ink">Business Information</h2>
           <div className="grid grid-cols-2 gap-4 text-sm">
             <div>
@@ -112,7 +111,7 @@ export default async function OperatorSettingsPage() {
         </div>
 
         {/* Payment Settings Form */}
-        <div className="rounded-2xl bg-surface p-6">
+        <div className="rounded-2xl card-edge bg-surface p-6">
           <div className="mb-4">
             <h2 className="text-xl font-bold text-daet-ink">Payment Details</h2>
             <p className="mt-1 text-sm text-daet-ink/70">

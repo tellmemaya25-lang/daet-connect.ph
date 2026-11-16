@@ -10,7 +10,6 @@ import { EVENT_CATEGORIES, EVENT_COLUMNS, type TourEvent } from "@/lib/tours/pro
 import { ATTRACTION_CATEGORIES, isAttractionCategory } from "@/lib/tours/attractions";
 import { eventDayRange, toursDuringEvent, type AvailabilityWithPackage, type EventTour } from "@/lib/tours/event-tours";
 
-export const dynamic = "force-dynamic";
 
 async function loadEvent(id: string): Promise<TourEvent | null> {
   const supabase = await createSupabaseServerClient();
@@ -65,7 +64,7 @@ export default async function EventDetailPage({ params }: { params: Promise<{ id
           <LineIcon name="arrowRight" className="h-4 w-4 rotate-180" /> Back to the calendar
         </Link>
 
-        <article className="overflow-hidden rounded-2xl bg-surface">
+        <article className="overflow-hidden rounded-2xl card-edge bg-surface">
           {event.image_url ? (
             <div className="aspect-video bg-blue-50 dark:bg-blue-950/40">
               <img src={event.image_url} alt={event.title} className="h-full w-full object-cover" />
@@ -135,7 +134,7 @@ export default async function EventDetailPage({ params }: { params: Promise<{ id
                 Open in Google Maps
               </a>
               <Link href="/tours/browse" className="inline-flex min-h-11 items-center justify-center rounded-full px-6 font-bold text-daet-ink hover:bg-muted">
-                Find a tour nearby
+                Find a trip nearby
               </Link>
             </div>
           </div>
@@ -166,7 +165,7 @@ function EventTours({ tours, attractionName }: { tours: EventTour[]; attractionN
         <ul className="mt-4 grid gap-4 sm:grid-cols-2">
           {tours.map((tour) => (
             <li key={tour.id}>
-              <Link href={`/tours/packages/${tour.id}`} className="flex h-full gap-3 rounded-2xl bg-surface p-3">
+              <Link href={`/tours/packages/${tour.id}`} className="flex h-full gap-3 rounded-2xl card-edge bg-surface p-3">
                 <div className="h-20 w-24 shrink-0 overflow-hidden rounded-2xl bg-gradient-to-br from-daet-forest to-daet-leaf">
                   {tour.cover_image_url ? <img src={tour.cover_image_url} alt="" className="h-full w-full object-cover" /> : null}
                 </div>
