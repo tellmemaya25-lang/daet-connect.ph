@@ -84,7 +84,7 @@ jest.mock("leaflet", () => {
       this.zoom = zoom;
       return this;
     }
-    fitBounds(bounds: unknown, options: unknown) {
+    fitBounds(bounds: unknown, _options: unknown) {
       mockState.camera.push(["fitBounds", bounds]);
       return this;
     }

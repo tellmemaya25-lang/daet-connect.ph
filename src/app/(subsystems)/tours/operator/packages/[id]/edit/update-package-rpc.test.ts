@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, jest } from "@jest/globals";
+import { describe, it, expect } from "@jest/globals";
 
 /**
  * Unit tests for update_package_and_relations RPC function
@@ -110,7 +110,7 @@ describe("update_package_and_relations RPC Function", () => {
       // This test verifies that after a successful update,
       // the updated_at timestamp is set to the current server time
 
-      const mockPackageData = {
+      const _mockPackageData = {
         title: "Updated Package",
         location_name: "Location",
         description: "Description of the package",
@@ -465,7 +465,7 @@ describe("update_package_and_relations RPC Function", () => {
    */
   describe("Inclusion Item Constraints", () => {
     it("should require at least one inclusion item", () => {
-      const emptyInclusions: typeof mockInclusions = [];
+      const _emptyInclusions: typeof mockInclusions = [];
       const mockInclusions = [{ item_text: "Must have at least one", is_included: true, display_order: 1 }];
 
       // Expected: at least one inclusion with is_included = true
@@ -490,7 +490,7 @@ describe("update_package_and_relations RPC Function", () => {
         display_order: i + 1,
       }));
 
-      const newInclusion = { item_text: "Item 51", is_included: true, display_order: 51 };
+      const _newInclusion = { item_text: "Item 51", is_included: true, display_order: 51 };
 
       // Expected: adding this would exceed max, should be rejected
       expect(mockInclusions.length + 1 > 50).toBe(true);
@@ -568,9 +568,9 @@ describe("update_package_and_relations RPC Function", () => {
       // Expected: Only the authenticated user who owns the operator account
       // that created the package can call this RPC
 
-      const ownerUserId = "user-123";
+      const _ownerUserId = "user-123";
       const operatorId = "operator-456";
-      const packageId = "package-789";
+      const _packageId = "package-789";
       const packageOperatorId: string = "operator-456"; // Same as ownerUserId's operator
 
       // Expected: owner can update
@@ -581,7 +581,7 @@ describe("update_package_and_relations RPC Function", () => {
       // Scenario: Operator A created the package
       //           Operator B tries to update it
 
-      const ownerOperatorId: string = "operator-A";
+      const _ownerOperatorId: string = "operator-A";
       const packageOperatorId: string = "operator-A";
       const attemptingOperatorId: string = "operator-B";
 

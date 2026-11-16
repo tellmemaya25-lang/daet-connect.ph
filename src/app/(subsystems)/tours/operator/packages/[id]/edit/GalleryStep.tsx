@@ -18,7 +18,7 @@ import {
 } from "@dnd-kit/core";
 import { SortableContext, rectSwappingStrategy, sortableKeyboardCoordinates } from "@dnd-kit/sortable";
 import { useFeedback } from "@/components/ui/feedback";
-import type { EditGalleryImage, EditPackageStatus, ValidationErrors, StepProps } from "./edit-types";
+import type { EditGalleryImage, StepProps } from "./edit-types";
 import { deletePackageImage } from "./actions";
 import { ALLOWED_IMAGE_EXTENSIONS, ALLOWED_IMAGE_TYPES, EDIT_LIMITS } from "./edit-constants";
 import { getEditPermissions } from "./permissions";

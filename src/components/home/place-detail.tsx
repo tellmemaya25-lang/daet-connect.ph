@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { ButtonLink, buttonClasses } from "@/components/ui/button";
 import { placeMapsUrl } from "@/lib/tours/guide/maps";
 import type { FanPlace } from "./fan-places";

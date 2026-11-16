@@ -20,7 +20,6 @@
 import {
   updatePackageCore,
   replacePriceVariants,
-  replacePackageStops,
   submitPackageForReview,
   getPackageDetail,
   type PackageCoreInput,
@@ -103,7 +102,7 @@ function createMockPriceVariant(
   };
 }
 
-function createMockStop(overrides: Partial<PackageStopInput> = {}): PackageStopInput {
+function _createMockStop(overrides: Partial<PackageStopInput> = {}): PackageStopInput {
   return {
     id: FIXTURES.stopId,
     locationName: "Mount Peak",
@@ -190,7 +189,7 @@ function setupSuccessfulSession() {
   });
 }
 
-function setupChainableQuery(mockClient: any, table: string) {
+function setupChainableQuery(_mockClient: any, _table: string) {
   const query = {
     select: jest.fn().mockReturnThis(),
     insert: jest.fn().mockReturnThis(),

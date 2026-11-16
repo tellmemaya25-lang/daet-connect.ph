@@ -56,7 +56,7 @@ export default async function GuideMyToursPage() {
     return (
       <PageFrame>
         <Notice variant="warning" title="Account pending approval">
-          Your guide account is pending approval. You'll be able to view assigned tours once
+          Your guide account is pending approval. You’ll be able to view assigned tours once
           approved.
         </Notice>
       </PageFrame>

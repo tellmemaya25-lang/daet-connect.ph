@@ -1,5 +1,4 @@
 import { requireEditablePackageStatus as requireEditablePackageStatusAction } from "./actions";
-import { PackageStatus } from "@/lib/tours/package-contract";
 
 type EditabilityResult = Awaited<ReturnType<typeof requireEditablePackageStatusAction>>;
 type LooseEditabilityResult = Partial<Extract<EditabilityResult, { data: unknown }>> &

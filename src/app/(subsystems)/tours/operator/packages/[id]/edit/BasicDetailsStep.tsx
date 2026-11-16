@@ -28,7 +28,6 @@ interface BasicDetailsStepProps {
  */
 export function BasicDetailsStep({
   data,
-  originalData,
   packageStatus,
   onUpdate,
   errors,

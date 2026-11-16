@@ -1,6 +1,7 @@
 "use client";
 
 import { Component, type ReactNode } from "react";
+import Link from "next/link";
 
 /**
  * Keeps a map's failure to the map.
@@ -32,9 +33,9 @@ export class MapBoundary extends Component<{ children: ReactNode }, { failed: bo
     return (
       <p className="rounded-2xl card-edge bg-surface p-6 text-lg text-daet-ink">
         The map is not available just now. Every place it pins is listed on this page, and the{" "}
-        <a href="/tours/attractions" className="font-bold text-blue-700 underline dark:text-blue-300">
+        <Link href="/tours/attractions" className="font-bold text-blue-700 underline dark:text-blue-300">
           places page
-        </a>{" "}
+        </Link>{" "}
         has them all with their own maps.
       </p>
     );

@@ -152,7 +152,7 @@ export function QuestionsCard({ prefill, today, onSubmit, title = "Before I draf
           <input value={other} maxLength={60} onChange={(e) => { setOther(e.target.value); setChosen(true); }} placeholder="Type a city" className={field} aria-invalid={Boolean(errors.origin)} />
         </label>
         {remembered ? <p className="text-sm text-slate-600 dark:text-slate-400">Remembered from your last trip</p> : null}
-        {!origin ? <p className="text-sm text-slate-600 dark:text-slate-400">Choose where you're travelling from to continue.</p> : null}
+        {!origin ? <p className="text-sm text-slate-600 dark:text-slate-400">Choose where you’re travelling from to continue.</p> : null}
         {errors.origin ? <p role="alert" className="text-sm font-semibold text-red-700 dark:text-red-300">{errors.origin}</p> : null}
       </fieldset>
 

@@ -4,7 +4,6 @@ import { LiveTourBoard } from "@/components/tours/live/live-tour-board";
 import { Notice } from "@/components/ui/notice";
 import { PageFrame } from "@/components/ui/page-frame";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
-import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { isUuid } from "@/lib/tours/operator-access";
 import { loadLiveTour } from "@/app/(subsystems)/tours/live/load-live-tour";
 import { getAuthUser } from "@/lib/tours/server-auth";
@@ -22,7 +21,6 @@ export default async function OperatorLiveTourPage({ params }: PageProps) {
   }
   const { bookingId } = await params;
   if (!isUuid(bookingId)) notFound();
-  const supabase = await createSupabaseServerClient();
   const user = await getAuthUser();
   if (!user) redirect(`/login?next=${encodeURIComponent(`/tours/operator/live/${bookingId}`)}`);
 

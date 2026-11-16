@@ -4,7 +4,7 @@ import { Field, Textarea } from "@/components/ui/field";
 import { LineIcon } from "@/components/ui/icons";
 import React, { useCallback, useState } from "react";
 import { useFeedback } from "@/components/ui/feedback";
-import type { EditInclusion, EditPackageStatus, ValidationErrors, StepProps } from "./edit-types";
+import type { EditInclusion, StepProps } from "./edit-types";
 import { EDIT_LIMITS } from "./edit-constants";
 import { getEditPermissions } from "./permissions";
 import { withDisplayOrder } from "./edit-order";
@@ -24,7 +24,6 @@ type InclusionsStepProps = StepProps<EditInclusion[]>;
  */
 export function InclusionsStep({
   data,
-  originalData,
   packageStatus,
   onUpdate,
   errors,

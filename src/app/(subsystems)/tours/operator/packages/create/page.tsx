@@ -5,11 +5,6 @@ import { isSupabaseConfigured } from "@/lib/supabase/env";
 import { getAuthenticatedSession } from "@/lib/tours/server-auth";
 import { canAccessOperatorDashboard } from "@/lib/tours/operator-access";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-import {
-  OPERATOR_TABLE,
-  OPERATOR_USER_ID_COLUMN,
-  OPERATOR_OWN_STATUS_SELECT,
-} from "@/lib/tours/operator-contract";
 import { PackageCreateForm } from "./package-create-form";
 
 

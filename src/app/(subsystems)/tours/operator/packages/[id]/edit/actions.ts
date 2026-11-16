@@ -4,22 +4,11 @@ import { getVerifiedSession } from "@/lib/tours/server-auth";
 import { isUuid } from "@/lib/tours/operator-access";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import {
-  PACKAGE_DETAIL_SELECT,
-  PACKAGE_FIELDS,
-  PACKAGE_LIST_SELECT,
-  PACKAGE_STATUS,
   PACKAGE_TABLE,
   PACKAGE_STORAGE_BUCKET,
-  PRICE_VARIANT_FIELDS,
-  PRICE_VARIANT_TABLE,
-  STOP_FIELDS,
-  STOP_TABLE,
-  type PackageDetailRecord,
   type PackageStatus,
   type PriceVariantInput,
   type PackageStopInput,
-  type PriceVariantRecord,
-  type PackageStopRecord,
 } from "@/lib/tours/package-contract";
 import { OPERATOR_TABLE } from "@/lib/tours/operator-contract";
 import { EDIT_PACKAGE_SELECT, mapPackageRowToRecord } from "./edit-mappers";
@@ -53,20 +42,6 @@ interface RequirePackageOwnershipResult {
 interface AuthenticatedSessionResult {
   operatorId: string;
   userId: string;
-}
-
-/**
- * Result type for requireEditablePackageStatus helper.
- * 
- * Returns either:
- * - error object with status code (403) and status-specific message
- * - data object with editability flag, status, and optional allowed/restricted field lists
- */
-interface EditablePackageStatusResult {
-  isEditable: true;
-  status: PackageStatus;
-  allowedFields?: string[];
-  restrictedFields?: string[];
 }
 
 /**
@@ -203,7 +178,7 @@ export async function requireAuthenticated(
         userId: session.user.id,
       },
     };
-  } catch (error) {
+  } catch {
     // Treat unexpected errors as 401 (not authenticated)
     return {
       error: {
@@ -276,7 +251,7 @@ export async function requirePackageOwnership(
         status: pkg.status as PackageStatus,
       },
     };
-  } catch (error) {
+  } catch {
     // Treat unexpected errors as 404 for security (no information disclosure)
     return {
       error: { status: 404, message: "Package not found." },

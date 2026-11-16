@@ -26,12 +26,6 @@ export function PackageReviewStep({
     onSubmit({});
   };
 
-  const defaultVariant = data.priceVariants.find((v) => v.isDefault);
-  const priceDisplay = defaultVariant
-    ? defaultVariant.pricePerPax
-      ? `${formatPeso(defaultVariant.pricePerPax)}/pax`
-      : `${formatPeso(defaultVariant.flatPrice)} flat`
-    : "Price not set";
 
   return (
     <form onSubmit={handleSubmitForReview} className="space-y-6">

@@ -49,7 +49,7 @@ export function PackageCreateForm({ operatorId }: Props) {
       formData.append("coverImage", coverImage);
     }
     
-    galleryImages.forEach((file, index) => {
+    galleryImages.forEach((file) => {
       formData.append("galleryImages", file);
     });
 
@@ -168,9 +168,9 @@ export function PackageCreateForm({ operatorId }: Props) {
 
       {/* Inclusions */}
       <section className="rounded-2xl card-edge bg-surface p-6">
-        <h2 className="text-xl font-bold text-daet-ink">What's Included</h2>
+        <h2 className="text-xl font-bold text-daet-ink">What’s Included</h2>
         <p className="mt-1 text-sm text-daet-ink/70">
-          List what's included and not included in your package (one item per line).
+          List what’s included and not included in your package (one item per line).
         </p>
 
         <div className="mt-6 space-y-4">

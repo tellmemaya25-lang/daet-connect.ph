@@ -51,9 +51,9 @@ export function PackageInclusionsStep({
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       <div>
-        <h2 className="text-2xl font-bold text-daet-ink">What's included?</h2>
+        <h2 className="text-2xl font-bold text-daet-ink">What’s included?</h2>
         <p className="mt-2 text-sm text-daet-ink/65">
-          Help tourists know exactly what they're getting — list what's included and what's not.
+          Help tourists know exactly what they’re getting — list what’s included and what’s not.
         </p>
       </div>
 
@@ -61,7 +61,7 @@ export function PackageInclusionsStep({
       <div>
         <label htmlFor="new-inclusion" className="block text-sm font-bold text-daet-ink">Inclusions</label>
         <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
-          What's provided in this tour package?
+          What’s provided in this tour package?
         </p>
 
         <div className="mt-3 flex gap-2">
