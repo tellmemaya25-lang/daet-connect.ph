@@ -57,7 +57,6 @@ export function AdminShell({ children, initialCollapsed, name }: { children: Rea
   const menuButton = useRef<HTMLButtonElement>(null);
   const section = areaFor(pathname)?.label ?? "Admin";
 
-  useEffect(() => setDrawer(false), [pathname]);
   useEffect(() => {
     if (!drawer) return;
     const onKey = (e: KeyboardEvent) => {

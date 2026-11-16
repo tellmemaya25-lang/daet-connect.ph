@@ -15,7 +15,8 @@
     "test:scripts": "node --test scripts/*.test.mjs",
     "seed:demo": "node scripts/seed-demo.mjs",
     "paymongo:setup": "node scripts/paymongo-setup.mjs",
-    "postinstall": "node scripts/copy-maplibre-worker.mjs"
+    "postinstall": "node scripts/copy-maplibre-worker.mjs",
+    "lint": "eslint ."
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^1.2.0",
@@ -42,6 +43,8 @@
     "@types/react": "^19.2.0",
     "@types/react-dom": "^19.2.0",
     "@types/web-push": "^3.6.4",
+    "eslint": "^9.39.5",
+    "eslint-config-next": "^16.4.2",
     "fast-check": "^4.10.2",
     "jest": "^30.5.2",
     "jest-environment-jsdom": "^30.5.2",
