@@ -2,27 +2,31 @@ import type { IconName } from "@/components/ui/icons";
 
 export type AdminArea = { href: string; label: string; icon: IconName };
 
+const A = (href: string, label: string, icon: IconName): AdminArea => ({ href: "/tours/admin" + href, label, icon });
+
 /** Only areas that exist in production. Add one here when its page ships. */
-export const ADMIN_AREAS: AdminArea[] = [
-  { href: "/tours/admin", label: "Dashboard", icon: "chart" },
-  { href: "/tours/admin/analytics", label: "Analytics", icon: "chart" },
-  { href: "/tours/admin/operators", label: "Operators", icon: "building" },
-  { href: "/tours/admin/guides", label: "Guides", icon: "guide" },
-  { href: "/tours/admin/packages", label: "Packages", icon: "box" },
-  { href: "/tours/admin/reviews", label: "Reviews", icon: "star" },
-  { href: "/tours/admin/attractions", label: "Places", icon: "pin" },
-  { href: "/tours/admin/events", label: "Events", icon: "calendar" },
-  { href: "/tours/admin/guide-places", label: "Food and stays", icon: "plate" },
-  { href: "/tours/admin/fares", label: "Fares", icon: "ticket" },
-  { href: "/tours/admin/merch", label: "Merchandise", icon: "bag" },
-  { href: "/tours/admin/guide-assignments", label: "Guide assignments", icon: "guide" },
-  { href: "/tours/admin/earnings", label: "Earnings and revenue", icon: "money" },
-  { href: "/tours/admin/accounts", label: "Accounts and roles", icon: "user" },
-  { href: "/tours/admin/reports", label: "Reports", icon: "warning" },
-  { href: "/tours/admin/feedback", label: "Assistant feedback", icon: "message" },
-  { href: "/tours/admin/emergency", label: "Emergency numbers", icon: "phone" },
-  { href: "/tours/admin/activity", label: "Activity log", icon: "receipt" },
+export const ADMIN_GROUPS: { title: string; areas: AdminArea[] }[] = [
+  {
+    title: "Main",
+    areas: [A("", "Dashboard", "chart"), A("/analytics", "Analytics", "chart"), A("/earnings", "Earnings and revenue", "money"), A("/activity", "Activity log", "receipt")],
+  },
+  { title: "Queues", areas: [A("/operators", "Operators", "building"), A("/guides", "Guides", "guide"), A("/packages", "Packages", "box")] },
+  { title: "People", areas: [A("/accounts", "Accounts and roles", "user"), A("/guide-assignments", "Guide assignments", "guide")] },
+  {
+    title: "Content",
+    areas: [
+      A("/attractions", "Places", "pin"),
+      A("/events", "Events", "calendar"),
+      A("/guide-places", "Food and stays", "plate"),
+      A("/fares", "Fares", "ticket"),
+      A("/merch", "Merchandise", "bag"),
+      A("/emergency", "Emergency numbers", "phone"),
+    ],
+  },
+  { title: "Moderation", areas: [A("/reviews", "Reviews", "star"), A("/reports", "Reports", "warning"), A("/feedback", "Assistant feedback", "message")] },
 ];
+
+export const ADMIN_AREAS: AdminArea[] = ADMIN_GROUPS.flatMap((g) => g.areas);
 
 /** The area a path belongs to: the longest matching href wins, so /tours/admin only matches itself. */
 export function areaFor(pathname: string): AdminArea | undefined {

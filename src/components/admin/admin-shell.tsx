@@ -6,40 +6,51 @@ import { useEffect, useRef, useState, type ReactNode } from "react";
 import { LineIcon } from "@/components/ui/icons";
 import { AccountMenu, type AccountLink } from "@/components/ui/account-menu";
 import { cn } from "@/components/ui/cn";
-import { ADMIN_AREAS, SIDEBAR_COOKIE, areaFor } from "./nav";
+import { ADMIN_GROUPS, SIDEBAR_COOKIE, areaFor } from "./nav";
 
 function NavLinks({ pathname, collapsed = false, onNavigate }: { pathname: string; collapsed?: boolean; onNavigate?: () => void }) {
   const current = areaFor(pathname);
   return (
-    <ul className="flex flex-col gap-1">
-      {ADMIN_AREAS.map((a) => {
-        const on = current?.href === a.href;
-        return (
-          <li key={a.href}>
-            <Link
-              href={a.href}
-              onClick={onNavigate}
-              aria-current={on ? "page" : undefined}
-              title={collapsed ? a.label : undefined}
-              className={cn(
-                "flex min-h-11 items-center gap-3 rounded-xl px-3 text-sm font-bold",
-                on ? "bg-blue-600 text-white" : "text-slate-700 hover:bg-surface hover:text-blue-700",
-                collapsed && "justify-center px-0",
-              )}
-            >
-              <LineIcon name={a.icon} className="h-5 w-5 flex-none" />
-              {collapsed ? <span className="sr-only">{a.label}</span> : <span className="truncate">{a.label}</span>}
-            </Link>
-          </li>
-        );
-      })}
-    </ul>
+    <div className="flex flex-col gap-4">
+      {ADMIN_GROUPS.map((g) => (
+        <div key={g.title} className="flex flex-col gap-1">
+          {collapsed ? (
+            <span aria-hidden="true" className="mx-3 mb-1 border-t border-line first:hidden" />
+          ) : (
+            <p className="px-3 pb-1 text-xs font-bold text-daet-ink/70">{g.title}</p>
+          )}
+          <ul className="flex flex-col gap-1">
+            {g.areas.map((a) => {
+              const on = current?.href === a.href;
+              return (
+                <li key={a.href}>
+                  <Link
+                    href={a.href}
+                    onClick={onNavigate}
+                    aria-current={on ? "page" : undefined}
+                    title={collapsed ? a.label : undefined}
+                    className={cn(
+                      "flex min-h-11 items-center gap-3 rounded-xl px-3 text-sm font-bold",
+                      on ? "bg-blue-600 text-white" : "text-daet-ink hover:bg-surface hover:text-blue-700",
+                      collapsed && "justify-center px-0",
+                    )}
+                  >
+                    <LineIcon name={a.icon} className="h-5 w-5 flex-none" />
+                    {collapsed ? <span className="sr-only">{a.label}</span> : <span className="truncate">{a.label}</span>}
+                  </Link>
+                </li>
+              );
+            })}
+          </ul>
+        </div>
+      ))}
+    </div>
   );
 }
 
 function Wordmark({ collapsed = false }: { collapsed?: boolean }) {
   return (
-    <Link href="/tours/admin" className="flex min-h-11 items-center gap-2 font-serif text-lg font-semibold text-slate-900">
+    <Link href="/tours/admin" className="flex min-h-11 items-center gap-2 font-serif text-lg font-semibold text-daet-ink">
       <span aria-hidden="true" className="grid h-8 w-8 place-items-center rounded-lg bg-blue-600 text-sm text-white">D</span>
       {collapsed ? <span className="sr-only">Daet Connect admin</span> : <span>Daet Connect</span>}
     </Link>
@@ -86,7 +97,7 @@ export function AdminShell({
   }
 
   return (
-    <div className="flex min-h-screen bg-muted text-slate-900">
+    <div className="flex min-h-screen bg-muted text-daet-ink">
       <a
         href="#main-content"
         className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:rounded-full focus:bg-blue-600 focus:px-5 focus:py-3 focus:text-sm focus:font-bold focus:text-white"
@@ -97,7 +108,7 @@ export function AdminShell({
       <aside
         aria-label="Admin"
         className={cn(
-          "sticky top-0 hidden h-screen flex-none flex-col gap-4 overflow-y-auto border-r border-slate-300 bg-muted p-4 lg:flex",
+          "sticky top-0 hidden h-screen flex-none flex-col gap-4 overflow-y-auto border-r border-line bg-muted p-4 lg:flex",
           collapsed ? "w-20" : "w-60",
         )}
       >
@@ -108,7 +119,7 @@ export function AdminShell({
             onClick={toggle}
             aria-expanded={!collapsed}
             aria-label={collapsed ? "Expand menu" : "Collapse menu"}
-            className="grid h-11 w-11 place-items-center rounded-xl text-slate-600 hover:bg-surface hover:text-blue-700"
+            className="grid h-11 w-11 place-items-center rounded-xl text-daet-ink/80 hover:bg-surface hover:text-blue-700"
           >
             <LineIcon name="menu" />
           </button>
@@ -119,7 +130,7 @@ export function AdminShell({
       </aside>
 
       <div className="flex min-w-0 flex-1 flex-col bg-surface">
-        <header className="sticky top-0 z-20 flex min-h-[72px] items-center justify-between gap-4 border-b border-slate-400 bg-surface px-4 sm:px-8">
+        <header className="sticky top-0 z-20 flex min-h-[72px] items-center justify-between gap-4 border-b border-line bg-surface px-4 sm:px-8">
           <div className="flex min-w-0 items-center gap-2">
             <button
               ref={menuButton}
@@ -127,7 +138,7 @@ export function AdminShell({
               onClick={() => setDrawer(true)}
               aria-expanded={drawer}
               aria-controls="admin-drawer"
-              className="grid h-11 w-11 place-items-center rounded-xl text-slate-700 hover:bg-muted lg:hidden"
+              className="grid h-11 w-11 place-items-center rounded-xl text-daet-ink hover:bg-muted lg:hidden"
             >
               <LineIcon name="menu" />
               <span className="sr-only">Open menu</span>
@@ -160,7 +171,7 @@ export function AdminShell({
                   setDrawer(false);
                   menuButton.current?.focus();
                 }}
-                className="grid h-11 w-11 place-items-center rounded-xl text-slate-700 hover:bg-surface"
+                className="grid h-11 w-11 place-items-center rounded-xl text-daet-ink hover:bg-surface"
               >
                 <LineIcon name="close" />
                 <span className="sr-only">Close menu</span>
