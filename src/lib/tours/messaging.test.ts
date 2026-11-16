@@ -144,6 +144,8 @@ describe("chat channels", () => {
   it("offers inbox filters only when there is more than one kind", () => {
     expect(inboxFilters(["booking", "booking"])).toEqual([]);
     expect(inboxFilters(["operator_admin", "booking", "nonsense"]).map((f) => f.label)).toEqual(["All", "Booking chats", "Tourism Office"]);
+    expect(inboxFilters(["booking"], { friendsTab: true }).map((f) => f.label)).toEqual(["All", "Booking chats", "Friends"]);
+    expect(inboxFilters([], { friendsTab: true }).map((f) => f.label)).toEqual(["All", "Friends"]);
     expect(isConversationKind("guide_tourist")).toBe(true);
     expect(isConversationKind("x")).toBe(false);
   });

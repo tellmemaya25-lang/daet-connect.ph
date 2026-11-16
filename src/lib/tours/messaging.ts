@@ -245,9 +245,10 @@ const tourDay = (dateKey: string) =>
   new Date(`${dateKey}T00:00:00Z`).toLocaleDateString("en-PH", { month: "short", day: "numeric", timeZone: "UTC" });
 
 /** Filter chips for the inbox: "All" plus each kind the viewer has, in a fixed order. */
-export function inboxFilters(kinds: string[]): Array<{ kind: ConversationKind | null; label: string }> {
-  const present = CONVERSATION_KINDS.filter((kind) => kinds.includes(kind));
-  if (present.length < 2) return [];
+export function inboxFilters(kinds: string[], { friendsTab = false }: { friendsTab?: boolean } = {}): Array<{ kind: ConversationKind | null; label: string }> {
+  // Tourists always get a Friends tab, so they can start a chat with a friend from it.
+  const present = CONVERSATION_KINDS.filter((kind) => kinds.includes(kind) || (friendsTab && kind === "friends"));
+  if (present.length < 2 && !(friendsTab && present.length === 1)) return [];
   return [{ kind: null, label: "All" }, ...present.map((kind) => ({ kind, label: KIND_LABELS[kind] }))];
 }
 

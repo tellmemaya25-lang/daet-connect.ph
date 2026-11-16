@@ -9,6 +9,7 @@ import { timed } from "@/lib/server-timing";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { getAuthenticatedSession, getAuthUser } from "@/lib/tours/server-auth";
 import { OpenChatButton } from "@/app/(subsystems)/tours/messages/open-chat-button";
+import { parseFriendLists } from "@/lib/tours/friends";
 import { inboxFilters, isConversationKind, type InboxRow } from "@/lib/tours/messaging";
 import { InboxList } from "@/app/(subsystems)/tours/messages/inbox-list";
 import { LiveInbox } from "@/app/(subsystems)/tours/messages/live-inbox";
@@ -74,9 +75,15 @@ async function Inbox({ searchParams }: PageProps) {
   ]);
   if (error) console.error("Inbox error:", error);
   const all = (data ?? []) as InboxRow[];
-  const filters = inboxFilters(all.map((row) => row.kind));
+  const isTourist = session.role === "tourist";
+  const filters = inboxFilters(all.map((row) => row.kind), { friendsTab: isTourist });
   const kind = isConversationKind(rawKind) && filters.some((f) => f.kind === rawKind) ? rawKind : null;
   const rows = kind ? all.filter((row) => row.kind === kind) : all;
+
+  // Friends tab: friends without a chat yet, to start one.
+  const chatted = new Set(all.filter((row) => row.kind === "friends").map((row) => row.other_profile_id));
+  const friendsToMessage =
+    kind === "friends" ? parseFriendLists((await supabase.rpc("tours_my_friends")).data).friends.filter((f) => !chatted.has(f.id)) : [];
 
   // The Tourism Office can start a chat with any operator.
   const isAdmin = session.role === "admin";
@@ -122,6 +129,29 @@ async function Inbox({ searchParams }: PageProps) {
           </ul>
         )}
       </details>
+    ) : null}
+
+    {kind === "friends" ? (
+      <section aria-labelledby="message-a-friend" className="mt-4 rounded-2xl card-edge bg-surface p-4">
+        <h2 id="message-a-friend" className="text-sm font-bold text-daet-ink">Message a friend</h2>
+        {friendsToMessage.length ? (
+          <ul className="mt-2 divide-y divide-daet-ink/10">
+            {friendsToMessage.map((friend) => (
+              <li key={friend.id} className="flex flex-wrap items-center justify-between gap-2 py-2">
+                <span className="text-sm font-bold text-daet-ink">{friend.name}</span>
+                <OpenChatButton target={{ kind: "friends", friendId: friend.id }} label="Message" variant="ghost" />
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p className="mt-2 text-sm text-daet-ink/70">
+            {chatted.size ? "You have a chat with every friend below." : "No friends yet."}{" "}
+            <Link href="/tours/friends" className="font-bold text-blue-700 underline dark:text-blue-300">
+              Find friends
+            </Link>
+          </p>
+        )}
+      </section>
     ) : null}
 
     {error ? <Notice variant="error" className="mt-6">Messages could not be loaded. Refresh to try again.</Notice> : null}
