@@ -2,7 +2,7 @@ import { formatPeso } from "@/lib/money";
 import { createSupabaseServerClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
-import { PageFrame } from '@/components/ui/page-frame';
+import { AdminPage } from "@/components/admin/admin-page";
 import { PackageReviewForm } from './package-review-form';
 
 export default async function AdminPackageReviewPage({
@@ -37,7 +37,7 @@ export default async function AdminPackageReviewPage({
   if (error || !packageData) {
     console.error('Package fetch error:', error);
     return (
-      <PageFrame adminNav>
+      <AdminPage>
         <div className="max-w-4xl mx-auto">
           <Link href="/tours/admin/packages" className="text-sm font-bold text-daet-ink/70 hover:text-daet-ink">
             ← All packages
@@ -47,7 +47,7 @@ export default async function AdminPackageReviewPage({
             <p className="text-red-700 dark:text-red-300 text-sm mt-2">It may have been deleted. Go back to the package list and try again.</p>
           </div>
         </div>
-      </PageFrame>
+      </AdminPage>
     );
   }
 
@@ -109,7 +109,7 @@ export default async function AdminPackageReviewPage({
   const operator = packageWithOperator.tours_operators;
 
   return (
-    <PageFrame adminNav>
+    <AdminPage>
     <div>
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Back Button */}
@@ -262,6 +262,6 @@ export default async function AdminPackageReviewPage({
         <PackageReviewForm packageId={id} currentStatus={packageWithOperator.status} />
       </div>
     </div>
-    </PageFrame>
+    </AdminPage>
   );
 }

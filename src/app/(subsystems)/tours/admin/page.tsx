@@ -2,7 +2,7 @@ import { LineIcon } from "@/components/ui/icons";
 import { createSupabaseServerClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
-import { PageFrame } from '@/components/ui/page-frame';
+import { AdminPage } from "@/components/admin/admin-page";
 import { Notice } from '@/components/ui/notice';
 
 export const dynamic = 'force-dynamic';
@@ -14,7 +14,7 @@ export default async function AdminDashboardPage() {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) {
     return (
-      <PageFrame>
+      <AdminPage>
         <div className="mx-auto max-w-2xl py-8">
           <Notice variant="info" title="Admin sign-in required">
             <Link href={`/login?next=${encodeURIComponent("/tours/admin")}`} className="font-bold underline underline-offset-4">
@@ -23,7 +23,7 @@ export default async function AdminDashboardPage() {
             with a Tourism Office admin account.
           </Notice>
         </div>
-      </PageFrame>
+      </AdminPage>
     );
   }
   
@@ -35,13 +35,13 @@ export default async function AdminDashboardPage() {
   
   if (profile?.role !== 'admin') {
     return (
-      <PageFrame>
+      <AdminPage>
         <div className="mx-auto max-w-2xl py-8">
           <Notice variant="error" title="Access denied">
             Only Tourism Office admins can access this dashboard.
           </Notice>
         </div>
-      </PageFrame>
+      </AdminPage>
     );
   }
 
@@ -74,7 +74,7 @@ export default async function AdminDashboardPage() {
     .limit(5);
 
   return (
-    <PageFrame adminNav>
+    <AdminPage>
       <div className="mb-8">
         <div className="flex items-center justify-between">
           <div>
@@ -264,7 +264,7 @@ export default async function AdminDashboardPage() {
           </div>
         </div>
       )}
-    </PageFrame>
+    </AdminPage>
   );
 }
 

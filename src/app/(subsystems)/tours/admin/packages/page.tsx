@@ -2,7 +2,7 @@ import { formatPeso } from "@/lib/money";
 import { createSupabaseServerClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
-import { PageFrame } from '@/components/ui/page-frame';
+import { AdminPage } from "@/components/admin/admin-page";
 
 export default async function AdminPackagesPage() {
   const supabase = await createSupabaseServerClient();
@@ -101,7 +101,7 @@ export default async function AdminPackagesPage() {
   const draftPackages = packagesWithOperators?.filter(p => p.status === 'draft') || [];
 
   return (
-    <PageFrame adminNav>
+    <AdminPage>
     <div>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Back Button */}
@@ -184,7 +184,7 @@ export default async function AdminPackagesPage() {
         )}
       </div>
     </div>
-    </PageFrame>
+    </AdminPage>
   );
 }
 

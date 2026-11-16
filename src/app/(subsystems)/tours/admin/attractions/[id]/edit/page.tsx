@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { PageFrame } from "@/components/ui/page-frame";
+import { AdminPage } from "@/components/admin/admin-page";
 import { AdminPageHeading, PromoAdminDenied } from "@/components/tours/promo-admin-denied";
 import { ATTRACTION_COLUMNS, toAttraction } from "@/lib/tours/attractions";
 import { isUuid } from "@/lib/tours/operator-access";
@@ -19,13 +19,13 @@ export default async function EditAttractionPage({ params }: { params: Promise<{
   if (!data) notFound();
 
   return (
-    <PageFrame adminNav>
+    <AdminPage>
       <div className="mx-auto max-w-2xl">
         <AdminPageHeading title="Edit attraction" backHref="/tours/admin/attractions" backLabel="All attractions" />
         <div className="rounded-2xl bg-surface p-5 sm:p-8">
           <AttractionForm attraction={toAttraction(data as Record<string, unknown>)} />
         </div>
       </div>
-    </PageFrame>
+    </AdminPage>
   );
 }
