@@ -25,7 +25,7 @@ export function AdminSearch() {
       action="/tours/admin"
       method="get"
       role="search"
-      className="relative order-last min-w-0 basis-full sm:order-none sm:max-w-md sm:flex-1 sm:basis-auto"
+      className="relative order-last min-w-0 basis-full sm:order-none sm:w-72 sm:flex-none sm:basis-auto xl:w-80"
     >
       <label htmlFor="admin-top-search" className="sr-only">
         Search records
