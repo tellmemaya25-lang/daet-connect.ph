@@ -1,5 +1,16 @@
 <!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Context hygiene cheat sheet</title><link rel="stylesheet" href="../assets/style.css"></head><body>
+<title>Context hygiene cheat sheet</title><!--inline:css--><style>:root{--bg:#fffff8;--fg:#111;--mute:#666;--rule:#ddd;--acc:#a00000;--ok:#1a6b2f;--bad:#a00000;--card:#f6f4ea}
+@media (prefers-color-scheme:dark){:root{--bg:#15150f;--fg:#eee;--mute:#aaa;--rule:#333;--acc:#ff8a80;--ok:#7bd88f;--bad:#ff8a80;--card:#22221a}}
+body{background:var(--bg);color:var(--fg);font:18px/1.6 Georgia,"Et Book",serif;max-width:40rem;margin:3rem auto;padding:0 1rem}
+h1{font-size:2rem;line-height:1.2;margin-bottom:.2rem}h2{margin-top:2.2rem;font-size:1.3rem}
+.meta,.cite{color:var(--mute);font-size:.85rem}a{color:var(--acc)}
+.card{background:var(--card);border-left:3px solid var(--acc);padding:.6rem 1rem;margin:1rem 0}
+table{border-collapse:collapse;width:100%;font-size:.95rem}td,th{border-bottom:1px solid var(--rule);padding:.4rem .5rem;text-align:left}
+code{font-size:.9em;background:var(--card);padding:0 .25em}
+.q{margin:1.5rem 0}.q button{display:block;width:100%;text-align:left;margin:.3rem 0;padding:.5rem .8rem;font:inherit;background:var(--card);color:var(--fg);border:1px solid var(--rule);cursor:pointer}
+.q button.ok{border-color:var(--ok)}.q button.no{border-color:var(--bad)}.fb{font-size:.9rem;min-height:1.4em}
+@media print{body{max-width:none;margin:1rem}.q button{border:1px solid #999}}
+</style><!--/inline--></head><body>
 <h1>Context hygiene</h1><p class="meta">From <a href="../lessons/0001-notice-and-recover.html">Lesson 1</a></p>
 <table><tr><th>Signal</th><th>Move</th></tr>
 <tr><td>Corrected twice, still wrong</td><td><code>/clear</code> + one better prompt</td></tr>
