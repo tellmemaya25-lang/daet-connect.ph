@@ -141,7 +141,7 @@ export function LiveTourBoard(props: LiveTourBoardProps) {
       {live.flares.map((f) => (
         <div key={f.id} role="alert" className="rounded-2xl bg-red-50 p-4 text-red-900 dark:bg-red-950/40 dark:text-red-200">
           <p className="flex items-center gap-2 font-bold">
-            <LineIcon name="warning" className="h-5 w-5" /> {contactName} tapped “I'm separated” at {formatClock(f.created_at)}
+            <LineIcon name="warning" className="h-5 w-5" /> {contactName} tapped “I’m separated” at {formatClock(f.created_at)}
           </p>
           <p className="mt-1 text-sm">Their location at that moment is the red pin{f.accuracy_m ? ` (within about ${f.accuracy_m} m)` : ""}. Call them or walk to it.</p>
           <div className="mt-3 flex flex-wrap gap-2">

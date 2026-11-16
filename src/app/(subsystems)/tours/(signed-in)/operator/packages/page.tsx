@@ -5,11 +5,6 @@ import { redirect } from "next/navigation";
 import { PageBody } from "@/components/ui/signed-in-frame";
 import { Notice } from "@/components/ui/notice";
 import { canAccessOperatorDashboard } from "@/lib/tours/operator-access";
-import {
-  OPERATOR_OWN_STATUS_SELECT,
-  OPERATOR_TABLE,
-  OPERATOR_USER_ID_COLUMN,
-} from "@/lib/tours/operator-contract";
 import { getAuthenticatedSession, getAuthUser } from "@/lib/tours/server-auth";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
@@ -142,7 +137,7 @@ async function PackagesContent({ searchParams }: { searchParams: SearchParams })
     <>
         {justSubmitted && (
           <Notice variant="success" className="mt-6">
-            Package submitted for Tourism Office review! You'll be notified once it's approved.
+            Package submitted for Tourism Office review! You’ll be notified once it’s approved.
           </Notice>
         )}
 

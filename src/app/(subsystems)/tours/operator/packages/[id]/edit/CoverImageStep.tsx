@@ -34,10 +34,8 @@ interface CoverImageStepProps {
 export function CoverImageStep({
   packageId,
   data,
-  originalData,
   packageStatus,
   onUpdate,
-  errors,
   loading,
 }: CoverImageStepProps) {
   const permissions = getEditPermissions(packageStatus);
@@ -85,7 +83,7 @@ export function CoverImageStep({
         } else {
           setUploadError(result.error?.message ?? "Failed to upload image");
         }
-      } catch (error) {
+      } catch {
         setUploadError("An error occurred during upload");
       } finally {
         setUploadLoading(false);

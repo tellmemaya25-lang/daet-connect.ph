@@ -406,12 +406,6 @@ export function useFanAnimation({
     const state = live.current;
     const headline = root.current?.querySelector("[data-headline]");
 
-    // The others were slid out along their own angle (openAt); coming back is
-    // the same trip the other way.
-    const slides = wedges.map((_, i) => {
-      const [ux, uy] = midVector(geo.wedges[i]?.mid ?? 270);
-      return { x: ux * SLIDE, y: uy * SLIDE };
-    });
 
     const tl = gsap.timeline({ defaults: { ease: "power3.inOut" } });
     timeline.current = tl;

@@ -9,7 +9,7 @@ jest.mock("@/lib/supabase/server", () => ({ createSupabaseServerClient: jest.fn(
 
 const mockClient = createSupabaseServerClient as jest.MockedFunction<typeof createSupabaseServerClient>;
 
-function request(path = "/auth/oauth", next?: string) {
+function request(path = "/auth/oauth", _next?: string) {
   return new NextRequest(new URL(path, "https://daet.test"), {
     headers: { host: "daet.test", "x-forwarded-proto": "https", "x-forwarded-for": "203.0.113.9" },
   });

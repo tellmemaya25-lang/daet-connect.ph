@@ -94,10 +94,10 @@ describe("invalid choices are blocked up front", () => {
   it("the submit button waits for an origin and says why", () => {
     render(<QuestionsCard prefill={null} today={TODAY} onSubmit={jest.fn()} />);
     expect(screen.getByRole("button", { name: "Draft my plan" })).toBeDisabled();
-    expect(screen.getByText("Choose where you're travelling from to continue.")).toBeInTheDocument();
+    expect(screen.getByText("Choose where you’re travelling from to continue.")).toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", { name: "Manila" }));
     expect(screen.getByRole("button", { name: "Draft my plan" })).toBeEnabled();
-    expect(screen.queryByText("Choose where you're travelling from to continue.")).toBeNull();
+    expect(screen.queryByText("Choose where you’re travelling from to continue.")).toBeNull();
   });
 
   it("the calendar stops at 14 days from the first day", () => {

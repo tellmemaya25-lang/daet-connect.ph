@@ -5,7 +5,7 @@ import { LocationPicker } from "@/components/maps/location-picker";
 import { LineIcon } from "@/components/ui/icons";
 import React, { useCallback, useState } from "react";
 import { useFeedback } from "@/components/ui/feedback";
-import type { EditStop, EditPackageStatus, ValidationErrors, StepProps } from "./edit-types";
+import type { EditStop, StepProps } from "./edit-types";
 import { EDIT_LIMITS, DEFAULT_COORDINATES } from "./edit-constants";
 import { getEditPermissions } from "./permissions";
 import { withStopOrder } from "./edit-order";
@@ -24,7 +24,6 @@ type StopsStepProps = StepProps<EditStop[]>;
  */
 export function StopsStep({
   data,
-  originalData,
   packageStatus,
   onUpdate,
   errors,

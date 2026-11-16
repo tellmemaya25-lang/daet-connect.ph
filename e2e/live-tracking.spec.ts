@@ -56,10 +56,10 @@ test.describe("live tour tracking", () => {
   test("the guide sees the alert and marks the guest found", async ({ browser }) => {
     const { context, page } = await as(browser, "guide");
     await page.goto(`/tours/guide/tours/${BID}/live`, { waitUntil: "networkidle" });
-    await expect(page.getByRole("alert").filter({ hasText: "tapped “I'm separated”" })).toBeVisible();
+    await expect(page.getByRole("alert").filter({ hasText: "tapped “I’m separated”" })).toBeVisible();
     await expect(page.getByText(/Sharing live/)).toBeVisible();
     await page.getByRole("button", { name: "Mark as found" }).click();
-    await expect(page.getByRole("alert").filter({ hasText: "tapped “I'm separated”" })).toHaveCount(0);
+    await expect(page.getByRole("alert").filter({ hasText: "tapped “I’m separated”" })).toHaveCount(0);
     await context.close();
   });
 

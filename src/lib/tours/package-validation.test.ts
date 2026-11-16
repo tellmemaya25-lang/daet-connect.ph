@@ -1,4 +1,4 @@
-import { validatePackageFormData, ValidationResult } from "@/lib/tours/package-validation";
+import { validatePackageFormData } from "@/lib/tours/package-validation";
 
 describe("validatePackageFormData", () => {
   describe("Property 7: Field Validation Framework", () => {

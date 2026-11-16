@@ -11,19 +11,26 @@ export default defineConfig([
     files: ["**/*.{js,jsx,mjs,ts,tsx,mts,cts}"],
     rules: {
       "@typescript-eslint/no-explicit-any": "warn",
-      "@typescript-eslint/no-unused-vars": "warn",
-      "@typescript-eslint/no-require-imports": "warn",
+      // A leading underscore marks a deliberately unused name.
+      "@typescript-eslint/no-unused-vars": [
+        "error",
+        { argsIgnorePattern: "^_", varsIgnorePattern: "^_", caughtErrorsIgnorePattern: "^_", destructuredArrayIgnorePattern: "^_", ignoreRestSiblings: true },
+      ],
       "react-hooks/set-state-in-effect": "warn",
       "react-hooks/refs": "warn",
       "react-hooks/purity": "warn",
       "react-hooks/immutability": "warn",
       "react-hooks/preserve-manual-memoization": "warn",
-      "react/no-unescaped-entities": "warn",
       "@next/next/no-img-element": "warn",
-      "@next/next/no-html-link-for-pages": "warn",
     },
   },
-  // CommonJS files load modules with require().
-  { files: ["**/*.cjs"], rules: { "@typescript-eslint/no-require-imports": "off" } },
+  // CommonJS files and the Node scripts load modules with require().
+  { files: ["**/*.cjs", "scripts/**/*.js"], rules: { "@typescript-eslint/no-require-imports": "off" } },
+  { files: ["**/*.cjs"], rules: { "@typescript-eslint/no-unused-vars": ["error", { varsIgnorePattern: "^_", ignoreRestSiblings: true }] } },
+  // Tests: jest.mock factories require() lazily, and stub links are plain anchors.
+  {
+    files: ["**/*.test.{ts,tsx}", "e2e/**"],
+    rules: { "@typescript-eslint/no-require-imports": "off", "@next/next/no-html-link-for-pages": "off" },
+  },
   globalIgnores([".next/**", "out/**", "build/**", "next-env.d.ts", "public/**", "test-results/**", "playwright-report/**", "supabase/**"]),
 ]);

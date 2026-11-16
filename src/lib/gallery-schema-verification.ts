@@ -79,7 +79,7 @@ export async function verifyGallerySchema(
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
     // 1. Check if table exists
-    const { data: tableExists, error: tableError } = await supabase
+    const { error: tableError } = await supabase
       .from('tours_package_gallery')
       .select('*')
       .limit(0);
@@ -152,7 +152,7 @@ export async function verifyGallerySchema(
     }
 
     // 3. Check constraints
-    const { data: constraints, error: constraintError } = await supabase.rpc(
+    const { data: constraints } = await supabase.rpc(
       'get_table_constraints',
       { table_name: 'tours_package_gallery' }
     );
@@ -192,7 +192,7 @@ export async function verifyGallerySchema(
     result.cascade_delete_valid = true; // Verified by table structure
 
     // 5. Check indexes
-    const { data: indexes, error: indexError } = await supabase.rpc(
+    const { data: indexes } = await supabase.rpc(
       'get_table_indexes',
       { table_name: 'tours_package_gallery' }
     );

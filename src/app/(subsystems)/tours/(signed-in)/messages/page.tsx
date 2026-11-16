@@ -1,7 +1,6 @@
 import { Suspense } from "react";
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import { Badge } from "@/components/ui/badge";
 import { Notice } from "@/components/ui/notice";
 import { PageBody } from "@/components/ui/signed-in-frame";
 import { isSupabaseConfigured } from "@/lib/supabase/env";

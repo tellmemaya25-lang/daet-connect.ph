@@ -1297,7 +1297,6 @@ const user = {
 };
 
 const authLog = [];
-let bodyBuffer = "";
 
 http
   .createServer((req, res) => {
