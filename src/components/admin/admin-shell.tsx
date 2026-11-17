@@ -98,7 +98,7 @@ function NavLinks({
                         "relative flex min-h-11 items-center gap-3 rounded-xl border px-3 text-sm font-bold",
                         on
                           ? "border-line bg-surface text-daet-ink"
-                          : "border-transparent text-daet-ink hover:bg-surface hover:text-blue-700",
+                          : "border-transparent text-daet-ink hover:border-line hover:bg-surface",
                         collapsed && "justify-center px-0",
                       )}
                     >
@@ -226,7 +226,7 @@ export function AdminShell({
             onClick={toggle}
             aria-expanded={!collapsed}
             aria-label={collapsed ? "Expand menu" : "Collapse menu"}
-            className="grid h-11 w-11 flex-none place-items-center rounded-xl border border-line bg-surface text-daet-ink hover:text-blue-700"
+            className="grid h-11 w-11 flex-none place-items-center rounded-xl border border-line bg-surface text-daet-ink hover:border-daet-ink/40"
           >
             <LineIcon name="sidebar" className="h-5 w-5" />
           </button>
