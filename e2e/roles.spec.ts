@@ -207,11 +207,21 @@ test("the admin top bar searches records and Ctrl+Space focuses it", async ({ co
   await expect(page).toHaveURL(/\/tours\/admin\?q=bagasbas&type=attractions/);
 });
 
+test("an admin sees the admin sidebar on messages and notifications", async ({ context, page }) => {
+  await signInAs(context, "admin");
+  await page.setViewportSize({ width: 1400, height: 900 });
+  for (const path of ["/tours/messages", "/tours/notifications"]) {
+    await visit(page, path);
+    await expect(page.getByRole("navigation", { name: "Admin areas" }).first()).toBeVisible();
+    await expect(page.getByRole("button", { name: "Open search" })).toBeVisible();
+  }
+});
+
 test("the admin top bar has messages and notifications", async ({ context, page }) => {
   await signInAs(context, "admin");
   await visit(page, "/tours/admin");
   await page.setViewportSize({ width: 1400, height: 900 });
-  await expect(page.getByRole("link", { name: /^Messages/ }).first()).toHaveAttribute("href", "/tours/messages");
+  await expect(page.getByRole("link", { name: /^Messages/ }).first()).toHaveAttribute("href", "/tours/admin/messages");
   const bell = page.getByRole("button", { name: /^Notifications/ });
   await bell.click();
   await expect(page.getByText("Notifications", { exact: true })).toBeVisible();
