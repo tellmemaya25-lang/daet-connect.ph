@@ -1,7 +1,7 @@
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { Notice } from "@/components/ui/notice";
-import { PageFrame } from "@/components/ui/page-frame";
+import { AdminPage } from "@/components/admin/admin-page";
 import { ConfirmSubmitButton } from "@/components/tours/confirm-submit-button";
 import { AdminPageHeading, PromoAdminDenied } from "@/components/tours/promo-admin-denied";
 import { EMERGENCY_COLUMNS, EMERGENCY_KINDS, NATIONAL_HOTLINE, type EmergencyContact } from "@/lib/tours/emergency/contacts";
@@ -25,7 +25,7 @@ export default async function AdminEmergencyPage({ searchParams }: { searchParam
   const today = toManilaDateKey(new Date());
 
   return (
-    <PageFrame adminNav>
+    <AdminPage>
       <AdminPageHeading title="Emergency numbers" backHref="/tours/admin" backLabel="Admin" />
       <p className="-mt-3 mb-6 max-w-2xl text-lg text-daet-ink">
         The Daet AI assistant gives these when a visitor asks for help in an emergency, with the date you last checked them. It always gives the national {NATIONAL_HOTLINE} hotline first. Call each number now and then, and tap Checked today.
@@ -78,6 +78,6 @@ export default async function AdminEmergencyPage({ searchParams }: { searchParam
         <h2 className="mb-3 text-xl font-bold text-daet-ink">Add a number</h2>
         <EmergencyForm />
       </Card>
-    </PageFrame>
+    </AdminPage>
   );
 }

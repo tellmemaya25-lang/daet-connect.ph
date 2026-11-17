@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { PageFrame } from "@/components/ui/page-frame";
+import { AdminPage } from "@/components/admin/admin-page";
 import { AdminPageHeading, PromoAdminDenied } from "@/components/tours/promo-admin-denied";
 import { requirePromoAdmin } from "@/lib/tours/promo-admin";
 import { EVENT_COLUMNS, type TourEvent } from "@/lib/tours/promo-validation";
@@ -18,13 +18,13 @@ export default async function EditEventPage({ params }: { params: Promise<{ id: 
   const { data: attractions } = await admin.supabase.from("tours_attractions").select("id, name").eq("is_active", true).order("name");
 
   return (
-    <PageFrame adminNav>
+    <AdminPage>
       <div className="mx-auto max-w-2xl">
         <AdminPageHeading title="Edit event" backHref="/tours/admin/events" backLabel="All events" />
         <div className="rounded-2xl card-edge bg-surface p-5 sm:p-8">
           <EventForm event={event} attractions={attractions ?? []} />
         </div>
       </div>
-    </PageFrame>
+    </AdminPage>
   );
 }

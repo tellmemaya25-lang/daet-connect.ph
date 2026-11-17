@@ -1,6 +1,6 @@
 import { LineIcon } from "@/components/ui/icons";
 import Link from "next/link";
-import { PageFrame } from "@/components/ui/page-frame";
+import { AdminPage } from "@/components/admin/admin-page";
 import { Notice } from "@/components/ui/notice";
 import { AdminPageHeading, PromoAdminDenied } from "@/components/tours/promo-admin-denied";
 import { ConfirmSubmitButton } from "@/components/tours/confirm-submit-button";
@@ -29,7 +29,7 @@ export default async function AdminEventsPage({
   const now = Date.now();
 
   return (
-    <PageFrame adminNav>
+    <AdminPage>
       <AdminPageHeading
         title="Events calendar"
         backHref="/tours/admin"
@@ -86,6 +86,6 @@ export default async function AdminEventsPage({
           })}
         </ul>
       )}
-    </PageFrame>
+    </AdminPage>
   );
 }

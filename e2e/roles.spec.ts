@@ -55,8 +55,17 @@ for (const role of Object.keys(pages) as Role[]) {
         await visit(page, path);
       });
     }
-    test("bottom tab bar leads to every dashboard section", async ({ page }) => {
+    test("navigation leads to every dashboard section", async ({ page }) => {
       await page.goto(pages[role][0], { waitUntil: "networkidle" });
+      if (role === "admin") {
+        // The admin shell has no bottom tab bar: on a phone its menu opens the drawer of admin areas.
+        await page.getByRole("button", { name: "Open menu" }).click();
+        const areas = page.getByRole("dialog", { name: "Admin menu" }).getByRole("navigation", { name: "Admin areas" }).getByRole("link");
+        await expect(areas.first()).toHaveAttribute("aria-current", "page");
+        const hrefs = await areas.evaluateAll((links) => links.map((a) => a.getAttribute("href")));
+        expect(new Set(hrefs).size).toBe(hrefs.length);
+        return;
+      }
       const bar = page.getByRole("navigation", { name: "Dashboard" });
       const tabs = bar.getByRole("link");
       // Tourists' fifth tab is You, the account menu.
@@ -70,16 +79,22 @@ for (const role of Object.keys(pages) as Role[]) {
   });
 }
 
-// Owner's note (image-94): the admin bar drew Analytics twice — once from the
-// admin's own tabs, once from the Tourism Office's links — and reached the
-// approvals queue under two names. A desktop shows the office's links too.
-test("the admin bar lists each destination once", async ({ context, page }) => {
+// Owner's note (image-94): the admin bar drew Analytics twice and reached the
+// approvals queue under two names. The admin shell's sidebar must list each
+// destination once, under one name.
+test("the admin sidebar lists each destination once", async ({ context, page }) => {
   await page.setViewportSize({ width: 1400, height: 900 });
   await signInAs(context, "admin");
   await visit(page, "/tours/admin/attractions");
 
-  const nav = page.getByRole("navigation", { name: "Main navigation" });
-  await expect(nav.getByRole("link")).toHaveText(["Analytics", "Approvals", "Content", "Guides", "Packages"]);
+  const links = page.getByRole("navigation", { name: "Admin areas" }).getByRole("link");
+  // A queue link also shows a count badge on its own line; the label is the first line.
+  const labels = (await links.allInnerTexts()).map((t) => t.split("\n")[0]);
+  const hrefs = await links.evaluateAll((a) => a.map((x) => x.getAttribute("href")));
+  expect(new Set(labels).size).toBe(labels.length);
+  expect(new Set(hrefs).size).toBe(hrefs.length);
+  expect(labels).toEqual(expect.arrayContaining(["Analytics", "Guides", "Packages", "Places"]));
+  await expect(page.getByRole("link", { name: "Places" })).toHaveAttribute("aria-current", "page");
 });
 
 test("/dashboard sends each role home", async ({ browser }) => {
@@ -171,4 +186,33 @@ test.describe("sign out", () => {
     await expect(page.getByRole("banner").getByRole("link", { name: "Sign in" })).toBeVisible();
     await expect(page.getByRole("button", { name: /^(You, y|Y)our account/ })).toHaveCount(0);
   });
+});
+
+test("the admin top bar searches records and Ctrl+Space focuses it", async ({ context, page }) => {
+  await signInAs(context, "admin");
+  await visit(page, "/tours/admin/attractions");
+  await page.setViewportSize({ width: 1400, height: 900 });
+  const search = page.getByRole("search").getByRole("searchbox", { name: "Search records" });
+  // It rests as an icon; clicking it opens the box, and Escape folds it back.
+  await page.getByRole("button", { name: "Open search" }).click();
+  await expect(search).toBeFocused();
+  await page.keyboard.press("Escape");
+  await expect(page.getByRole("button", { name: "Open search" })).toBeFocused();
+  await page.keyboard.press("Control+Space");
+  await expect(search).toBeFocused();
+  await search.fill("bagasbas");
+  // The filters live in the same search: pick a record type, then submit.
+  await page.getByRole("radio", { name: "Attractions" }).click();
+  await search.press("Enter");
+  await expect(page).toHaveURL(/\/tours\/admin\?q=bagasbas&type=attractions/);
+});
+
+test("the admin top bar has messages and notifications", async ({ context, page }) => {
+  await signInAs(context, "admin");
+  await visit(page, "/tours/admin");
+  await page.setViewportSize({ width: 1400, height: 900 });
+  await expect(page.getByRole("link", { name: /^Messages/ }).first()).toHaveAttribute("href", "/tours/messages");
+  const bell = page.getByRole("button", { name: /^Notifications/ });
+  await bell.click();
+  await expect(page.getByText("Notifications", { exact: true })).toBeVisible();
 });

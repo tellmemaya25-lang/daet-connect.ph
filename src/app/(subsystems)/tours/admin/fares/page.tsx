@@ -2,7 +2,7 @@ import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { Notice } from "@/components/ui/notice";
-import { PageFrame } from "@/components/ui/page-frame";
+import { AdminPage } from "@/components/admin/admin-page";
 import { ConfirmSubmitButton } from "@/components/tours/confirm-submit-button";
 import { CsvImportForm } from "@/components/tours/csv-import-form";
 import { AdminPageHeading, PromoAdminDenied } from "@/components/tours/promo-admin-denied";
@@ -25,7 +25,7 @@ export default async function AdminFaresPage({ searchParams }: { searchParams: P
   const fares = (data ?? []).map((row) => toFare(row as Record<string, unknown>));
 
   return (
-    <PageFrame adminNav>
+    <AdminPage>
       <AdminPageHeading title="Fares and travel times" backHref="/tours/admin/guide-places" backLabel="Local guide places" action={{ href: "/tours/admin/fares/new", label: "+ New fare" }} />
       <p className="-mt-3 mb-6 max-w-2xl text-lg text-daet-ink">
         What a ride costs and how long it takes. The Daet AI assistant uses these for directions and trip cost estimates, and joins routes that share a stop (Manila → Daet → Bagasbas).
@@ -74,6 +74,6 @@ export default async function AdminFaresPage({ searchParams }: { searchParams: P
         <h2 className="mb-3 text-xl font-bold text-daet-ink">Import from a spreadsheet</h2>
         <CsvImportForm action={importFaresCsv} columns={FARE_CSV_COLUMNS} required="mode, from, to, source" template={TEMPLATE} templateName="fares-template.csv" />
       </Card>
-    </PageFrame>
+    </AdminPage>
   );
 }

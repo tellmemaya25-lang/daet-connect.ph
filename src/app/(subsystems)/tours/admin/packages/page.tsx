@@ -2,7 +2,7 @@ import { formatPeso } from "@/lib/money";
 import { createSupabaseServerClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
-import { PageFrame } from '@/components/ui/page-frame';
+import { AdminPage } from "@/components/admin/admin-page";
 import { getAuthUser } from "@/lib/tours/server-auth";
 
 export default async function AdminPackagesPage() {
@@ -101,9 +101,9 @@ export default async function AdminPackagesPage() {
   const archivedPackages = packagesWithOperators?.filter(p => p.status === 'archived') || [];
 
   return (
-    <PageFrame adminNav>
+    <AdminPage>
     <div>
-      {/* PageFrame already supplies the page's max width and responsive gutters. */}
+      {/* The admin shell supplies the page's max width and responsive gutters. */}
       <div className="mx-auto max-w-7xl">
         {/* Back Button */}
         <div className="mb-4">
@@ -185,7 +185,7 @@ export default async function AdminPackagesPage() {
         )}
       </div>
     </div>
-    </PageFrame>
+    </AdminPage>
   );
 }
 

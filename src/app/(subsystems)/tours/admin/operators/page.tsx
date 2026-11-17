@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Notice } from "@/components/ui/notice";
-import { PageFrame } from "@/components/ui/page-frame";
+import { AdminPage } from "@/components/admin/admin-page";
 import { SearchBox } from "@/components/ui/search-box";
 import { searchTerm } from "@/components/ui/search-term";
 import {
@@ -31,7 +31,7 @@ export default async function AdminOperatorQueuePage({
   searchParams: SearchParams;
 }) {
   if (!isSupabaseConfigured()) {
-    return <PageFrame><Notice variant="warning" title="Supabase setup is needed">Configure Supabase before opening the admin review queue.</Notice></PageFrame>;
+    return <AdminPage><Notice variant="warning" title="Supabase setup is needed">Configure Supabase before opening the admin review queue.</Notice></AdminPage>;
   }
 
   let session;
@@ -43,36 +43,36 @@ export default async function AdminOperatorQueuePage({
 
   if (!session.user) {
     return (
-      <PageFrame>
+      <AdminPage>
         <div className="mx-auto max-w-2xl py-8">
           <Notice variant="info" title="Admin sign-in required">
             <Link href={`/login?next=${encodeURIComponent("/tours/admin/operators")}`} className="font-bold underline underline-offset-4">Sign in</Link> with your Tourism Office admin account to review applications.
           </Notice>
         </div>
-      </PageFrame>
+      </AdminPage>
     );
   }
   if (session.error || session.role !== "admin") {
     return (
-      <PageFrame>
+      <AdminPage>
         <div className="mx-auto max-w-2xl py-8">
           <Notice variant="error" title="You do not have access to this queue">
             {session.error ?? "Only accounts with the admin role can view operator applications."}
           </Notice>
         </div>
-      </PageFrame>
+      </AdminPage>
     );
   }
   if (!isSupabaseAdminConfigured()) {
     return (
-      <PageFrame adminNav>
+      <AdminPage>
         <div className="mx-auto max-w-2xl py-8">
           <h1 className="display-2 mb-4 text-daet-ink">Operator applications</h1>
           <Notice variant="error" title="Server storage access is not configured">
             Set the service-role key on the server. It is required to make short-lived links to private application documents.
           </Notice>
         </div>
-      </PageFrame>
+      </AdminPage>
     );
   }
 
@@ -94,11 +94,11 @@ export default async function AdminOperatorQueuePage({
 
   if (error) {
     return (
-      <PageFrame adminNav>
+      <AdminPage>
         <div className="mx-auto max-w-3xl">
           <Notice variant="error" title="The review queue could not be loaded">Please refresh. No application information has been changed.</Notice>
         </div>
-      </PageFrame>
+      </AdminPage>
     );
   }
 
@@ -133,7 +133,7 @@ export default async function AdminOperatorQueuePage({
   const hasNextPage = applications.length === PAGE_SIZE;
 
   return (
-    <PageFrame adminNav>
+    <AdminPage>
       <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <h1 className="display-2 mt-2 text-daet-ink">Operator applications</h1>
@@ -180,6 +180,6 @@ export default async function AdminOperatorQueuePage({
           <Link href={`/tours/admin/operators?page=${page + 1}${q ? `&q=${encodeURIComponent(q)}` : ""}`} className="inline-flex min-h-11 items-center rounded-full border border-daet-ink/15 px-5 text-sm font-bold text-daet-ink hover:bg-surface">Next →</Link>
         ) : <span />}
       </nav>
-    </PageFrame>
+    </AdminPage>
   );
 }

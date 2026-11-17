@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Notice } from "@/components/ui/notice";
-import { PageFrame } from "@/components/ui/page-frame";
+import { AdminPage } from "@/components/admin/admin-page";
 import { Field, Input, Select } from "@/components/ui/field";
 import { Button } from "@/components/ui/button";
 import { AdminPageHeading, PromoAdminDenied } from "@/components/tours/promo-admin-denied";
@@ -47,7 +47,7 @@ export default async function AdminActivityPage({ searchParams }: { searchParams
   const older = rows.length === PAGE ? `/tours/admin/activity?${new URLSearchParams({ ...keep, before: rows[rows.length - 1].at })}` : null;
 
   return (
-    <PageFrame adminNav>
+    <AdminPage>
       <AdminPageHeading title="Activity log" backHref="/tours/admin" backLabel="Admin dashboard" />
       <p className="mb-4 max-w-3xl text-sm text-daet-ink/65">
         Every booking, payment, package, review, account, guide and trip-plan change made from any dashboard, with who made it. Admin actions such as approvals and bans are included. Bank and GCash numbers are never recorded.
@@ -146,6 +146,6 @@ export default async function AdminActivityPage({ searchParams }: { searchParams
           Older entries
         </Link>
       ) : null}
-    </PageFrame>
+    </AdminPage>
   );
 }

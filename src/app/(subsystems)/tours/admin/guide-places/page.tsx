@@ -2,7 +2,7 @@ import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { Notice } from "@/components/ui/notice";
-import { PageFrame } from "@/components/ui/page-frame";
+import { AdminPage } from "@/components/admin/admin-page";
 import { ConfirmSubmitButton } from "@/components/tours/confirm-submit-button";
 import { CsvImportForm } from "@/components/tours/csv-import-form";
 import { AdminPageHeading, PromoAdminDenied } from "@/components/tours/promo-admin-denied";
@@ -33,7 +33,7 @@ export default async function AdminGuidePlacesPage({ searchParams }: { searchPar
     `inline-flex min-h-11 items-center rounded-full px-4 text-[15px] font-bold transition ${active ? "bg-blue-600 text-white" : "bg-surface text-daet-ink hover:bg-blue-50 dark:hover:bg-blue-950/40"}`;
 
   return (
-    <PageFrame adminNav>
+    <AdminPage>
       <AdminPageHeading title="Local guide places" backHref="/tours/admin" backLabel="Admin dashboard" action={{ href: "/tours/admin/guide-places/new", label: "+ New place" }} />
       <p className="-mt-3 mb-6 max-w-2xl text-lg text-daet-ink">
         Where to eat, stay, catch a ride and get help. The Daet AI assistant recommends only what is listed here. Fares are on the{" "}
@@ -109,7 +109,7 @@ export default async function AdminGuidePlacesPage({ searchParams }: { searchPar
         <h2 className="mb-3 text-xl font-bold text-daet-ink">Import from a spreadsheet</h2>
         <CsvImportForm action={importGuidePlacesCsv} columns={PLACE_CSV_COLUMNS} required="kind, name, source" template={TEMPLATE} templateName="guide-places-template.csv" />
       </Card>
-    </PageFrame>
+    </AdminPage>
   );
 }
 

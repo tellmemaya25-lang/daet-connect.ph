@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Notice } from "@/components/ui/notice";
-import { PageFrame } from "@/components/ui/page-frame";
+import { AdminPage } from "@/components/admin/admin-page";
 import { Stars } from "@/components/tours/star-rating";
 import { AdminPageHeading, PromoAdminDenied } from "@/components/tours/promo-admin-denied";
 import { requirePromoAdmin } from "@/lib/tours/promo-admin";
@@ -46,7 +46,7 @@ export default async function AdminReviewsPage({ searchParams }: { searchParams:
   ];
 
   return (
-    <PageFrame adminNav>
+    <AdminPage>
       <AdminPageHeading title="Reviews" backHref="/tours/admin" backLabel="Admin dashboard" />
       {reviewId ? <p className="-mt-3 mb-4 text-sm text-daet-ink/70">Showing the selected review. <Link href="/tours/admin/reviews" className="font-bold text-blue-700 underline underline-offset-4 dark:text-blue-300">Show all reviews</Link></p> : null}
 
@@ -115,7 +115,7 @@ export default async function AdminReviewsPage({ searchParams }: { searchParams:
           })}
         </ul>
       )}
-    </PageFrame>
+    </AdminPage>
   );
 }
 

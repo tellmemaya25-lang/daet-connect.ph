@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { Notice } from "@/components/ui/notice";
-import { PageFrame } from "@/components/ui/page-frame";
+import { AdminPage } from "@/components/admin/admin-page";
 import { AdminPageHeading, PromoAdminDenied } from "@/components/tours/promo-admin-denied";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { requirePromoAdmin } from "@/lib/tours/promo-admin";
@@ -47,7 +47,7 @@ export default async function AdminFeedbackPage({ searchParams }: { searchParams
   const total = counts.yes + counts.no;
 
   return (
-    <PageFrame adminNav>
+    <AdminPage>
       <AdminPageHeading title="Assistant feedback" backHref="/tours/admin" backLabel="Admin" />
       <p className="-mt-3 mb-6 max-w-2xl text-lg text-daet-ink">
         What visitors answered to &ldquo;Was this helpful?&rdquo; under the Daet AI assistant&apos;s replies. Read the No answers to find replies that were wrong or missed the question. No visitor names are kept.
@@ -90,6 +90,6 @@ export default async function AdminFeedbackPage({ searchParams }: { searchParams
           ))}
         </ul>
       )}
-    </PageFrame>
+    </AdminPage>
   );
 }

@@ -1,5 +1,5 @@
 import { Notice } from "@/components/ui/notice";
-import { PageFrame } from "@/components/ui/page-frame";
+import { AdminPage } from "@/components/admin/admin-page";
 import { MoneyEarningsView, RangePicker } from "@/components/tours/earnings-view";
 import { AdminPageHeading, PromoAdminDenied } from "@/components/tours/promo-admin-denied";
 import { parseAnalyticsRange } from "@/lib/tours/dashboards";
@@ -23,7 +23,7 @@ export default async function AdminEarningsPage({ searchParams }: { searchParams
   ]);
 
   return (
-    <PageFrame adminNav>
+    <AdminPage>
       <AdminPageHeading title="Earnings and revenue" backHref="/tours/admin" backLabel="Admin dashboard" />
       <RangePicker path="/tours/admin/earnings" range={range} today={today} />
       {error ? (
@@ -37,6 +37,6 @@ export default async function AdminEarningsPage({ searchParams }: { searchParams
           <MoneyEarningsView data={parseMoneyEarnings(data)} perOperator />
         </>
       )}
-    </PageFrame>
+    </AdminPage>
   );
 }

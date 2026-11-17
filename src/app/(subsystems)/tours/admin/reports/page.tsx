@@ -4,7 +4,7 @@ import { Card } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
 import { LineIcon } from "@/components/ui/icons";
 import { Notice } from "@/components/ui/notice";
-import { PageFrame } from "@/components/ui/page-frame";
+import { AdminPage } from "@/components/admin/admin-page";
 import { Stars } from "@/components/tours/star-rating";
 import { AdminPageHeading, PromoAdminDenied } from "@/components/tours/promo-admin-denied";
 import { parseReports, reasonLabel } from "@/lib/tours/admin-moderation";
@@ -33,7 +33,7 @@ export default async function AdminReportsPage({ searchParams }: { searchParams:
   const reports = parseReports(data);
 
   return (
-    <PageFrame adminNav>
+    <AdminPage>
       <AdminPageHeading title="Reports" backHref="/tours/admin" backLabel="Admin dashboard" />
       <p className="mb-4 max-w-2xl text-sm text-daet-ink/65">
         Travellers, operators and guides report reviews, accounts and packages here. Hide a review or ban the account if needed, then close the report: the person who reported it is told. Every step is in the{" "}
@@ -109,6 +109,6 @@ export default async function AdminReportsPage({ searchParams }: { searchParams:
           ))}
         </ul>
       )}
-    </PageFrame>
+    </AdminPage>
   );
 }

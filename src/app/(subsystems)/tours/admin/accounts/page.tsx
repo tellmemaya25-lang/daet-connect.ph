@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Notice } from "@/components/ui/notice";
-import { PageFrame } from "@/components/ui/page-frame";
+import { AdminPage } from "@/components/admin/admin-page";
 import { Input, Select } from "@/components/ui/field";
 import { AdminPageHeading, PromoAdminDenied } from "@/components/tours/promo-admin-denied";
 import { ACCOUNTS_PAGE_SIZE, parseAccountFilters, parseAccounts, ROLE_LABEL, ROLES } from "@/lib/tours/accounts";
@@ -27,7 +27,7 @@ export default async function AdminAccountsPage({ searchParams }: { searchParams
   const pageHref = (page: number) => `/tours/admin/accounts?${new URLSearchParams({ ...(filters.q ? { q: filters.q } : {}), ...(filters.role ? { role: filters.role } : {}), page: String(page) })}`;
 
   return (
-    <PageFrame adminNav>
+    <AdminPage>
       <AdminPageHeading title="Accounts and roles" backHref="/tours/admin" backLabel="Admin dashboard" />
       <p className="mb-4 text-sm text-slate-600 dark:text-slate-400">
         {ROLES.map((r) => `${list.counts[r] ?? 0} ${ROLE_LABEL[r].toLowerCase()}${(list.counts[r] ?? 0) === 1 ? "" : "s"}`).join(" · ")}
@@ -78,6 +78,6 @@ export default async function AdminAccountsPage({ searchParams }: { searchParams
           {filters.page < pages ? <Link className="font-bold text-blue-700 hover:underline dark:text-blue-300" href={pageHref(filters.page + 1)}>Next →</Link> : <span />}
         </nav>
       ) : null}
-    </PageFrame>
+    </AdminPage>
   );
 }

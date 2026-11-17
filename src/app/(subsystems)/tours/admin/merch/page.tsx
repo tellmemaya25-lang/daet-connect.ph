@@ -1,6 +1,6 @@
 import { LineIcon } from "@/components/ui/icons";
 import Link from "next/link";
-import { PageFrame } from "@/components/ui/page-frame";
+import { AdminPage } from "@/components/admin/admin-page";
 import { Notice } from "@/components/ui/notice";
 import { AdminPageHeading, PromoAdminDenied } from "@/components/tours/promo-admin-denied";
 import { ConfirmSubmitButton } from "@/components/tours/confirm-submit-button";
@@ -35,7 +35,7 @@ export default async function AdminMerchPage({
   const operatorName = (item: (typeof items)[number]) => (Array.isArray(item.tours_operators) ? item.tours_operators[0]?.business_name : item.tours_operators?.business_name);
 
   return (
-    <PageFrame adminNav>
+    <AdminPage>
       <AdminPageHeading
         title="Merchandise"
         backHref="/tours/admin"
@@ -122,6 +122,6 @@ export default async function AdminMerchPage({
           ))}
         </ul>
       )}
-    </PageFrame>
+    </AdminPage>
   );
 }

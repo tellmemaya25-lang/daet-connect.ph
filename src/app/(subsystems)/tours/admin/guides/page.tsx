@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Notice } from "@/components/ui/notice";
-import { PageFrame } from "@/components/ui/page-frame";
+import { AdminPage } from "@/components/admin/admin-page";
 import { SearchBox } from "@/components/ui/search-box";
 import { searchTerm } from "@/components/ui/search-term";
 import { GUIDE_ADMIN_SELECT, GUIDE_TABLE, type GuideAdminRecord } from "@/lib/tours/guide-contract";
@@ -20,7 +20,7 @@ function safePage(value?: string): number {
 
 export default async function AdminGuideQueuePage({ searchParams }: { searchParams: SearchParams }) {
   if (!isSupabaseConfigured()) {
-    return <PageFrame><Notice variant="warning" title="Supabase setup is needed">Configure Supabase before opening the guide review queue.</Notice></PageFrame>;
+    return <AdminPage><Notice variant="warning" title="Supabase setup is needed">Configure Supabase before opening the guide review queue.</Notice></AdminPage>;
   }
 
   let session;
@@ -31,17 +31,17 @@ export default async function AdminGuideQueuePage({ searchParams }: { searchPara
   }
   if (!session.user) {
     return (
-      <PageFrame>
+      <AdminPage>
         <div className="mx-auto max-w-2xl py-8">
           <Notice variant="info" title="Admin sign-in required">
             <Link href={`/login?next=${encodeURIComponent("/tours/admin/guides")}`} className="font-bold underline underline-offset-4">Sign in</Link> with a Tourism Office admin account to review guides.
           </Notice>
         </div>
-      </PageFrame>
+      </AdminPage>
     );
   }
   if (session.error || session.role !== "admin") {
-    return <PageFrame><div className="mx-auto max-w-2xl py-8"><Notice variant="error" title="You do not have access to this queue">{session.error ?? "Only an admin can view guide applications."}</Notice></div></PageFrame>;
+    return <AdminPage><div className="mx-auto max-w-2xl py-8"><Notice variant="error" title="You do not have access to this queue">{session.error ?? "Only an admin can view guide applications."}</Notice></div></AdminPage>;
   }
 
   const params = await searchParams;
@@ -69,7 +69,7 @@ export default async function AdminGuideQueuePage({ searchParams }: { searchPara
     .range((page - 1) * PAGE_SIZE, page * PAGE_SIZE - 1);
 
   if (error) {
-    return <PageFrame><div className="mx-auto max-w-3xl"><Notice variant="error" title="Guide applications could not be loaded">Refresh the queue. No review decision was changed.</Notice></div></PageFrame>;
+    return <AdminPage><div className="mx-auto max-w-3xl"><Notice variant="error" title="Guide applications could not be loaded">Refresh the queue. No review decision was changed.</Notice></div></AdminPage>;
   }
 
   const guideRows = (rows ?? []) as Omit<GuideAdminRecord, "full_name">[];
@@ -81,7 +81,7 @@ export default async function AdminGuideQueuePage({ searchParams }: { searchPara
       .select("id,full_name")
       .in("id", profileIds);
     if (profileError) {
-      return <PageFrame><div className="mx-auto max-w-3xl"><Notice variant="error" title="Guide applicant names could not be loaded">Refresh the queue. No review decision was changed.</Notice></div></PageFrame>;
+      return <AdminPage><div className="mx-auto max-w-3xl"><Notice variant="error" title="Guide applicant names could not be loaded">Refresh the queue. No review decision was changed.</Notice></div></AdminPage>;
     }
     fullNameByProfileId = new Map((profiles ?? []).map((profile) => [profile.id, profile.full_name ?? "Name unavailable"]));
   }
@@ -92,7 +92,7 @@ export default async function AdminGuideQueuePage({ searchParams }: { searchPara
   const hasNext = guides.length === PAGE_SIZE;
 
   return (
-    <PageFrame adminNav>
+    <AdminPage>
       <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <h1 className="display-2 mt-2 text-daet-ink">Guide applications</h1>
@@ -118,6 +118,6 @@ export default async function AdminGuideQueuePage({ searchParams }: { searchPara
         {page > 1 ? <Link href={`/tours/admin/guides?page=${page - 1}${q ? `&q=${encodeURIComponent(q)}` : ""}`} className="inline-flex min-h-11 items-center rounded-full border border-daet-ink/15 px-5 text-sm font-bold text-daet-ink hover:bg-surface">← Previous</Link> : <span />}
         {hasNext ? <Link href={`/tours/admin/guides?page=${page + 1}${q ? `&q=${encodeURIComponent(q)}` : ""}`} className="inline-flex min-h-11 items-center rounded-full border border-daet-ink/15 px-5 text-sm font-bold text-daet-ink hover:bg-surface">Next →</Link> : <span />}
       </nav>
-    </PageFrame>
+    </AdminPage>
   );
 }

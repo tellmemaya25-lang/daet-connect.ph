@@ -1,8 +1,7 @@
 import { LiveCount } from "@/components/live/live-count";
 import { LineIcon } from "@/components/ui/icons";
 import { Notice } from "@/components/ui/notice";
-import { PageFrame } from "@/components/ui/page-frame";
-import { Field, Input, Select } from "@/components/ui/field";
+import { AdminPage } from "@/components/admin/admin-page";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { isSupabaseAdminConfigured } from "@/lib/supabase/env";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
@@ -21,7 +20,7 @@ export default async function AdminDashboardPage({ searchParams }: { searchParam
   const user = await getAuthUser();
   if (!user) {
     return (
-      <PageFrame>
+      <AdminPage>
         <div className="mx-auto max-w-2xl py-8">
           <Notice variant="info" title="Admin sign-in required">
             <Link href={`/login?next=${encodeURIComponent("/tours/admin")}`} className="font-bold underline underline-offset-4">
@@ -30,7 +29,7 @@ export default async function AdminDashboardPage({ searchParams }: { searchParam
             with a Tourism Office admin account.
           </Notice>
         </div>
-      </PageFrame>
+      </AdminPage>
     );
   }
   
@@ -42,13 +41,13 @@ export default async function AdminDashboardPage({ searchParams }: { searchParam
   
   if (profile?.role !== 'admin') {
     return (
-      <PageFrame>
+      <AdminPage>
         <div className="mx-auto max-w-2xl py-8">
           <Notice variant="error" title="Access denied">
             Only Tourism Office admins can access this dashboard.
           </Notice>
         </div>
-      </PageFrame>
+      </AdminPage>
     );
   }
 
@@ -104,10 +103,11 @@ export default async function AdminDashboardPage({ searchParams }: { searchParam
     .limit(5);
 
   return (
-    <PageFrame adminNav>
+    <AdminPage>
       <div className="mb-8">
         <div className="flex items-center justify-between">
           <div>
+            <p className="mb-2 text-sm font-bold text-daet-ink/70">Dashboard</p>
             <h1 className="display-2 text-daet-ink">Tourism Office</h1>
             <p className="mt-2 text-lg text-daet-ink">
               Welcome back, {profile.full_name || 'Admin'}
@@ -116,41 +116,21 @@ export default async function AdminDashboardPage({ searchParams }: { searchParam
         </div>
       </div>
 
-      <section id="admin-search" aria-labelledby="admin-search-title" className="mb-8 rounded-2xl card-edge bg-surface p-5 sm:p-6">
-        <div>
-          <h2 id="admin-search-title" className="text-xl font-bold text-daet-ink">Find admin records</h2>
-          <p className="mt-1 max-w-3xl text-sm leading-6 text-daet-ink/70">
-            Search applications, attractions, events, local places, fares, packages, merchandise and reviews. Search results link to the right record or review queue.
-          </p>
-        </div>
-        <form action="/tours/admin" method="get" role="search" className="mt-4 grid gap-3 lg:grid-cols-[minmax(0,1.6fr)_minmax(12rem,1fr)_minmax(12rem,1fr)_auto] lg:items-end">
-          <Field id="admin-search-query" label="Search" required className="block">
-            <Input
-              type="search"
-              name="q"
-              defaultValue={query}
-              minLength={2}
-              maxLength={80}
-              required
-              placeholder="Name, title, route, applicant or review text"
-            />
-          </Field>
-          <Field id="admin-search-type" label="Record type" className="block">
-            <Select name="type" defaultValue={searchType}>
-              {ADMIN_SEARCH_TYPES.map((item) => <option key={item.value} value={item.value}>{item.label}</option>)}
-            </Select>
-          </Field>
-          <Field id="admin-search-status" label="Status" className="block">
-            <Select name="status" defaultValue={searchStatus}>
-              {ADMIN_SEARCH_STATUSES.map((item) => <option key={item.value} value={item.value}>{item.label}</option>)}
-            </Select>
-          </Field>
-          <div className="flex items-center gap-3">
-            <button type="submit" className="inline-flex min-h-12 flex-1 items-center justify-center rounded-full bg-daet-forest px-5 text-sm font-bold text-white transition hover:bg-blue-700 lg:flex-none">Search records</button>
-            {query || searchType !== "all" || searchStatus !== "all" ? <Link href="/tours/admin#admin-search" className="inline-flex min-h-11 items-center text-sm font-bold text-blue-700 underline underline-offset-4 dark:text-blue-300">Clear</Link> : null}
+      {query ? (
+        <section id="admin-search" aria-labelledby="admin-search-title" className="mb-8 rounded-2xl card-edge bg-surface p-5 sm:p-6">
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div>
+              <h2 id="admin-search-title" className="text-xl font-bold text-daet-ink">Results for “{query}”</h2>
+              <p className="mt-1 text-sm leading-6 text-daet-ink/70">
+                {ADMIN_SEARCH_TYPES.find((item) => item.value === searchType)?.label}
+                {" · "}
+                {ADMIN_SEARCH_STATUSES.find((item) => item.value === searchStatus)?.label}
+                . Change the type or status in the search at the top.
+              </p>
+            </div>
+            <Link href="/tours/admin" className="inline-flex min-h-11 items-center text-sm font-bold text-blue-700 underline underline-offset-4 dark:text-blue-300">Clear search</Link>
           </div>
-        </form>
-        <p className="mt-3 text-xs leading-5 text-daet-ink/65">Search at least 2 characters. Up to 12 matches per record type are shown; narrow by type or status for a shorter list. Application results show pending operator and guide reviews only; private files remain behind their short-lived review links.</p>
+          <p className="mt-3 text-xs leading-5 text-daet-ink/65">Up to 12 matches per record type are shown. Application results show pending operator and guide reviews only; private files remain behind their short-lived review links.</p>
         {query.length === 1 ? <p className="mt-3 text-sm font-semibold text-amber-800 dark:text-amber-200">Enter at least 2 characters to search.</p> : null}
         {searchResult?.hasError ? <Notice variant="warning" className="mt-4">Some record types could not be searched. The results below may be incomplete.</Notice> : null}
         {searchResult && searchResult.results.length === 0 ? <p className="mt-5 rounded-xl bg-canvas p-4 text-sm text-daet-ink/70">No records match “{query}” with those filters. Try a different search or status.</p> : null}
@@ -179,7 +159,8 @@ export default async function AdminDashboardPage({ searchParams }: { searchParam
             ))}
           </div>
         ) : null}
-      </section>
+        </section>
+      ) : null}
 
       {/* Two figures per row on phones; what waits on the office is amber and links to its queue. */}
       <div className="mb-8 grid grid-cols-2 gap-3 lg:grid-cols-5">
@@ -274,7 +255,7 @@ export default async function AdminDashboardPage({ searchParams }: { searchParam
           </div>
         </div>
       )}
-    </PageFrame>
+    </AdminPage>
   );
 }
 

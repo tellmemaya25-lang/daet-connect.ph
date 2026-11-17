@@ -4,7 +4,7 @@ import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardHeader } from "@/components/ui/card";
 import { Notice } from "@/components/ui/notice";
-import { PageFrame } from "@/components/ui/page-frame";
+import { AdminPage } from "@/components/admin/admin-page";
 import { BarList } from "@/components/charts/bar-list";
 import { ColumnChart } from "@/components/charts/column-chart";
 import { AdminPageHeading, PromoAdminDenied } from "@/components/tours/promo-admin-denied";
@@ -34,7 +34,7 @@ export default async function AdminAnalyticsPage({ searchParams }: { searchParam
   const ratingTotal = a.ratings.reduce((s, r) => s + r.count, 0);
 
   return (
-    <PageFrame adminNav>
+    <AdminPage>
       <AdminPageHeading title="Analytics" backHref="/tours/admin" backLabel="Admin dashboard" />
 
       <nav aria-label="Date range" className="mb-6 flex flex-wrap items-center gap-2">
@@ -137,7 +137,7 @@ export default async function AdminAnalyticsPage({ searchParams }: { searchParam
           ))}
         </div>
       </Card>
-    </PageFrame>
+    </AdminPage>
   );
 }
 

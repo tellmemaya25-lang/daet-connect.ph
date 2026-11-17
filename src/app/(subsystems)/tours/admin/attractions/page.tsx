@@ -2,7 +2,7 @@ import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { Notice } from "@/components/ui/notice";
-import { PageFrame } from "@/components/ui/page-frame";
+import { AdminPage } from "@/components/admin/admin-page";
 import { ConfirmSubmitButton } from "@/components/tours/confirm-submit-button";
 import { AdminPageHeading, PromoAdminDenied } from "@/components/tours/promo-admin-denied";
 import { ATTRACTION_CATEGORIES, ATTRACTION_COLUMNS, toAttraction } from "@/lib/tours/attractions";
@@ -23,7 +23,7 @@ export default async function AdminAttractionsPage({ searchParams }: { searchPar
   const unverified = attractions.filter((a) => a.latitude !== null && !a.location_verified).length;
 
   return (
-    <PageFrame adminNav>
+    <AdminPage>
       <AdminPageHeading
         title="Attractions"
         backHref="/tours/admin"
@@ -89,7 +89,7 @@ export default async function AdminAttractionsPage({ searchParams }: { searchPar
           ))}
         </ul>
       )}
-    </PageFrame>
+    </AdminPage>
   );
 }
 
