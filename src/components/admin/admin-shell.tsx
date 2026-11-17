@@ -179,7 +179,14 @@ export function AdminShell({
   const [collapsed, setCollapsed] = useState(initialCollapsed);
   const [drawer, setDrawer] = useState(false);
   const menuButton = useRef<HTMLButtonElement>(null);
-  const section = areaFor(pathname)?.label ?? "Admin";
+  const section =
+    areaFor(pathname)?.label ??
+    (pathname.startsWith("/tours/messages") ||
+    pathname.startsWith("/tours/admin/messages")
+      ? "Messages"
+      : pathname.startsWith("/tours/notifications")
+        ? "Notifications"
+        : "Admin");
 
   useEffect(() => {
     if (!drawer) return;
@@ -259,7 +266,7 @@ export function AdminShell({
             <AdminSearch />
             <div className="flex items-center gap-1">
               <Link
-                href="/tours/messages"
+                href="/tours/admin/messages"
                 title="Messages"
                 className="relative grid h-11 w-11 place-items-center rounded-full text-daet-ink hover:bg-muted"
               >
