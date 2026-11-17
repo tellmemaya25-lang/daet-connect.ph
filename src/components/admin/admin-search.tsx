@@ -78,7 +78,7 @@ export function AdminSearch() {
         placeholder="Search records"
         aria-keyshortcuts="Control+Space"
         className={cn(
-          "absolute inset-0 min-h-11 rounded-full bg-muted pl-11 pr-4 text-sm transition-opacity duration-200 lg:pr-28",
+          "absolute inset-0 !mt-0 h-11 !min-h-0 rounded-full bg-muted pl-11 pr-4 !text-sm transition-opacity duration-200 lg:pr-28",
           open ? "opacity-100" : "pointer-events-none opacity-0",
         )}
       />
