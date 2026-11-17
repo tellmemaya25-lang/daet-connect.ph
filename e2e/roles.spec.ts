@@ -201,8 +201,10 @@ test("the admin top bar searches records and Ctrl+Space focuses it", async ({ co
   await page.keyboard.press("Control+Space");
   await expect(search).toBeFocused();
   await search.fill("bagasbas");
+  // The filters live in the same search: pick a record type, then submit.
+  await page.getByRole("radio", { name: "Attractions" }).click();
   await search.press("Enter");
-  await expect(page).toHaveURL(/\/tours\/admin\?q=bagasbas/);
+  await expect(page).toHaveURL(/\/tours\/admin\?q=bagasbas&type=attractions/);
 });
 
 test("the admin top bar has messages and notifications", async ({ context, page }) => {
