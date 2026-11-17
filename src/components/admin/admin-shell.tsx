@@ -218,7 +218,7 @@ export function AdminShell({
         <div
           className={cn(
             "sticky top-0 z-10 -mx-4 flex items-center gap-2 bg-muted px-4 pb-3 pt-4 after:pointer-events-none after:absolute after:inset-x-0 after:top-full after:h-6 after:bg-gradient-to-b after:from-muted after:to-transparent",
-            collapsed ? "justify-center px-0" : "justify-start",
+            collapsed ? "justify-center px-0" : "justify-end",
           )}
         >
           <button
