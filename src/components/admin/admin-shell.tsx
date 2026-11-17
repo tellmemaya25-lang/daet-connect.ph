@@ -143,12 +143,17 @@ function Wordmark({ collapsed = false }: { collapsed?: boolean }) {
   return (
     <Link
       href="/tours/admin"
-      className="flex min-h-11 items-center gap-2 font-serif text-lg font-semibold text-daet-ink"
+      className="flex min-h-11 min-w-0 flex-col justify-center leading-[1.1] text-daet-ink"
     >
       {collapsed ? (
-        <span className="sr-only">Daet Connect admin</span>
+        <span className="sr-only">CONNECT-DAET Tourism admin</span>
       ) : (
-        <span>Daet Connect</span>
+        <>
+          <span className="font-serif text-lg font-semibold">CONNECT-DAET</span>
+          <span className="text-xs font-bold tracking-[0.14em] text-daet-ink/80">
+            TOURISM
+          </span>
+        </>
       )}
     </Link>
   );
@@ -209,14 +214,14 @@ export function AdminShell({
       <aside
         aria-label="Admin"
         className={cn(
-          "sticky top-0 hidden h-screen flex-none flex-col gap-4 overflow-y-auto border-r border-line bg-muted p-4 lg:flex",
-          collapsed ? "w-20" : "w-60",
+          "sticky top-0 hidden h-screen flex-none flex-col gap-4 overflow-y-auto overflow-x-hidden border-r border-line bg-muted px-4 pb-6 transition-[width] duration-200 ease-in-out lg:flex",
+          collapsed ? "w-[76px]" : "w-60",
         )}
       >
         <div
           className={cn(
-            "flex items-center gap-2",
-            collapsed ? "flex-col" : "justify-between",
+            "sticky top-0 z-10 -mx-4 flex items-center gap-2 bg-muted px-4 pb-3 pt-4 after:pointer-events-none after:absolute after:inset-x-0 after:top-full after:h-6 after:bg-gradient-to-b after:from-muted after:to-transparent",
+            collapsed ? "justify-center px-0" : "justify-between",
           )}
         >
           <Wordmark collapsed={collapsed} />
@@ -225,7 +230,7 @@ export function AdminShell({
             onClick={toggle}
             aria-expanded={!collapsed}
             aria-label={collapsed ? "Expand menu" : "Collapse menu"}
-            className="grid h-11 w-11 place-items-center rounded-xl text-daet-ink/80 hover:bg-surface hover:text-blue-700"
+            className="grid h-11 w-11 flex-none place-items-center rounded-xl border border-line bg-surface text-daet-ink hover:text-blue-700"
           >
             <LineIcon name="sidebar" className="h-5 w-5" />
           </button>
