@@ -139,22 +139,19 @@ function NavLinks({
   );
 }
 
-function Wordmark({ collapsed = false }: { collapsed?: boolean }) {
+function Wordmark({ className = "" }: { className?: string }) {
   return (
     <Link
       href="/tours/admin"
-      className="flex min-h-11 min-w-0 flex-col justify-center leading-[1.1] text-daet-ink"
-    >
-      {collapsed ? (
-        <span className="sr-only">CONNECT-DAET Tourism admin</span>
-      ) : (
-        <>
-          <span className="font-serif text-lg font-semibold">CONNECT-DAET</span>
-          <span className="text-xs font-bold tracking-[0.14em] text-daet-ink/80">
-            TOURISM
-          </span>
-        </>
+      className={cn(
+        "flex min-h-11 min-w-0 flex-col justify-center whitespace-nowrap leading-[1.1] text-daet-ink",
+        className,
       )}
+    >
+      <span className="font-serif text-lg font-semibold">CONNECT-DAET</span>
+      <span className="text-xs font-bold tracking-[0.14em] text-daet-ink/80">
+        TOURISM
+      </span>
     </Link>
   );
 }
@@ -221,10 +218,9 @@ export function AdminShell({
         <div
           className={cn(
             "sticky top-0 z-10 -mx-4 flex items-center gap-2 bg-muted px-4 pb-3 pt-4 after:pointer-events-none after:absolute after:inset-x-0 after:top-full after:h-6 after:bg-gradient-to-b after:from-muted after:to-transparent",
-            collapsed ? "justify-center px-0" : "justify-between",
+            collapsed ? "justify-center px-0" : "justify-start",
           )}
         >
-          <Wordmark collapsed={collapsed} />
           <button
             type="button"
             onClick={toggle}
@@ -258,6 +254,7 @@ export function AdminShell({
               <p className="truncate font-serif text-xl font-semibold lg:hidden">
                 {section}
               </p>
+              <Wordmark className="hidden lg:flex" />
             </div>
             <AdminSearch />
             <div className="flex items-center gap-1">
