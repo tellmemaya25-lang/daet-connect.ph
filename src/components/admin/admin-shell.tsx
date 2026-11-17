@@ -211,7 +211,7 @@ export function AdminShell({
       <aside
         aria-label="Admin"
         className={cn(
-          "sticky top-0 hidden h-screen flex-none flex-col gap-4 overflow-y-auto overflow-x-hidden border-r border-line bg-muted px-4 pb-6 transition-[width] duration-200 ease-in-out lg:flex",
+          "sticky top-0 hidden h-screen flex-none flex-col gap-4 overflow-y-auto overflow-x-hidden [scrollbar-width:thin] [scrollbar-color:var(--color-line)_transparent] border-r border-line bg-muted px-4 pb-6 transition-[width] duration-200 ease-in-out lg:flex",
           collapsed ? "w-[76px]" : "w-60",
         )}
       >
@@ -298,7 +298,7 @@ export function AdminShell({
             role="dialog"
             aria-modal="true"
             aria-label="Admin menu"
-            className="absolute inset-y-0 left-0 flex w-72 max-w-[85vw] flex-col overflow-y-auto bg-muted"
+            className="absolute inset-y-0 left-0 flex w-72 max-w-[85vw] flex-col overflow-y-auto [scrollbar-width:thin] [scrollbar-color:var(--color-line)_transparent] bg-muted"
           >
             <div className="sticky top-0 z-10 flex items-center justify-between gap-2 bg-muted px-4 pb-3 pt-4 after:pointer-events-none after:absolute after:inset-x-0 after:top-full after:h-6 after:bg-gradient-to-b after:from-muted after:to-transparent">
               <Wordmark />
