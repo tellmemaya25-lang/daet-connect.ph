@@ -670,6 +670,39 @@ html.js [data-reveal]:not([data-revealed]) {
   }
 }
 
+/* The admin menu drawer on phones: slides in from the left over a fading scrim,
+   and back out when data-closing is set (the shell unmounts it after 240ms). */
+.motion-drawer {
+  transition: transform 260ms var(--ease-drawer);
+
+  @starting-style {
+    transform: translateX(-100%);
+  }
+
+  &[data-closing] {
+    transform: translateX(-100%);
+  }
+}
+
+.motion-scrim {
+  transition: opacity 260ms var(--ease-drawer);
+
+  @starting-style {
+    opacity: 0;
+  }
+
+  &[data-closing] {
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .motion-drawer,
+  .motion-scrim {
+    transition: none;
+  }
+}
+
 /* A count or indicator that just appeared (re-keyed on change). */
 .motion-pop-in {
   transition:
