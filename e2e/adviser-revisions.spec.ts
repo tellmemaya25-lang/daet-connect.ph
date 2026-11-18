@@ -76,7 +76,7 @@ test.describe("R6: guide schedules and swap requests", () => {
     const form = page.getByRole("form", { name: /Suggest another guide for/ });
     const picker = form.getByLabel("Who could take it?");
     await expect(picker.getByRole("option", { name: "Liza Bautista" })).toBeEnabled();
-    await expect(picker.getByRole("option", { name: /Paolo Reyes \(Already on a tour that day\)/ })).toBeDisabled();
+    await expect(picker.getByRole("option", { name: /Paolo Reyes \(On another tour at that time\)/ })).toBeDisabled();
     await expect(picker.getByRole("option", { name: /Jeremiah Sabihon/ })).toHaveCount(0);
     await picker.selectOption({ label: "Liza Bautista" });
     await form.getByLabel(/Why\?/).fill("Family emergency that day");
@@ -102,7 +102,7 @@ test.describe("R6: guide schedules and swap requests", () => {
     await expect(request.getByText(/asks to hand this tour to another guide/)).toBeVisible();
     await expect(request.getByText("My boat license renewal is on that day.", { exact: false })).toBeVisible();
     const picker = request.getByLabel("New guide");
-    await expect(picker.getByRole("option", { name: /Paolo Reyes \(Already on a tour that day\)/ })).toBeDisabled();
+    await expect(picker.getByRole("option", { name: /Paolo Reyes \(On another tour at that time\)/ })).toBeDisabled();
     await picker.selectOption({ label: "Liza Bautista" });
     await checkA11y(page, "operator swap review");
     await request.getByRole("button", { name: "Approve swap" }).click();
