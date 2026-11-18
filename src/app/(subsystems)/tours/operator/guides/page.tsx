@@ -229,7 +229,11 @@ function TeamOverview({ stats, range, today }: { stats: GuideStats; range: Param
               <tbody>
                 {stats.guides.map((g) => (
                   <tr key={g.id} className="border-b border-line/60">
-                    <th scope="row" className="py-2 pr-3 font-bold text-daet-ink">{g.name}</th>
+                    <th scope="row" className="py-2 pr-3 font-bold text-daet-ink">
+                      <Link href={`/tours/operator/guides/${g.id}`} className="text-blue-700 underline underline-offset-4 dark:text-blue-300">
+                        {g.name}
+                      </Link>
+                    </th>
                     <td className="py-2 pr-3">{g.sharePct ? `${pctText(g.sharePct)} share` : "Fixed fee"}</td>
                     <td className="py-2 pr-3 text-right">{g.freeDays}</td>
                     <td className="py-2 pr-3 text-right">{g.upcoming}</td>

@@ -1707,6 +1707,11 @@ http
           { id: "a2", at: "2026-11-15T02:00:00Z", actor_id: null, actor_role: "admin", actor_name: "Tourism Office", action: "ban_user", entity: "admin_action", entity_id: "user:x", changes: {}, notes: "Spam reports" },
           { id: "1", at: "2026-11-15T01:00:00Z", actor_id: null, actor_role: "system", actor_name: null, action: "insert", entity: "tours_payments", entity_id: "p1", changes: { amount: 1200 }, notes: null },
         ]);
+      if (url.pathname === "/rest/v1/rpc/tours_operator_activity")
+        return send(200, [
+          { id: "3", at: "2026-11-15T03:00:00Z", actor_id: "d3000000-0000-4000-8000-000000000002", actor_role: "operator", actor_name: "Mark Operator", action: "update", entity: "tours_bookings", entity_id: "b1", changes: { status: "confirmed" }, notes: null },
+          { id: "1", at: "2026-11-15T01:00:00Z", actor_id: null, actor_role: "system", actor_name: null, action: "insert", entity: "tours_payments", entity_id: "p1", changes: { amount: 1200 }, notes: null },
+        ]);
       if (url.pathname === "/rest/v1/rpc/tours_admin_review_watch")
         return send(200, {
           operators: [{ id: "o1", profile_id: "d3000000-0000-4000-8000-000000000002", name: "Bagasbas Coast Tours", suspended: false, reviews: 12, average: "3.9", low: 3, hidden: 1, open_reports: 1 }],

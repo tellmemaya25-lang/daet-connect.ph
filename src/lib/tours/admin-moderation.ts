@@ -197,6 +197,11 @@ export const ACTIVITY_ENTITIES: { value: string; label: string }[] = [
   { value: "tours_events", label: "Events" },
   { value: "admin_action", label: "Admin actions" },
 ];
+/** The areas an operator's own activity log covers (tours_operator_activity). */
+export const OPERATOR_ACTIVITY_ENTITIES = ACTIVITY_ENTITIES.filter((e) =>
+  ["tours_bookings", "tours_payments", "tours_packages", "tours_package_guides", "tours_guide_applications"].includes(e.value),
+);
+
 export const ACTIVITY_ROLES = ["admin", "operator", "guide", "tourist", "system"] as const;
 
 export const entityLabel = (e: string) => ACTIVITY_ENTITIES.find((x) => x.value === e)?.label ?? e;
