@@ -1250,7 +1250,7 @@ function build(role) {
     tours_cancellations: cancellations,
     tours_payments: payments,
     tours_payment_proofs: proofs,
-    tours_operators: [operator, otherOperator],
+    tours_operators: [operator, otherOperator, { ...otherOperator, id: "0a7e5a5e-0000-4000-8000-0000000000c1", business_name: "Kalmado Tour Services" }],
     tours_guides: [...guides, APPLICANT],
     tours_guide_applications: guideApplications,
     profiles: [
@@ -1712,6 +1712,16 @@ http
           operators: [{ id: "o1", profile_id: "d3000000-0000-4000-8000-000000000002", name: "Bagasbas Coast Tours", suspended: false, reviews: 12, average: "3.9", low: 3, hidden: 1, open_reports: 1 }],
           guides: [],
           low_reviews: [],
+        });
+      if (url.pathname === "/rest/v1/rpc/tours_earnings")
+        return send(200, {
+          role: "admin", from: "2026-10-21", to: "2026-11-19",
+          totals: { bookings: 20, booked: 48624, pickup_fees: 0, collected: 83481, refunded: 20100, guide_fees: 0, net: 63381 },
+          operators: [
+            { id: "0a7e5a5e-0000-4000-8000-0000000000c1", name: "Kalmado Tour Services", bookings: 12, booked: 30000, pickup_fees: 0, collected: 62081, refunded: 11900, guide_fees: 0, net: 50181 },
+            { id: "0a7e5a5e-0000-4000-8000-0000000000c2", name: "Daet Tours & Travel", bookings: 8, booked: 18624, pickup_fees: 0, collected: 21400, refunded: 8200, guide_fees: 0, net: 13200 },
+          ],
+          guides: [{ id: "f66b1fe2-a997-4c0b-be13-22d62cf0dba6", name: "Bianca Zabala", completed_tours: 0, earned: 0, expected: 1500 }],
         });
       if (url.pathname === "/rest/v1/rpc/tours_admin_revenue")
         return send(200, {

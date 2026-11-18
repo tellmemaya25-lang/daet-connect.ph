@@ -38,12 +38,12 @@ export function RangePicker({ path, range, today }: { path: string; range: Analy
         <label className="sr-only" htmlFor="from">
           From
         </label>
-        <Input id="from" name="from" type="date" defaultValue={range.from} max={today} className="mt-0 min-h-11 w-auto rounded-full px-3" />
+        <Input id="from" name="from" type="date" defaultValue={range.from} max={today} className="mt-0 min-h-11 w-[10.5rem]! rounded-full px-3" />
         <span aria-hidden="true">–</span>
         <label className="sr-only" htmlFor="to">
           To
         </label>
-        <Input id="to" name="to" type="date" defaultValue={range.to} max={today} className="mt-0 min-h-11 w-auto rounded-full px-3" />
+        <Input id="to" name="to" type="date" defaultValue={range.to} max={today} className="mt-0 min-h-11 w-[10.5rem]! rounded-full px-3" />
         <button type="submit" className="min-h-11 rounded-full border border-daet-forest/30 bg-surface px-4 font-bold text-daet-leaf hover:bg-daet-forest/5 dark:text-blue-300">
           Apply
         </button>
@@ -201,7 +201,7 @@ export function MoneyEarningsView({ data, perOperator }: { data: MoneyEarnings; 
             <p className="mt-2 text-sm text-slate-600 dark:text-slate-400">No approved operators yet.</p>
           ) : (
             <div className="mt-3 overflow-x-auto">
-              <table className="w-full min-w-[40rem] text-left text-sm">
+              <table className="w-full min-w-[46rem] text-left text-sm">
                 <thead>
                   <tr className="border-b border-line">
                     <th scope="col" className="py-2 pr-3">Operator</th>
@@ -209,7 +209,8 @@ export function MoneyEarningsView({ data, perOperator }: { data: MoneyEarnings; 
                     <th scope="col" className="py-2 pr-3 text-right">Collected</th>
                     <th scope="col" className="py-2 pr-3 text-right">Refunded</th>
                     <th scope="col" className="py-2 pr-3 text-right">Guide fees</th>
-                    <th scope="col" className="py-2 text-right">Net</th>
+                    <th scope="col" className="py-2 pr-3 text-right">Net</th>
+                    <th scope="col" className="py-2"><span className="sr-only">Details</span></th>
                   </tr>
                 </thead>
                 <tbody>
@@ -220,7 +221,8 @@ export function MoneyEarningsView({ data, perOperator }: { data: MoneyEarnings; 
                       <td className="py-2 pr-3 text-right">{formatPeso(o.collected)}</td>
                       <td className="py-2 pr-3 text-right">{formatPeso(o.refunded)}</td>
                       <td className="py-2 pr-3 text-right">{formatPeso(o.guideFees)}</td>
-                      <td className="py-2 text-right font-bold">{formatPeso(o.net)}</td>
+                      <td className="py-2 pr-3 text-right font-bold">{formatPeso(o.net)}</td>
+                      <td className="whitespace-nowrap py-2 text-right"><Link href={`/tours/admin/earnings/operators/${o.id}`} className="font-bold text-blue-700 underline dark:text-blue-300">View earnings<span className="sr-only"> for {o.name}</span> →</Link></td>
                     </tr>
                   ))}
                 </tbody>
@@ -236,13 +238,14 @@ export function MoneyEarningsView({ data, perOperator }: { data: MoneyEarnings; 
           <p className="mt-2 text-sm text-slate-600 dark:text-slate-400">No guided tours in this range.</p>
         ) : (
           <div className="mt-3 overflow-x-auto">
-            <table className="w-full min-w-[28rem] text-left text-sm">
+            <table className="w-full min-w-[34rem] text-left text-sm">
               <thead>
                 <tr className="border-b border-line">
                   <th scope="col" className="py-2 pr-3">Guide</th>
                   <th scope="col" className="py-2 pr-3 text-right">Completed tours</th>
                   <th scope="col" className="py-2 pr-3 text-right">Earned</th>
-                  <th scope="col" className="py-2 text-right">Coming up</th>
+                  <th scope="col" className="py-2 pr-3 text-right">Coming up</th>
+                  {perOperator ? <th scope="col" className="py-2"><span className="sr-only">Details</span></th> : null}
                 </tr>
               </thead>
               <tbody>
@@ -251,7 +254,8 @@ export function MoneyEarningsView({ data, perOperator }: { data: MoneyEarnings; 
                     <td className="py-2 pr-3 font-bold">{perOperator ? <Link href={`/tours/admin/earnings/guides/${g.id}`} className="text-blue-700 underline dark:text-blue-300">{g.name}</Link> : g.name}</td>
                     <td className="py-2 pr-3 text-right">{g.completedTours}</td>
                     <td className="py-2 pr-3 text-right">{formatPeso(g.earned)}</td>
-                    <td className="py-2 text-right">{formatPeso(g.expected)}</td>
+                    <td className="py-2 pr-3 text-right">{formatPeso(g.expected)}</td>
+                    {perOperator ? <td className="whitespace-nowrap py-2 text-right"><Link href={`/tours/admin/earnings/guides/${g.id}`} className="font-bold text-blue-700 underline dark:text-blue-300">View earnings<span className="sr-only"> for {g.name}</span> →</Link></td> : null}
                   </tr>
                 ))}
               </tbody>
