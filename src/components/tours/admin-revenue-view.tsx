@@ -91,13 +91,13 @@ export function AdminRevenueView({ data }: { data: AdminRevenue }) {
             {data.topPackages.length === 0 ? <li className="text-daet-ink/70">No bookings.</li> : null}
             {data.topPackages.map((p) => (
               <li key={p.id} className="flex justify-between gap-2">
-                <span className="min-w-0">
+                <span className="min-w-0 break-words [overflow-wrap:anywhere]">
                   <span className="font-bold text-daet-ink">{p.title}</span>
                   <span className="block text-xs text-daet-ink/70">
                     {p.operator} · {p.bookings} booking{p.bookings === 1 ? "" : "s"}
                   </span>
                 </span>
-                <span className="font-bold">{formatPeso(p.booked)}</span>
+                <span className="flex-none font-bold">{formatPeso(p.booked)}</span>
               </li>
             ))}
           </ol>
