@@ -9,6 +9,7 @@ import { getAuthUser } from "@/lib/tours/server-auth";
 import { searchTerm } from "@/components/ui/search-term";
 import { ADMIN_SEARCH_STATUSES, ADMIN_SEARCH_TYPES, parseAdminSearchStatus, parseAdminSearchType } from "@/lib/tours/admin-search";
 import { searchAdminRecords, type AdminSearchResult } from "@/lib/tours/admin-search.server";
+import { GUIDE_TABLE, GUIDE_USER_ID_COLUMN } from "@/lib/tours/guide-contract";
 import Link from "next/link";
 
 type SearchParams = Promise<Record<string, string | string[] | undefined>>;
@@ -102,19 +103,46 @@ export default async function AdminDashboardPage({ searchParams }: { searchParam
     .order('created_at', { ascending: false })
     .limit(5);
 
+  // Oldest first, across the three queues: what the office should decide next.
+  const [nextOperators, nextGuides, nextPackages] = await Promise.all([
+    supabase.from("tours_operators").select("id, business_name, created_at").eq("accreditation_status", "pending").order("created_at").limit(5),
+    supabase.from(GUIDE_TABLE).select(`id, ${GUIDE_USER_ID_COLUMN}, created_at`).eq("accreditation_status", "pending").order("created_at").limit(5),
+    supabase.from("tours_packages").select("id, title, created_at").eq("status", "pending_review").order("created_at").limit(5),
+  ]);
+  const guideRows = (nextGuides.data ?? []) as unknown as Array<Record<string, string>>;
+  const guideIds = guideRows.map((g) => g[GUIDE_USER_ID_COLUMN]).filter(Boolean);
+  const { data: guideProfiles } = guideIds.length
+    ? await supabase.from("profiles").select("id, full_name").in("id", guideIds)
+    : { data: [] as Array<{ id: string; full_name: string | null }> };
+  const guideNames = new Map((guideProfiles ?? []).map((p) => [p.id, p.full_name]));
+  const waited = (createdAt: string) => Math.max(0, Math.floor((Date.now() - new Date(createdAt).getTime()) / 86_400_000));
+  const nextUp = [
+    ...(nextOperators.data ?? []).map((o) => ({ id: o.id, kind: "Operator application", name: o.business_name || "Unnamed operator", href: "/tours/admin/operators", at: o.created_at })),
+    ...guideRows.map((g) => ({ id: g.id, kind: "Guide application", name: guideNames.get(g[GUIDE_USER_ID_COLUMN]) || "Unnamed guide", href: "/tours/admin/guides", at: g.created_at })),
+    ...(nextPackages.data ?? []).map((p) => ({ id: p.id, kind: "Package", name: p.title || "Untitled package", href: "/tours/admin/packages", at: p.created_at })),
+  ]
+    .sort((a, b) => a.at.localeCompare(b.at))
+    .slice(0, 6)
+    .map((item) => ({ ...item, days: waited(item.at) }));
+  const waiting = pendingOperators + pendingGuides + pendingPackages;
+
   return (
     <AdminPage>
-      <div className="mb-8">
-        <div className="flex items-center justify-between">
-          <div>
-            <p className="mb-2 text-sm font-bold text-daet-ink/70">Dashboard</p>
-            <h1 className="display-2 text-daet-ink">Tourism Office</h1>
-            <p className="mt-2 text-lg text-daet-ink">
-              Welcome back, {profile.full_name || 'Admin'}
-            </p>
-          </div>
-        </div>
-      </div>
+      <nav aria-label="Breadcrumb" className="mb-2 text-sm text-daet-ink/70">
+        <ol className="flex items-center gap-2">
+          <li>Admin</li>
+          <li aria-hidden="true">/</li>
+          <li aria-current="page" className="font-bold text-daet-ink">Dashboard</li>
+        </ol>
+      </nav>
+      <section aria-labelledby="dash-title" className="mb-8 border-b border-daet-ink/15 pb-6">
+        <h1 id="dash-title" className="display-2 text-daet-ink">Dashboard</h1>
+        <p className="mt-2 text-lg text-daet-ink">
+          {waiting === 0 ? "Nothing is waiting on the office." : `${waiting} ${waiting === 1 ? "item is" : "items are"} waiting on the office.`}
+          {" "}Welcome back, {profile.full_name || "Admin"}.
+        </p>
+      </section>
+
 
       {query ? (
         <section id="admin-search" aria-labelledby="admin-search-title" className="mb-8 rounded-2xl card-edge bg-surface p-5 sm:p-6">
@@ -162,99 +190,95 @@ export default async function AdminDashboardPage({ searchParams }: { searchParam
         </section>
       ) : null}
 
-      {/* Two figures per row on phones; what waits on the office is amber and links to its queue. */}
-      <div className="mb-8 grid grid-cols-2 gap-3 lg:grid-cols-5">
-        {(
-          [
-            { label: "Operators to review", value: pendingOperators || 0, href: "/tours/admin/operators", icon: "building", waiting: true, live: "adminOperators" as const },
-            { label: "Guides to verify", value: pendingGuides || 0, href: "/tours/admin/guides", icon: "user", waiting: true, live: "adminGuides" as const },
-            { label: "Packages to approve", value: pendingPackages || 0, href: "/tours/admin/packages", icon: "box", waiting: true, live: "adminPackages" as const },
-            { label: "Published packages", value: publishedPackages || 0, href: null, icon: "check", waiting: false },
-            { label: "Bookings, all time", value: totalBookings || 0, href: null, icon: "calendar", waiting: false },
-          ] as const
-        ).map((stat) => {
-          const body = (
-            <>
-              <span className="flex items-start justify-between gap-2">
-                <span className="text-sm text-slate-600 dark:text-slate-400">{stat.label}</span>
-                <LineIcon name={stat.icon} className="h-5 w-5 shrink-0 text-daet-ink/60" />
+      <section id="queues" aria-labelledby="queues-title" className="mb-8 overflow-hidden rounded-2xl card-edge bg-surface">
+        <div className="p-5 pb-3 sm:p-6 sm:pb-3">
+          <h2 id="queues-title" className="text-xl font-bold text-daet-ink">Waiting on the office</h2>
+          <p className="mt-1 text-sm text-daet-ink/70">Applications that need a decision from the office.</p>
+        </div>
+        <div className="grid gap-3 px-5 pb-5 sm:grid-cols-3 sm:px-6">
+          {(
+            [
+              { label: "Operators to review", value: pendingOperators, href: "/tours/admin/operators", live: "adminOperators" as const },
+              { label: "Guides to verify", value: pendingGuides, href: "/tours/admin/guides", live: "adminGuides" as const },
+              { label: "Packages to approve", value: pendingPackages, href: "/tours/admin/packages", live: "adminPackages" as const },
+            ] as const
+          ).map((q) => (
+            <Link key={q.label} href={q.href} className="block rounded-2xl bg-canvas p-4 transition hover:bg-blue-50 dark:hover:bg-blue-950/40 active:scale-[0.99]">
+              <span className="flex items-center justify-between gap-2 text-sm text-slate-600 dark:text-slate-400">
+                {q.label}
+                <span className="inline-flex items-center gap-1 font-bold">
+                  {q.value > 0 ? <><LineIcon name="clock" className="h-4 w-4" />Waiting</> : <><LineIcon name="check" className="h-4 w-4" />All clear</>}
+                </span>
               </span>
-              {"live" in stat && stat.live ? (
-                <LiveCount name={stat.live} initial={stat.value} waiting className="mt-1 block text-3xl font-bold" />
-              ) : (
-                <span className="mt-1 block text-3xl font-bold text-daet-ink">{stat.value}</span>
-              )}
-              {stat.href ? <span className="mt-1 block text-sm font-bold text-blue-700 dark:text-blue-300">{stat.value > 0 ? "Review →" : "Open →"}</span> : null}
-            </>
-          );
-          return stat.href ? (
-            <Link key={stat.label} href={stat.href} className="block rounded-2xl card-edge bg-surface p-4 transition hover:bg-blue-50 dark:hover:bg-blue-950/40 active:scale-[0.99]">
-              {body}
-            </Link>
-          ) : (
-            <div key={stat.label} className="rounded-2xl card-edge bg-surface p-4">
-              {body}
-            </div>
-          );
-        })}
-      </div>
-
-      {/* Analytics, approvals and messages are in the tab bar and header; this lists the rest. */}
-      <div className="mb-8 rounded-2xl card-edge bg-surface p-5 sm:p-6">
-        <h2 className="mb-4 text-xl font-bold text-daet-ink">Manage</h2>
-        <div className="grid grid-cols-2 gap-2 lg:grid-cols-4">
-          {[
-            ["/tours/admin/accounts", "Accounts and roles"],
-            ["/tours/admin/guide-assignments", "Guide assignments"],
-            ["/tours/admin/earnings", "Earnings and revenue"],
-            ["/tours/admin/events", "Events calendar"],
-            ["/tours/admin/attractions", "Places"],
-            ["/tours/admin/guide-places", "Food, stays and fares"],
-            ["/tours/admin/reviews", "Reviews"],
-            ["/tours/admin/reports", "Reports and bans"],
-            ["/tours/admin/activity", "Activity log"],
-            ["/tours/admin/merch", "Merchandise"],
-            ["/tours/admin/guides", "Guides"],
-            ["/tours/admin/packages", "Packages"],
-            ["/tours/admin/emergency", "Emergency numbers"],
-            ["/tours/admin/feedback", "Assistant feedback"],
-          ].map(([href, label]) => (
-            <Link key={href} href={href} className="flex min-h-12 items-center rounded-2xl bg-canvas px-4 font-bold leading-snug text-daet-ink transition hover:bg-blue-50 dark:hover:bg-blue-950/40 active:scale-[0.98]">
-              {label}
+              <LiveCount name={q.live} initial={q.value} waiting className="mt-1 block text-3xl font-bold" />
+              <span className="mt-1 block text-sm font-bold text-blue-700 dark:text-blue-300">{q.value > 0 ? "Review →" : "Open →"}</span>
             </Link>
           ))}
         </div>
-      </div>
+        <p className="flex flex-wrap gap-x-6 gap-y-1 border-t border-daet-ink/10 px-5 py-3 text-sm text-daet-ink/70 sm:px-6">
+          <Link href="/tours/admin/packages" className="font-bold text-blue-700 underline underline-offset-4 dark:text-blue-300">{publishedPackages} published packages</Link>
+          <span>{totalBookings} bookings, all time</span>
+        </p>
+      </section>
 
-      {/* Recent Activity */}
-      {recentActivities && recentActivities.length > 0 && (
-        <div className="rounded-2xl card-edge bg-surface p-6">
-          <h2 className="text-xl font-bold text-daet-ink mb-4">Recent activity</h2>
-          <div className="space-y-3">
-            {recentActivities.map((activity: any) => (
-              <div key={activity.id} className="flex items-start gap-3 text-sm">
-                <div className="h-8 w-8 rounded-full bg-daet-sand flex items-center justify-center flex-shrink-0">
-                  {getActivityIcon(activity.action)}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-daet-ink font-medium">
-                    {activity.profiles.full_name || 'Admin'}{' '}
-                    <span className="text-daet-ink/70 font-normal">
-                      {getActivityDescription(activity)}
-                    </span>
-                  </p>
-                  <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
-                    {new Date(activity.created_at).toLocaleString()}
-                  </p>
-                  {activity.notes && (
-                    <p className="text-sm text-slate-600 dark:text-slate-400 mt-1 italic">“{activity.notes}”</p>
-                  )}
-                </div>
-              </div>
-            ))}
-          </div>
+      <section id="next-up" aria-labelledby="next-title" className="mb-8 overflow-hidden rounded-2xl card-edge bg-surface">
+        <div className="p-5 pb-3 sm:p-6 sm:pb-3">
+          <h2 id="next-title" className="text-xl font-bold text-daet-ink">Next up</h2>
+          <p className="mt-1 text-sm text-daet-ink/70">Oldest first. Anything waiting 3 days or more is marked overdue.</p>
         </div>
-      )}
+        {nextUp.length === 0 ? (
+          <p className="mx-5 mb-5 flex items-center gap-2 rounded-xl bg-canvas p-4 text-sm text-daet-ink/80 sm:mx-6 sm:mb-6">
+            <LineIcon name="check" className="h-5 w-5 text-blue-700 dark:text-blue-300" />
+            Nothing is waiting. New applications will show up here.
+          </p>
+        ) : (
+          <ul className="divide-y divide-daet-ink/10 border-t border-daet-ink/10">
+            {nextUp.map((item) => (
+              <li key={`${item.kind}-${item.id}`}>
+                <Link href={item.href} className="flex min-h-16 flex-col gap-2 px-5 py-3 transition hover:bg-blue-50 dark:hover:bg-blue-950/40 sm:flex-row sm:items-center sm:justify-between sm:px-6">
+                  <span className="min-w-0">
+                    <span className="block truncate font-bold text-daet-ink">{item.name}</span>
+                    <span className="block text-sm text-daet-ink/70">{item.kind}</span>
+                  </span>
+                  <span className="flex shrink-0 items-center gap-3 text-sm">
+                    <span className={`inline-flex items-center gap-1 font-bold ${item.days >= 3 ? "text-amber-800 dark:text-amber-200" : "text-daet-ink/70"}`}>
+                      <LineIcon name="clock" className="h-4 w-4" />
+                      {item.days} {item.days === 1 ? "day" : "days"}{item.days >= 3 ? " · Overdue" : ""}
+                    </span>
+                    <span className="font-bold text-blue-700 dark:text-blue-300">Review →</span>
+                  </span>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
+
+      <section aria-labelledby="decisions-title" className="rounded-2xl card-edge bg-surface p-5 sm:p-6">
+        <div className="mb-4 flex flex-wrap items-baseline justify-between gap-2">
+          <h2 id="decisions-title" className="text-xl font-bold text-daet-ink">Recent decisions</h2>
+          <Link href="/tours/admin/activity" className="text-sm font-bold text-blue-700 underline underline-offset-4 dark:text-blue-300">View the full activity log</Link>
+        </div>
+        {recentActivities && recentActivities.length > 0 ? (
+          <ul className="divide-y divide-daet-ink/10">
+            {recentActivities.map((activity: any) => (
+              <li key={activity.id} className="flex items-start gap-3 py-3 text-sm">
+                <span aria-hidden="true" className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-daet-sand">{getActivityIcon(activity.action)}</span>
+                <div className="min-w-0 flex-1">
+                  <p className="font-medium text-daet-ink">
+                    {activity.profiles.full_name || "Admin"}{" "}
+                    <span className="font-normal text-daet-ink/70">{getActivityDescription(activity)}</span>
+                  </p>
+                  <p className="mt-1 text-slate-600 dark:text-slate-400">{new Date(activity.created_at).toLocaleString()}</p>
+                  {activity.notes ? <p className="mt-1 italic text-slate-600 dark:text-slate-400">“{activity.notes}”</p> : null}
+                </div>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p className="text-sm text-daet-ink/70">No decisions yet.</p>
+        )}
+      </section>
     </AdminPage>
   );
 }

@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { Notice } from "@/components/ui/notice";
@@ -22,6 +23,8 @@ export default async function AdminEmergencyPage({ searchParams }: { searchParam
   const params = await searchParams;
   const { data, error } = await admin.supabase.from("tours_emergency_contacts").select(EMERGENCY_COLUMNS).order("sort_order").order("label");
   const contacts = (data ?? []) as EmergencyContact[];
+  const editId = typeof params.edit === "string" ? params.edit : null;
+  const editing = editId ? contacts.find((c) => c.id === editId) : undefined;
   const today = toManilaDateKey(new Date());
 
   return (
@@ -32,10 +35,16 @@ export default async function AdminEmergencyPage({ searchParams }: { searchParam
       </p>
 
       {params.saved ? <Notice variant="success" className="mb-4">Number added.</Notice> : null}
+      {params.updated ? <Notice variant="success" className="mb-4">Number updated.</Notice> : null}
       {params.checked ? <Notice variant="success" className="mb-4">Marked as checked today.</Notice> : null}
       {params.deleted ? <Notice variant="success" className="mb-4">Number deleted.</Notice> : null}
       {params.error ? <Notice variant="error" className="mb-4">That action could not be completed.</Notice> : null}
       {error ? <Notice variant="error" className="mb-4">Numbers could not be loaded.</Notice> : null}
+
+      <Card className="mb-6" id="number-form">
+        <h2 className="mb-3 text-xl font-bold text-daet-ink">{editing ? `Edit ${editing.label}` : "Add a number"}</h2>
+        <EmergencyForm key={editing?.id ?? "new"} contact={editing} />
+      </Card>
 
       {contacts.length === 0 ? (
         <p className="rounded-2xl card-edge bg-surface p-8 text-center text-daet-ink">No numbers yet. Until you add some, the assistant gives only {NATIONAL_HOTLINE}.</p>
@@ -54,13 +63,16 @@ export default async function AdminEmergencyPage({ searchParams }: { searchParam
                   </p>
                   {age > STALE_DAYS ? <Badge tone="warning">Not checked for {age} days</Badge> : null}
                 </div>
-                <div className="grid shrink-0 grid-cols-2 gap-2 sm:flex">
+                <div className="grid shrink-0 grid-cols-3 gap-2 sm:flex">
                   <form action={markEmergencyChecked}>
                     <input type="hidden" name="id" value={c.id} />
                     <button type="submit" className="inline-flex min-h-11 w-full items-center justify-center rounded-full bg-blue-50 px-5 font-bold text-blue-700 hover:bg-blue-100 dark:bg-blue-950/40 dark:text-blue-300 dark:hover:bg-blue-900/40">
                       Checked today
                     </button>
                   </form>
+                  <Link href={`/tours/admin/emergency?edit=${c.id}#number-form`} className="inline-flex min-h-11 w-full items-center justify-center rounded-full px-5 font-bold text-daet-ink hover:bg-muted">
+                    Edit
+                  </Link>
                   <form action={deleteEmergencyContact}>
                     <input type="hidden" name="id" value={c.id} />
                     <ConfirmSubmitButton message={`Delete ${c.label} (${c.phone})?`} className="inline-flex min-h-11 w-full items-center justify-center rounded-full px-5 font-bold text-red-600 hover:bg-red-50 dark:text-red-300 dark:hover:bg-red-950/40">
@@ -73,11 +85,6 @@ export default async function AdminEmergencyPage({ searchParams }: { searchParam
           })}
         </ul>
       )}
-
-      <Card className="mt-8">
-        <h2 className="mb-3 text-xl font-bold text-daet-ink">Add a number</h2>
-        <EmergencyForm />
-      </Card>
     </AdminPage>
   );
 }

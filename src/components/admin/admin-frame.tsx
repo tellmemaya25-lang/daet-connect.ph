@@ -3,6 +3,7 @@ import { cookies } from "next/headers";
 import { AdminShell } from "@/components/admin/admin-shell";
 import { QUEUE_HREFS, SIDEBAR_COOKIE } from "@/components/admin/nav";
 import { LiveProvider } from "@/components/live/live-provider";
+import { RoleTabBar } from "@/components/ui/role-tab-bar";
 import { RoleClaimSync } from "@/components/ui/role-claim-sync";
 import { accountLinks, roleTabs } from "@/lib/tours/dashboards";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
@@ -63,6 +64,8 @@ export async function AdminFrame({
   const counts = await queueCounts();
   const content = (
     <>
+      {/* Before the shell, so the menu drawer (same layer, later in the page) covers it. */}
+      <RoleTabBar tabs={roleTabs("admin")} />
       <AdminShell
         initialCollapsed={collapsed}
         counts={counts}
