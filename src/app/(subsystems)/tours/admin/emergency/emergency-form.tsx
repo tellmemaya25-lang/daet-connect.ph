@@ -1,5 +1,6 @@
 "use client";
 
+import { Input } from "@/components/ui/field";
 import { Notice } from "@/components/ui/notice";
 import { usePromoForm } from "@/components/tours/use-promo-form";
 import { PromoField, promoInputClass } from "@/components/tours/promo-fields";
@@ -14,7 +15,7 @@ export function EmergencyForm({ contact }: { contact?: EmergencyContact }) {
   const invalid = (field: string) => (errors[field] ? true : undefined);
   return (
     <form onSubmit={onSubmit} className="space-y-5" noValidate>
-      {contact ? <input type="hidden" name="id" value={contact.id} /> : null}
+      {contact ? <Input type="hidden" name="id" value={contact.id} /> : null}
       {state.message ? <Notice variant="error">{state.message}</Notice> : null}
       <div className="grid gap-5 sm:grid-cols-2">
         <PromoField id="label" label="Name" required hint="e.g. Daet Police Station" error={errors.label}>
