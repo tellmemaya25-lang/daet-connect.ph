@@ -8,7 +8,7 @@ import { ButtonLink } from "@/components/ui/button";
 import { Card, CardHeader } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Notice } from "@/components/ui/notice";
-import { PageBody } from "@/components/ui/signed-in-frame";
+import { PageFrame } from "@/components/ui/page-frame";
 import { currentManilaMonth, formatMonthLabel, monthKey, parseMonthParam, shiftMonth } from "@/lib/tours/events-calendar";
 import { ledgerMethodLabel, summarizeLedger } from "@/lib/tours/ledger";
 import { timed } from "@/lib/server-timing";
@@ -25,7 +25,7 @@ export default function OperatorPaymentsPage({ searchParams }: { searchParams: S
   // The heading and back link are the same for everyone, so they are in the
   // prerendered shell; the month, the totals and the ledger wait for the request.
   return (
-    <PageBody>
+    <PageFrame>
       <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <Link href="/tours/operator/dashboard" className="inline-flex min-h-11 items-center text-sm font-bold text-daet-forest dark:text-blue-300 hover:underline">
@@ -40,7 +40,7 @@ export default function OperatorPaymentsPage({ searchParams }: { searchParams: S
       <Suspense fallback={<LedgerSkeleton />}>
         <Ledger searchParams={searchParams} />
       </Suspense>
-    </PageBody>
+    </PageFrame>
   );
 }
 

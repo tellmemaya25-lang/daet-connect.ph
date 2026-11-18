@@ -2,7 +2,7 @@ import { Suspense } from "react";
 import { LineIcon } from "@/components/ui/icons";
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { PageBody } from "@/components/ui/signed-in-frame";
+import { PageFrame } from "@/components/ui/page-frame";
 import { Notice } from "@/components/ui/notice";
 import { canAccessOperatorDashboard } from "@/lib/tours/operator-access";
 import { getAuthenticatedSession, getAuthUser } from "@/lib/tours/server-auth";
@@ -22,7 +22,7 @@ export default function OperatorPackagesPage({
   // The heading and the Create button are the same for everyone, so they are in
   // the prerendered shell; the list waits for the operator.
   return (
-    <PageBody>
+    <PageFrame>
       <div className="mx-auto max-w-6xl">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between mb-6">
           <div className="flex-1">
@@ -44,7 +44,7 @@ export default function OperatorPackagesPage({
           <PackagesContent searchParams={searchParams} />
         </Suspense>
       </div>
-    </PageBody>
+    </PageFrame>
   );
 }
 

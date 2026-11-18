@@ -217,6 +217,34 @@ test("an admin sees the admin sidebar on messages and notifications", async ({ c
   }
 });
 
+test("an operator gets the sidebar on desktop and the menu drawer and tab bar on a phone", async ({ context, page }) => {
+  await signInAs(context, "operator");
+  await page.setViewportSize({ width: 1400, height: 900 });
+  // Own pages and the shared ones keep one frame.
+  for (const path of ["/tours/operator/dashboard", "/tours/operator/earnings", "/tours/operator/messages", "/tours/notifications"]) {
+    await visit(page, path);
+    await expect(page.getByRole("navigation", { name: "Operator areas" }).first()).toBeVisible();
+  }
+  await visit(page, "/tours/operator/earnings");
+  await expect(page.getByRole("navigation", { name: "Operator areas" }).getByRole("link", { name: "Earnings" })).toHaveAttribute("aria-current", "page");
+  // The top bar search goes to the bookings board.
+  await page.getByRole("button", { name: "Open booking search" }).click();
+  await page.getByRole("searchbox", { name: "Find a booking" }).fill("Jane");
+  await page.keyboard.press("Enter");
+  await expect(page).toHaveURL(/\/tours\/operator\/bookings\?q=Jane/);
+  // The public frame is gone: no public header on desktop.
+  await expect(page.getByRole("button", { name: /^Your account/ })).toBeVisible();
+  // Phone: menu drawer, plus the bottom tab bar.
+  await page.setViewportSize({ width: 375, height: 800 });
+  await visit(page, "/tours/operator/dashboard");
+  await expect(page.getByRole("navigation", { name: "Dashboard" }).getByRole("link")).toHaveCount(5);
+  await page.getByRole("button", { name: "Open menu" }).click();
+  const drawer = page.getByRole("dialog", { name: "Operator menu" });
+  await expect(drawer.getByRole("link", { name: "Dashboard" })).toHaveAttribute("aria-current", "page");
+  const noSideways = await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth);
+  expect(noSideways).toBe(true);
+});
+
 test("the admin top bar has notifications, and the account menu has messages and the public site", async ({ context, page }) => {
   await signInAs(context, "admin");
   await visit(page, "/tours/admin");

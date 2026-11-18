@@ -1,11 +1,7 @@
 import type { ReactNode } from "react";
-import { cookies } from "next/headers";
-import { AdminShell } from "@/components/admin/admin-shell";
-import { QUEUE_HREFS, SIDEBAR_COOKIE } from "@/components/admin/nav";
-import { LiveProvider } from "@/components/live/live-provider";
-import { RoleTabBar } from "@/components/ui/role-tab-bar";
-import { RoleClaimSync } from "@/components/ui/role-claim-sync";
-import { accountLinks, roleTabs } from "@/lib/tours/dashboards";
+import { ADMIN_SHELL, QUEUE_HREFS } from "@/components/admin/nav";
+import { AdminSearch } from "@/components/admin/admin-search";
+import { RoleFrame, type FrameViewer } from "@/components/shell/role-frame";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import type { loadNotifications } from "@/lib/tours/notifications-server";
 
@@ -50,44 +46,20 @@ export async function AdminFrame({
   notifications,
   children,
 }: {
-  viewer: {
-    initial: string;
-    name: string;
-    avatarUrl: string | null;
-    role?: string;
-    roleSource?: "claim" | "rpc";
-  };
+  viewer: FrameViewer;
   notifications: Notifications;
   children: ReactNode;
 }) {
-  const collapsed = (await cookies()).get(SIDEBAR_COOKIE)?.value === "1";
-  const counts = await queueCounts();
-  const content = (
-    <>
-      {/* Before the shell, so the menu drawer (same layer, later in the page) covers it. */}
-      <RoleTabBar tabs={roleTabs("admin")} />
-      <AdminShell
-        initialCollapsed={collapsed}
-        counts={counts}
-        notifications={notifications}
-        account={{
-          initial: viewer.initial,
-          name: viewer.name,
-          avatarUrl: viewer.avatarUrl,
-        }}
-        accountLinks={accountLinks("admin", roleTabs("admin"))}
-      >
-        {children}
-      </AdminShell>
-      {viewer.roleSource === "claim" && viewer.role ? (
-        <RoleClaimSync shownRole={viewer.role} />
-      ) : null}
-    </>
-  );
-  // The live poller feeds the bell, the unread-chat badge and the pages' live counts.
-  return notifications ? (
-    <LiveProvider initial={notifications}>{content}</LiveProvider>
-  ) : (
-    content
+  return (
+    <RoleFrame
+      role="admin"
+      config={ADMIN_SHELL}
+      viewer={viewer}
+      notifications={notifications}
+      counts={await queueCounts()}
+      search={<AdminSearch />}
+    >
+      {children}
+    </RoleFrame>
   );
 }

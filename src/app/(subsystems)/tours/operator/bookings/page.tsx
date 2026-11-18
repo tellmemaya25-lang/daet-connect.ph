@@ -4,7 +4,7 @@ import { redirect } from "next/navigation";
 import { EmptyState } from "@/components/ui/empty-state";
 import { LineIcon } from "@/components/ui/icons";
 import { Notice } from "@/components/ui/notice";
-import { PageBody } from "@/components/ui/signed-in-frame";
+import { PageFrame } from "@/components/ui/page-frame";
 import { bookingSearchFilter, bookingSearchPattern } from "@/lib/tours/booking-search";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
 import { timed } from "@/lib/server-timing";
@@ -105,14 +105,14 @@ export default function OperatorBookingsPage({ searchParams }: { searchParams: S
   // The heading is the same for everyone, so it is in the prerendered shell;
   // the filters and the list wait for the operator.
   return (
-    <PageBody>
+    <PageFrame>
       <div className="mx-auto max-w-7xl">
         <h1 className="display-2 text-daet-ink">Bookings</h1>
         <Suspense fallback={<BookingsSkeleton />}>
           <BookingsContent searchParams={searchParams} />
         </Suspense>
       </div>
-    </PageBody>
+    </PageFrame>
   );
 }
 
