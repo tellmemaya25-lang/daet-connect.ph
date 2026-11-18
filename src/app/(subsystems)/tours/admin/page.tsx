@@ -136,7 +136,7 @@ export default async function AdminDashboardPage({ searchParams }: { searchParam
         </ol>
       </nav>
       <section aria-labelledby="dash-title" className="mb-8 border-b border-daet-ink/15 pb-6">
-        <h1 id="dash-title" className="display-2 text-daet-ink">Tourism Office</h1>
+        <h1 id="dash-title" className="display-2 text-daet-ink">Dashboard</h1>
         <p className="mt-2 text-lg text-daet-ink">
           {waiting === 0 ? "Nothing is waiting on the office." : `${waiting} ${waiting === 1 ? "item is" : "items are"} waiting on the office.`}
           {" "}Welcome back, {profile.full_name || "Admin"}.
