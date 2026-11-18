@@ -79,7 +79,7 @@ export default async function AdminGuideEarningsPage({ params, searchParams }: {
             {rows.length === 0 ? (
               <p className="mt-2 text-sm text-daet-ink/70">No guided tours in this range.</p>
             ) : (
-              <div className="mt-3 overflow-x-auto">
+              <div className="mt-3 overflow-x-auto" tabIndex={0} role="group" aria-label="Tours table">
                 <table className="w-full min-w-[36rem] text-left text-sm">
                   <thead>
                     <tr className="border-b border-line">

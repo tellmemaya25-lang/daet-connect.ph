@@ -145,7 +145,7 @@ function EarningsTable({ title, tours, paidIds }: { title: string; tours: GuideE
       {rows.length === 0 ? (
         <p className="mt-2 text-sm text-slate-600 dark:text-slate-400">No tours in this range.</p>
       ) : (
-        <div className="mt-3 overflow-x-auto">
+        <div className="mt-3 overflow-x-auto" tabIndex={0} role="group" aria-label="Tours table">
           <table className="w-full min-w-[32rem] text-left text-sm">
             <thead>
               <tr className="border-b border-line">
@@ -200,7 +200,7 @@ export function MoneyEarningsView({ data, perOperator }: { data: MoneyEarnings; 
           {data.operators.length === 0 ? (
             <p className="mt-2 text-sm text-slate-600 dark:text-slate-400">No approved operators yet.</p>
           ) : (
-            <div className="mt-3 overflow-x-auto">
+            <div className="mt-3 overflow-x-auto" tabIndex={0} role="group" aria-label="By operator table">
               <table className="w-full min-w-[46rem] text-left text-sm">
                 <thead>
                   <tr className="border-b border-line">
@@ -237,7 +237,7 @@ export function MoneyEarningsView({ data, perOperator }: { data: MoneyEarnings; 
         {data.guides.length === 0 ? (
           <p className="mt-2 text-sm text-slate-600 dark:text-slate-400">No guided tours in this range.</p>
         ) : (
-          <div className="mt-3 overflow-x-auto">
+          <div className="mt-3 overflow-x-auto" tabIndex={0} role="group" aria-label="Guide earnings table">
             <table className="w-full min-w-[34rem] text-left text-sm">
               <thead>
                 <tr className="border-b border-line">
