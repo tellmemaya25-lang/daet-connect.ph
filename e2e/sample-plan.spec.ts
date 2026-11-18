@@ -34,3 +34,16 @@ test("no dates yet drafts a sample plan; Pick dates to save asks for dates and d
   await expect(page.getByRole("heading", { name: "Your 2-day Daet plan" })).toBeVisible({ timeout: 30_000 });
   await expect(page.getByRole("button", { name: "Save to a trip" })).toBeVisible();
 });
+
+test("Use these details writes the trip into the message box", async ({ page }) => {
+  await visit(page, "/tours/plan", "Where to in Daet?");
+  await page.getByRole("button", { name: "Travelers" }).click();
+  const card = page.getByRole("form", { name: "Your trip" });
+  await card.getByLabel(/No dates yet/).check();
+  await card.getByLabel("How many days?").selectOption("2");
+  await card.getByRole("button", { name: "Cebu" }).click();
+  await card.getByRole("button", { name: "Use these details" }).click();
+  const box = page.getByLabel("Ask the Daet AI assistant");
+  await expect(box).toHaveValue(/^Plan a 2-day trip to Daet for \d+ adults?.*, travelling from Cebu\.$/);
+  await expect(box).toBeFocused();
+});

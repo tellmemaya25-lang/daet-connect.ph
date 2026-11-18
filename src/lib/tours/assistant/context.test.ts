@@ -1,4 +1,4 @@
-import { contextPrompt, isPlanRequest, missingInputs, tripDays, TripContextSchema, type TripContext } from "@/lib/tours/assistant/context";
+import { contextPrompt, isPlanRequest, missingInputs, tripDays, tripRequest, TripContextSchema, type TripContext } from "@/lib/tours/assistant/context";
 import { daysAsked, peopleAsked } from "@/lib/tours/assistant/context";
 import { assistantSystemPrompt } from "@/lib/tours/assistant/prompt";
 import { cleanHistory } from "@/lib/tours/assistant/respond";
@@ -91,5 +91,15 @@ describe("peopleAsked", () => {
     expect(peopleAsked("tatlong tao, dalawang araw")).toBe(3);
     expect(peopleAsked("Plan 2 days of beaches")).toBeNull();
     expect(peopleAsked("Plan 3 adults")).toBeNull();
+  });
+});
+
+describe("tripRequest", () => {
+  it("writes the trip details as a request for the message box", () => {
+    expect(tripRequest({ dates: { start: "2026-11-20", end: "2026-11-21" }, travelers: { adults: 3, children: [7] }, origin: { city: "Cebu" }, sample: true }))
+      .toBe("Plan a 2-day trip to Daet for 3 adults and 1 child (age 7), travelling from Cebu.");
+    expect(tripRequest({ dates: { start: "2026-12-05", end: "2026-12-07" }, travelers: { adults: 2, children: [] }, origin: { city: "Manila" } }))
+      .toBe("Plan a 3-day trip to Daet from Dec 5 to Dec 7 for 2 adults, travelling from Manila.");
+    expect(tripRequest({})).toBe("Plan a trip to Daet.");
   });
 });
