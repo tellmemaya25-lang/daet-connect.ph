@@ -281,6 +281,17 @@ export function AdminShell({
             </div>
             <AdminSearch />
             <div className="flex items-center gap-1">
+              {/* The public site, as visitors see it. Opens in a new tab so the admin page stays put. */}
+              <Link
+                href="/"
+                target="_blank"
+                rel="noopener"
+                title="View public site"
+                className="grid h-11 w-11 place-items-center rounded-full text-daet-ink hover:bg-muted"
+              >
+                <LineIcon name="globe" className="h-6 w-6" />
+                <span className="sr-only">View public site (opens in a new tab)</span>
+              </Link>
               <Link
                 href="/tours/admin/messages"
                 title="Messages"

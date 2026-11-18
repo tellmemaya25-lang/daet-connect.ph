@@ -4,6 +4,7 @@ import { createHash } from "node:crypto";
 import { redirect } from "next/navigation";
 import type { AuthActionState } from "@/lib/auth/action-state";
 import { GENERIC_SIGN_IN, isEmailRateLimited, isUnconfirmedEmail } from "@/lib/auth/errors";
+import { dashboardPath } from "@/lib/tours/dashboards";
 import { DEFAULT_AFTER_AUTH, nextPathFrom } from "@/lib/auth/next-cookie";
 import { AUTH_LIMITS, takeAttempt, tooManyMessage } from "@/lib/auth/rate-limit";
 import { authRequestContext } from "@/lib/auth/request";
@@ -101,7 +102,7 @@ export async function signInWithPassword(_previous: AuthActionState, formData: F
         };
       }
 
-      return { state: { status: "success" }, redirect: next };
+      return { state: { status: "success" }, redirect: await landingFor(supabase, next) };
     } catch (error) {
       console.error("sign-in threw", error);
       return { state: { status: "error", message: "Sign in failed. Please try again." } };
@@ -117,4 +118,19 @@ async function minimumWait(startedAt: number, ms: number) {
 /** Short stable key, so raw addresses do not sit in the limiter's memory. */
 function hashKey(value: string): string {
   return createHash("sha256").update(value).digest("hex").slice(0, 24);
+}
+
+/**
+ * Where a signed-in person goes. An admin lands on the office dashboard whatever
+ * public page sent them to the form (a deep link into the admin area is kept).
+ * Anyone else, or an admin whose role cannot be read, goes where they were headed.
+ */
+async function landingFor(supabase: Awaited<ReturnType<typeof createSupabaseServerClient>>, next: string): Promise<string> {
+  if (next.startsWith("/tours/admin")) return next;
+  try {
+    const { data } = await supabase.rpc("get_my_role");
+    return data === "admin" ? dashboardPath("admin") : next;
+  } catch {
+    return next;
+  }
 }
