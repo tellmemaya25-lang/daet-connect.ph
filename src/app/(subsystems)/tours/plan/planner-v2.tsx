@@ -153,7 +153,7 @@ export function PlannerV2({ signedIn, canBook, initialDescription = "" }: { sign
     <div className="grid lg:grid-cols-[minmax(22rem,1fr)_minmax(0,2fr)]">
       <h1 className="sr-only">Plan your Daet trip</h1>
       {/* Pinned on the left, the full height of the screen under the header, while the plan scrolls. */}
-      <div className="flex h-[calc(100dvh-var(--header-h)-var(--tab-bar-h))] min-h-[28rem] flex-col overflow-hidden bg-surface lg:sticky lg:top-[var(--header-h)] lg:self-start">
+      <div className="flex h-[calc(100dvh-var(--header-h)-var(--tab-bar-h))] min-h-[28rem] flex-col overflow-hidden bg-surface lg:sticky lg:border-r lg:border-line lg:dark:border-white/15 lg:top-[var(--header-h)] lg:self-start">
         {/* Phones: the plan opens as a sheet; this brings it back without covering the message box. */}
         {itinerary && !sheetOpen ? (
           <div className="shrink-0 px-3 pt-3 lg:hidden">
