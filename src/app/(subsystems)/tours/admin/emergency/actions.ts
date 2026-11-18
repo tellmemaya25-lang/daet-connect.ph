@@ -17,10 +17,7 @@ const text = (formData: FormData, name: string) => {
   return typeof v === "string" ? v.trim() : "";
 };
 
-/** Adds a number; it counts as checked today. */
-export async function addEmergencyContact(_prev: EmergencyFormState, formData: FormData): Promise<EmergencyFormState> {
-  const admin = await requirePromoAdmin();
-  if (!admin.ok) return { message: admin.error, errors: {} };
+function readContact(formData: FormData) {
   const label = text(formData, "label");
   const kind = text(formData, "kind");
   const phone = text(formData, "phone");
@@ -30,17 +27,41 @@ export async function addEmergencyContact(_prev: EmergencyFormState, formData: F
   if (!isEmergencyKind(kind)) errors.kind = "Choose a kind.";
   if (!validPhone(phone)) errors.phone = "Enter a phone number: digits, spaces, +, ( ) or -.";
   if (area.length > 60) errors.area = "Keep the area under 60 characters.";
+  return { row: { label, kind, phone, area: area || null }, errors };
+}
+
+/** Adds a number; it counts as checked today. */
+export async function addEmergencyContact(_prev: EmergencyFormState, formData: FormData): Promise<EmergencyFormState> {
+  const admin = await requirePromoAdmin();
+  if (!admin.ok) return { message: admin.error, errors: {} };
+  const { row, errors } = readContact(formData);
   if (Object.keys(errors).length) return { message: "Please fix the highlighted fields.", errors };
 
-  const { error } = await admin.supabase
-    .from("tours_emergency_contacts")
-    .insert({ label, kind, phone, area: area || null, checked_on: toManilaDateKey(new Date()) });
+  const { error } = await admin.supabase.from("tours_emergency_contacts").insert({ ...row, checked_on: toManilaDateKey(new Date()) });
   if (error) {
     console.error("Add emergency contact error:", error);
     return { message: "The number could not be saved. Please try again.", errors: {} };
   }
   revalidatePath(LIST);
   redirect(`${LIST}?saved=1`);
+}
+
+/** Changes a number's details. The checked date stays as it was: editing is not calling it. */
+export async function updateEmergencyContact(_prev: EmergencyFormState, formData: FormData): Promise<EmergencyFormState> {
+  const admin = await requirePromoAdmin();
+  if (!admin.ok) return { message: admin.error, errors: {} };
+  const id = formData.get("id");
+  if (typeof id !== "string" || !isUuid(id)) return { message: "That number could not be found.", errors: {} };
+  const { row, errors } = readContact(formData);
+  if (Object.keys(errors).length) return { message: "Please fix the highlighted fields.", errors };
+
+  const { error } = await admin.supabase.from("tours_emergency_contacts").update(row).eq("id", id);
+  if (error) {
+    console.error("Update emergency contact error:", error);
+    return { message: "The number could not be saved. Please try again.", errors: {} };
+  }
+  revalidatePath(LIST);
+  redirect(`${LIST}?updated=1`);
 }
 
 async function rowAction(formData: FormData, run: (id: string, admin: Extract<Awaited<ReturnType<typeof requirePromoAdmin>>, { ok: true }>) => PromiseLike<{ error: unknown }>, done: string) {
