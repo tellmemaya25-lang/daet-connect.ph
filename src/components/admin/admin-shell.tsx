@@ -7,7 +7,6 @@ import { LineIcon } from "@/components/ui/icons";
 import { AccountMenu, type AccountLink } from "@/components/ui/account-menu";
 import { cn } from "@/components/ui/cn";
 import { NotificationBell } from "@/components/tours/notification-bell";
-import { UnreadMessagesBadge } from "@/components/chat/unread-badge";
 import type { LoadedNotifications } from "@/lib/tours/notifications-server";
 import { AdminSearch } from "./admin-search";
 import {
@@ -269,33 +268,13 @@ export function AdminShell({
             </div>
             <AdminSearch />
             <div className="flex items-center gap-1">
-              {/* The public site, as visitors see it. Opens in a new tab so the admin page stays put. */}
-              <Link
-                href="/"
-                target="_blank"
-                rel="noopener"
-                title="View public site"
-                className="hidden h-11 w-11 place-items-center rounded-full text-daet-ink hover:bg-muted sm:grid"
-              >
-                <LineIcon name="globe" className="h-6 w-6" />
-                <span className="sr-only">View public site (opens in a new tab)</span>
-              </Link>
-              <Link
-                href="/tours/admin/messages"
-                title="Messages"
-                className="relative hidden h-11 w-11 place-items-center rounded-full text-daet-ink hover:bg-muted sm:grid"
-              >
-                <LineIcon name="message" className="h-6 w-6" />
-                <span className="sr-only">Messages</span>
-                <UnreadMessagesBadge className="absolute right-0 top-0" />
-              </Link>
               <NotificationBell initial={notifications} />
             </div>
             <AccountMenu
               initial={account.initial}
               name={account.name}
               avatarUrl={account.avatarUrl}
-              links={accountLinks}
+              links={[...accountLinks, { href: "/", label: "View public site" }]}
             />
           </div>
         </header>

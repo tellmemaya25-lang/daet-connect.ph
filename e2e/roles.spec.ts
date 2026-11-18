@@ -217,11 +217,14 @@ test("an admin sees the admin sidebar on messages and notifications", async ({ c
   }
 });
 
-test("the admin top bar has messages and notifications", async ({ context, page }) => {
+test("the admin top bar has notifications, and the account menu has messages and the public site", async ({ context, page }) => {
   await signInAs(context, "admin");
   await visit(page, "/tours/admin");
   await page.setViewportSize({ width: 1400, height: 900 });
-  await expect(page.getByRole("link", { name: /^Messages/ }).first()).toHaveAttribute("href", "/tours/admin/messages");
+  await page.getByRole("button", { name: /^Your account/ }).click();
+  await expect(page.getByRole("link", { name: "Messages" }).first()).toBeVisible();
+  await expect(page.getByRole("link", { name: "View public site" })).toHaveAttribute("href", "/");
+  await page.keyboard.press("Escape");
   const bell = page.getByRole("button", { name: /^Notifications/ });
   await bell.click();
   await expect(page.getByText("Notifications", { exact: true })).toBeVisible();
