@@ -27,8 +27,9 @@ function form(entries: Record<string, string> = { email: EMAIL, password: PASSWO
   return data;
 }
 
-function clientWith(signIn: jest.Mock) {
+function clientWith(signIn: jest.Mock, role: string | null = null) {
   const client = {
+    rpc: jest.fn(async () => ({ data: role, error: null })),
     auth: {
       signInWithPassword: signIn,
       signOut: jest.fn(async () => ({ error: null })),
@@ -84,6 +85,26 @@ describe("signing in", () => {
     );
 
     expect(mockRedirect).toHaveBeenCalledWith("/tours/me");
+  });
+
+  it("sends an admin to the office dashboard, whatever page sent them", async () => {
+    clientWith(jest.fn(async () => ({ data: { user: confirmedUser, session: {} }, error: null })), "admin");
+
+    await expect(signInWithPassword({ status: "idle" }, form({ email: EMAIL, password: PASSWORD, next: "/tours/browse" }))).rejects.toThrow(
+      "NEXT_REDIRECT",
+    );
+
+    expect(mockRedirect).toHaveBeenCalledWith("/tours/admin");
+  });
+
+  it("keeps an admin's deep link into the admin area", async () => {
+    clientWith(jest.fn(async () => ({ data: { user: confirmedUser, session: {} }, error: null })), "admin");
+
+    await expect(
+      signInWithPassword({ status: "idle" }, form({ email: EMAIL, password: PASSWORD, next: "/tours/admin/reviews" })),
+    ).rejects.toThrow("NEXT_REDIRECT");
+
+    expect(mockRedirect).toHaveBeenCalledWith("/tours/admin/reviews");
   });
 
   it("ignores an off-site next", async () => {
