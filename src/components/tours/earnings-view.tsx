@@ -215,7 +215,7 @@ export function MoneyEarningsView({ data, perOperator }: { data: MoneyEarnings; 
                 <tbody>
                   {data.operators.map((o) => (
                     <tr key={o.id} className="border-b border-line/60">
-                      <td className="py-2 pr-3 font-bold">{o.name}</td>
+                      <td className="py-2 pr-3 font-bold"><Link href={`/tours/admin/earnings/operators/${o.id}`} className="text-blue-700 underline dark:text-blue-300">{o.name}</Link></td>
                       <td className="py-2 pr-3 text-right">{o.bookings}</td>
                       <td className="py-2 pr-3 text-right">{formatPeso(o.collected)}</td>
                       <td className="py-2 pr-3 text-right">{formatPeso(o.refunded)}</td>
@@ -248,7 +248,7 @@ export function MoneyEarningsView({ data, perOperator }: { data: MoneyEarnings; 
               <tbody>
                 {data.guides.map((g) => (
                   <tr key={g.id} className="border-b border-line/60">
-                    <td className="py-2 pr-3 font-bold">{g.name}</td>
+                    <td className="py-2 pr-3 font-bold">{perOperator ? <Link href={`/tours/admin/earnings/guides/${g.id}`} className="text-blue-700 underline dark:text-blue-300">{g.name}</Link> : g.name}</td>
                     <td className="py-2 pr-3 text-right">{g.completedTours}</td>
                     <td className="py-2 pr-3 text-right">{formatPeso(g.earned)}</td>
                     <td className="py-2 text-right">{formatPeso(g.expected)}</td>
