@@ -228,8 +228,11 @@ test("an operator gets the sidebar on desktop and the menu drawer and tab bar on
   await visit(page, "/tours/operator/earnings");
   await expect(page.getByRole("navigation", { name: "Operator areas" }).getByRole("link", { name: "Earnings" })).toHaveAttribute("aria-current", "page");
   // The top bar search goes to the bookings board.
-  await page.getByRole("button", { name: "Open booking search" }).click();
-  await page.getByRole("searchbox", { name: "Find a booking" }).fill("Jane");
+  await page.keyboard.press("Control+Space");
+  const search = page.getByRole("searchbox", { name: "Find a booking" });
+  await expect(search).toBeFocused();
+  await expect(search).toHaveAttribute("minlength", "2");
+  await search.fill("Jane");
   await page.keyboard.press("Enter");
   await expect(page).toHaveURL(/\/tours\/operator\/bookings\?q=Jane/);
   // The public frame is gone: no public header on desktop.
