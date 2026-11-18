@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import { LineIcon } from "@/components/ui/icons";
 import { AccountMenu, type AccountLink } from "@/components/ui/account-menu";
 import { cn } from "@/components/ui/cn";
@@ -178,6 +178,18 @@ export function AdminShell({
   const pathname = usePathname() ?? "/tours/admin";
   const [collapsed, setCollapsed] = useState(initialCollapsed);
   const [drawer, setDrawer] = useState(false);
+  // The drawer stays mounted for the length of its slide-out, then goes.
+  const [closing, setClosing] = useState(false);
+  const closeTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
+  const closeDrawer = useCallback(() => {
+    setClosing(true);
+    clearTimeout(closeTimer.current);
+    closeTimer.current = setTimeout(() => {
+      setDrawer(false);
+      setClosing(false);
+    }, 240);
+  }, []);
+  useEffect(() => () => clearTimeout(closeTimer.current), []);
   const menuButton = useRef<HTMLButtonElement>(null);
   const section =
     areaFor(pathname)?.label ??
@@ -192,13 +204,13 @@ export function AdminShell({
     if (!drawer) return;
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
-        setDrawer(false);
+        closeDrawer();
         menuButton.current?.focus();
       }
     };
     document.addEventListener("keydown", onKey);
     return () => document.removeEventListener("keydown", onKey);
-  }, [drawer]);
+  }, [drawer, closeDrawer]);
 
   function toggle() {
     const next = !collapsed;
@@ -250,7 +262,11 @@ export function AdminShell({
               <button
                 ref={menuButton}
                 type="button"
-                onClick={() => setDrawer(true)}
+                onClick={() => {
+                  clearTimeout(closeTimer.current);
+                  setClosing(false);
+                  setDrawer(true);
+                }}
                 aria-expanded={drawer}
                 aria-controls="admin-drawer"
                 className="grid h-11 w-11 place-items-center rounded-xl text-daet-ink hover:bg-muted lg:hidden"
@@ -297,15 +313,17 @@ export function AdminShell({
         <div className="fixed inset-0 z-40 lg:hidden">
           <div
             aria-hidden="true"
-            onClick={() => setDrawer(false)}
-            className="absolute inset-0 bg-slate-900/45"
+            onClick={closeDrawer}
+            data-closing={closing ? "" : undefined}
+            className="motion-scrim absolute inset-0 bg-slate-900/45"
           />
           <aside
             id="admin-drawer"
             role="dialog"
             aria-modal="true"
             aria-label="Admin menu"
-            className="absolute inset-y-0 left-0 flex w-72 max-w-[85vw] flex-col overflow-y-auto [scrollbar-width:thin] [scrollbar-color:var(--color-line)_transparent] bg-muted"
+            data-closing={closing ? "" : undefined}
+            className="motion-drawer absolute inset-y-0 left-0 flex w-72 max-w-[85vw] flex-col overflow-y-auto [scrollbar-width:thin] [scrollbar-color:var(--color-line)_transparent] bg-muted"
           >
             <div className="sticky top-0 z-10 flex items-center justify-between gap-2 bg-muted px-4 pb-3 pt-4 after:pointer-events-none after:absolute after:inset-x-0 after:top-full after:h-6 after:bg-gradient-to-b after:from-muted after:to-transparent">
               <Wordmark />
@@ -313,7 +331,7 @@ export function AdminShell({
                 type="button"
                 autoFocus
                 onClick={() => {
-                  setDrawer(false);
+                  closeDrawer();
                   menuButton.current?.focus();
                 }}
                 className="grid h-11 w-11 place-items-center rounded-xl text-daet-ink hover:bg-surface"
@@ -326,7 +344,7 @@ export function AdminShell({
               <NavLinks
                 pathname={pathname}
                 counts={counts}
-                onNavigate={() => setDrawer(false)}
+                onNavigate={closeDrawer}
               />
             </nav>
           </aside>
