@@ -11,7 +11,7 @@ export function AdminRevenueView({ data }: { data: AdminRevenue }) {
   const methodsTotal = data.methods.reduce((s, m) => s + m.amount, 0) || 1;
   return (
     <div className="mb-8 space-y-6">
-      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4 [&>*]:min-w-0">
         <Stat label="Booked" value={formatPeso(data.booked)} note={`${data.bookings} bookings · ${data.guests} guests`} />
         <Stat label="Collected" value={formatPeso(data.collected)} note={`${formatPeso(data.pendingPayments)} waiting to be verified`} />
         <Stat label="Refunded" value={formatPeso(data.refunded)} note={`${cancellationRate(data.statuses)}% of bookings cancelled`} />
@@ -54,8 +54,8 @@ export function AdminRevenueView({ data }: { data: AdminRevenue }) {
         )}
       </section>
 
-      <div className="grid gap-4 lg:grid-cols-3">
-        <section aria-label="Payment methods" className="rounded-2xl card-edge bg-surface p-5">
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
+        <section aria-label="Payment methods" className="min-w-0 rounded-2xl card-edge bg-surface p-5">
           <h2 className="text-lg font-bold text-daet-ink">Payment methods</h2>
           <ul className="mt-3 space-y-2 text-sm">
             {data.methods.length === 0 ? <li className="text-daet-ink/70">No payments collected.</li> : null}
@@ -71,7 +71,7 @@ export function AdminRevenueView({ data }: { data: AdminRevenue }) {
             ))}
           </ul>
         </section>
-        <section aria-label="Booking outcomes" className="rounded-2xl card-edge bg-surface p-5">
+        <section aria-label="Booking outcomes" className="min-w-0 rounded-2xl card-edge bg-surface p-5">
           <h2 className="text-lg font-bold text-daet-ink">Booking outcomes</h2>
           <ul className="mt-3 space-y-2 text-sm">
             {data.statuses.length === 0 ? <li className="text-daet-ink/70">No bookings.</li> : null}
@@ -85,7 +85,7 @@ export function AdminRevenueView({ data }: { data: AdminRevenue }) {
             ))}
           </ul>
         </section>
-        <section aria-label="Top packages" className="rounded-2xl card-edge bg-surface p-5">
+        <section aria-label="Top packages" className="min-w-0 rounded-2xl card-edge bg-surface p-5">
           <h2 className="text-lg font-bold text-daet-ink">Top packages</h2>
           <ol className="mt-3 space-y-2 text-sm">
             {data.topPackages.length === 0 ? <li className="text-daet-ink/70">No bookings.</li> : null}
