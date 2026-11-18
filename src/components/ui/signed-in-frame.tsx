@@ -102,7 +102,7 @@ function ChromeFallback() {
       </header>
       <div
         aria-hidden="true"
-        className="fixed inset-x-0 bottom-0 z-40 bg-surface pb-[env(safe-area-inset-bottom)] shadow-[0_-4px_16px_rgba(15,23,42,0.08)] sm:hidden print:hidden"
+        className="fixed inset-x-0 bottom-0 z-40 border-t border-line bg-surface pb-[env(safe-area-inset-bottom)] dark:border-white/15 shadow-[0_-4px_16px_rgba(15,23,42,0.08)] sm:hidden print:hidden"
       >
         <div className="mx-auto grid min-h-14 max-w-md grid-cols-5 items-center justify-items-center">
           {[0, 1, 2, 3, 4].map((i) => (
