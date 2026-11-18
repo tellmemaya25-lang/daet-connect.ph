@@ -24,24 +24,24 @@ export function AdminRevenueView({ data }: { data: AdminRevenue }) {
           <p className="mt-2 text-sm text-daet-ink/70">No bookings or payments in this range.</p>
         ) : (
           <div className="mt-3 overflow-x-auto" tabIndex={0} role="group" aria-label="Month by month table">
-            <table className="w-full min-w-[30rem] text-left text-sm">
+            <table className="w-full text-left text-xs sm:min-w-[30rem] sm:text-sm">
               <thead>
                 <tr className="border-b border-line">
-                  <th scope="col" className="py-2 pr-3">Month</th>
-                  <th scope="col" className="py-2 pr-3 text-right">Booked</th>
-                  <th scope="col" className="py-2 pr-3 text-right">Collected</th>
-                  <th scope="col" className="py-2 pr-3 text-right">Refunded</th>
-                  <th scope="col" className="w-1/3 py-2"><span className="sr-only">Collected, as a bar</span></th>
+                  <th scope="col" className="py-2 pr-2 sm:pr-3">Month</th>
+                  <th scope="col" className="py-2 pr-2 sm:pr-3 text-right">Booked</th>
+                  <th scope="col" className="py-2 pr-2 sm:pr-3 text-right">Collected</th>
+                  <th scope="col" className="py-2 pr-2 sm:pr-3 text-right">Refunded</th>
+                  <th scope="col" className="hidden w-1/3 py-2 sm:table-cell"><span className="sr-only">Collected, as a bar</span></th>
                 </tr>
               </thead>
               <tbody>
                 {data.months.map((m) => (
                   <tr key={m.month} className="border-b border-line/60">
-                    <th scope="row" className="py-2 pr-3 font-bold">{monthLabel(m.month)}</th>
-                    <td className="py-2 pr-3 text-right">{formatPeso(m.booked)}</td>
-                    <td className="py-2 pr-3 text-right">{formatPeso(m.collected)}</td>
-                    <td className="py-2 pr-3 text-right">{formatPeso(m.refunded)}</td>
-                    <td className="py-2" aria-hidden="true">
+                    <th scope="row" className="py-2 pr-2 sm:pr-3 font-bold">{monthLabel(m.month)}</th>
+                    <td className="py-2 pr-2 sm:pr-3 text-right">{formatPeso(m.booked)}</td>
+                    <td className="py-2 pr-2 sm:pr-3 text-right">{formatPeso(m.collected)}</td>
+                    <td className="py-2 pr-2 sm:pr-3 text-right">{formatPeso(m.refunded)}</td>
+                    <td className="hidden py-2 sm:table-cell" aria-hidden="true">
                       <div className="h-2 rounded-full bg-muted">
                         <div className="h-2 rounded-full bg-daet-forest" style={{ width: `${Math.round((m.collected / top) * 100)}%` }} />
                       </div>
