@@ -191,15 +191,6 @@ export function AdminShell({
   }, []);
   useEffect(() => () => clearTimeout(closeTimer.current), []);
   const menuButton = useRef<HTMLButtonElement>(null);
-  const section =
-    areaFor(pathname)?.label ??
-    (pathname.startsWith("/tours/messages") ||
-    pathname.startsWith("/tours/admin/messages")
-      ? "Messages"
-      : pathname.startsWith("/tours/notifications")
-        ? "Notifications"
-        : "Admin");
-
   useEffect(() => {
     if (!drawer) return;
     const onKey = (e: KeyboardEvent) => {
@@ -274,10 +265,7 @@ export function AdminShell({
                 <LineIcon name="menu" />
                 <span className="sr-only">Open menu</span>
               </button>
-              <p className="truncate font-serif text-xl font-semibold lg:hidden">
-                {section}
-              </p>
-              <Wordmark className="hidden lg:flex" />
+              <Wordmark />
             </div>
             <AdminSearch />
             <div className="flex items-center gap-1">
@@ -287,7 +275,7 @@ export function AdminShell({
                 target="_blank"
                 rel="noopener"
                 title="View public site"
-                className="grid h-11 w-11 place-items-center rounded-full text-daet-ink hover:bg-muted"
+                className="hidden h-11 w-11 place-items-center rounded-full text-daet-ink hover:bg-muted sm:grid"
               >
                 <LineIcon name="globe" className="h-6 w-6" />
                 <span className="sr-only">View public site (opens in a new tab)</span>
@@ -295,7 +283,7 @@ export function AdminShell({
               <Link
                 href="/tours/admin/messages"
                 title="Messages"
-                className="relative grid h-11 w-11 place-items-center rounded-full text-daet-ink hover:bg-muted"
+                className="relative hidden h-11 w-11 place-items-center rounded-full text-daet-ink hover:bg-muted sm:grid"
               >
                 <LineIcon name="message" className="h-6 w-6" />
                 <span className="sr-only">Messages</span>
@@ -314,7 +302,7 @@ export function AdminShell({
         <main
           id="main-content"
           tabIndex={-1}
-          className="mx-auto w-full max-w-7xl px-4 py-6 outline-none sm:px-8 sm:py-8"
+          className="mx-auto w-full max-w-7xl px-4 pb-28 pt-6 outline-none sm:px-8 sm:py-8"
         >
           {children}
         </main>
