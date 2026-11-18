@@ -156,3 +156,20 @@ export function pageSuggestions(kind: "package" | "attraction" | "place" | "even
     return { greeting: `Ask me about ${name}.`, questions: [`When and where is the ${name} event?`, `Is the ${name} event free?`, `Where to stay near ${name}?`] };
   return { greeting: `Ask me about ${name}.`, questions: [`How do I get to ${name}?`, `What time does ${name} open?`, `Tours that go to ${name}?`] };
 }
+
+/**
+ * The trip details as a request for the planner's message box:
+ * "Plan a 2-day trip to Daet for 3 adults and 1 child (age 7), travelling from Cebu."
+ * A sample plan has no dates; real dates are named.
+ */
+export function tripRequest(trip: Pick<TripContext, "dates" | "travelers" | "origin" | "sample">): string {
+  const short = (key: string) => new Date(`${key}T00:00:00Z`).toLocaleDateString("en-PH", { month: "short", day: "numeric", timeZone: "UTC" });
+  const start = trip.dates?.start;
+  const end = trip.dates?.end ?? start;
+  const days = start && end ? tripDays({ start, end }) : 0;
+  const length = days >= 1 ? `a ${days}-day trip` : "a trip";
+  const when = !trip.sample && start ? (start === end ? ` on ${short(start)}` : ` from ${short(start)} to ${end ? short(end) : ""}`) : "";
+  const who = trip.travelers ? ` for ${describeTravelers(trip.travelers)}` : "";
+  const from = trip.origin?.city ? `, travelling from ${trip.origin.city.trim()}` : "";
+  return `Plan ${length} to Daet${when}${who}${from}.`;
+}

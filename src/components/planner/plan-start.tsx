@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { LineIcon } from "@/components/ui/icons";
@@ -8,7 +8,7 @@ import { MIC_PATH, useSpeech } from "@/components/ui/use-speech";
 import { QuestionsCard } from "@/components/assistant/questions-card";
 import { loadTrip, saveTrip, type TripAnswers } from "@/components/assistant/trip-storage";
 import { ASSISTANT_NAME } from "@/lib/tours/assistant/name";
-import { countOf, groupSize, type TripContext } from "@/lib/tours/assistant/context";
+import { countOf, groupSize, tripRequest, type TripContext } from "@/lib/tours/assistant/context";
 import { toManilaDateKey } from "@/lib/tours/events-calendar";
 
 export const TRY_ASKING = [
@@ -29,6 +29,9 @@ export function PlanStart({ signedIn, initialText = "", onSend }: { signedIn: bo
   const [text, setText] = useState(initialText.slice(0, 500));
   const [trip, setTrip] = useState<TripAnswers>({});
   const [editing, setEditing] = useState(false);
+  const box = useRef<HTMLTextAreaElement>(null);
+  // The last request written from the trip details, replaced (not stacked) when they change.
+  const filled = useRef("");
   useEffect(() => setTrip(loadTrip()), []);
   // Speech to text: what is heard is added to the box, so it can be edited before sending.
   const speech = useSpeech((heard) => setText((current) => `${current}${current && !/\s$/.test(current) ? " " : ""}${heard}`.slice(0, 1000)));
@@ -61,6 +64,7 @@ export function PlanStart({ signedIn, initialText = "", onSend }: { signedIn: bo
         </label>
         <textarea
           id="plan-start-input"
+          ref={box}
           rows={3}
           maxLength={1000}
           value={text}
@@ -118,6 +122,18 @@ export function PlanStart({ signedIn, initialText = "", onSend }: { signedIn: bo
               setTrip(answers);
               saveTrip(answers);
               setEditing(false);
+              // Put the details in the message box, ready to send or add to.
+              const request = tripRequest(answers);
+              setText((current) => {
+                const own = current.trim() && current.trim() !== filled.current ? current.trim().replace(filled.current, "").trim() : "";
+                return (own ? `${request} ${own}` : request).slice(0, 1000);
+              });
+              filled.current = request;
+              requestAnimationFrame(() => {
+                box.current?.focus();
+                const end = box.current?.value.length ?? 0;
+                box.current?.setSelectionRange(end, end);
+              });
             }}
           />
         </div>
