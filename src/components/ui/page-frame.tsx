@@ -140,6 +140,7 @@ export async function PageFrame({
           tabs={tabs}
           account={account}
           notifications={notifications}
+          outlined
         />
         <main
           id="main-content"

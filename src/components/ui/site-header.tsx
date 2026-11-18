@@ -53,6 +53,7 @@ export function SiteHeader({
   tabs = [],
   account,
   notifications = null,
+  outlined = false,
 }: {
   showAdminLink?: boolean;
   signedIn?: boolean;
@@ -64,6 +65,8 @@ export function SiteHeader({
   account?: { initial: string; name: string; avatarUrl?: string | null };
   /** The bell's first load, read on the server; the bell falls back to the browser without it. */
   notifications?: LoadedNotifications | null;
+  /** A hairline under the bar, for the public pages. */
+  outlined?: boolean;
 }) {
   const explorer = !signedIn || !role || role === "tourist";
   const destinations = explorer ? DESTINATION_LINKS : [];
@@ -94,7 +97,7 @@ export function SiteHeader({
     // each over a blur so the hero's photos read through it without turning the
     // label edges to noise. Light mode also keeps the one resting elevation the
     // design system allows (see --shadow-header).
-    <header className="sticky top-0 z-40 bg-surface/80 text-daet-ink shadow-header backdrop-blur-md dark:bg-slate-950/80 dark:text-white dark:shadow-none print:hidden">
+    <header className={`sticky top-0 z-40 ${outlined ? "border-b border-line dark:border-white/15 " : ""}bg-surface/80 text-daet-ink shadow-header backdrop-blur-md dark:bg-slate-950/80 dark:text-white dark:shadow-none print:hidden`}>
       <div className="mx-auto flex min-h-[var(--header-h)] max-w-7xl items-center gap-1 px-3 sm:px-6 lg:px-8">
         <MobileMenu
           showTheme={!signedIn}
