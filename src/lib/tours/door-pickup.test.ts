@@ -1,18 +1,22 @@
-import { quoteDoorPickup, roadKm, toOfficialRates, toPickupVehicles, validateVehicles, vehicleName, vehicleRateLabel, type OfficialRate, type PickupVehicle } from "@/lib/tours/door-pickup";
+import { doorPickupProblem, parseDoorPickupQuote, toOfficialRates, toPickupVehicles, validateVehicles, vehicleName, vehicleRateLabel, type OfficialRate, type PickupVehicle } from "@/lib/tours/door-pickup";
 
-const meeting = { lat: 14.1147, lng: 122.9548 };
-const bagasbas = { lat: 14.1395, lng: 122.993 };
 const vanRate: OfficialRate = { vehicle: "van", baseFee: 0, perKmPerPerson: 2.6, source: "LTFRB UV Express", sourceUrl: null, effectiveOn: "2026-09-28", checkedOn: "2026-11-15" };
 const van: PickupVehicle = { id: "v", vehicle: "van", label: null, seats: 3, maxKm: 10, rate: vanRate };
 
 describe("door pickup", () => {
-  it("prices the ride from the official fare, per person, as the database does (6.9 km x 2 x ₱2.60 → ₱36)", () => {
-    expect(roadKm(bagasbas, meeting)).toBe(6.9);
-    expect(quoteDoorPickup(van, bagasbas, meeting, 2)).toEqual({ ok: true, km: 6.9, fee: 36 });
+  it("reads the database's Door pickup quote", () => {
+    expect(parseDoorPickupQuote({ ok: true, distance_km: 6.9, pickup_fee: 36, tour_total: 1000, grand_total: 1036, vehicle_label: "Van" })).toEqual({ ok: true, km: 6.9, fee: 36, tourTotal: 1000, grandTotal: 1036, vehicleLabel: "Van" });
+    expect(parseDoorPickupQuote({ ok: false, reason: "seats", seats: 3, distance_km: 6.9, vehicle_label: "Tricycle" })).toMatchObject({ ok: false, reason: "seats", seats: 3 });
+    expect(parseDoorPickupQuote(null)).toMatchObject({ ok: false, reason: "no_vehicle" });
+    expect(parseDoorPickupQuote({ ok: true })).toMatchObject({ ok: false });
   });
-  it("refuses a group that doesn't fit, or a pickup too far away", () => {
-    expect(quoteDoorPickup(van, bagasbas, meeting, 4)).toMatchObject({ ok: false, reason: "seats" });
-    expect(quoteDoorPickup(van, { lat: 13.6218, lng: 123.1948 }, meeting, 2)).toMatchObject({ ok: false, reason: "too_far" });
+  it("words a refused quote with the real vehicle name", () => {
+    const q = parseDoorPickupQuote({ ok: false, reason: "seats", seats: 3, vehicle_label: "Tricycle" });
+    if (q.ok) throw new Error("expected refusal");
+    expect(doorPickupProblem(q, 4)).toBe("The tricycle seats 3; you are 4.");
+    const far = parseDoorPickupQuote({ ok: false, reason: "too_far", distance_km: 52.1, max_km: 10, vehicle_label: "Van" });
+    if (far.ok) throw new Error("expected refusal");
+    expect(doorPickupProblem(far, 2)).toBe("That is 52.1 km from the meeting point; this tour picks up within 10 km.");
   });
   it("names and labels vehicles", () => {
     expect(vehicleName(van)).toBe("Van");

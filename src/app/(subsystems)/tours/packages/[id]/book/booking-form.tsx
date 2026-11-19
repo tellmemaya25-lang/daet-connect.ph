@@ -8,8 +8,9 @@ import { createBooking } from "./actions";
 import { bookingPrefill } from "./prefill";
 import { digitsOnlyPhone, PHONE_DIGITS, PHONE_HINT } from "@/lib/tours/phone";
 import { Select } from "@/components/ui/field";
-import { quoteDoorPickup, type PickupShortcut, type PickupVehicle } from "@/lib/tours/door-pickup";
+import { vehicleName, type PickupShortcut, type PickupVehicle } from "@/lib/tours/door-pickup";
 import type { LatLng } from "@/lib/maps/geo";
+import { useDoorPickupQuote } from "./use-door-pickup-quote";
 import { DoorPickupPicker } from "./door-pickup-picker";
 
 interface PriceVariant {
@@ -93,9 +94,11 @@ export function BookingForm({ packageId, priceVariants, meetingPoint = null, pic
   const tourAmount = calculateTotal();
   // One vehicle per tour, set by the operator.
   const doorVehicle = door ? (pickupVehicles[0] ?? null) : null;
-  const doorQuote = doorVehicle && doorPin && meetingLatLng ? quoteDoorPickup(doorVehicle, doorPin, meetingLatLng, numberOfPax) : null;
-  const pickupAmount = door ? (doorQuote?.ok ? doorQuote.fee : 0) : 0;
-  const totalAmount = tourAmount + pickupAmount;
+  // The Door pickup quote comes from the database; the form only shows it.
+  const quoteState = useDoorPickupQuote({ packageId, vehicleId: doorVehicle?.id ?? null, pin: doorPin, pax: numberOfPax, variantId: selectedVariantId || null });
+  const doorQuote = door && quoteState.status === "done" ? quoteState.quote : null;
+  const pickupAmount = doorQuote?.ok ? doorQuote.fee : 0;
+  const totalAmount = doorQuote?.ok && doorQuote.grandTotal != null ? doorQuote.grandTotal : tourAmount;
 
   // Get min date (tomorrow in Manila, not in the visitor's or the server's zone)
   const getMinDate = () => {
@@ -322,19 +325,19 @@ export function BookingForm({ packageId, priceVariants, meetingPoint = null, pic
                   <option value="door">Yes, pick me up (fee added to my total)</option>
                 </Select>
                 <p id="pickupPointHint" className="mt-1 text-xs text-daet-ink/70">
-                  {door ? "The operator's vehicle picks you up and brings you to the meeting point." : "The pickup fee is the official van fare for the distance, added to your total."}
+                  {door ? "The operator's vehicle picks you up and brings you to the meeting point." : `The pickup fee is the official ${(pickupVehicles[0] ? vehicleName(pickupVehicles[0]) : "vehicle").toLowerCase()} fare for the distance, added to your total.`}
                 </p>
                 {door && meetingLatLng ? (
                   <DoorPickupPicker
                     vehicle={pickupVehicles[0]}
                     shortcuts={pickupShortcuts}
-                    meeting={meetingLatLng}
                     meetingName={meetingPoint ?? "the meeting point"}
                     pax={numberOfPax}
                     pin={doorPin}
                     onPin={setDoorPin}
                     note={doorNote}
                     onNote={setDoorNote}
+                    quote={quoteState}
                   />
                 ) : null}
               </>

@@ -1,13 +1,10 @@
-import { haversineMeters, ROAD_FACTOR, type LatLng } from "@/lib/maps/geo";
-
 /**
  * Door pickup ("pasundo", 20261212): the operator sends a vehicle to where the
  * tourist is and brings them to the meeting point. The price is never the
  * operator's: it comes from the official fare for the vehicle type
  * (tours_official_pickup_rates, 20261213). A type with no official fare can't
- * be offered. Worked out the same way here (to show it) and in the database
- * (which decides it): road km = straight line x ROAD_FACTOR, to 0.1 km;
- * fee = base + per km per person x km x guests, rounded to the peso.
+ * be offered. The price is a Door pickup quote from the database
+ * (tours_quote_door_pickup, 20261219); this file only reads and words it.
  */
 
 export const PICKUP_VEHICLES = {
@@ -29,19 +26,47 @@ export type PickupVehicle = { id: string; vehicle: PickupVehicleType; label: str
 
 export const vehicleName = (v: Pick<PickupVehicle, "vehicle" | "label">) => v.label?.trim() || PICKUP_VEHICLES[v.vehicle];
 
-/** Kilometres by road, to 0.1 km (matches tours_road_km). */
-export function roadKm(from: LatLng, to: LatLng): number {
-  return Math.round((haversineMeters(from, to) / 1000) * ROAD_FACTOR * 10) / 10;
+/** Why a pin can't be quoted (same codes as tours_quote_door_pickup). */
+export type DoorPickupReason = "no_pin" | "no_meeting" | "no_vehicle" | "no_rate" | "seats" | "too_far";
+
+/** The server's Door pickup quote: the only place the price is worked out. */
+export type DoorPickupQuote =
+  | { ok: true; km: number; fee: number; tourTotal: number | null; grandTotal: number | null; vehicleLabel: string }
+  | { ok: false; reason: DoorPickupReason; km: number | null; seats: number | null; maxKm: number | null; vehicleLabel: string | null };
+
+const REASONS: readonly DoorPickupReason[] = ["no_pin", "no_meeting", "no_vehicle", "no_rate", "seats", "too_far"];
+const num = (v: unknown) => (v == null || v === "" || !Number.isFinite(Number(v)) ? null : Number(v));
+
+/** tours_quote_door_pickup JSON → a quote; anything unreadable is "no_vehicle". */
+export function parseDoorPickupQuote(raw: unknown): DoorPickupQuote {
+  const o = (raw && typeof raw === "object" ? raw : {}) as Record<string, unknown>;
+  const label = typeof o.vehicle_label === "string" ? o.vehicle_label : null;
+  const fee = num(o.pickup_fee);
+  const km = num(o.distance_km);
+  if (o.ok === true && fee != null && km != null && label) {
+    return { ok: true, km, fee, tourTotal: num(o.tour_total), grandTotal: num(o.grand_total), vehicleLabel: label };
+  }
+  const reason = REASONS.find((r) => r === o.reason) ?? "no_vehicle";
+  return { ok: false, reason, km, seats: num(o.seats), maxKm: num(o.max_km), vehicleLabel: label };
 }
 
-export type PickupQuote = { ok: true; km: number; fee: number } | { ok: false; km: number; reason: "seats" | "too_far" };
-
-/** The fee for this vehicle, from this pin to the meeting point, for this many guests. */
-export function quoteDoorPickup(vehicle: PickupVehicle, from: LatLng, meeting: LatLng, pax: number): PickupQuote {
-  const km = roadKm(from, meeting);
-  if (pax > vehicle.seats) return { ok: false, km, reason: "seats" };
-  if (km > vehicle.maxKm) return { ok: false, km, reason: "too_far" };
-  return { ok: true, km, fee: Math.round(vehicle.rate.baseFee + vehicle.rate.perKmPerPerson * km * pax) };
+/** A plain sentence for a quote that failed. */
+export function doorPickupProblem(q: Extract<DoorPickupQuote, { ok: false }>, pax: number): string {
+  const name = (q.vehicleLabel ?? "vehicle").toLowerCase();
+  switch (q.reason) {
+    case "seats":
+      return `The ${name} seats ${q.seats}; you are ${pax}.`;
+    case "too_far":
+      return `That is ${q.km} km from the meeting point; this tour picks up within ${q.maxKm} km.`;
+    case "no_rate":
+      return `The ${name} has no official fare yet, so door pickup isn't available.`;
+    case "no_meeting":
+      return "This tour has no meeting point on the map yet, so door pickup can't be priced.";
+    case "no_pin":
+      return "Choose where you are to see the pickup price.";
+    default:
+      return "Door pickup isn't available for this tour right now.";
+  }
 }
 
 /** "₱2.60/km per person (official fare), up to 10 km, 3 seats". */
@@ -77,7 +102,7 @@ export function toPickupVehicles(rows: Row[] | null | undefined, rates: Partial<
 export type VehicleDraft = { vehicle: string; label: string; seats: string; maxKm: string };
 export type VehicleInput = { vehicle: PickupVehicleType; label: string | null; seats: number; max_km: number };
 
-/** Checks the operator's list before it is saved; the database checks again. */
+/** Early messages for the operator's form; tours_set_pickup_vehicles decides. */
 export function validateVehicles(drafts: VehicleDraft[], priced: readonly string[]): { ok: true; vehicles: VehicleInput[] } | { ok: false; error: string } {
   const filled = drafts.filter((d) => d.vehicle || d.seats);
   if (filled.length > MAX_PICKUP_VEHICLES) return { ok: false, error: "Set one pickup vehicle for this tour." };

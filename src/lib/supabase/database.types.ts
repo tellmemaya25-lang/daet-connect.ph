@@ -2474,6 +2474,7 @@ export type Database = {
     }
     Functions: {
       tours_set_pickup_vehicles: { Args: { p_package_id: string; p_vehicles: Json }; Returns: undefined }
+      tours_quote_door_pickup: { Args: { p_lat: number; p_lng: number; p_package_id: string; p_pax: number; p_variant_id?: string; p_vehicle_id: string }; Returns: Json }
       tours_admin_activity: { Args: { p_actor?: string; p_before?: string; p_entity?: string; p_from?: string; p_limit?: number; p_role?: string; p_to?: string }; Returns: Json }
       tours_admin_ban: { Args: { p_days: number | null; p_reason: string; p_user_id: string }; Returns: string | null }
       tours_admin_clear_expired_bans: { Args: never; Returns: number }

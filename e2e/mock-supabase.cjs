@@ -1566,6 +1566,27 @@ http
         return res.end();
       }
       // The assistant's daily count (only reached when the app has a service key).
+      // Door pickup quote (20261219): same formula as tours_quote_door_pickup, for the mock only.
+      if (url.pathname === "/rest/v1/rpc/tours_quote_door_pickup") {
+        const a = JSON.parse(body || "{}");
+        const pk = tables.tours_packages.find((p) => p.id === a.p_package_id);
+        const v = tables.tours_package_pickup_vehicles.find((x) => x.id === a.p_vehicle_id && x.package_id === a.p_package_id && x.is_active);
+        const variant = (pk?.tours_package_price_variants || []).find((x) => x.id === a.p_variant_id);
+        const pax = Math.max(Number(a.p_pax) || 1, 1);
+        const tour = variant ? (variant.price_per_pax != null ? variant.price_per_pax * pax : variant.flat_price ?? 0) : null;
+        if (!pk || !v) return send(200, { ok: false, reason: "no_vehicle", tour_total: tour });
+        const label = v.label || { tricycle: "Tricycle", habal_habal: "Habal-habal (motorbike)", car: "Car", multicab: "Multicab", van: "Van" }[v.vehicle];
+        const r = tables.tours_official_pickup_rates.find((x) => x.vehicle === v.vehicle);
+        if (!r) return send(200, { ok: false, reason: "no_rate", vehicle_label: label, tour_total: tour });
+        const rad = (d) => (d * Math.PI) / 180;
+        const h = Math.sin(rad(pk.meeting_lat - a.p_lat) / 2) ** 2 + Math.cos(rad(a.p_lat)) * Math.cos(rad(pk.meeting_lat)) * Math.sin(rad(pk.meeting_lng - a.p_lng) / 2) ** 2;
+        const km = Math.round(2 * 6371.0088 * Math.asin(Math.sqrt(h)) * 1.4 * 10) / 10;
+        const base = { distance_km: km, vehicle_label: label, seats: v.seats, max_km: v.max_km, tour_total: tour };
+        if (pax > v.seats) return send(200, { ok: false, reason: "seats", ...base });
+        if (km > v.max_km) return send(200, { ok: false, reason: "too_far", ...base });
+        const fee = Math.round(r.base_fee + r.per_km_per_person * km * pax);
+        return send(200, { ok: true, pickup_fee: fee, grand_total: tour == null ? null : tour + fee, ...base });
+      }
       if (url.pathname === "/rest/v1/rpc/tours_ai_count_message") {
         const { p_caller, p_day } = JSON.parse(body || "{}");
         const key = `${p_caller}|${p_day}`;
