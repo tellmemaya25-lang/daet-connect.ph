@@ -12,6 +12,7 @@ import { vehicleName, type PickupShortcut, type PickupVehicle } from "@/lib/tour
 import type { LatLng } from "@/lib/maps/geo";
 import { useDoorPickupQuote } from "./use-door-pickup-quote";
 import { DoorPickupPicker } from "./door-pickup-picker";
+import { dayPlan, findTouristClash, freeTimeText, shortDate, windowText, type OccupiedBooking, type TourTiming } from "@/lib/tours/booking-windows";
 
 interface PriceVariant {
   id: string;
@@ -35,6 +36,10 @@ interface BookingFormProps {
   meetingLatLng?: LatLng | null;
   /** Open dates when the operator manages availability; null = any future date. */
   dateOptions: DateOption[] | null;
+  /** How long this tour takes and when it starts, to spot a clash with the tourist's own diary. */
+  tourTiming: TourTiming;
+  /** This tourist's active bookings, so a date they cannot make is flagged before they submit. */
+  diary?: OccupiedBooking[];
   userProfile: {
     fullName: string;
     email: string;
@@ -46,7 +51,7 @@ interface BookingFormProps {
 const formatOpenDate = (dateKey: string) =>
   new Date(`${dateKey}T00:00:00Z`).toLocaleDateString("en-PH", { weekday: "short", month: "short", day: "numeric", year: "numeric", timeZone: "UTC" });
 
-export function BookingForm({ packageId, priceVariants, meetingPoint = null, pickupVehicles = [], pickupShortcuts = [], meetingLatLng = null, dateOptions, userProfile, prefill = {} }: BookingFormProps) {
+export function BookingForm({ packageId, priceVariants, meetingPoint = null, pickupVehicles = [], pickupShortcuts = [], meetingLatLng = null, dateOptions, tourTiming, diary = [], userProfile, prefill = {} }: BookingFormProps) {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -108,6 +113,10 @@ export function BookingForm({ packageId, priceVariants, meetingPoint = null, pic
 
   const selectedDate = dateOptions?.find((option) => option.date === tourDate);
   const seatLimit = selectedDate ? selectedDate.seatsLeft : Infinity;
+
+  // The same rule the database enforces (tours_bookings_tourist_time_guard), said
+  // now rather than after the tourist fills in the whole form.
+  const clash = tourDate.length === 10 ? findTouristClash(tourTiming, tourDate, diary) : null;
 
   // Handle pax change with validation
   const handlePaxChange = (value: number) => {
@@ -176,6 +185,9 @@ export function BookingForm({ packageId, priceVariants, meetingPoint = null, pic
   const minPax = selectedVariant?.min_pax || 1;
   const maxPax = Math.min(selectedVariant?.max_pax || 50, Math.max(seatLimit, minPax));
   const notEnoughSeats = selectedDate !== undefined && selectedDate.seatsLeft < Math.max(numberOfPax, minPax);
+  // The whole day, not just the one tour that blocked it: seeing every booking is
+  // what lets the tourist judge whether another date works. Same rule as the guard.
+  const itinerary = tourDate.length === 10 ? dayPlan(tourDate, diary) : [];
   const noOpenDates = dateOptions !== null && dateOptions.every((option) => option.full);
 
   return (
@@ -234,6 +246,29 @@ export function BookingForm({ packageId, priceVariants, meetingPoint = null, pic
             </>
           )}
         </div>
+
+        {itinerary.length > 0 && (
+          <div className={`mt-4 rounded-2xl p-4 ${clash ? "bg-yellow-50 dark:bg-yellow-950/40" : "bg-blue-50 dark:bg-blue-950/40"}`}>
+            <p className="font-bold text-daet-ink">
+              {clash ? `You are already booked on ${shortDate(tourDate)}` : `Your other tours on ${shortDate(tourDate)}`}
+            </p>
+            <ul className="mt-2 space-y-1 text-sm text-daet-ink/80">
+              {itinerary.map((entry) => (
+                <li key={entry.booking.id}>
+                  <span className="font-bold">{windowText(entry.window)}</span>
+                  {" · "}
+                  {entry.booking.title}
+                  {entry.startsHere ? null : <span className="text-daet-ink/60"> (a trip that started earlier)</span>}
+                </li>
+              ))}
+            </ul>
+            <p className={`mt-2 text-sm ${clash ? "font-bold text-yellow-900 dark:text-yellow-200" : "text-daet-ink/70"}`}>
+              {clash
+                ? `${freeTimeText(itinerary)} — this tour does not fit. Pick another date, or cancel one of those bookings first.`
+                : `${freeTimeText(itinerary)} on this date, which is enough for this tour.`}
+            </p>
+          </div>
+        )}
       </section>
 
       {/* Number of Pax & Price Variant */}
@@ -481,7 +516,7 @@ export function BookingForm({ packageId, priceVariants, meetingPoint = null, pic
         </div>
         <button
           type="submit"
-          disabled={isSubmitting || noOpenDates || notEnoughSeats || !tourDate}
+          disabled={isSubmitting || noOpenDates || notEnoughSeats || !tourDate || Boolean(clash)}
           className="min-h-11 shrink-0 whitespace-nowrap rounded-full bg-daet-forest px-8 py-3 text-sm font-bold text-white transition hover:bg-blue-700 disabled:opacity-50"
         >
           {isSubmitting ? "Sending request..." : `Request booking · ${formatPeso(totalAmount)}`}

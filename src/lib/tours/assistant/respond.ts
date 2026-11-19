@@ -15,6 +15,14 @@ import { CHANGE_EXAMPLES } from "@/lib/tours/itinerary/assistant";
 export const ASSISTANT_MESSAGE_MAX = 1000;
 export const ASSISTANT_HISTORY_MAX = 12;
 
+/**
+ * How long one turn waits for the model before answering in basic mode. The
+ * route's own limit is 60 s (maxDuration in src/app/api/assistant/route.ts);
+ * Gemini's per-call timeout is 30 s and a busy model is retried, so without
+ * this a slow turn outlived the function and the traveller got nothing at all.
+ */
+export const AI_DEADLINE_MS = 25_000;
+
 export const AssistantRequestSchema = z.object({
   messages: z
     .array(z.object({ role: z.enum(["user", "assistant"]), content: z.string().min(1).max(4000) }))
@@ -98,6 +106,37 @@ function* closing(ctx: ToolContext, trip: ToolContext["trip"]): Generator<Assist
   yield { t: "done" };
 }
 
+/**
+ * Basic mode's answer for this turn: the rule-based answer, or a plan. It never
+ * yields an empty reply, so the chat never ends a turn with nothing in it.
+ */
+async function* basicAnswer(ctx: ToolContext, latest: string, planning: boolean): AsyncGenerator<AssistantEvent> {
+  if (planning) {
+    try {
+      const result = await planTrip(ctx, wantsFromText(latest, ctx));
+      yield { t: "text", v: ctx.itinerary ? describeItinerary(ctx.itinerary) : "error" in result ? String(result.error) : "Please fill in the short form first." };
+    } catch (error) {
+      console.error("Assistant basic plan error:", error);
+      yield { t: "text", v: "Sorry, the plan could not be drafted. Please try again in a moment." };
+    }
+    return;
+  }
+  try {
+    yield { t: "text", v: await basicReply(latest, ctx) };
+  } catch (error) {
+    console.error("Assistant basic mode error:", error);
+    yield { t: "text", v: "Sorry, something went wrong. Please try again in a moment." };
+  }
+}
+
+/** The whole of a basic-mode turn: its notice, its answer, then the plan, cards and done. */
+async function* basicTurn(ctx: ToolContext, trip: ToolContext["trip"], latest: string, planning: boolean, formNotice: string): AsyncGenerator<AssistantEvent> {
+  yield { t: "mode", mode: "basic" };
+  if (formNotice) yield { t: "text", v: formNotice };
+  yield* basicAnswer(ctx, latest, planning);
+  yield* closing(ctx, trip);
+}
+
 export async function* respond(raw: unknown, deps: RespondDeps): AsyncGenerator<AssistantEvent> {
   const cleaned = cleanHistory(raw);
   if ("error" in cleaned) {
@@ -143,18 +182,25 @@ export async function* respond(raw: unknown, deps: RespondDeps): AsyncGenerator<
     type Item = { t: "text"; v: string } | { t: "status"; label: string };
     const queue: Item[] = [];
     let streamed = false;
+    // Everything the model said, so a turn that says only whitespace is not taken for an answer.
+    let streamedText = "";
     let wake: (() => void) | null = null;
     let finished = false;
+    // The model itself came back, as opposed to the deadline giving up on it.
+    let settled = false;
     let failure: unknown = null;
     let stopReason: string | null = null;
     ctx.onStatus = (label) => {
       queue.push({ t: "status", label });
       wake?.();
     };
+    // Settles when the model is done, or when the deadline gives up on it. Its
+    // own rejections are caught here, so awaiting it never throws.
     const run = deps
       .runAi(ctx, history, (delta) => {
         queue.push({ t: "text", v: delta });
         streamed = true;
+        streamedText += delta;
         wake?.();
       })
       .then((result) => {
@@ -165,8 +211,23 @@ export async function* respond(raw: unknown, deps: RespondDeps): AsyncGenerator<
       })
       .finally(() => {
         finished = true;
+        settled = true;
         wake?.();
       });
+    // A slow model must not run the function out of time: after AI_DEADLINE_MS
+    // the turn gives up on it and answers in basic mode, unprompted, so the
+    // traveller gets an answer either way. The reply already sent is kept.
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    const deadline = new Promise<void>((resolve) => {
+      timer = setTimeout(() => {
+        if (finished) return;
+        if (!streamedText.trim()) failure = new Error(`no answer within ${AI_DEADLINE_MS} ms`);
+        else stopReason = "max_tokens";
+        finished = true;
+        wake?.();
+        resolve();
+      }, AI_DEADLINE_MS);
+    });
 
     yield { t: "mode", mode: "ai" };
     if (formNotice) yield { t: "text", v: formNotice };
@@ -178,16 +239,27 @@ export async function* respond(raw: unknown, deps: RespondDeps): AsyncGenerator<
         if (text) yield { t: "text", v: text };
         continue;
       }
-      await new Promise<void>((resolve) => {
-        wake = resolve;
-        if (finished || queue.length) resolve();
-      });
+      await Promise.race([
+        new Promise<void>((resolve) => {
+          wake = resolve;
+          if (finished || queue.length) resolve();
+        }),
+        deadline,
+      ]);
       wake = null;
     }
-    await run;
+    clearTimeout(timer);
+    // When the model settled, this is instant. After the deadline it is not
+    // awaited at all: a model still talking must not hold the answer back, and
+    // `run` catches its own rejection.
+    if (settled) await run;
     ctx.onStatus = undefined;
 
-    if (!failure && streamed && stopReason !== "refusal") {
+    // A turn that said nothing is not an answer. Gemini sometimes ends with
+    // only whitespace, or with a tool-only round; the traveller then gets an
+    // empty bubble and the chat's own "Sorry, I couldn't answer that" line.
+    const said = formNotice.trim().length > 0 || (streamed && streamedText.trim().length > 0);
+    if (!failure && said && stopReason !== "refusal") {
       if (stopReason === "max_tokens") yield { t: "text", v: "…" };
       // A plan request the model answered without drafting: draft it anyway, so the panel always has the plan.
       if (planning && !ctx.itinerary && !ctx.questions) await planTrip(ctx, wantsFromText(latest, ctx)).catch((error) => console.error("Assistant plan error:", error));
@@ -195,8 +267,9 @@ export async function* respond(raw: unknown, deps: RespondDeps): AsyncGenerator<
       return;
     }
     if (failure) console.error("Assistant AI error, using basic mode:", failure);
-    if (streamed) {
-      // Part of an answer already went out: close it rather than start over.
+    else if (!said) console.warn("Assistant AI said nothing, using basic mode");
+    // Part of an answer already went out: close it rather than start over.
+    if (said) {
       yield { t: "text", v: failure ? "\n\nSorry, I lost the connection there. Please ask again." : "" };
       yield* closing(ctx, trip);
       return;
@@ -206,25 +279,5 @@ export async function* respond(raw: unknown, deps: RespondDeps): AsyncGenerator<
     ctx.questions = null;
   }
 
-  yield { t: "mode", mode: "basic" };
-  if (formNotice) yield { t: "text", v: formNotice };
-  if (planning) {
-    try {
-      const result = await planTrip(ctx, wantsFromText(latest, ctx));
-      yield { t: "text", v: ctx.itinerary ? describeItinerary(ctx.itinerary) : "error" in result ? String(result.error) : "Please fill in the short form first." };
-    } catch (error) {
-      console.error("Assistant basic plan error:", error);
-      yield { t: "text", v: "Sorry, the plan could not be drafted. Please try again in a moment." };
-    }
-    yield* closing(ctx, trip);
-    return;
-  }
-  try {
-    const text = await basicReply(latest, ctx);
-    yield { t: "text", v: text };
-  } catch (error) {
-    console.error("Assistant basic mode error:", error);
-    yield { t: "text", v: "Sorry, something went wrong. Please try again in a moment." };
-  }
-  yield* closing(ctx, trip);
+  yield* basicTurn(ctx, trip, latest, planning, formNotice);
 }

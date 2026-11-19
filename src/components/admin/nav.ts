@@ -1,21 +1,24 @@
 import type { IconName } from "@/components/ui/icons";
+import { findArea, type NavArea, type NavGroup, type ShellConfig } from "@/components/shell/nav";
 
-export type AdminArea = { href: string; label: string; icon: IconName };
+export type AdminArea = NavArea;
 
 const A = (href: string, label: string, icon: IconName): AdminArea => ({
   href: "/tours/admin" + href,
   label,
   icon,
+  exact: href === "",
 });
 
 /** Only areas that exist in production. Add one here when its page ships. */
-export const ADMIN_GROUPS: { title: string; areas: AdminArea[] }[] = [
+export const ADMIN_GROUPS: NavGroup[] = [
   {
     title: "Main",
     areas: [
       A("", "Dashboard", "dashboard"),
       A("/analytics", "Analytics", "chart"),
       A("/activity", "Activity log", "receipt"),
+      A("/backup", "Data backup", "download"),
     ],
   },
   {
@@ -58,13 +61,7 @@ export const ADMIN_GROUPS: { title: string; areas: AdminArea[] }[] = [
 export const ADMIN_AREAS: AdminArea[] = ADMIN_GROUPS.flatMap((g) => g.areas);
 
 /** The area a path belongs to: the longest matching href wins, so /tours/admin only matches itself. */
-export function areaFor(pathname: string): AdminArea | undefined {
-  return ADMIN_AREAS.filter((a) =>
-    a.href === "/tours/admin"
-      ? pathname === a.href
-      : pathname === a.href || pathname.startsWith(a.href + "/"),
-  ).sort((x, y) => y.href.length - x.href.length)[0];
-}
+export const areaFor = (pathname: string) => findArea(ADMIN_GROUPS, pathname);
 
 export const SIDEBAR_COOKIE = "admin-sidebar";
 
@@ -76,3 +73,11 @@ export const QUEUE_HREFS = [
 ] as const;
 /** The group the sidebar lets an admin fold away. It stays open while one of its areas is the current page. */
 export const COLLAPSIBLE_GROUP = "Content";
+
+export const ADMIN_SHELL: ShellConfig = {
+  label: "Admin",
+  homeHref: "/tours/admin",
+  groups: ADMIN_GROUPS,
+  cookie: { name: SIDEBAR_COOKIE, path: "/tours/admin" },
+  collapsibleGroup: COLLAPSIBLE_GROUP,
+};

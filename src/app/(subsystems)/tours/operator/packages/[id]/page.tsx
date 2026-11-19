@@ -446,6 +446,7 @@ export default async function OperatorPackageDetailPage({ params }: PageProps) {
                   latitude={pkg.meeting_lat === null || pkg.meeting_lat === undefined ? null : Number(pkg.meeting_lat)}
                   longitude={pkg.meeting_lng === null || pkg.meeting_lng === undefined ? null : Number(pkg.meeting_lng)}
                   time={pkg.meeting_time ?? null}
+                  tour={{ duration_type: pkg.duration_type, duration_value: pkg.duration_value }}
                 />
               </div>
             </section>

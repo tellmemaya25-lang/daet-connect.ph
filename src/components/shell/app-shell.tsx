@@ -8,37 +8,33 @@ import { AccountMenu, type AccountLink } from "@/components/ui/account-menu";
 import { cn } from "@/components/ui/cn";
 import { NotificationBell } from "@/components/tours/notification-bell";
 import type { LoadedNotifications } from "@/lib/tours/notifications-server";
-import { AdminSearch } from "./admin-search";
-import {
-  ADMIN_GROUPS,
-  COLLAPSIBLE_GROUP,
-  SIDEBAR_COOKIE,
-  areaFor,
-} from "./nav";
+import { findArea, type ShellConfig } from "./nav";
 
 function NavLinks({
+  config,
   pathname,
   counts,
   collapsed = false,
   onNavigate,
 }: {
+  config: ShellConfig;
   pathname: string;
   counts: Record<string, number>;
   collapsed?: boolean;
   onNavigate?: () => void;
 }) {
-  const current = areaFor(pathname);
+  const current = findArea(config.groups, pathname);
   // The Content group folds away on request; it stays open while one of its pages is current.
   const [contentOpen, setContentOpen] = useState<boolean | undefined>(
     undefined,
   );
   return (
     <div className="flex flex-col gap-4">
-      {ADMIN_GROUPS.map((g, i) => {
-        const foldable = g.title === COLLAPSIBLE_GROUP && !collapsed;
+      {config.groups.map((g, i) => {
+        const foldable = g.title === config.collapsibleGroup && !collapsed;
         const hasCurrent = g.areas.some((a) => a.href === current?.href);
         const open = !foldable || (contentOpen ?? hasCurrent);
-        const listId = `admin-nav-${g.title.toLowerCase()}`;
+        const listId = `${config.label.toLowerCase()}-nav-${g.title.toLowerCase()}`;
         return (
           <div
             key={g.title}
@@ -138,10 +134,16 @@ function NavLinks({
   );
 }
 
-function Wordmark({ className = "" }: { className?: string }) {
+function Wordmark({
+  href,
+  className = "",
+}: {
+  href: string;
+  className?: string;
+}) {
   return (
     <Link
-      href="/tours/admin"
+      href={href}
       className={cn(
         "flex min-h-11 min-w-0 flex-col justify-center whitespace-nowrap leading-[1.1] text-daet-ink",
         className,
@@ -156,10 +158,12 @@ function Wordmark({ className = "" }: { className?: string }) {
 }
 
 /**
- * The admin shell: sidebar, top bar and, on phones, a header with a menu drawer.
+ * The role shell (admin, operator): sidebar, top bar and, on phones, a header with a menu drawer.
  * The sidebar collapses only from its button (remembered in a cookie); the top bar never hides on scroll.
  */
-export function AdminShell({
+export function AppShell({
+  config,
+  search,
   children,
   initialCollapsed,
   account,
@@ -167,6 +171,9 @@ export function AdminShell({
   counts,
   notifications,
 }: {
+  config: ShellConfig;
+  /** The top bar's search, if the role has one. */
+  search?: ReactNode;
   children: ReactNode;
   initialCollapsed: boolean;
   account: { initial: string; name: string; avatarUrl: string | null };
@@ -174,7 +181,7 @@ export function AdminShell({
   counts: Record<string, number>;
   notifications: LoadedNotifications | null;
 }) {
-  const pathname = usePathname() ?? "/tours/admin";
+  const pathname = usePathname() ?? config.homeHref;
   const [collapsed, setCollapsed] = useState(initialCollapsed);
   const [drawer, setDrawer] = useState(false);
   // The drawer stays mounted for the length of its slide-out, then goes.
@@ -205,7 +212,7 @@ export function AdminShell({
   function toggle() {
     const next = !collapsed;
     setCollapsed(next);
-    document.cookie = `${SIDEBAR_COOKIE}=${next ? "1" : "0"}; path=/tours/admin; max-age=31536000; samesite=lax`;
+    document.cookie = `${config.cookie.name}=${next ? "1" : "0"}; path=${config.cookie.path}; max-age=31536000; samesite=lax`;
   }
 
   return (
@@ -218,7 +225,7 @@ export function AdminShell({
       </a>
 
       <aside
-        aria-label="Admin"
+        aria-label={config.label}
         className={cn(
           "sticky top-0 hidden h-screen flex-none flex-col gap-4 overflow-y-auto overflow-x-hidden [scrollbar-width:thin] [scrollbar-color:var(--color-line)_transparent] border-r border-line bg-muted px-4 pb-6 transition-[width] duration-200 ease-in-out lg:flex",
           collapsed ? "w-[76px]" : "w-60",
@@ -240,8 +247,13 @@ export function AdminShell({
             <LineIcon name="sidebar" className="h-5 w-5" />
           </button>
         </div>
-        <nav aria-label="Admin areas">
-          <NavLinks pathname={pathname} counts={counts} collapsed={collapsed} />
+        <nav aria-label={`${config.label} areas`}>
+          <NavLinks
+            config={config}
+            pathname={pathname}
+            counts={counts}
+            collapsed={collapsed}
+          />
         </nav>
       </aside>
 
@@ -258,15 +270,15 @@ export function AdminShell({
                   setDrawer(true);
                 }}
                 aria-expanded={drawer}
-                aria-controls="admin-drawer"
+                aria-controls={`${config.label.toLowerCase()}-drawer`}
                 className="grid h-11 w-11 place-items-center rounded-xl text-daet-ink hover:bg-muted lg:hidden"
               >
                 <LineIcon name="menu" />
                 <span className="sr-only">Open menu</span>
               </button>
-              <Wordmark />
+              <Wordmark href={config.homeHref} />
             </div>
-            <AdminSearch />
+            {search}
             <div className="flex items-center gap-1">
               <NotificationBell initial={notifications} />
             </div>
@@ -296,15 +308,15 @@ export function AdminShell({
             className="motion-scrim absolute inset-0 bg-slate-900/45"
           />
           <aside
-            id="admin-drawer"
+            id={`${config.label.toLowerCase()}-drawer`}
             role="dialog"
             aria-modal="true"
-            aria-label="Admin menu"
+            aria-label={`${config.label} menu`}
             data-closing={closing ? "" : undefined}
             className="motion-drawer absolute inset-y-0 left-0 flex w-72 max-w-[85vw] flex-col overflow-y-auto [scrollbar-width:thin] [scrollbar-color:var(--color-line)_transparent] bg-muted"
           >
             <div className="sticky top-0 z-10 flex items-center justify-between gap-2 bg-muted px-4 pb-3 pt-4 after:pointer-events-none after:absolute after:inset-x-0 after:top-full after:h-6 after:bg-gradient-to-b after:from-muted after:to-transparent">
-              <Wordmark />
+              <Wordmark href={config.homeHref} />
               <button
                 type="button"
                 autoFocus
@@ -318,8 +330,9 @@ export function AdminShell({
                 <span className="sr-only">Close menu</span>
               </button>
             </div>
-            <nav aria-label="Admin areas" className="px-4 pb-6">
+            <nav aria-label={`${config.label} areas`} className="px-4 pb-6">
               <NavLinks
+                config={config}
                 pathname={pathname}
                 counts={counts}
                 onNavigate={closeDrawer}

@@ -107,6 +107,46 @@ describe("signing in", () => {
     expect(mockRedirect).toHaveBeenCalledWith("/tours/admin/reviews");
   });
 
+  it("sends an operator to the operator dashboard, whatever page sent them", async () => {
+    clientWith(jest.fn(async () => ({ data: { user: confirmedUser, session: {} }, error: null })), "operator");
+
+    await expect(signInWithPassword({ status: "idle" }, form({ email: EMAIL, password: PASSWORD, next: "/tours/browse" }))).rejects.toThrow(
+      "NEXT_REDIRECT",
+    );
+
+    expect(mockRedirect).toHaveBeenCalledWith("/tours/operator/dashboard");
+  });
+
+  it("keeps an operator's deep link into the operator area", async () => {
+    clientWith(jest.fn(async () => ({ data: { user: confirmedUser, session: {} }, error: null })), "operator");
+
+    await expect(
+      signInWithPassword({ status: "idle" }, form({ email: EMAIL, password: PASSWORD, next: "/tours/operator/bookings" })),
+    ).rejects.toThrow("NEXT_REDIRECT");
+
+    expect(mockRedirect).toHaveBeenCalledWith("/tours/operator/bookings");
+  });
+
+  it("sends a guide to the guide dashboard, whatever page sent them", async () => {
+    clientWith(jest.fn(async () => ({ data: { user: confirmedUser, session: {} }, error: null })), "guide");
+
+    await expect(signInWithPassword({ status: "idle" }, form({ email: EMAIL, password: PASSWORD, next: "/tours/browse" }))).rejects.toThrow(
+      "NEXT_REDIRECT",
+    );
+
+    expect(mockRedirect).toHaveBeenCalledWith("/tours/guide/dashboard");
+  });
+
+  it("keeps a guide's deep link into the guide area", async () => {
+    clientWith(jest.fn(async () => ({ data: { user: confirmedUser, session: {} }, error: null })), "guide");
+
+    await expect(
+      signInWithPassword({ status: "idle" }, form({ email: EMAIL, password: PASSWORD, next: "/tours/guide/earnings" })),
+    ).rejects.toThrow("NEXT_REDIRECT");
+
+    expect(mockRedirect).toHaveBeenCalledWith("/tours/guide/earnings");
+  });
+
   it("ignores an off-site next", async () => {
     clientWith(jest.fn(async () => ({ data: { user: confirmedUser, session: {} }, error: null })));
 

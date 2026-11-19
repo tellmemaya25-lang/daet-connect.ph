@@ -9,7 +9,7 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 
 export default async function GuidePendingPage() {
-  if (!isSupabaseConfigured()) return <PageFrame><Notice variant="warning" title="Supabase setup is needed">Configure Supabase to view guide application status.</Notice></PageFrame>;
+  if (!isSupabaseConfigured()) return <PageFrame plain><Notice variant="warning" title="Supabase setup is needed">Configure Supabase to view guide application status.</Notice></PageFrame>;
 
   let session;
   try {
@@ -18,12 +18,12 @@ export default async function GuidePendingPage() {
     session = { user: null, role: null, error: "Supabase could not be reached." };
   }
   if (!session.user) {
-    return <PageFrame><div className="mx-auto max-w-xl py-8"><Notice variant="info" title="Sign in to view your application"><Link href={`/login?next=${encodeURIComponent("/tours/guide/pending")}`} className="font-bold underline underline-offset-4">Sign in</Link> to the account used for your guide application.</Notice></div></PageFrame>;
+    return <PageFrame plain><div className="mx-auto max-w-xl py-8"><Notice variant="info" title="Sign in to view your application"><Link href={`/login?next=${encodeURIComponent("/tours/guide/pending")}`} className="font-bold underline underline-offset-4">Sign in</Link> to the account used for your guide application.</Notice></div></PageFrame>;
   }
-  if (session.error || !session.role) return <PageFrame><div className="mx-auto max-w-xl py-8"><Notice variant="error" title="We could not verify your account">{session.error ?? "Your account role is missing."}</Notice></div></PageFrame>;
+  if (session.error || !session.role) return <PageFrame plain><div className="mx-auto max-w-xl py-8"><Notice variant="error" title="We could not verify your account">{session.error ?? "Your account role is missing."}</Notice></div></PageFrame>;
   if (session.role === "admin") redirect("/tours/admin/guides");
   if (session.role !== "tourist" && session.role !== "guide") {
-    return <PageFrame><div className="mx-auto max-w-xl py-8"><Notice variant="warning" title="This account cannot view guide applications">Sign in with the account used to submit the guide application.</Notice></div></PageFrame>;
+    return <PageFrame plain><div className="mx-auto max-w-xl py-8"><Notice variant="warning" title="This account cannot view guide applications">Sign in with the account used to submit the guide application.</Notice></div></PageFrame>;
   }
 
   const supabase = await createSupabaseServerClient();
@@ -32,14 +32,14 @@ export default async function GuidePendingPage() {
     .select(GUIDE_OWN_STATUS_SELECT)
     .eq(GUIDE_USER_ID_COLUMN, session.user.id)
     .maybeSingle();
-  if (error) return <PageFrame><div className="mx-auto max-w-xl py-8"><Notice variant="error" title="Status could not be loaded">Refresh in a moment. Your ID document remains private.</Notice></div></PageFrame>;
+  if (error) return <PageFrame plain><div className="mx-auto max-w-xl py-8"><Notice variant="error" title="Status could not be loaded">Refresh in a moment. Your ID document remains private.</Notice></div></PageFrame>;
   if (!guide) redirect("/tours/guide/register");
   if (guide.accreditation_status === "approved" && session.role === "guide") redirect("/tours/guide/dashboard");
-  if (guide.accreditation_status === "approved") return <PageFrame><div className="mx-auto max-w-xl py-8"><Notice variant="warning" title="Your guide account needs attention">Your guide record is approved, but the account role is not set. Contact the Tourism Office.</Notice></div></PageFrame>;
+  if (guide.accreditation_status === "approved") return <PageFrame plain><div className="mx-auto max-w-xl py-8"><Notice variant="warning" title="Your guide account needs attention">Your guide record is approved, but the account role is not set. Contact the Tourism Office.</Notice></div></PageFrame>;
 
   if (guide.accreditation_status === "rejected") {
     return (
-      <PageFrame>
+      <PageFrame plain>
         <section className="mx-auto max-w-2xl rounded-2xl border-red-200 dark:border-red-700 bg-surface p-6 sm:p-10">
           <span className="inline-flex rounded-full bg-red-50 dark:bg-red-950/40 px-3 py-1 text-xs font-bold text-red-700 dark:text-red-300">Changes requested</span>
           <h1 className="display-2 mt-4 text-daet-ink">Please update your guide application</h1>
@@ -52,7 +52,7 @@ export default async function GuidePendingPage() {
   }
 
   return (
-    <PageFrame>
+    <PageFrame plain>
       <section className="mx-auto max-w-2xl overflow-hidden rounded-2xl card-edge bg-surface">
         <div className="bg-daet-forest px-6 py-8 text-white sm:px-10 sm:py-10">
           <span className="inline-flex items-center gap-2 rounded-full bg-white/15 px-3 py-1 text-sm font-bold"><span className="h-2 w-2 animate-pulse rounded-full bg-daet-sun" /> In review</span>

@@ -283,7 +283,15 @@ export function AssistantChat({
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ messages: history.filter((t) => t.content).map((t) => ({ role: t.role, content: t.content })), location, context: { page, ...answers, ...(datesConfirmed ? { datesConfirmed: true } : {}) }, ...(attached ? { image: { mimeType: attached.mimeType, data: attached.data } } : {}) }),
       });
-      if (!response.ok || !response.body) throw new Error(String(response.status));
+      if (!response.ok || !response.body) {
+        // Say why, from the route's own words, instead of a bare status code:
+        // "The assistant is not set up." is a real, fixable answer.
+        const why = await response
+          .json()
+          .then((body: { error?: unknown }) => (typeof body?.error === "string" ? body.error : null))
+          .catch(() => null);
+        throw new Error(why ?? `The assistant answered with an error (${response.status}).`);
+      }
       const reader = response.body.getReader();
       const decoder = new TextDecoder();
       let buffer = "";
@@ -315,11 +323,13 @@ export function AssistantChat({
       const final = [...history, reply];
       setTurns(final);
       remember(final);
-    } catch {
+    } catch (error) {
       setTurns(history);
       remember(history);
       setText(question);
-      setError("The assistant couldn't be reached. Check your connection and try again.");
+      // A reply the route explained ("The assistant is not set up.") reads better than the network line.
+      const why = error instanceof Error && !/^\d+$/.test(error.message) ? error.message : null;
+      setError(why ?? "The assistant couldn't be reached. Check your connection and try again.");
     } finally {
       setBusy(false);
     }

@@ -10,7 +10,7 @@ import { getSupabasePublicConfig, isSupabaseConfigured } from "@/lib/supabase/en
  * The pages still check for themselves: this only saves the round trip and the
  * flash. `/tours/plan` is not listed: it works signed out.
  */
-const SIGNED_IN_ONLY = /^\/tours\/(?:my-bookings|messages|me|operator\/(?:bookings|packages|payments))\/?$/;
+const SIGNED_IN_ONLY = /^\/tours\/(?:my-bookings|messages|me|operator\/(?:bookings|packages|payments|messages)|guide\/messages)\/?$/;
 
 /**
  * Refreshes the Supabase auth session on every page request.
