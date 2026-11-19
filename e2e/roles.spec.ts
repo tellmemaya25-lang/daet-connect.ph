@@ -262,6 +262,27 @@ test("an operator has an activity log and can open a guide's earnings from the t
   await expect(page.getByRole("link", { name: "Juan Dela Cruz" }).first()).toHaveAttribute("href", /\/tours\/operator\/guides\/f66b1fe2-a997-4c0b-be13-22d62cf0dba6$/);
 });
 
+test("an operator can pick what to save in a data backup and download it", async ({ context, page }) => {
+  await signInAs(context, "operator");
+  await page.setViewportSize({ width: 1400, height: 900 });
+  await visit(page, "/tours/operator/settings");
+  const section = page.getByRole("region", { name: "Data backup" });
+  await expect(section.getByRole("checkbox")).toHaveCount(6);
+  await expect(section.getByRole("checkbox", { name: /Bookings/ })).toBeChecked();
+  await expect(section.getByLabel("Format")).toHaveValue("zip");
+  await section.getByRole("checkbox", { name: /Payments/ }).uncheck();
+  await section.getByLabel("Format").selectOption("json");
+  const [download] = await Promise.all([page.waitForEvent("download"), section.getByRole("button", { name: "Download backup" }).click()]);
+  expect(download.suggestedFilename()).toMatch(/^connect-daet-backup-\d{4}-\d{2}-\d{2}\.json$/);
+  const body = JSON.parse(await (await import("node:fs/promises")).readFile((await download.path())!, "utf8"));
+  expect(Object.keys(body.data)).toEqual(["bookings", "packages", "guides", "merchandise", "reviews"]);
+  // Nothing ticked is refused, and the zip is a real archive.
+  expect((await page.request.get("/tours/operator/backup")).status()).toBe(400);
+  const zip = await page.request.get("/tours/operator/backup?items=packages&items=reviews&format=zip");
+  expect(zip.headers()["content-type"]).toContain("application/zip");
+  expect((await zip.body()).subarray(0, 2).toString()).toBe("PK");
+});
+
 test("the admin top bar has notifications, and the account menu has messages and the public site", async ({ context, page }) => {
   await signInAs(context, "admin");
   await visit(page, "/tours/admin");

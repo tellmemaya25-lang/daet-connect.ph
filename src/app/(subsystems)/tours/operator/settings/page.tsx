@@ -6,6 +6,7 @@ import { isSupabaseConfigured } from "@/lib/supabase/env";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { getAuthenticatedSession } from "@/lib/tours/server-auth";
 import { OPERATOR_TABLE, OPERATOR_USER_ID_COLUMN } from "@/lib/tours/operator-contract";
+import { BackupSection } from "./backup-section";
 import { PaymentSettingsForm } from "./payment-settings-form";
 
 
@@ -128,6 +129,8 @@ export default async function OperatorSettingsPage() {
             paymentInstructions={operator.payment_instructions}
           />
         </div>
+
+        <BackupSection />
       </div>
     </PageFrame>
   );
