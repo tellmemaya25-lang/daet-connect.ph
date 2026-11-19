@@ -1,6 +1,7 @@
 "use client";
 
 import { useId, useState, useTransition } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Select, Textarea } from "@/components/ui/field";
@@ -138,9 +139,9 @@ export function GuideAssignment({
           ) : availableGuides.length === 0 ? (
             <p className="rounded-2xl bg-yellow-50 p-3 text-sm text-yellow-800 dark:bg-yellow-950/40 dark:text-yellow-200">
               No guides on your team yet. Accredited guides apply to you; interview them and agree their share on{" "}
-              <a href="/tours/operator/guides" className="font-bold underline">
+              <Link href="/tours/operator/guides" className="font-bold underline">
                 Guides
-              </a>
+              </Link>
               .
             </p>
           ) : (

@@ -64,8 +64,9 @@ async function Inbox({ searchParams, basePath = "/tours/messages" }: InboxProps)
   ]);
   if (error) console.error("Inbox error:", error);
   const all = (data ?? []) as InboxRow[];
-  // An admin reads the inbox inside the admin shell; the signed-in frame is for everyone else.
+  // An admin or operator reads the inbox inside their shell; the signed-in frame is for everyone else.
   if (basePath === "/tours/messages" && session.role === "admin") redirect(isConversationKind(rawKind) ? `/tours/admin/messages?kind=${rawKind}` : "/tours/admin/messages");
+  if (basePath === "/tours/messages" && session.role === "operator") redirect(isConversationKind(rawKind) ? `/tours/operator/messages?kind=${rawKind}` : "/tours/operator/messages");
   const isTourist = session.role === "tourist";
   const filters = inboxFilters(all.map((row) => row.kind), { friendsTab: isTourist });
   const kind = isConversationKind(rawKind) && filters.some((f) => f.kind === rawKind) ? rawKind : null;

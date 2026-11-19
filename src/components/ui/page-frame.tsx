@@ -1,4 +1,5 @@
 import { AdminFrame } from "@/components/admin/admin-frame";
+import { OperatorFrame } from "@/components/operator/operator-frame";
 import { LiveProvider } from "@/components/live/live-provider";
 import type { ReactNode } from "react";
 import { AssistantWidget } from "@/components/assistant/assistant-widget";
@@ -87,6 +88,7 @@ export async function PageFrame({
   adminNav = false,
   credits,
   bleed = false,
+  plain = false,
 }: {
   children: ReactNode;
   adminNav?: boolean;
@@ -94,6 +96,8 @@ export async function PageFrame({
   credits?: PhotoKey[];
   /** The page lays out its own full-width sections (public pages); no inner padding or max width. */
   bleed?: boolean;
+  /** Keep the public header even for an operator (the application pages, before approval). */
+  plain?: boolean;
 }) {
   const [viewer, notifications] = await Promise.all([
     signedInViewer(),
@@ -107,6 +111,13 @@ export async function PageFrame({
       <AdminFrame viewer={viewer} notifications={notifications}>
         {children}
       </AdminFrame>
+    );
+  // An operator gets the same on their own pages and the ones they share (messages, account).
+  if (viewer && role === "operator" && !bleed && !plain)
+    return (
+      <OperatorFrame viewer={viewer} notifications={notifications}>
+        {children}
+      </OperatorFrame>
     );
   const tabs = role === undefined ? [] : roleTabs(role);
   const staff = isStaffRole(role);
