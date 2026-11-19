@@ -59,7 +59,8 @@ for (const role of Object.keys(pages) as Role[]) {
     test("navigation leads to every dashboard section", async ({ page }) => {
       await page.goto(pages[role][0], { waitUntil: "networkidle" });
       if (role === "admin") {
-        // The admin shell has no bottom tab bar: on a phone its menu opens the drawer of admin areas.
+        // Admins get the bottom tab bar too, but most admin areas live only in the menu drawer,
+        // so on a phone check the drawer: each area listed once, the current one marked.
         await page.getByRole("button", { name: "Open menu" }).click();
         const areas = page.getByRole("dialog", { name: "Admin menu" }).getByRole("navigation", { name: "Admin areas" }).getByRole("link");
         await expect(areas.first()).toHaveAttribute("aria-current", "page");
