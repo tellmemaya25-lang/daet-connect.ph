@@ -9,7 +9,7 @@ export type BusyReason = "not_approved" | "not_available" | "already_booked";
 export const BUSY_LABELS: Record<BusyReason, string> = {
   not_approved: "Not approved",
   not_available: "Not marked available that day",
-  already_booked: "Already on a tour that day",
+  already_booked: "On another tour at that time",
 };
 
 export const SWAP_REASON_MAX = 300;

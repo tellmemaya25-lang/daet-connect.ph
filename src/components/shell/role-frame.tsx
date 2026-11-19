@@ -17,7 +17,7 @@ export type FrameViewer = {
 };
 
 /**
- * The sidebar, top bar and phone tab bar around a role's pages. AdminFrame and OperatorFrame
+ * The sidebar, top bar and phone tab bar around a role's pages. AdminFrame, OperatorFrame and GuideFrame
  * supply the role's config (and, for admins, the waiting-item counts); a new role's shell
  * is a config and a thin frame like theirs.
  */
@@ -30,7 +30,7 @@ export async function RoleFrame({
   search,
   children,
 }: {
-  role: "admin" | "operator";
+  role: "admin" | "operator" | "guide";
   config: ShellConfig;
   viewer: FrameViewer;
   notifications: Awaited<ReturnType<typeof loadNotifications>>;

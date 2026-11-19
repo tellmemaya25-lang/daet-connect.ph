@@ -132,6 +132,7 @@ async function landingFor(supabase: Awaited<ReturnType<typeof createSupabaseServ
     const { data } = await supabase.rpc("get_my_role");
     if (data === "admin") return next.startsWith("/tours/admin") ? next : dashboardPath("admin");
     if (data === "operator") return next.startsWith("/tours/operator") ? next : "/tours/operator/dashboard";
+    if (data === "guide") return next.startsWith("/tours/guide") ? next : "/tours/guide/dashboard";
     return next;
   } catch {
     return next;

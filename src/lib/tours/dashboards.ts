@@ -74,8 +74,6 @@ export function accountLinks(
   const links: Tab[] = [{ href: "/settings", label: "Profile settings" }];
   if (role === "operator")
     links.push({ href: "/tours/operator/settings", label: "Payment settings" });
-  if (role === "guide")
-    links.push({ href: "/tours/guide/backup", label: "Data backup" });
   if (!role || role === "tourist")
     links.push({ href: "/tours/my-bookings", label: "Bookings" });
   if (role === "tourist") links.push({ href: "/tours/friends", label: "Friends" });

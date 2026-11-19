@@ -21,10 +21,10 @@ test.describe("R1: the exploration menu is only for visitors and tourists", () =
     test(`${role} dashboard`, async ({ context, page }) => {
       await signInAs(context, role);
       await page.goto(homes[role], { waitUntil: "networkidle" });
-      if (role === "admin" || role === "operator") {
-        // The admin and operator shells have no exploration menu at all: their sidebars list their own areas only.
+      if (role === "admin" || role === "operator" || role === "guide") {
+        // The staff shells have no exploration menu at all: their sidebar lists their own areas only.
         await page.getByRole("button", { name: "Open menu" }).click();
-        const drawer = page.getByRole("dialog", { name: role === "admin" ? "Admin menu" : "Operator menu" });
+        const drawer = page.getByRole("dialog", { name: `${role[0].toUpperCase()}${role.slice(1)} menu` });
         await expect(drawer.getByRole("link", { name: "Souvenirs" })).toHaveCount(0);
         await expect(drawer.getByRole("link", { name: "Plan a trip" })).toHaveCount(0);
         await expect(page.getByRole("banner").getByRole("link", { name: "Souvenirs" })).toHaveCount(0);
@@ -76,7 +76,7 @@ test.describe("R6: guide schedules and swap requests", () => {
     const form = page.getByRole("form", { name: /Suggest another guide for/ });
     const picker = form.getByLabel("Who could take it?");
     await expect(picker.getByRole("option", { name: "Liza Bautista" })).toBeEnabled();
-    await expect(picker.getByRole("option", { name: /Paolo Reyes \(Already on a tour that day\)/ })).toBeDisabled();
+    await expect(picker.getByRole("option", { name: /Paolo Reyes \(On another tour at that time\)/ })).toBeDisabled();
     await expect(picker.getByRole("option", { name: /Jeremiah Sabihon/ })).toHaveCount(0);
     await picker.selectOption({ label: "Liza Bautista" });
     await form.getByLabel(/Why\?/).fill("Family emergency that day");
@@ -102,7 +102,7 @@ test.describe("R6: guide schedules and swap requests", () => {
     await expect(request.getByText(/asks to hand this tour to another guide/)).toBeVisible();
     await expect(request.getByText("My boat license renewal is on that day.", { exact: false })).toBeVisible();
     const picker = request.getByLabel("New guide");
-    await expect(picker.getByRole("option", { name: /Paolo Reyes \(Already on a tour that day\)/ })).toBeDisabled();
+    await expect(picker.getByRole("option", { name: /Paolo Reyes \(On another tour at that time\)/ })).toBeDisabled();
     await picker.selectOption({ label: "Liza Bautista" });
     await checkA11y(page, "operator swap review");
     await request.getByRole("button", { name: "Approve swap" }).click();

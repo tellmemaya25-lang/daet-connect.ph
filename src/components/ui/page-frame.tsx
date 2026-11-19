@@ -1,4 +1,5 @@
 import { AdminFrame } from "@/components/admin/admin-frame";
+import { GuideFrame } from "@/components/guide/guide-frame";
 import { OperatorFrame } from "@/components/operator/operator-frame";
 import { LiveProvider } from "@/components/live/live-provider";
 import type { ReactNode } from "react";
@@ -96,7 +97,7 @@ export async function PageFrame({
   credits?: PhotoKey[];
   /** The page lays out its own full-width sections (public pages); no inner padding or max width. */
   bleed?: boolean;
-  /** Keep the public header even for an operator (the application pages, before approval). */
+  /** Keep the public header even for an operator or guide (the application pages, before approval). */
   plain?: boolean;
 }) {
   const [viewer, notifications] = await Promise.all([
@@ -118,6 +119,13 @@ export async function PageFrame({
       <OperatorFrame viewer={viewer} notifications={notifications}>
         {children}
       </OperatorFrame>
+    );
+  // A guide likewise.
+  if (viewer && role === "guide" && !bleed && !plain)
+    return (
+      <GuideFrame viewer={viewer} notifications={notifications}>
+        {children}
+      </GuideFrame>
     );
   const tabs = role === undefined ? [] : roleTabs(role);
   const staff = isStaffRole(role);

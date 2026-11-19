@@ -202,6 +202,11 @@ export const OPERATOR_ACTIVITY_ENTITIES = ACTIVITY_ENTITIES.filter((e) =>
   ["tours_bookings", "tours_payments", "tours_packages", "tours_package_guides", "tours_guide_applications"].includes(e.value),
 );
 
+/** The areas a guide's own activity log covers (tours_guide_activity). */
+export const GUIDE_ACTIVITY_ENTITIES = ACTIVITY_ENTITIES.filter((e) =>
+  ["tours_bookings", "tours_guide_applications", "tours_guide_swap_requests", "tours_guide_availability"].includes(e.value),
+);
+
 export const ACTIVITY_ROLES = ["admin", "operator", "guide", "tourist", "system"] as const;
 
 export const entityLabel = (e: string) => ACTIVITY_ENTITIES.find((x) => x.value === e)?.label ?? e;

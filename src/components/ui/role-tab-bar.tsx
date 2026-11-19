@@ -36,7 +36,7 @@ export function RoleTabBar({
   return (
     <nav
       aria-label="Dashboard"
-      className="fixed inset-x-0 bottom-0 z-40 bg-surface pb-[env(safe-area-inset-bottom)] shadow-[0_-4px_16px_rgba(15,23,42,0.08)] sm:hidden print:hidden"
+      className="fixed inset-x-0 bottom-0 z-40 border-t border-line bg-surface pb-[env(safe-area-inset-bottom)] dark:border-white/15 shadow-[0_-4px_16px_rgba(15,23,42,0.08)] sm:hidden print:hidden"
     >
       {pending ? (
         <span aria-hidden="true" className="absolute inset-x-0 top-0 h-0.5 overflow-hidden bg-blue-100 dark:bg-blue-950">
