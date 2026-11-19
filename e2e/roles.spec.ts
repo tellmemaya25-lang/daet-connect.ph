@@ -1,7 +1,7 @@
 import { expect, test } from "@playwright/test";
 import { signInAs, visit, type Role } from "./fixtures";
 
-/** Sign out lives in the account menu: the avatar in the header, or the You tab for tourists on phones. */
+/** Sign out lives in the account menu: the avatar in the header, or the You tab for tourists and admins on phones. */
 async function signOutButton(page: import("@playwright/test").Page) {
   await page.getByRole("button", { name: /^(You, y|Y)our account/ }).click();
   return page.getByRole("navigation", { name: "Your account" }).getByRole("button", { name: "Sign out" });
@@ -59,8 +59,24 @@ for (const role of Object.keys(pages) as Role[]) {
     test("navigation leads to every dashboard section", async ({ page }) => {
       await page.goto(pages[role][0], { waitUntil: "networkidle" });
       if (role === "admin") {
-        // Admins get the bottom tab bar too, but most admin areas live only in the menu drawer,
-        // so on a phone check the drawer: each area listed once, the current one marked.
+        // On a phone the admin's account menu is the tab bar's right-most item, not the top bar's avatar.
+        const bar = page.getByRole("navigation", { name: "Dashboard" });
+        await expect(bar.getByRole("link")).toHaveCount(5);
+        const you = bar.getByRole("button", { name: /^You, your account/ });
+        await expect(you).toBeVisible();
+        expect(await bar.locator("li").last().getByRole("button").count()).toBe(1);
+        const box = await you.boundingBox();
+        expect(box!.width).toBeGreaterThanOrEqual(44);
+        expect(box!.height).toBeGreaterThanOrEqual(44);
+        await expect(page.getByRole("banner").getByRole("button", { name: /^Your account/ })).toBeHidden();
+        expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
+        await you.click();
+        const sheet = page.getByRole("navigation", { name: "Your account" });
+        await expect(sheet.getByRole("link", { name: "Profile settings" })).toBeVisible();
+        await expect(sheet.getByRole("link", { name: "View public site" })).toHaveAttribute("href", "/");
+        await expect(sheet.getByRole("button", { name: "Sign out" })).toBeVisible();
+        await page.keyboard.press("Escape");
+        // The menu still opens the drawer of admin areas.
         await page.getByRole("button", { name: "Open menu" }).click();
         const areas = page.getByRole("dialog", { name: "Admin menu" }).getByRole("navigation", { name: "Admin areas" }).getByRole("link");
         await expect(areas.first()).toHaveAttribute("aria-current", "page");
@@ -361,7 +377,9 @@ test("the admin top bar has notifications, and the account menu has messages and
   await signInAs(context, "admin");
   await visit(page, "/tours/admin");
   await page.setViewportSize({ width: 1400, height: 900 });
-  await page.getByRole("button", { name: /^Your account/ }).click();
+  // Desktop has no tab bar, so the avatar stays in the top bar.
+  await expect(page.getByRole("navigation", { name: "Dashboard" })).toBeHidden();
+  await page.getByRole("banner").getByRole("button", { name: /^Your account/ }).click();
   await expect(page.getByRole("link", { name: "Messages" }).first()).toBeVisible();
   await expect(page.getByRole("link", { name: "View public site" })).toHaveAttribute("href", "/");
   await page.keyboard.press("Escape");

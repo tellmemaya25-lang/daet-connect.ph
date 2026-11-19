@@ -170,6 +170,7 @@ export function AppShell({
   accountLinks,
   counts,
   notifications,
+  accountInTabBar = false,
 }: {
   config: ShellConfig;
   /** The top bar's search, if the role has one. */
@@ -180,6 +181,8 @@ export function AppShell({
   accountLinks: AccountLink[];
   counts: Record<string, number>;
   notifications: LoadedNotifications | null;
+  /** The phone tab bar carries the account menu, so the top bar shows it only from sm up. */
+  accountInTabBar?: boolean;
 }) {
   const pathname = usePathname() ?? config.homeHref;
   const [collapsed, setCollapsed] = useState(initialCollapsed);
@@ -282,12 +285,14 @@ export function AppShell({
             <div className="flex items-center gap-1">
               <NotificationBell initial={notifications} />
             </div>
-            <AccountMenu
-              initial={account.initial}
-              name={account.name}
-              avatarUrl={account.avatarUrl}
-              links={[...accountLinks, { href: "/", label: "View public site" }]}
-            />
+            <div className={accountInTabBar ? "hidden sm:block" : "contents"}>
+              <AccountMenu
+                initial={account.initial}
+                name={account.name}
+                avatarUrl={account.avatarUrl}
+                links={accountLinks}
+              />
+            </div>
           </div>
         </header>
         <main
