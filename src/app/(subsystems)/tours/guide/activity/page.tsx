@@ -19,7 +19,7 @@ const ROLE_LABEL: Record<string, string> = { admin: "Admin", operator: "Operator
 
 /**
  * The guide's audit log: changes to the tours assigned to them, their operator applications,
- * swap requests and schedule, with who made them, newest first, 50 at a time. The database
+ * swap requests and schedule, made by the guide, newest first, 50 at a time. The database
  * function limits it to the guide's own records.
  */
 export default async function GuideActivityPage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
@@ -54,7 +54,7 @@ export default async function GuideActivityPage({ searchParams }: { searchParams
       </Link>
       <h1 className="display-2 mb-2 text-daet-ink">Activity log</h1>
       <p className="mb-4 max-w-3xl text-sm text-daet-ink/65">
-        Changes to your assigned tours, operator applications, swap requests and schedule, with who made them.
+        Changes you made to your assigned tours, operator applications, swap requests and schedule. Other people's actions are not shown here.
       </p>
 
       <form action={BASE} className="mb-6 grid gap-3 rounded-2xl card-edge bg-surface p-4 sm:grid-cols-2 lg:grid-cols-4 lg:items-end">
