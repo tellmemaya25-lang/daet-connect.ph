@@ -9,6 +9,9 @@ export const ADMIN_SEARCH_TYPES = [
   { value: "packages", label: "Tour packages" },
   { value: "merchandise", label: "Merchandise" },
   { value: "reviews", label: "Reviews" },
+  { value: "accounts", label: "Accounts" },
+  { value: "emergency", label: "Emergency numbers" },
+  { value: "pages", label: "Admin pages" },
 ] as const;
 
 export type AdminSearchType = (typeof ADMIN_SEARCH_TYPES)[number]["value"];
