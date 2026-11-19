@@ -289,7 +289,22 @@ test("a guide gets the sidebar on desktop and the menu drawer and tab bar on a p
   await expect(page).toHaveURL(/\/tours\/guide\/messages/);
   await page.setViewportSize({ width: 375, height: 800 });
   await visit(page, "/tours/guide/dashboard");
-  await expect(page.getByRole("navigation", { name: "Dashboard" }).getByRole("link")).toHaveCount(5);
+  const tabBar = page.getByRole("navigation", { name: "Dashboard" });
+  await expect(tabBar.getByRole("link")).toHaveCount(5);
+  // The account menu moves from the top bar to the tab bar's last item.
+  await expect(page.getByRole("button", { name: /^Your account/ })).toBeHidden();
+  const you = tabBar.getByRole("listitem").last().getByRole("button", { name: /^You, your account/ });
+  await expect(you).toBeVisible();
+  const box = await you.boundingBox();
+  expect(box!.width).toBeGreaterThanOrEqual(44);
+  expect(box!.height).toBeGreaterThanOrEqual(44);
+  await you.click();
+  const sheet = page.getByRole("navigation", { name: "Your account" });
+  await expect(sheet.getByRole("link", { name: "Profile settings" })).toBeVisible();
+  await expect(sheet.getByRole("link", { name: "View public site" })).toBeVisible();
+  await expect(sheet.getByRole("button", { name: "Sign out" })).toBeVisible();
+  await page.keyboard.press("Escape");
+  await expect(sheet).toBeHidden();
   await page.getByRole("button", { name: "Open menu" }).click();
   const drawer = page.getByRole("dialog", { name: "Guide menu" });
   await expect(drawer.getByRole("link", { name: "Dashboard" })).toHaveAttribute("aria-current", "page");
