@@ -12,7 +12,7 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 export default async function OperatorPendingPage() {
   if (!isSupabaseConfigured()) {
     return (
-      <PageFrame>
+      <PageFrame plain>
         <div className="mx-auto max-w-xl py-8">
           <Notice variant="warning" title="Supabase setup is needed">Configure Supabase to show application status.</Notice>
         </div>
@@ -29,7 +29,7 @@ export default async function OperatorPendingPage() {
 
   if (!session.user) {
     return (
-      <PageFrame>
+      <PageFrame plain>
         <div className="mx-auto max-w-xl py-8">
           <Notice variant="info" title="Sign in to view your application">
             <Link href={`/login?next=${encodeURIComponent("/tours/operator/pending")}`} className="font-bold underline underline-offset-4">Sign in</Link> to the account used for your application.
@@ -40,7 +40,7 @@ export default async function OperatorPendingPage() {
   }
   if (session.error) {
     return (
-      <PageFrame>
+      <PageFrame plain>
         <div className="mx-auto max-w-xl py-8"><Notice variant="error" title="We could not verify your account">{session.error}</Notice></div>
       </PageFrame>
     );
@@ -56,7 +56,7 @@ export default async function OperatorPendingPage() {
 
   if (error) {
     return (
-      <PageFrame>
+      <PageFrame plain>
         <div className="mx-auto max-w-xl py-8"><Notice variant="error" title="Status could not be loaded">Please refresh in a moment. Your documents remain private.</Notice></div>
       </PageFrame>
     );
@@ -67,7 +67,7 @@ export default async function OperatorPendingPage() {
   }
   if (application.accreditation_status === "rejected") {
     return (
-      <PageFrame>
+      <PageFrame plain>
         <section className="mx-auto max-w-2xl rounded-2xl border-red-200 dark:border-red-700 bg-surface p-6 sm:p-10">
           <span className="inline-flex rounded-full bg-red-50 dark:bg-red-950/40 px-3 py-1 text-xs font-bold text-red-700 dark:text-red-300">Changes requested</span>
           <h1 className="display-2 mt-4 text-daet-ink">Please update your application</h1>
@@ -87,14 +87,14 @@ export default async function OperatorPendingPage() {
   }
   if (application.accreditation_status === "approved") {
     return (
-      <PageFrame>
+      <PageFrame plain>
         <div className="mx-auto max-w-2xl py-8"><Notice variant="warning" title="Your account needs attention">Your operator application is approved, but the operator role is not set. Please contact the administrator.</Notice></div>
       </PageFrame>
     );
   }
 
   return (
-    <PageFrame>
+    <PageFrame plain>
       <section className="mx-auto max-w-2xl overflow-hidden rounded-2xl card-edge bg-surface">
         <div className="bg-daet-forest px-6 py-8 text-white sm:px-10 sm:py-10">
           <span className="inline-flex items-center gap-2 rounded-full bg-white/15 px-3 py-1 text-sm font-bold">

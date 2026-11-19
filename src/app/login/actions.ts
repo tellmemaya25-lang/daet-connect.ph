@@ -121,15 +121,19 @@ function hashKey(value: string): string {
 }
 
 /**
- * Where a signed-in person goes. An admin lands on the office dashboard whatever
- * public page sent them to the form (a deep link into the admin area is kept).
- * Anyone else, or an admin whose role cannot be read, goes where they were headed.
+ * Where a signed-in person goes. An admin lands on the office dashboard and an operator
+ * on the operator dashboard, whatever public page sent them to the form (a deep link into
+ * their own area is kept). The operator dashboard sends an operator who is not approved yet
+ * on to the application or pending page. Anyone else, or someone whose role cannot be read,
+ * goes where they were headed.
  */
 async function landingFor(supabase: Awaited<ReturnType<typeof createSupabaseServerClient>>, next: string): Promise<string> {
-  if (next.startsWith("/tours/admin")) return next;
   try {
     const { data } = await supabase.rpc("get_my_role");
-    return data === "admin" ? dashboardPath("admin") : next;
+    if (data === "admin") return next.startsWith("/tours/admin") ? next : dashboardPath("admin");
+    if (data === "operator") return next.startsWith("/tours/operator") ? next : "/tours/operator/dashboard";
+    if (data === "guide") return next.startsWith("/tours/guide") ? next : "/tours/guide/dashboard";
+    return next;
   } catch {
     return next;
   }

@@ -13,7 +13,7 @@ export function roleTabs(role: string | null): Tab[] {
         { href: "/tours/operator/dashboard", label: "Home" },
         { href: "/tours/operator/bookings", label: "Bookings" },
         { href: "/tours/operator/packages", label: "Packages" },
-        { href: "/tours/operator/payments", label: "Revenue" },
+        { href: "/tours/operator/scan", label: "Scan" },
         { href: "/tours/messages", label: "Messages" },
       ];
     case "guide":

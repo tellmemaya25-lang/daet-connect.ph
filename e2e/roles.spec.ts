@@ -24,6 +24,7 @@ const pages: Record<Role, string[]> = {
     "/tours/operator/dashboard",
     "/tours/operator/bookings",
     "/tours/operator/payments",
+    "/tours/operator/scan",
     "/tours/operator/reviews",
     "/tours/operator/merch",
     "/tours/operator/merch/new",
@@ -215,6 +216,79 @@ test("an admin sees the admin sidebar on messages and notifications", async ({ c
     await expect(page.getByRole("navigation", { name: "Admin areas" }).first()).toBeVisible();
     await expect(page.getByRole("button", { name: "Open search" })).toBeVisible();
   }
+});
+
+test("an operator gets the sidebar on desktop and the menu drawer and tab bar on a phone", async ({ context, page }) => {
+  await signInAs(context, "operator");
+  await page.setViewportSize({ width: 1400, height: 900 });
+  // Own pages and the shared ones keep one frame.
+  for (const path of ["/tours/operator/dashboard", "/tours/operator/earnings", "/tours/operator/messages", "/tours/notifications"]) {
+    await visit(page, path);
+    await expect(page.getByRole("navigation", { name: "Operator areas" }).first()).toBeVisible();
+  }
+  await visit(page, "/tours/operator/earnings");
+  await expect(page.getByRole("navigation", { name: "Operator areas" }).getByRole("link", { name: "Earnings" })).toHaveAttribute("aria-current", "page");
+  // The top bar search goes to the bookings board.
+  await page.keyboard.press("Control+Space");
+  const search = page.getByRole("searchbox", { name: "Search records" });
+  await expect(search).toBeFocused();
+  await expect(search).toHaveAttribute("minlength", "2");
+  await page.getByRole("radio", { name: "Bookings" }).click();
+  await search.fill("Jane");
+  await search.press("Enter");
+  await expect(page).toHaveURL(/\/tours\/operator\/search\?q=Jane&type=bookings&status=all/);
+  await expect(page.getByRole("heading", { name: "Results for “Jane”" })).toBeVisible();
+  // The public frame is gone: no public header on desktop.
+  await expect(page.getByRole("button", { name: /^Your account/ })).toBeVisible();
+  // Phone: menu drawer, plus the bottom tab bar.
+  await page.setViewportSize({ width: 375, height: 800 });
+  await visit(page, "/tours/operator/dashboard");
+  await expect(page.getByRole("navigation", { name: "Dashboard" }).getByRole("link")).toHaveCount(5);
+  await page.getByRole("button", { name: "Open menu" }).click();
+  const drawer = page.getByRole("dialog", { name: "Operator menu" });
+  await expect(drawer.getByRole("link", { name: "Dashboard" })).toHaveAttribute("aria-current", "page");
+  const noSideways = await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth);
+  expect(noSideways).toBe(true);
+});
+
+test("a guide gets the sidebar on desktop and the menu drawer and tab bar on a phone", async ({ context, page }) => {
+  await signInAs(context, "guide");
+  await page.setViewportSize({ width: 1400, height: 900 });
+  for (const path of ["/tours/guide/dashboard", "/tours/guide/earnings", "/tours/guide/messages", "/tours/notifications"]) {
+    await visit(page, path);
+    await expect(page.getByRole("navigation", { name: "Guide areas" }).first()).toBeVisible();
+  }
+  await visit(page, "/tours/guide/earnings");
+  await expect(page.getByRole("navigation", { name: "Guide areas" }).getByRole("link", { name: "Earnings" })).toHaveAttribute("aria-current", "page");
+  await page.keyboard.press("Control+Space");
+  const search = page.getByRole("searchbox", { name: "Search records" });
+  await expect(search).toBeFocused();
+  await search.fill("Jane");
+  await search.press("Enter");
+  await expect(page).toHaveURL(/\/tours\/guide\/search\?q=Jane/);
+  await expect(page.getByRole("heading", { name: "Results for “Jane”" })).toBeVisible();
+  await expect(page.getByRole("button", { name: /^Your account/ })).toBeVisible();
+  await visit(page, "/tours/messages");
+  await expect(page).toHaveURL(/\/tours\/guide\/messages/);
+  await page.setViewportSize({ width: 375, height: 800 });
+  await visit(page, "/tours/guide/dashboard");
+  await expect(page.getByRole("navigation", { name: "Dashboard" }).getByRole("link")).toHaveCount(5);
+  await page.getByRole("button", { name: "Open menu" }).click();
+  const drawer = page.getByRole("dialog", { name: "Guide menu" });
+  await expect(drawer.getByRole("link", { name: "Dashboard" })).toHaveAttribute("aria-current", "page");
+  const noSideways = await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth);
+  expect(noSideways).toBe(true);
+});
+
+test("an operator has an activity log and can open a guide's earnings from the team table", async ({ context, page }) => {
+  await signInAs(context, "operator");
+  await page.setViewportSize({ width: 1400, height: 900 });
+  await visit(page, "/tours/operator/activity");
+  await expect(page.getByRole("heading", { name: "Activity log" })).toBeVisible();
+  await expect(page.getByRole("cell", { name: /changed a booking/ })).toBeVisible();
+  await expect(page.getByRole("navigation", { name: "Operator areas" }).getByRole("link", { name: "Activity log" })).toHaveAttribute("aria-current", "page");
+  await visit(page, "/tours/operator/guides");
+  await expect(page.getByRole("link", { name: "Juan Dela Cruz" }).first()).toHaveAttribute("href", /\/tours\/operator\/guides\/f66b1fe2-a997-4c0b-be13-22d62cf0dba6$/);
 });
 
 test("the admin top bar has notifications, and the account menu has messages and the public site", async ({ context, page }) => {
