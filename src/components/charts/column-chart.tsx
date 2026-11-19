@@ -46,36 +46,39 @@ export function ColumnChart({ points, unit, title }: { points: ColumnPoint[]; un
             <span key={t}>{compact(t)}</span>
           ))}
         </div>
-        <div className="relative flex-1">
-          <div className="absolute inset-x-0 bottom-5 top-0 flex flex-col justify-between" aria-hidden="true">
-            {ticks.map((t) => (
-              <div key={t} className="border-t border-daet-ink/10" />
-            ))}
-          </div>
-          <div className="absolute inset-x-0 bottom-5 top-0 flex items-end gap-[2px]" onMouseLeave={() => setActive(null)}>
-            {points.map((p, i) => (
-              <button
-                key={p.key}
-                type="button"
-                className="group flex h-full min-w-0 flex-1 items-end justify-center focus:outline-none"
-                onMouseEnter={() => setActive(i)}
-                onFocus={() => setActive(i)}
-                onBlur={() => setActive(null)}
-                aria-label={`${p.label}: ${p.value} ${unit}`}
-              >
-                <span
-                  className={`block w-full max-w-6 rounded-t transition ${p.value > 0 ? "bg-daet-forest" : ""} ${active === i ? "opacity-100 ring-2 ring-daet-forest/30" : active === null ? "" : "opacity-60"}`}
-                  style={{ height: `${(p.value / max) * 100}%`, minHeight: p.value > 0 ? 2 : 0 }}
-                />
-              </button>
-            ))}
-          </div>
-          <div className="absolute inset-x-0 bottom-0 flex h-5 items-end gap-[2px] text-[10px] text-daet-ink/70" aria-hidden="true">
-            {points.map((p, i) => (
-              <span key={p.key} className="flex-1 overflow-visible whitespace-nowrap text-center">
-                {i % labelEvery === 0 ? p.label.replace(/^\w+, /, "") : ""}
-              </span>
-            ))}
+        {/* Each day is a button at least 24px wide (WCAG 2.5.8); long ranges scroll sideways on narrow screens. */}
+        <div className="min-w-0 flex-1 overflow-x-auto">
+          <div className="relative h-full" style={{ minWidth: points.length * 24 }}>
+            <div className="absolute inset-x-0 bottom-5 top-0 flex flex-col justify-between" aria-hidden="true">
+              {ticks.map((t) => (
+                <div key={t} className="border-t border-daet-ink/10" />
+              ))}
+            </div>
+            <div className="absolute inset-x-0 bottom-5 top-0 flex items-end" onMouseLeave={() => setActive(null)}>
+              {points.map((p, i) => (
+                <button
+                  key={p.key}
+                  type="button"
+                  className="group flex h-full min-w-6 flex-1 items-end justify-center px-px focus:outline-none"
+                  onMouseEnter={() => setActive(i)}
+                  onFocus={() => setActive(i)}
+                  onBlur={() => setActive(null)}
+                  aria-label={`${p.label}: ${p.value} ${unit}`}
+                >
+                  <span
+                    className={`block w-full max-w-6 rounded-t transition ${p.value > 0 ? "bg-daet-forest" : ""} ${active === i ? "opacity-100 ring-2 ring-daet-forest/30" : active === null ? "" : "opacity-60"}`}
+                    style={{ height: `${(p.value / max) * 100}%`, minHeight: p.value > 0 ? 2 : 0 }}
+                  />
+                </button>
+              ))}
+            </div>
+            <div className="absolute inset-x-0 bottom-0 flex h-5 items-end text-[10px] text-daet-ink/70" aria-hidden="true">
+              {points.map((p, i) => (
+                <span key={p.key} className="min-w-6 flex-1 overflow-visible whitespace-nowrap text-center">
+                  {i % labelEvery === 0 ? p.label.replace(/^\w+, /, "") : ""}
+                </span>
+              ))}
+            </div>
           </div>
         </div>
       </div>

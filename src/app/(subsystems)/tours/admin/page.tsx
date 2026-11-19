@@ -14,6 +14,8 @@ import Link from "next/link";
 
 type SearchParams = Promise<Record<string, string | string[] | undefined>>;
 
+export const metadata = { title: "Dashboard" };
+
 export default async function AdminDashboardPage({ searchParams }: { searchParams: SearchParams }) {
   const supabase = await createSupabaseServerClient();
   

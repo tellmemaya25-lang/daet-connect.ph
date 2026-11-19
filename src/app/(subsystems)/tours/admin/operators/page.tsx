@@ -25,6 +25,8 @@ function safePage(value?: string): number {
   return Math.min(parsed, 100_000);
 }
 
+export const metadata = { title: "Operator applications" };
+
 export default async function AdminOperatorQueuePage({
   searchParams,
 }: {

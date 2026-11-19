@@ -55,15 +55,19 @@ export default async function AdminFeedbackPage({ searchParams }: { searchParams
 
       {failed ? <Notice variant="error" className="mb-4">Feedback could not be loaded.</Notice> : null}
 
-      <p className="mb-4 font-semibold text-daet-ink">
-        Last 30 days: {counts.yes} Yes · {counts.no} No{total ? ` · ${Math.round((counts.yes / total) * 100)}% helpful` : ""}
-      </p>
+      {failed ? null : (
+        <>
+          <p className="mb-4 font-semibold text-daet-ink">
+            Last 30 days: {counts.yes} Yes · {counts.no} No{total ? ` · ${Math.round((counts.yes / total) * 100)}% helpful` : ""}
+          </p>
 
-      <nav aria-label="Show" className="mb-6 flex flex-wrap gap-2">
-        <Link href="/tours/admin/feedback" aria-current={show === "no" ? "page" : undefined} className={tab(show === "no")}>Not helpful</Link>
-        <Link href="/tours/admin/feedback?show=yes" aria-current={show === "yes" ? "page" : undefined} className={tab(show === "yes")}>Helpful</Link>
-        <Link href="/tours/admin/feedback?show=all" aria-current={show === "all" ? "page" : undefined} className={tab(show === "all")}>All</Link>
-      </nav>
+          <nav aria-label="Show" className="mb-6 flex flex-wrap gap-2">
+            <Link href="/tours/admin/feedback" aria-current={show === "no" ? "page" : undefined} className={tab(show === "no")}>Not helpful</Link>
+            <Link href="/tours/admin/feedback?show=yes" aria-current={show === "yes" ? "page" : undefined} className={tab(show === "yes")}>Helpful</Link>
+            <Link href="/tours/admin/feedback?show=all" aria-current={show === "all" ? "page" : undefined} className={tab(show === "all")}>All</Link>
+          </nav>
+        </>
+      )}
 
       {rows.length === 0 && !failed ? (
         <p className="rounded-2xl card-edge bg-surface p-8 text-center text-daet-ink">Nothing here yet.</p>

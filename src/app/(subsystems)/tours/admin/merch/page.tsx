@@ -101,12 +101,12 @@ export default async function AdminMerchPage({
               </div>
               {item.submitted_by_operator_id && item.review_status === "pending" ? (
                 <div className="sm:max-w-md sm:flex-1">
-                  <MerchReviewForm id={item.id} />
+                  <MerchReviewForm id={item.id} name={item.name} />
                 </div>
               ) : null}
               <div className="flex gap-2">
                 <Link href={`/tours/admin/merch/${item.id}/edit`} className="inline-flex min-h-11 flex-1 items-center justify-center rounded-full border border-daet-forest/30 px-5 text-sm font-bold text-daet-leaf dark:text-blue-300 hover:bg-daet-forest/5 sm:flex-none">
-                  Edit
+                  Edit<span className="sr-only"> {item.name}</span>
                 </Link>
                 <form action={deleteMerch} className="flex-1 sm:flex-none">
                   <input type="hidden" name="id" value={item.id} />
@@ -114,7 +114,7 @@ export default async function AdminMerchPage({
                     message={`Delete "${item.name}"? This cannot be undone.`}
                     className="inline-flex min-h-11 w-full items-center justify-center rounded-full px-5 text-sm font-bold text-red-700 dark:text-red-300 hover:bg-red-50 dark:hover:bg-red-950/40"
                   >
-                    Delete
+                    Delete<span className="sr-only"> {item.name}</span>
                   </ConfirmSubmitButton>
                 </form>
               </div>

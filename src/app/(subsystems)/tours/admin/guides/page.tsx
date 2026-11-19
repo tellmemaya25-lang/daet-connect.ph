@@ -18,6 +18,8 @@ function safePage(value?: string): number {
   return Number.isInteger(parsed) && parsed > 0 ? Math.min(parsed, 100_000) : 1;
 }
 
+export const metadata = { title: "Guide applications" };
+
 export default async function AdminGuideQueuePage({ searchParams }: { searchParams: SearchParams }) {
   if (!isSupabaseConfigured()) {
     return <AdminPage><Notice variant="warning" title="Supabase setup is needed">Configure Supabase before opening the guide review queue.</Notice></AdminPage>;
