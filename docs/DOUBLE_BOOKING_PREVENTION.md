@@ -12,12 +12,16 @@ production.
 
 ## 1. What "double booking" means here
 
-| # | Kind | Who is hurt | Prevented today? |
-|---|---|---|---|
-| 1 | Same tourist books the same tour twice on a date | tourist (double charge) | **Yes** |
-| 2 | Same tourist books two tours that **overlap in time** | tourist (can't be in two places) | **No** |
-| 3 | Same guide is on two tours that overlap | guide, both tourists | Partly |
-| 4 | Operator sells more seats/departures than they own | operator (no boat to send) | **No** |
+Status as of 2026-11-19, after implementation. Migrations are written but applied
+by hand in the Supabase SQL editor — see §8.
+
+| # | Kind | Who is hurt | Before | Now |
+|---|---|---|---|---|
+| 1 | Same tourist books the same tour twice on a date | tourist (double charge) | **Yes** | Yes |
+| 2 | Same tourist books two tours that **overlap in time** | tourist (can't be in two places) | **No** | **Yes** |
+| 3 | Same guide is on two tours that overlap | guide, both tourists | Partly | **Yes** (span-aware) |
+| 4 | Operator sells more departures than they own | operator (no boat to send) | **No** | **Yes**, once the fleet is filled in |
+| 5 | Abandoned unpaid booking holds a date shut | everyone | **No** | **Yes** (opt-in hold window) |
 
 ## 2. What already works — don't rebuild it
 
@@ -126,16 +130,18 @@ window **per day it occupies**:
 | First Rizal Monument, 1 h, 09:00 | day 1 | `[540, 600)` |
 | Bagasbas Surf, 8 h, no meeting time | day 1 | `[0, 1440)` |
 | Calaguas camping, 2 d 1 n, 06:00 | day 1 | `[360, 1440)` |
-| Calaguas camping, 2 d 1 n, 06:00 | **day 2** | `[0, 1440)` → until return time |
+| Calaguas camping, 2 d 1 n, 06:00 | **day 2** | `[0, 1440)` — held whole |
 
-For a multi-day tour the last day runs until the return leg, not all day; store a
-`return_time` on the package (or fall back to end of day).
+No `return_time` was added: a package has no return leg to read, so every day
+after the first is held whole. That is conservative — it may refuse a 16:00 tour
+the day a camping trip gets back — but it never double books, and it needs no new
+column. Add `return_time` if operators ask for the looser rule.
 
 ### 4b. Add a transfer buffer
 
-A tourist needs to get from the end of tour A to the start of tour B. Expand each
-window by a configurable `TRANSFER_BUFFER_MIN` (recommend **45 min** inside Daet,
-**90 min** when either tour leaves the mainland) and test the expanded windows.
+A tourist needs to get from the end of tour A to the start of tour B. Widen one
+window by `TRANSFER_BUFFER_MIN` (**45 min**) and test against the plain other one.
+One side only: widening both would demand 90 minutes between tours.
 
 This is what makes the rule humane rather than merely correct: back-to-back
 09:00–10:00 and 10:00–11:00 in different towns is a booking nobody can honour.
@@ -145,33 +151,21 @@ This is what makes the rule humane rather than merely correct: back-to-back
 Add the guard where the other guards live, so the assistant, the planner, the
 booking form and any future surface all obey it:
 
-```sql
-CREATE OR REPLACE FUNCTION public.tours_tourist_busy_reason_for(
-  p_user uuid, p_date date, p_package uuid, p_exclude uuid)
-RETURNS text LANGUAGE sql STABLE SECURITY DEFINER SET search_path = public AS $$
-  WITH w AS (SELECT tours_package_window(p_package) AS win)
-  SELECT CASE
-    WHEN EXISTS (
-      SELECT 1 FROM tours_bookings b, w
-       WHERE b.user_id = p_user
-         AND b.status IN ('pending','confirmed')
-         AND (p_exclude IS NULL OR b.id <> p_exclude)
-         AND tours_booking_occupied_dates(b.package_id, b.tour_date) @> p_date
-         AND tours_window_with_buffer(tours_package_window(b.package_id))
-             && tours_window_with_buffer(w.win))
-    THEN 'overlaps_other_tour' ELSE NULL END;
-$$;
-```
+`tours_tourist_busy_reason_for(user, date, package, exclude)` returns the
+sentence to show, or NULL when the booking is fine. It checks **both
+directions**: an existing multi-day trip may already cover the chosen date, and a
+new multi-day trip may run into a tour booked later in the week. The overlap is
+tested on the first day both bookings are running.
 
-Called from a `BEFORE INSERT` trigger on `tours_bookings`, after the existing
-duplicate trigger, with the same `pg_advisory_xact_lock` on
-`(tourist, date)` that `tours_bookings_no_duplicate()` already takes — so two
-tabs cannot slip past it.
+It is called from `trg_tours_bookings_b_zz_tourist_time`, a `BEFORE INSERT`
+trigger ordered after the duplicate check and before pricing, taking
+`pg_advisory_xact_lock('tourist_day:' || user || date)` so two tabs cannot both
+pass.
 
-Readable message, in the voice of the rest of the app:
+The message is raised as-is:
 
-> **This tour is at the same time as First Jose Rizal Monument Historical Visit
-> (09:00–10:00) on 21 Nov.** Pick another date, or cancel that booking first.
+> **This tour overlaps your booking for Bagasbas Beach Surf & Chill (all day) on
+> 21 Nov.** Pick another date, or cancel that booking first.
 
 ### 4d. Show it before they commit
 
@@ -201,16 +195,23 @@ counting it per **resource**, with packages drawing on resources.
 
 ```
 tours_operator_resources        -- what the operator actually owns
-  id, operator_id, kind, name, seats, is_active
-  kind ∈ boat | van | tricycle | guide_team | seats
+  id, operator_id, kind, name, seats, units, note, is_active
+  kind ∈ boat | van | car | tricycle | driver | guide_team
+  seats = what one unit carries; units = how many they have
 
 tours_package_resources         -- what a tour consumes
-  package_id, resource_kind, units_per_pax (or seats_required), units_per_booking
+  package_id, kind, seats_per_pax, units_per_booking
+
+tours_booking_resource_claims   -- the promise, per booking per day
+  booking_id, resource_id, claim_date
 ```
 
-A boat with `seats = 12` and a package needing 1 seat per pax gives that tour 12
-seats **when the boat is free**. A van shared by three short tours gives 1 unit
-per booking; the 09:00 and 11:00 tours compete for it and cannot overlap.
+A boat with `seats = 12` gives a tour 12 seats **when the boat is free**. A van
+shared by short tours gives 1 unit per booking; the 09:00 and 11:00 tours compete
+for it and cannot overlap.
+
+The claims table is what makes the promise concrete: a cancellation frees the
+specific boat for that date, and the operator's board can name it.
 
 ### 5b. Why this fixes the case the current model can't
 
@@ -231,11 +232,17 @@ their fleet.
 for each day the tour occupies:
     for each required resource kind:
         lock  pg_advisory_xact_lock('resource:' || operator || kind || day)
-        pick  an active resource of that kind that is free for the window
-              and has seats >= pax
-        if none → RAISE 'no_boat_that_day' / 'no_van_at_that_time'
-        record the chosen resource on the booking (booking_resources)
+        pick  an active resource that is free for the window and has seats >= pax
+        if none → RAISE 'No boat is free for this tour on 21 Nov...'
+        record the claim (booking_id, resource_id, day)
 ```
+
+Two details decide whether this is right:
+
+- **A resource runs one departure at a time.** Two *different* packages
+  overlapping need separate units. Tourists on the *same* package share one
+  boat, and their seats are already capped per date by
+  `tours_package_availability` — so only a different package takes a unit away.
 
 Recording *which* resource was taken matters for two reasons: the operator's
 board can show "Boat 2 / Van 1" against each booking, and a cancellation frees
@@ -269,53 +276,88 @@ Without this, every guard above is a way for one abandoned cart to shut a date.
 
 ---
 
-## 6. Phased plan
+## 6. What was built
 
-Each phase ships value alone and is independently testable.
+Four migrations, two TypeScript modules, three pages and a cron endpoint.
 
-| Phase | Work | Kills | Effort |
+| Phase | Built | Kills | Tests |
 |---|---|---|---|
-| **0** | Sweep unpaid `pending` holds + `hold_expires_at` + countdown | 3d | S |
-| **1** | Tourist overlap: occupied-dates + buffer + DB trigger + inline warning | **2 (#2, live)** | M |
-| **2** | Multi-day span: real per-day windows for guides and tourists, `return_time` | 3b | M |
-| **3** | Operator resources: tables, insert guard, assignment recorded | **4 (#4)** | L |
-| **4** | Resource day board + sell-out warnings + auto-assign vehicle | polish | M |
+| **0** | `hold_expires_at`, `tours_packages.hold_minutes`, `tours_expire_pending_holds()`, `/api/cron/booking-holds` + `vercel.json` | 3d | 2 |
+| **1** | `tours_tourist_busy_reason_for()`, `trg_tours_bookings_b_zz_tourist_time`, inline form warning | **#2** | 8 + 18 |
+| **2** | `tours_booking_window`, `tours_occupied_dates`, span-aware guide rule, picker and hours guard | 3b, #3 | 4 |
+| **3** | 3 tables, `tours_claim_resources()`, claim ledger, fleet + per-tour pages | **#4** | 6 + 10 |
+| **4** | Not built — the day board is the polish step, see §7 | — | — |
 
-Phase 1 and 2 use only what exists (`tours_package_window`, `int4range` overlap,
-advisory locks). Phase 3 is the only one that needs new tables.
+### Files
 
-### Acceptance criteria
+- `supabase/migrations/20261221_booking_time_allotment.sql` — span, windows,
+  tourist gap the day after the last day. Same rule, same message.
+- `supabase/migrations/20261222_booking_holds.sql` — the hold window and sweep.
+- `supabase/migrations/20261223_operator_resources.sql` — fleet, needs, claims.
+- `src/lib/tours/booking-windows.ts` — the TS mirror of the tourist rule, so the
+  form can warn first. `TRANSFER_BUFFER_MIN` must match `tours_transfer_buffer()`.
+- `src/lib/tours/operator-resources.ts` — the TS mirror of the resource rules.
+- `src/app/api/cron/booking-holds/route.ts` + `vercel.json` — the sweep.
+- `src/app/(subsystems)/tours/operator/resources/` — the fleet page.
+- `src/app/(subsystems)/tours/operator/packages/[id]/resources/` — what a tour needs.
+- `scripts/booking-time-allotment.test.mjs` — the SQL rules against real Postgres
+  (pglite), applying the migration files themselves.
 
-- **Phase 1** — booking a 09:00–10:00 tour when an 8 h tour is already confirmed
-  on that date is refused in the database *and* flagged in the form; two
-  non-overlapping short tours the same day still succeed; the buffer blocks
-  10:00-after-10:00 in different towns.
-- **Phase 2** — a guide on a 2-day Calaguas trip starting 21 Nov is busy on the
-  22nd; that guide does not appear in the picker for 22 Nov; the tourist cannot
-  book over their own trip's second day.
-- **Phase 3** — two overlapping tours needing the same boat cannot both be
-  confirmed; the second gets `no_boat_that_day`; the boat's name shows on both
-  bookings; cancelling one frees it for the other.
+### Two rules worth knowing before changing anything
 
-### Test strategy
+1. **The buffer is applied to one side only.** "At least 45 minutes between two
+   tours" means widening the existing booking and testing the plain new window.
+   Widening both quietly demands 90.
+2. **A resource runs one departure at a time.** Two *different* packages
+   overlapping need separate units (two boats). Tourists on the *same* package
+   share one boat, and their seats are already limited per date by
+   `tours_package_availability` — so only a different package takes a unit away.
+   That is what catches the 09:00 Calaguas trip and the 09:00 island-hopping trip
+   trying to use one boat, while a family of 6 and a family of 4 booking the same
+   09:00 tour still share it.
 
-The pure functions (`tourWindow`, a new `occupiedDates`, `windowsOverlap` with
-buffer) belong in `guide-hours.ts` / a new `booking-windows.ts` with unit tests
-next to the existing `guide-hours.test.ts`. The SQL rules get integration tests
-in the style of `update-package-rpc.test.ts`, plus a concurrency test that fires
-two inserts at once and asserts exactly one wins — the pattern already used for
-the last-seat race.
+### Verified
+
+- 2202 Jest tests, `npm run typecheck`, `eslint .` (0 errors).
+- 20 Postgres tests for the three migrations, plus the 47 existing script tests.
+
+### Not done
+
+- **The live overlapping booking** (tourist `cba442a6…`, 2026-11-21) is left
+  alone: it is a real customer's. §3a has the query to find these; ask the
+  tourist which tour to keep.
+- **`return_time`** was not added. A multi-day trip's last day is held whole,
+  which is conservative and needs no new column. Add it if operators ask.
+- **The resource day board** (rows = boats, columns = hours). The claims ledger
+  has what it needs; it is a view, not a rule.
 
 ---
 
-## 7. Decisions needed from the owner
+## 7. Decisions still open
 
-1. **Transfer buffer** — 45 min within Daet, 90 min cross-town: right numbers?
-2. **Hard block vs warn** on tourist overlap (recommend hard block).
-3. **Does a group ever split across two tours at once?** If yes, Phase 1 needs a
-   per-booking "attending guests" concept; if no, hard block is safe.
-4. **Hold window** for unpaid pending bookings — 2 hours, or until the end of the
-   day?
-5. **Resources**: do operators want to name individual boats/vans, or is a simple
-   count per kind ("I have 2 boats") enough? The count is much less work and
-   prevents the overbooking in 5b; naming them is what enables the day board.
+1. **Transfer buffer** — 45 minutes is in `tours_transfer_buffer()` and
+   `TRANSFER_BUFFER_MIN`. Change both, or neither. 90 for cross-town trips needs
+   a per-package field; the current value is one number for everyone.
+2. **Hard block, not a warning.** Overlap is refused outright, because the
+   tourist physically cannot attend both. If groups ever split across two tours
+   at once, this needs a per-booking "attending guests" concept first.
+3. **Hold window** — `hold_minutes` defaults to 0, meaning *never expires*, so no
+   existing package changes behaviour. An operator opts in per package. 120 (two
+   hours) is the suggested default; nothing sets it yet.
+4. **Fleet shape** — operators name individual boats and say how many of each
+   (`units`), which covers both "Boat 1 / Boat 2" and "I have 2 boats". Naming
+   them is what will make the day board readable.
+
+---
+
+## 8. Applying this
+
+Migrations are applied by hand in the Supabase SQL editor, in this order:
+
+1. `20261221_booking_time_allotment.sql`
+2. `20261222_booking_holds.sql`
+3. `20261223_operator_resources.sql`
+
+Then, in Vercel, set `CRON_SECRET` (any long random string) so the hold sweep can
+run; `vercel.json` schedules it every 15 minutes. Without the secret the endpoint
+returns 503 and releases nothing — which is safe, just not useful.

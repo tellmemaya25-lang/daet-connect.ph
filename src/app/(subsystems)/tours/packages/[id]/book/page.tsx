@@ -65,6 +65,7 @@ export default async function BookPackagePage({ params, searchParams }: PageProp
       location_name,
       duration_value,
       duration_type,
+      meeting_time,
       cover_image_url,
       meeting_point_name,
       meeting_lat,
@@ -95,6 +96,42 @@ export default async function BookPackagePage({ params, searchParams }: PageProp
 
   // Get user profile for pre-filling form
   const today = toManilaDateKey(new Date());
+
+  // The tourist's own diary, so the form can say before they submit that the
+  // date they picked runs into a tour they have already paid for (20261221).
+  // Their active bookings, then the timings of the tours those bookings are for.
+  const { data: diaryRows } = await supabase
+    .from("tours_bookings")
+    .select("id, package_id, tour_date, status")
+    .eq("user_id", user.id)
+    .in("status", ["pending", "confirmed"])
+    .gte("tour_date", today)
+    .order("tour_date", { ascending: true });
+
+  const diaryPackageIds = [...new Set((diaryRows ?? []).map((row) => row.package_id).filter((id): id is string => Boolean(id)))];
+  const { data: diaryPackages } = diaryPackageIds.length
+    ? await supabase
+        .from("tours_packages")
+        .select("id, title, duration_type, duration_value, meeting_time")
+        .in("id", diaryPackageIds)
+    : { data: [] as { id: string; title: string | null; duration_type: string | null; duration_value: number | null; meeting_time: string | null }[] };
+
+  const diaryPackageById = new Map((diaryPackages ?? []).map((row) => [row.id, row]));
+  const diary = (diaryRows ?? []).flatMap((row) => {
+    const pkgRow = row.package_id ? diaryPackageById.get(row.package_id) : undefined;
+    if (!pkgRow) return [];
+    return [{
+      id: row.id,
+      package_id: row.package_id,
+      tour_date: row.tour_date,
+      status: row.status,
+      title: pkgRow.title ?? "your booking",
+      duration_type: pkgRow.duration_type,
+      duration_value: pkgRow.duration_value,
+      meeting_time: pkgRow.meeting_time,
+    }];
+  });
+
   const [{ data: profile }, { data: availabilityRows }, { count: openDateCount }, { data: shortcutRows }, { data: vehicleRows }, { data: rateRows }] = await Promise.all([
     supabase.from("profiles").select("full_name").eq("id", user.id).maybeSingle(),
     supabase
@@ -155,6 +192,12 @@ export default async function BookPackagePage({ params, searchParams }: PageProp
         {/* Booking Form */}
         <BookingForm
           packageId={pkg.id}
+          tourTiming={{
+            duration_type: pkg.duration_type,
+            duration_value: pkg.duration_value,
+            meeting_time: pkg.meeting_time,
+          }}
+          diary={diary}
           priceVariants={pkg.tours_package_price_variants || []}
           pickupShortcuts={toPickupShortcuts(shortcutRows)}
           meetingPoint={pkg.meeting_point_name?.trim() || null}
