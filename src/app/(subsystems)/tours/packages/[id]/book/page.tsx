@@ -11,6 +11,7 @@ import { toManilaDateKey } from "@/lib/tours/events-calendar";
 import { BookingForm } from "./booking-form";
 import { getAuthenticatedSession } from "@/lib/tours/server-auth";
 import { toOfficialRates, toPickupShortcuts, toPickupVehicles } from "@/lib/tours/door-pickup";
+import { sweepExpiredHolds } from "@/lib/tours/booking-holds";
 
 
 type PageProps = {
@@ -53,6 +54,10 @@ export default async function BookPackagePage({ params, searchParams }: PageProp
 
   const user = session.user;
   const supabase = await createSupabaseServerClient();
+
+  // An unpaid hold that ran out should not keep blocking this tourist — or
+  // anybody else — from booking. Cheap, best-effort, and never blocks the page.
+  await sweepExpiredHolds(supabase);
 
   // Fetch package details with price variants
   const { data: pkg, error } = await supabase

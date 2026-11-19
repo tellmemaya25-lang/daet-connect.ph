@@ -257,9 +257,11 @@ the operator's side.
 A pending booking must not hold a boat forever.
 
 - Add `hold_expires_at` (default `now() + 2 h`, configurable per package).
-- A scheduled function (`tours_expire_pending_holds()`, called from a Vercel cron
-  every 15 min) moves overdue, unpaid `pending` bookings to `cancelled` with
-  `cancellation_reason = 'hold_expired'`.
+- A database function (`tours_expire_pending_holds()`) moves overdue, unpaid
+  `pending` bookings to `cancelled`. It is called from the booking page as it is
+  visited (throttled to once every 5 minutes, one run at a time) and from
+  `/api/cron/booking-holds`, which any scheduler can call with `CRON_SECRET`.
+  It is safe to call anywhere, any time: it only touches genuinely overdue rows.
 - Show the countdown on the payment page: "Your seats are held until 14:35."
 
 Without this, every guard above is a way for one abandoned cart to shut a date.
@@ -282,7 +284,7 @@ Four migrations, two TypeScript modules, three pages and a cron endpoint.
 
 | Phase | Built | Kills | Tests |
 |---|---|---|---|
-| **0** | `hold_expires_at`, `tours_packages.hold_minutes`, `tours_expire_pending_holds()`, `/api/cron/booking-holds` + `vercel.json` | 3d | 2 |
+| **0** | `hold_expires_at`, `tours_packages.hold_minutes`, `tours_expire_pending_holds()`, in-app sweep + `/api/cron/booking-holds` | 3d | 2 + 6 |
 | **1** | `tours_tourist_busy_reason_for()`, `trg_tours_bookings_b_zz_tourist_time`, inline form warning | **#2** | 8 + 18 |
 | **2** | `tours_booking_window`, `tours_occupied_dates`, span-aware guide rule, picker and hours guard | 3b, #3 | 4 |
 | **3** | 3 tables, `tours_claim_resources()`, claim ledger, fleet + per-tour pages | **#4** | 6 + 10 |
@@ -297,7 +299,8 @@ Four migrations, two TypeScript modules, three pages and a cron endpoint.
 - `src/lib/tours/booking-windows.ts` — the TS mirror of the tourist rule, so the
   form can warn first. `TRANSFER_BUFFER_MIN` must match `tours_transfer_buffer()`.
 - `src/lib/tours/operator-resources.ts` — the TS mirror of the resource rules.
-- `src/app/api/cron/booking-holds/route.ts` + `vercel.json` — the sweep.
+- `src/lib/tours/booking-holds.ts` — the sweep the booking page runs, throttled.
+- `src/app/api/cron/booking-holds/route.ts` — the same sweep as an endpoint.
 - `src/app/(subsystems)/tours/operator/resources/` — the fleet page.
 - `src/app/(subsystems)/tours/operator/packages/[id]/resources/` — what a tour needs.
 - `scripts/booking-time-allotment.test.mjs` — the SQL rules against real Postgres
@@ -358,6 +361,13 @@ Migrations are applied by hand in the Supabase SQL editor, in this order:
 2. `20261222_booking_holds.sql`
 3. `20261223_operator_resources.sql`
 
-Then, in Vercel, set `CRON_SECRET` (any long random string) so the hold sweep can
-run; `vercel.json` schedules it every 15 minutes. Without the secret the endpoint
-returns 503 and releases nothing — which is safe, just not useful.
+Then set `CRON_SECRET` (any long random string) wherever you schedule
+`/api/cron/booking-holds`. Without the secret the endpoint returns 503 and
+releases nothing — harmless, because the booking page also sweeps.
+
+**No `vercel.json` cron.** It was tried and removed: this project is on Vercel's
+Hobby plan, which allows one cron run per day, and a `*/15 * * * *` entry makes
+Vercel refuse to build the deployment at all (`Hobby accounts are limited to daily
+cron jobs`). A 2-hour hold cannot wait for a daily run, so the sweep rides on page
+visits instead. If the project moves to Pro, add the schedule back — the endpoint
+is already there for it.
