@@ -43,7 +43,11 @@ export function RoleTabBar({
           <span className="block h-full w-1/3 animate-[tab-progress_1s_ease-in-out_infinite] bg-blue-600 dark:bg-blue-300" />
         </span>
       ) : null}
-      <ul className="mx-auto grid max-w-md grid-cols-5">
+      {/* One column per item: five tabs, or the role's tabs plus You. */}
+      <ul
+        className="mx-auto grid max-w-md"
+        style={{ gridTemplateColumns: `repeat(${tabs.length + (account ? 1 : 0)}, minmax(0, 1fr))` }}
+      >
         {tabs.map((tab) => {
           const active = tab.href === shown;
           return (
