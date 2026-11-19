@@ -99,3 +99,40 @@ _Avoid_: header (that word means the public site header)
 
 **Admin area**:
 One section of the admin, such as Fares or Reviews, reached from the sidebar.
+
+### Booking a tour
+
+**Time allotment**:
+The stretch of a day a tour takes, measured in minutes from midnight. An hour
+tour runs from its meeting time for its length; a day tour, or an hour tour with
+no meeting time, takes the whole day. A multi-day tour has one allotment per day
+it occupies: day 1 starts at its meeting time, and every later day is held whole.
+_Avoid_: timeslot, slot, schedule (a schedule belongs to a guide)
+
+**Tourist's own calendar**:
+The tours a tourist already holds, pending or confirmed. It refuses a second tour
+whose allotment overlaps one of them, allowing a 45-minute transfer between two
+tours on the same day.
+_Avoid_: availability (that means seats for sale), double booking (see below)
+
+**Double booking**:
+Two bookings that cannot both be honoured: the same tourist in two places at
+once, or the same boat, van or guide promised to two tours. Not the same as a
+tourist booking the same tour twice, which is a duplicate.
+_Avoid_: overlap, clash
+
+**Fleet**:
+The boats, vans, cars, tricycles, drivers and guide teams an operator owns, each
+with how many guests it carries and how many of it they have.
+_Avoid_: resources, inventory
+
+**Fleet need**:
+What one tour takes from the fleet: how many seats each guest uses, and how many
+units the tour takes whatever the group size (one van). A tour with no fleet need
+sells the seats opened for each date, as tours did before.
+_Avoid_: resource requirement, allocation
+
+**Hold**:
+The time an unpaid pending booking keeps its seats before it is released. A
+package with no hold window keeps them until someone acts.
+_Avoid_: reservation (that word means a PayMongo refund reservation), lock

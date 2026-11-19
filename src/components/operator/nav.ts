@@ -18,6 +18,9 @@ export const OPERATOR_GROUPS: NavGroup[] = [
     title: "Catalogue",
     areas: [
       { href: `${base}/packages`, label: "Packages", icon: "box" },
+      // What the operator owns. A tour that needs a boat cannot be booked when
+      // every boat is out, which is what stops two tours claiming one (20261223).
+      { href: `${base}/resources`, label: "Boats & vans", icon: "boat" },
       { href: `${base}/guides`, label: "Guides", icon: "guide" },
       { href: `${base}/merch`, label: "Merchandise", icon: "bag" },
     ],

@@ -11,6 +11,8 @@ import { Select } from "@/components/ui/field";
 import { quoteDoorPickup, type PickupShortcut, type PickupVehicle } from "@/lib/tours/door-pickup";
 import type { LatLng } from "@/lib/maps/geo";
 import { DoorPickupPicker } from "./door-pickup-picker";
+import { Notice } from "@/components/ui/notice";
+import { clashMessage, findTouristClash, type OccupiedBooking, type TourTiming } from "@/lib/tours/booking-windows";
 
 interface PriceVariant {
   id: string;
@@ -34,6 +36,10 @@ interface BookingFormProps {
   meetingLatLng?: LatLng | null;
   /** Open dates when the operator manages availability; null = any future date. */
   dateOptions: DateOption[] | null;
+  /** How long this tour takes and when it starts, to spot a clash with the tourist's own diary. */
+  tourTiming: TourTiming;
+  /** This tourist's active bookings, so a date they cannot make is flagged before they submit. */
+  diary?: OccupiedBooking[];
   userProfile: {
     fullName: string;
     email: string;
@@ -45,7 +51,7 @@ interface BookingFormProps {
 const formatOpenDate = (dateKey: string) =>
   new Date(`${dateKey}T00:00:00Z`).toLocaleDateString("en-PH", { weekday: "short", month: "short", day: "numeric", year: "numeric", timeZone: "UTC" });
 
-export function BookingForm({ packageId, priceVariants, meetingPoint = null, pickupVehicles = [], pickupShortcuts = [], meetingLatLng = null, dateOptions, userProfile, prefill = {} }: BookingFormProps) {
+export function BookingForm({ packageId, priceVariants, meetingPoint = null, pickupVehicles = [], pickupShortcuts = [], meetingLatLng = null, dateOptions, tourTiming, diary = [], userProfile, prefill = {} }: BookingFormProps) {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -105,6 +111,10 @@ export function BookingForm({ packageId, priceVariants, meetingPoint = null, pic
 
   const selectedDate = dateOptions?.find((option) => option.date === tourDate);
   const seatLimit = selectedDate ? selectedDate.seatsLeft : Infinity;
+
+  // The same rule the database enforces (tours_bookings_tourist_time_guard), said
+  // now rather than after the tourist fills in the whole form.
+  const clash = tourDate.length === 10 ? findTouristClash(tourTiming, tourDate, diary) : null;
 
   // Handle pax change with validation
   const handlePaxChange = (value: number) => {
@@ -173,6 +183,7 @@ export function BookingForm({ packageId, priceVariants, meetingPoint = null, pic
   const minPax = selectedVariant?.min_pax || 1;
   const maxPax = Math.min(selectedVariant?.max_pax || 50, Math.max(seatLimit, minPax));
   const notEnoughSeats = selectedDate !== undefined && selectedDate.seatsLeft < Math.max(numberOfPax, minPax);
+  const blockReason = clash ? clashMessage(clash) : null;
   const noOpenDates = dateOptions !== null && dateOptions.every((option) => option.full);
 
   return (
@@ -231,6 +242,12 @@ export function BookingForm({ packageId, priceVariants, meetingPoint = null, pic
             </>
           )}
         </div>
+
+        {blockReason && (
+          <Notice variant="warning" title="This date clashes with your own booking" className="mt-4">
+            {blockReason}
+          </Notice>
+        )}
       </section>
 
       {/* Number of Pax & Price Variant */}
@@ -478,7 +495,7 @@ export function BookingForm({ packageId, priceVariants, meetingPoint = null, pic
         </div>
         <button
           type="submit"
-          disabled={isSubmitting || noOpenDates || notEnoughSeats || !tourDate}
+          disabled={isSubmitting || noOpenDates || notEnoughSeats || !tourDate || Boolean(clash)}
           className="min-h-11 shrink-0 whitespace-nowrap rounded-full bg-daet-forest px-8 py-3 text-sm font-bold text-white transition hover:bg-blue-700 disabled:opacity-50"
         >
           {isSubmitting ? "Sending request..." : `Request booking · ${formatPeso(totalAmount)}`}
