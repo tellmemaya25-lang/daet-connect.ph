@@ -54,7 +54,7 @@ export default async function GuideActivityPage({ searchParams }: { searchParams
       </Link>
       <h1 className="display-2 mb-2 text-daet-ink">Activity log</h1>
       <p className="mb-4 max-w-3xl text-sm text-daet-ink/65">
-        Changes you made to your assigned tours, operator applications, swap requests and schedule. Other people's actions are not shown here.
+        Changes you made to your assigned tours, operator applications, swap requests and schedule. Other people&apos;s actions are not shown here.
       </p>
 
       <form action={BASE} className="mb-6 grid gap-3 rounded-2xl card-edge bg-surface p-4 sm:grid-cols-2 lg:grid-cols-4 lg:items-end">
