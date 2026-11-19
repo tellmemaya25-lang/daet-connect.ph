@@ -11,6 +11,7 @@ export const OPERATOR_GROUPS: NavGroup[] = [
       { href: `${base}/dashboard`, label: "Dashboard", icon: "dashboard" },
       { href: `${base}/bookings`, label: "Bookings", icon: "ticket" },
       { href: `${base}/live`, label: "Live", icon: "pin" },
+      { href: `${base}/scan`, label: "Scan QR", icon: "camera" },
     ],
   },
   {

@@ -24,6 +24,7 @@ const pages: Record<Role, string[]> = {
     "/tours/operator/dashboard",
     "/tours/operator/bookings",
     "/tours/operator/payments",
+    "/tours/operator/scan",
     "/tours/operator/reviews",
     "/tours/operator/merch",
     "/tours/operator/merch/new",
