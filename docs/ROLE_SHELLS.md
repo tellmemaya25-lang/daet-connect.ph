@@ -5,7 +5,7 @@ Admins, operators and guides each get the same frame: a collapsible sidebar on d
 ## Pieces
 
 - `src/components/shell/app-shell.tsx` (client) draws the sidebar, top bar and drawer from a `ShellConfig` (`shell/nav.ts`): label, home link, nav groups, the cookie that remembers a collapsed sidebar, an optional foldable group. The top bar's search is a slot.
-- `src/components/shell/role-frame.tsx` (server) wraps it with the role's `RoleTabBar` (after the shell, so the skip link is the first tab stop, with `belowOverlays` so the drawer still covers the bar), the live poller and `RoleClaimSync`.
+- `src/components/shell/role-frame.tsx` (server) wraps it with the role's `RoleTabBar` (after the shell, so the skip link is the first tab stop, with `belowOverlays` so the drawer still covers the bar), the live poller and `RoleClaimSync`. `accountInTabBar` (admin, operator and guide) puts the account menu in the tab bar as its last item on phones and hides the top bar's avatar below `sm`.
 - Each role has a config plus a thin frame: `components/admin/`, `components/operator/`, `components/guide/` (`nav.ts`, `*-frame.tsx`, `*-search.tsx`). A fourth shell is a config and a frame like these, plus the role name in `RoleFrame`'s `role` prop.
 - `components/shell/record-search.tsx` is the shared top-bar search (type and status filters, Ctrl+Space, two-character minimum). Each role supplies its lists and a results page.
 - `components/ui/page-frame.tsx`: `PageFrame` picks the frame by the viewer's role. Pass `plain` to keep the public header (the pending and register pages).

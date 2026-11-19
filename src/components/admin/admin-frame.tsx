@@ -58,6 +58,7 @@ export async function AdminFrame({
       notifications={notifications}
       counts={await queueCounts()}
       search={<AdminSearch />}
+      accountInTabBar
     >
       {children}
     </RoleFrame>

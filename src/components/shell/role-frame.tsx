@@ -28,6 +28,7 @@ export async function RoleFrame({
   notifications,
   counts = {},
   search,
+  accountInTabBar = false,
   children,
 }: {
   role: "admin" | "operator" | "guide";
@@ -36,10 +37,13 @@ export async function RoleFrame({
   notifications: Awaited<ReturnType<typeof loadNotifications>>;
   counts?: Record<string, number>;
   search?: ReactNode;
+  /** Opt-in: on phones the account menu is the tab bar's last item instead of the top bar's avatar. */
+  accountInTabBar?: boolean;
   children: ReactNode;
 }) {
   const collapsed = (await cookies()).get(config.cookie.name)?.value === "1";
   const tabs = roleTabs(role);
+  const links = [...accountLinks(role, tabs), { href: "/", label: "View public site" }];
   const content = (
     <>
       <AppShell
@@ -53,13 +57,22 @@ export async function RoleFrame({
           name: viewer.name,
           avatarUrl: viewer.avatarUrl,
         }}
-        accountLinks={accountLinks(role, tabs)}
+        accountLinks={links}
+        accountInTabBar={accountInTabBar && tabs.length > 0}
       >
         {children}
       </AppShell>
       {/* After the shell, so its skip link is the first tab stop; one layer under
           the menu drawer (z-40), so the open drawer still covers the bar. */}
-      <RoleTabBar tabs={tabs} belowOverlays />
+      <RoleTabBar
+        tabs={tabs}
+        belowOverlays
+        account={
+          accountInTabBar
+            ? { initial: viewer.initial, name: viewer.name, avatarUrl: viewer.avatarUrl, links }
+            : undefined
+        }
+      />
       {viewer.roleSource === "claim" && viewer.role ? (
         <RoleClaimSync shownRole={viewer.role} />
       ) : null}
