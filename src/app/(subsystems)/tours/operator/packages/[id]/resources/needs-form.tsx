@@ -84,7 +84,7 @@ export function NeedsForm({
 
       {rows.map((row) => (
         <section key={row.kind} className="rounded-2xl card-edge bg-surface p-6">
-          <label className="flex items-center gap-3">
+          <label className="flex min-h-11 cursor-pointer items-center gap-3">
             <Checkbox checked={row.used} onChange={(event) => update(row.kind, { used: event.target.checked })} />
             <span className="font-bold text-daet-ink">This tour uses your {RESOURCE_KIND_PLURALS[row.kind].toLowerCase()}</span>
           </label>

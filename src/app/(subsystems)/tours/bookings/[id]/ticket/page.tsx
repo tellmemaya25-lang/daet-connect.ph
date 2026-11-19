@@ -43,7 +43,7 @@ export default async function BookingTicketPage({ params }: PageProps) {
   if (!booking) notFound();
 
   const back = (
-    <Link href={`/tours/bookings/${booking.id}`} className="text-sm font-bold text-daet-ink/70 hover:text-daet-ink print:hidden">
+    <Link href={`/tours/bookings/${booking.id}`} className="inline-flex min-h-11 items-center text-sm font-bold text-daet-ink/70 hover:text-daet-ink print:hidden">
       ← Back to booking
     </Link>
   );

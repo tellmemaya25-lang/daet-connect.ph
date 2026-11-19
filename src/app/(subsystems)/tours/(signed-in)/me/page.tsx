@@ -206,7 +206,7 @@ async function TripsContent() {
                     <li key={b.id} className="rounded-2xl bg-canvas p-4">
                       <div className="flex flex-wrap items-start justify-between gap-2">
                         <div className="min-w-0">
-                          <Link href={`/tours/bookings/${b.id}`} className="text-lg font-bold text-daet-ink hover:underline">
+                          <Link href={`/tours/bookings/${b.id}`} className="inline-flex min-h-6 items-center text-lg font-bold text-daet-ink hover:underline">
                             {pkg?.title ?? "Tour"}
                           </Link>
                           <p className="text-daet-ink/80">

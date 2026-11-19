@@ -294,7 +294,7 @@ function TourCard({ booking, today, swap }: { booking: AssignedBooking; today: s
         {operator?.contact_phone ? (
           <p className="mt-2 text-sm text-daet-ink/70">
             Operator contact:{" "}
-            <a href={`tel:${operator.contact_phone}`} className="font-bold text-blue-700 underline dark:text-blue-300">
+            <a href={`tel:${operator.contact_phone}`} className="inline-flex min-h-11 items-center font-bold text-blue-700 underline dark:text-blue-300">
               {operator.contact_phone}
             </a>
           </p>

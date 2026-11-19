@@ -183,7 +183,7 @@ export function PricingStep({
                     checked={variant.isDefault}
                     onChange={() => handleSetDefault(variant.id)}
                     disabled={!canEditVariants || loading}
-                    className="w-4 h-4 rounded-2xl border-daet-ink/20 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="h-6 w-6 rounded-md border-daet-ink/20 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                   />
                 </td>
                 <td className="px-4 py-3 space-x-2">
@@ -192,7 +192,7 @@ export function PricingStep({
                       type="button"
                       onClick={() => handleEdit(variant)}
                       disabled={loading}
-                      className="text-daet-leaf dark:text-blue-300 hover:text-daet-leaf dark:hover:text-blue-300 text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="inline-flex min-h-11 items-center px-2 text-daet-leaf dark:text-blue-300 hover:text-daet-leaf dark:hover:text-blue-300 text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       Edit
                     </button>
@@ -206,7 +206,7 @@ export function PricingStep({
                         }
                       }}
                       disabled={loading}
-                      className="text-red-700 dark:text-red-300 hover:text-red-800 dark:hover:text-red-300 text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="inline-flex min-h-11 items-center px-2 text-red-700 dark:text-red-300 hover:text-red-800 dark:hover:text-red-300 text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       Delete
                     </button>

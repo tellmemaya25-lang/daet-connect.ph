@@ -57,7 +57,7 @@ export default async function GuideRosterPage({ params }: PageProps) {
   return (
     <PageFrame>
       <div className="mx-auto max-w-2xl">
-        <Link href="/tours/guide/my-tours" className="text-sm font-bold text-daet-ink/70 hover:text-daet-ink">
+        <Link href="/tours/guide/my-tours" className="inline-flex min-h-11 items-center text-sm font-bold text-daet-ink/70 hover:text-daet-ink">
           ← My tours
         </Link>
         <h1 className="display-2 mt-4 text-daet-ink">Guest list</h1>

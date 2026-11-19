@@ -183,7 +183,7 @@ async function PackagesContent({ searchParams }: { searchParams: SearchParams })
                 </div>
                 <div className="p-5">
                   <div className="flex items-start justify-between gap-2">
-                    <h3 className="flex-1 font-bold text-daet-ink">{pkg.title}</h3>
+                    <h2 className="flex-1 font-bold text-daet-ink">{pkg.title}</h2>
                     <span
                       className={`rounded-full px-3 py-1 text-xs font-bold ${
                         pkg.status === "published"
