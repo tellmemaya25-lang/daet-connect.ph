@@ -103,7 +103,7 @@ export default async function AdminGuideEarningsPage({ params, searchParams }: {
                           <td className="py-2 pr-3">
                             {op ? (
                               <Link href={`/tours/admin/earnings/operators/${op.id}`} className="font-bold text-blue-700 underline dark:text-blue-300">
-                                {op.business_name}
+                                {op.business_name || "Operator"}
                               </Link>
                             ) : (
                               "—"

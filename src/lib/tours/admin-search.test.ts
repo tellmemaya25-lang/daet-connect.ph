@@ -13,6 +13,9 @@ describe("admin search filters", () => {
       "packages",
       "merchandise",
       "reviews",
+      "accounts",
+      "emergency",
+      "pages",
     ]);
     expect(ADMIN_SEARCH_STATUSES.map(({ value }) => value)).toContain("pending");
     expect(ADMIN_SEARCH_STATUSES.map(({ value }) => value)).toContain("hidden");

@@ -7,6 +7,7 @@ import { FARE_MODES } from "@/lib/tours/guide/fares";
 import { GUIDE_PLACE_KINDS } from "@/lib/tours/guide/places";
 import { GUIDE_TABLE } from "@/lib/tours/guide-contract";
 import { OPERATOR_TABLE } from "@/lib/tours/operator-contract";
+import { ADMIN_AREAS } from "@/components/admin/nav";
 import { ADMIN_SEARCH_TYPES, type AdminSearchStatus, type AdminSearchType } from "@/lib/tours/admin-search";
 
 const LIMIT_PER_TYPE = 12;
@@ -43,6 +44,9 @@ function allowed(kind: SearchKind, status: AdminSearchStatus): boolean {
     packages: ["pending", "published", "draft", "archived"],
     merchandise: ["pending", "approved", "rejected", "active", "hidden"],
     reviews: ["hidden", "visible"],
+    accounts: [],
+    emergency: ["active", "hidden"],
+    pages: [],
   };
   return supported[kind].includes(status);
 }
@@ -323,6 +327,60 @@ async function searchGuides(db: SupabaseClient, term: string, status: AdminSearc
   };
 }
 
+async function searchAccounts(db: SupabaseClient, term: string, status: AdminSearchStatus): Promise<SearchBatch> {
+  if (!allowed("accounts", status)) return empty();
+  const { data, error } = await db.from("profiles").select("id,full_name,role").ilike("full_name", `%${term}%`).order("full_name").limit(LIMIT_PER_TYPE);
+  return batch(data, error, (row) => ({
+    id: row.id,
+    kind: "accounts",
+    kindLabel: labels.accounts,
+    title: row.full_name ?? "Name unavailable",
+    detail: "Account",
+    status: typeof row.role === "string" && row.role ? row.role[0].toUpperCase() + row.role.slice(1) : "Account",
+    href: hrefWithSearch("/tours/admin/accounts", row.full_name ?? term),
+  }));
+}
+
+async function searchEmergency(db: SupabaseClient, term: string, status: AdminSearchStatus): Promise<SearchBatch> {
+  if (!allowed("emergency", status)) return empty();
+  let query = db
+    .from("tours_emergency_contacts")
+    .select("id,label,phone,area,is_active")
+    .or(`label.ilike.%${term}%,phone.ilike.%${term}%,area.ilike.%${term}%`)
+    .order("label")
+    .limit(LIMIT_PER_TYPE);
+  if (status === "active") query = query.eq("is_active", true);
+  if (status === "hidden") query = query.eq("is_active", false);
+  const { data, error } = await query;
+  return batch(data, error, (row) => ({
+    id: row.id,
+    kind: "emergency",
+    kindLabel: labels.emergency,
+    title: row.label,
+    detail: [row.phone, row.area].filter(Boolean).join(" · "),
+    status: row.is_active ? "Active" : "Hidden",
+    href: `/tours/admin/emergency?edit=${row.id}#number-form`,
+  }));
+}
+
+/** Pages of the admin area itself, so the search can also jump straight to one. No database call. */
+function searchPages(term: string, status: AdminSearchStatus): SearchBatch {
+  if (!allowed("pages", status)) return empty();
+  const needle = term.toLowerCase();
+  return {
+    hasError: false,
+    results: ADMIN_AREAS.filter((a) => a.label.toLowerCase().includes(needle)).map((a) => ({
+      id: a.href,
+      kind: "pages" as const,
+      kindLabel: labels.pages,
+      title: a.label,
+      detail: a.href,
+      status: "Page",
+      href: a.href,
+    })),
+  };
+}
+
 export async function searchAdminRecords({
   supabase,
   applicationSupabase = supabase,
@@ -350,6 +408,9 @@ export async function searchAdminRecords({
   if (include("packages")) sources.push(() => searchPackages(supabase, term, status));
   if (include("merchandise")) sources.push(() => searchMerchandise(supabase, term, status));
   if (include("reviews")) sources.push(() => searchReviews(supabase, term, status));
+  if (include("accounts")) sources.push(() => searchAccounts(supabase, term, status));
+  if (include("emergency")) sources.push(() => searchEmergency(supabase, term, status));
+  if (include("pages")) sources.push(async () => searchPages(term, status));
   const batches = await Promise.all(sources.map((search) => search()));
   return {
     results: batches.flatMap((result) => result.results),
