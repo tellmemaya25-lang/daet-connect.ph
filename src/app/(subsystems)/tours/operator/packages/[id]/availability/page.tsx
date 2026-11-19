@@ -8,7 +8,7 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 import type { AvailabilityRow } from "@/lib/tours/availability";
 import { toManilaDateKey } from "@/lib/tours/events-calendar";
 import { isUuid } from "@/lib/tours/operator-access";
-import { AvailabilityList, OpenDatesForm } from "./availability-manager";
+import { AvailabilityList, DailyCapacityForm, OpenDatesForm } from "./availability-manager";
 import { getAuthUser } from "@/lib/tours/server-auth";
 
 
@@ -41,7 +41,7 @@ export default async function PackageAvailabilityPage({ params }: PageProps) {
 
   const { data: pkg } = await supabase
     .from("tours_packages")
-    .select("id, title, status")
+    .select("id, title, status, daily_capacity")
     .eq("id", id)
     .eq("operator_id", operator.id)
     .maybeSingle();
@@ -55,6 +55,12 @@ export default async function PackageAvailabilityPage({ params }: PageProps) {
     .gte("available_date", today)
     .order("available_date", { ascending: true });
   if (error) console.error("Availability fetch error:", error);
+  // Any date ever opened (past ones too) switches the package to the calendar.
+  const { count: calendarRows } = await supabase
+    .from("tours_package_availability")
+    .select("id", { count: "exact", head: true })
+    .eq("package_id", pkg.id);
+  const usesCalendar = (calendarRows ?? 0) > 0;
 
   return (
     <PageFrame>
@@ -81,6 +87,11 @@ export default async function PackageAvailabilityPage({ params }: PageProps) {
             This package is not published yet. You can prepare dates now; tourists see them once it is published.
           </Notice>
         ) : null}
+
+        <Card className="mt-6">
+          <h2 className="mb-4 text-lg font-bold text-daet-ink">Without open dates</h2>
+          <DailyCapacityForm packageId={pkg.id} dailyCapacity={pkg.daily_capacity} usesCalendar={usesCalendar} />
+        </Card>
 
         <Card className="mt-6">
           <h2 className="mb-4 text-lg font-bold text-daet-ink">Open dates</h2>

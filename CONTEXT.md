@@ -75,6 +75,14 @@ A visitor's request for a tour on a date for a number of guests, confirmed by
 the operator and then paid.
 _Avoid_: Reservation, order
 
+**Door pickup quote**:
+The database's price for collecting a party at their pin and bringing them to
+the meeting point, given the tour's vehicle and the number of guests: the
+distance, the pickup fee from the official fare, and the booking total. It is
+the only place the door pickup price is worked out; the booking form shows it
+and the booking is charged it.
+_Avoid_: pickup estimate, van fare (the vehicle may not be a van)
+
 **Call-off**:
 An operator cancelling a booked tour for weather or safety; the visitor picks a
 new date or gets a full refund.

@@ -5,39 +5,40 @@ import { LocationPicker } from "@/components/maps/location-picker";
 import { Field, Input, Select } from "@/components/ui/field";
 import { formatPeso } from "@/lib/money";
 import type { LatLng } from "@/lib/maps/geo";
-import { quoteDoorPickup, vehicleName, vehicleRateLabel, type PickupShortcut, type PickupVehicle } from "@/lib/tours/door-pickup";
+import type { QuoteState } from "./use-door-pickup-quote";
+import { doorPickupProblem, vehicleName, vehicleRateLabel, type PickupShortcut, type PickupVehicle } from "@/lib/tours/door-pickup";
 
 const ON_MAP = "map";
 
 /**
  * Door pickup ("pasundo"), laid out like the fare calculator: pick me up at
  * (a known Daet spot, or a pin on the map) → take me to (the tour's meeting
- * point) with the operator's vehicle, for the group. The fee is the official
- * fare and the database works it out again from the same pin on booking.
+ * point) with the operator's vehicle, for the group. The fee is the Door
+ * pickup quote from the database, the same one the booking is charged.
  */
 export function DoorPickupPicker({
   vehicle,
   shortcuts = [],
-  meeting,
   meetingName,
   pax,
   pin,
   onPin,
   note,
   onNote,
+  quote: state,
 }: {
   vehicle: PickupVehicle;
   shortcuts?: PickupShortcut[];
-  meeting: LatLng;
   meetingName: string;
   pax: number;
   pin: LatLng | null;
   onPin: (p: LatLng) => void;
   note: string;
   onNote: (s: string) => void;
+  /** The Door pickup quote from the database. */
+  quote: QuoteState;
 }) {
   const [from, setFrom] = useState(shortcuts.length ? "" : ON_MAP);
-  const quote = pin ? quoteDoorPickup(vehicle, pin, meeting, pax) : null;
 
   function chooseFrom(value: string) {
     setFrom(value);
@@ -97,19 +98,21 @@ export function DoorPickupPicker({
       </Field>
 
       <div role="status" aria-live="polite" className="rounded-xl bg-daet-sand/30 p-3 text-sm text-daet-ink">
-        {!quote ? (
+        {!pin || state.status === "idle" ? (
           "Choose where you are to see the pickup price."
-        ) : quote.ok ? (
+        ) : state.status === "loading" ? (
+          "Calculating…"
+        ) : state.status === "error" ? (
+          "We couldn't work out the pickup price. Try again in a moment."
+        ) : state.quote.ok ? (
           <>
             <span className="font-bold">
-              {quote.km} km · {formatPeso(quote.fee)}
+              {state.quote.km} km · {formatPeso(state.quote.fee)}
             </span>{" "}
-            pickup, added to your total.
+            {state.quote.vehicleLabel.toLowerCase()} pickup, added to your total.
           </>
-        ) : quote.reason === "seats" ? (
-          `The ${vehicleName(vehicle).toLowerCase()} seats ${vehicle.seats}; you are ${pax}.`
         ) : (
-          `That is ${quote.km} km from the meeting point; this tour picks up within ${vehicle.maxKm} km.`
+          doorPickupProblem(state.quote, pax)
         )}
       </div>
       <p className="text-xs text-daet-ink/60">

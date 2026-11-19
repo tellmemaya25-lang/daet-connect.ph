@@ -8,7 +8,7 @@ import { Field, Input } from "@/components/ui/field";
 import { ConfirmDialog } from "@/components/ui/modal";
 import { Notice } from "@/components/ui/notice";
 import { MAX_CAPACITY, MAX_DATES_PER_BATCH, seatsLeft, type AvailabilityRow } from "@/lib/tours/availability";
-import { closeDate, openDates, updateDateCapacity, type OpenDatesState } from "./actions";
+import { closeDate, openDates, setDailyCapacity, updateDateCapacity, type OpenDatesState } from "./actions";
 
 const WEEKDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
@@ -85,7 +85,7 @@ export function AvailabilityList({ packageId, rows }: { packageId: string; rows:
   if (rows.length === 0) {
     return (
       <p className="rounded-2xl bg-daet-sand/40 p-4 text-sm text-daet-ink/70">
-        No upcoming open dates. Until you open dates, tourists can request any future date.
+        No upcoming open dates. Until you open dates, tourists can book any future date, up to your seats per day.
       </p>
     );
   }
@@ -158,5 +158,45 @@ export function AvailabilityList({ packageId, rows }: { packageId: string; rows:
         }}
       />
     </div>
+  );
+}
+
+/** Seats per day for a package that has never opened calendar dates. */
+export function DailyCapacityForm({ packageId, dailyCapacity, usesCalendar }: { packageId: string; dailyCapacity: number; usesCalendar: boolean }) {
+  const router = useRouter();
+  const [pending, startTransition] = useTransition();
+  const [result, setResult] = useState<{ tone: "success" | "error"; text: string } | null>(null);
+
+  return (
+    <form
+      className="space-y-3"
+      noValidate
+      onSubmit={(event) => {
+        event.preventDefault();
+        const formData = new FormData(event.currentTarget);
+        formData.set("packageId", packageId);
+        startTransition(async () => {
+          const response = await setDailyCapacity(formData);
+          setResult(response.success ? { tone: "success", text: response.message ?? "Saved." } : { tone: "error", text: response.error ?? "Something went wrong." });
+          if (response.success) router.refresh();
+        });
+      }}
+    >
+      {result ? <Notice variant={result.tone}>{result.text}</Notice> : null}
+      <Field
+        id="dailyCapacity"
+        label="Seats per day"
+        hint={
+          usesCalendar
+            ? "Not in use: this package has open dates, and each date has its own seats."
+            : "Applies to every date while you have no open dates. Bookings stop once a day's seats are taken."
+        }
+      >
+        <Input id="dailyCapacity" name="dailyCapacity" type="number" inputMode="numeric" min={1} max={MAX_CAPACITY} defaultValue={dailyCapacity} required className="w-32" />
+      </Field>
+      <Button type="submit" variant="secondary" loading={pending} loadingText="Saving…">
+        Save seats per day
+      </Button>
+    </form>
   );
 }
