@@ -12,6 +12,14 @@ import { clearAiHistory, loadAiHistory, savingReply } from "@/lib/tours/assistan
 import { toManilaDateKey } from "@/lib/tours/events-calendar";
 
 /**
+ * A turn may wait AI_DEADLINE_MS (25 s) on the model, then draft a plan and its
+ * cards, and the platform kills a stream that has not closed. 60 s leaves room
+ * for that and for the plan's own lookups; without it the function's default
+ * limit cut long turns off with no answer at all.
+ */
+export const maxDuration = 60;
+
+/**
  * Travel assistant (F13). POST { messages } → newline-delimited JSON events
  * (mode, text deltas, cards, done). Reads only, with the caller's session.
  */
