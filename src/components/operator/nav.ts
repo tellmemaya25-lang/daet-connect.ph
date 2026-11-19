@@ -35,6 +35,7 @@ export const OPERATOR_GROUPS: NavGroup[] = [
       { href: `${base}/reviews`, label: "Reviews", icon: "star" },
       { href: `${base}/activity`, label: "Activity log", icon: "note" },
       { href: `${base}/messages`, label: "Messages", icon: "message" },
+      { href: `${base}/backup`, label: "Data backup", icon: "download" },
       { href: `${base}/settings`, label: "Settings", icon: "gear" },
     ],
   },

@@ -1,36 +1,10 @@
 import "server-only";
 import type { SupabaseClient } from "@supabase/supabase-js";
-import type { BackupCell, BackupColumn, BackupItem, BackupTable } from "@/lib/tours/backup";
-
-const PAGE = 1000;
-const MAX_ROWS = 50_000;
-
-type Row = Record<string, unknown>;
-const first = <T,>(v: T | T[] | null | undefined): T | null => (Array.isArray(v) ? (v[0] ?? null) : (v ?? null));
-const cell = (v: unknown): BackupCell => (v === undefined || v === null ? null : typeof v === "number" || typeof v === "boolean" ? v : String(v));
-const list = (v: unknown) => (Array.isArray(v) ? v.join("; ") : null);
-
-/** Reads a query a thousand rows at a time (the API's own cap), up to a safety limit. */
-async function fetchAll(build: (from: number, to: number) => PromiseLike<{ data: unknown[] | null; error: unknown }>): Promise<Row[]> {
-  const rows: Row[] = [];
-  for (let from = 0; from < MAX_ROWS; from += PAGE) {
-    const { data, error } = await build(from, from + PAGE - 1);
-    if (error) throw new Error("backup query failed");
-    rows.push(...((data ?? []) as Row[]));
-    if ((data ?? []).length < PAGE) break;
-  }
-  return rows;
-}
-
-const table = (columns: BackupColumn[], rows: Row[]): BackupTable => ({
-  columns,
-  rows: rows.map((row) => Object.fromEntries(columns.map((c) => [c.key, cell(row[c.key])]))),
-});
-
-const col = (key: string, label: string): BackupColumn => ({ key, label });
+import type { BackupTable, BackupTables, OperatorBackupItem } from "@/lib/tours/backup";
+import { col, fetchAll, first, list, table } from "@/lib/tours/backup-core.server";
 
 /** Every query below is limited to this operator's own records, whatever the row-level rules allow. */
-const LOADERS: Record<BackupItem, (db: SupabaseClient, operatorId: string) => Promise<BackupTable>> = {
+const LOADERS: Record<OperatorBackupItem, (db: SupabaseClient, operatorId: string) => Promise<BackupTable>> = {
   async bookings(db, operatorId) {
     const rows = await fetchAll((from, to) =>
       db
@@ -155,7 +129,7 @@ const LOADERS: Record<BackupItem, (db: SupabaseClient, operatorId: string) => Pr
   },
 };
 
-export async function loadBackupTables(db: SupabaseClient, operatorId: string, items: BackupItem[]): Promise<Partial<Record<BackupItem, BackupTable>>> {
+export async function loadOperatorBackup(db: SupabaseClient, operatorId: string, items: OperatorBackupItem[]): Promise<BackupTables> {
   const loaded = await Promise.all(items.map(async (id) => [id, await LOADERS[id](db, operatorId)] as const));
   return Object.fromEntries(loaded);
 }

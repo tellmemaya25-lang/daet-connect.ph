@@ -1,12 +1,21 @@
-import { backupFileStem, parseBackupFormat, parseBackupItems, tablesToJson, tableToCsv } from "./backup";
+import { ADMIN_BACKUP_ITEMS, backupFileStem, GUIDE_BACKUP_ITEMS, OPERATOR_BACKUP_ITEMS, parseBackupFormat, parseBackupItems, tablesToJson, tableToCsv } from "./backup";
 
 describe("parseBackupItems", () => {
   it("keeps known items in list order, once each, and accepts comma lists", () => {
-    expect(parseBackupItems(["reviews", "bookings", "bookings"])).toEqual(["bookings", "reviews"]);
-    expect(parseBackupItems(["payments,packages"])).toEqual(["payments", "packages"]);
+    expect(parseBackupItems(["reviews", "bookings", "bookings"], OPERATOR_BACKUP_ITEMS)).toEqual(["bookings", "reviews"]);
+    expect(parseBackupItems(["payments,packages"], OPERATOR_BACKUP_ITEMS)).toEqual(["payments", "packages"]);
   });
   it("drops anything unknown", () => {
-    expect(parseBackupItems(["profiles", "../etc", ""])).toEqual([]);
+    expect(parseBackupItems(["profiles", "../etc", ""], OPERATOR_BACKUP_ITEMS)).toEqual([]);
+  });
+  it("only accepts what the role's own list offers", () => {
+    expect(parseBackupItems(["accounts", "tours"], OPERATOR_BACKUP_ITEMS)).toEqual([]);
+    expect(parseBackupItems(["accounts", "tours"], GUIDE_BACKUP_ITEMS)).toEqual(["tours"]);
+    expect(parseBackupItems(["accounts", "tours"], ADMIN_BACKUP_ITEMS)).toEqual(["accounts"]);
+  });
+  it("leaves the personal and large admin items unticked by default", () => {
+    const off = ADMIN_BACKUP_ITEMS.filter((i) => "defaultOn" in i && i.defaultOn === false).map((i) => i.id);
+    expect(off).toEqual(["accounts", "activity"]);
   });
 });
 
