@@ -5,7 +5,10 @@ import {
   clashMessage,
   dateKeyToDays,
   daysToDateKey,
+  dayMinutesTaken,
+  dayPlan,
   findTouristClash,
+  freeTimeText,
   occupiesDate,
   occupiedDayOffsets,
   shortDate,
@@ -163,5 +166,76 @@ describe("findTouristClash", () => {
 
   it("says nothing for a date it cannot read", () => {
     expect(findTouristClash(hourTour("09:00", 1), "21/11/2026", [booking({ ...hourTour("09:00", 1) })])).toBeNull();
+  });
+});
+
+describe("dayPlan", () => {
+  const surf = booking({ id: "s", title: "Bagasbas Surf & Chill", tour_date: "2026-11-21", ...hourTour(null, 8) });
+  const rizal = booking({ id: "r", title: "First Jose Rizal Monument", tour_date: "2026-11-21", ...hourTour("09:00", 1) });
+
+  it("lists the tourist's tours on that date in clock order", () => {
+    const entries = dayPlan("2026-11-21", [rizal, surf]);
+    expect(entries.map((e) => e.booking.id)).toEqual(["s", "r"]);
+    expect(entries[0].window).toEqual([0, 1440]);
+    expect(entries[1].window).toEqual([540, 600]);
+    expect(entries.every((e) => e.startsHere)).toBe(true);
+  });
+
+  it("shows a multi-day trip that is only passing through, marked as not starting here", () => {
+    const camping = booking({ id: "c", title: "Calaguas camping", tour_date: "2026-11-21", ...dayTrip(3) });
+    const entries = dayPlan("2026-11-22", [camping]);
+    expect(entries).toHaveLength(1);
+    expect(entries[0].startsHere).toBe(false);
+    expect(entries[0].window).toEqual([0, 1440]);
+  });
+
+  it("leaves out other dates and inactive bookings", () => {
+    const elsewhere = booking({ id: "x", tour_date: "2026-11-25", ...hourTour("09:00", 1) });
+    const cancelled = booking({ id: "y", status: "cancelled", ...hourTour("09:00", 1) });
+    expect(dayPlan("2026-11-21", [elsewhere, cancelled])).toEqual([]);
+    expect(dayPlan("not-a-date", [rizal])).toEqual([]);
+  });
+
+  it("excludes the booking being changed", () => {
+    expect(dayPlan("2026-11-21", [rizal], "r")).toEqual([]);
+  });
+});
+
+describe("free time", () => {
+  const entry = (window: [number, number], id = "x") => ({
+    booking: booking({ id, title: id }),
+    window,
+    startsHere: true,
+  });
+
+  it("says when nothing is left", () => {
+    expect(freeTimeText([entry([0, 1440])])).toBe("no time left that day");
+    expect(dayMinutesTaken([entry([0, 1440])])).toBe(1440);
+  });
+
+  it("does not double-count a short tour inside a whole-day one", () => {
+    // The production case: an 8-hour all-day tour plus a 1-hour walk inside it.
+    expect(dayMinutesTaken([entry([0, 1440], "a"), entry([540, 600], "b")])).toBe(1440);
+    expect(freeTimeText([entry([0, 1440], "a"), entry([540, 600], "b")])).toBe("no time left that day");
+  });
+
+  it("merges overlapping and touching windows", () => {
+    expect(dayMinutesTaken([entry([540, 600]), entry([600, 660])])).toBe(120);
+    expect(dayMinutesTaken([entry([540, 660]), entry([600, 720])])).toBe(180);
+  });
+
+  it("adds up separate windows", () => {
+    expect(dayMinutesTaken([entry([540, 600]), entry([840, 900])])).toBe(120);
+    expect(freeTimeText([entry([540, 600]), entry([840, 900])])).toBe("22 hours free");
+  });
+
+  it("reads free time in hours and minutes", () => {
+    expect(freeTimeText([entry([540, 600])])).toBe("23 hours free");
+    expect(freeTimeText([entry([0, 1380])])).toBe("1 hour free");
+    expect(freeTimeText([entry([0, 1415])])).toBe("25 minutes free");
+    expect(freeTimeText([entry([0, 1400])])).toBe("40 minutes free");
+    expect(freeTimeText([entry([0, 1395])])).toBe("45 minutes free");
+    expect(dayMinutesTaken([])).toBe(0);
+    expect(freeTimeText([])).toBe("24 hours free");
   });
 });

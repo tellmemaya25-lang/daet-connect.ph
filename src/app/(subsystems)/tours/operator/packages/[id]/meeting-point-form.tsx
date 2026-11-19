@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Notice } from "@/components/ui/notice";
 import { PromoField, promoInputClass } from "@/components/tours/promo-fields";
 import { saveMeetingPoint, type MeetingState } from "./meeting-actions";
+import { departureText, meetingTimeProblem, needsMeetingTime, type TimedPackage } from "@/lib/tours/meeting-time";
 
 export function MeetingPointForm({
   packageId,
@@ -13,27 +14,47 @@ export function MeetingPointForm({
   latitude,
   longitude,
   time,
+  tour,
 }: {
   packageId: string;
   name: string | null;
   latitude: number | null;
   longitude: number | null;
   time: string | null;
+  /** What kind of tour this is, so an hour tour can be asked for its departure time. */
+  tour: TimedPackage;
 }) {
   const [spot, setSpot] = useState<{ lat: number | null; lng: number | null }>({ lat: latitude, lng: longitude });
+  // The time is controlled so the warning below can appear as soon as it is cleared.
+  const [meetAt, setMeetAt] = useState(time?.slice(0, 5) ?? "");
   const [state, action, pending] = useActionState<MeetingState, FormData>(saveMeetingPoint, { message: null, ok: false, errors: {} });
+
+  const problem = meetingTimeProblem(tour, meetAt);
 
   return (
     <form action={action} className="space-y-4">
       <input type="hidden" name="packageId" value={packageId} />
       {state.message ? <Notice variant={state.ok ? "success" : "error"}>{state.message}</Notice> : null}
       <p className="text-slate-600 dark:text-slate-400">Guests see this on the tour page and in their ticket, with a Google Maps button. Search a place or tap the map to set it. Leave it empty to use the first stop.</p>
+      <Notice variant={problem ? "warning" : "info"} title={`Guests start at ${departureText(meetAt)}`}>
+        {problem ?? (needsMeetingTime(tour)
+          ? "This is when the tour leaves, so it is also what other bookings on the same day are checked against."
+          : "A day tour takes the whole day, so no departure time is needed.")}
+      </Notice>
       <div className="grid gap-4 sm:grid-cols-[2fr_1fr]">
         <PromoField id="meeting-name" label="Meeting point" error={state.errors.name}>
           <input id="meeting-name" name="name" defaultValue={name ?? ""} maxLength={120} className={promoInputClass} placeholder="Daet plaza, in front of the church" />
         </PromoField>
         <PromoField id="meeting-time" label="Meet at" error={state.errors.time}>
-          <input id="meeting-time" name="time" type="time" defaultValue={time?.slice(0, 5) ?? ""} className={promoInputClass} />
+          <input
+            id="meeting-time"
+            name="time"
+            type="time"
+            value={meetAt}
+            onChange={(e) => setMeetAt(e.target.value)}
+            aria-invalid={problem ? true : undefined}
+            className={promoInputClass}
+          />
         </PromoField>
       </div>
       <LocationPicker latitude={spot.lat} longitude={spot.lng} onChange={(lat, lng) => setSpot({ lat, lng })} />

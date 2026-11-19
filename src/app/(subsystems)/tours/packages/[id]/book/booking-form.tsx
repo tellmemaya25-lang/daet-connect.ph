@@ -11,8 +11,7 @@ import { Select } from "@/components/ui/field";
 import { quoteDoorPickup, type PickupShortcut, type PickupVehicle } from "@/lib/tours/door-pickup";
 import type { LatLng } from "@/lib/maps/geo";
 import { DoorPickupPicker } from "./door-pickup-picker";
-import { Notice } from "@/components/ui/notice";
-import { clashMessage, findTouristClash, type OccupiedBooking, type TourTiming } from "@/lib/tours/booking-windows";
+import { dayPlan, findTouristClash, freeTimeText, shortDate, windowText, type OccupiedBooking, type TourTiming } from "@/lib/tours/booking-windows";
 
 interface PriceVariant {
   id: string;
@@ -183,7 +182,9 @@ export function BookingForm({ packageId, priceVariants, meetingPoint = null, pic
   const minPax = selectedVariant?.min_pax || 1;
   const maxPax = Math.min(selectedVariant?.max_pax || 50, Math.max(seatLimit, minPax));
   const notEnoughSeats = selectedDate !== undefined && selectedDate.seatsLeft < Math.max(numberOfPax, minPax);
-  const blockReason = clash ? clashMessage(clash) : null;
+  // The whole day, not just the one tour that blocked it: seeing every booking is
+  // what lets the tourist judge whether another date works. Same rule as the guard.
+  const itinerary = tourDate.length === 10 ? dayPlan(tourDate, diary) : [];
   const noOpenDates = dateOptions !== null && dateOptions.every((option) => option.full);
 
   return (
@@ -243,10 +244,27 @@ export function BookingForm({ packageId, priceVariants, meetingPoint = null, pic
           )}
         </div>
 
-        {blockReason && (
-          <Notice variant="warning" title="This date clashes with your own booking" className="mt-4">
-            {blockReason}
-          </Notice>
+        {itinerary.length > 0 && (
+          <div className={`mt-4 rounded-2xl p-4 ${clash ? "bg-yellow-50 dark:bg-yellow-950/40" : "bg-blue-50 dark:bg-blue-950/40"}`}>
+            <p className="font-bold text-daet-ink">
+              {clash ? `You are already booked on ${shortDate(tourDate)}` : `Your other tours on ${shortDate(tourDate)}`}
+            </p>
+            <ul className="mt-2 space-y-1 text-sm text-daet-ink/80">
+              {itinerary.map((entry) => (
+                <li key={entry.booking.id}>
+                  <span className="font-bold">{windowText(entry.window)}</span>
+                  {" · "}
+                  {entry.booking.title}
+                  {entry.startsHere ? null : <span className="text-daet-ink/60"> (a trip that started earlier)</span>}
+                </li>
+              ))}
+            </ul>
+            <p className={`mt-2 text-sm ${clash ? "font-bold text-yellow-900 dark:text-yellow-200" : "text-daet-ink/70"}`}>
+              {clash
+                ? `${freeTimeText(itinerary)} — this tour does not fit. Pick another date, or cancel one of those bookings first.`
+                : `${freeTimeText(itinerary)} on this date, which is enough for this tour.`}
+            </p>
+          </div>
         )}
       </section>
 

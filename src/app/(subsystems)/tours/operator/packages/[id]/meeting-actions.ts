@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { isUuid } from "@/lib/tours/operator-access";
+import { meetingTimeProblem, needsMeetingTime } from "@/lib/tours/meeting-time";
 
 export type MeetingState = { message: string | null; ok: boolean; errors: Record<string, string> };
 
@@ -31,10 +32,26 @@ export async function saveMeetingPoint(_prev: MeetingState, formData: FormData):
   }
   const time = get("time");
   if (time && !/^([01]\d|2[0-3]):[0-5]\d$/.test(time)) errors.time = "Use a time like 06:30.";
+
+  // An hour tour with no time takes the tourist's whole day, which blocks every
+  // other tour they might book that date. Day tours genuinely take the day, so
+  // only hour tours are asked. Checked here, not as a CHECK constraint: the
+  // tours already published without a time must still be editable.
+  const supabase = await createSupabaseServerClient();
+  const { data: pkg, error: pkgError } = await supabase
+    .from("tours_packages")
+    .select("duration_type, duration_value")
+    .eq("id", packageId)
+    .maybeSingle();
+  if (pkgError || !pkg) return { message: "This tour could not be found.", ok: false, errors: {} };
+  if (!errors.time) {
+    const problem = meetingTimeProblem(pkg, time);
+    if (problem) errors.time = problem;
+  }
+
   if (!name && (lat !== null || time)) errors.name = "Name the meeting point, e.g. Daet plaza, in front of the church.";
   if (Object.keys(errors).length) return { message: "Please fix the highlighted fields.", ok: false, errors };
 
-  const supabase = await createSupabaseServerClient();
   const { error } = await supabase.rpc("tours_set_meeting_point", {
     p_package_id: packageId,
     p_name: name,
@@ -48,5 +65,11 @@ export async function saveMeetingPoint(_prev: MeetingState, formData: FormData):
   }
   revalidatePath(`/tours/operator/packages/${packageId}`);
   revalidatePath(`/tours/packages/${packageId}`);
-  return { message: name ? "Meeting point saved." : "Meeting point cleared. Guests now see the first stop.", ok: true, errors: {} };
+  return {
+    message: needsMeetingTime(pkg) && !name
+      ? `Departure time saved. Guests start at ${time}.`
+      : name ? "Meeting point saved." : "Meeting point cleared. Guests now see the first stop.",
+    ok: true,
+    errors: {},
+  };
 }
