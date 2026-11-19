@@ -70,18 +70,20 @@ BEGIN
   -- 3. The booking is charged exactly the quote.
   INSERT INTO tours_bookings (package_id, user_id, price_variant_id, tour_date, number_of_pax, contact_name, contact_email, contact_phone, booking_reference, status,
                               pickup_vehicle_id, pickup_lat, pickup_lng, pickup_note)
-  VALUES (v_pkg, v_tourist, v_variant, v_date, 2, 'Pickup Test', 'pickup-test@example.invalid', '0917', 'BK-DOORQUOTE-1', 'pending',
+  VALUES (v_pkg, v_tourist, v_variant, v_date, 2, 'Pickup Test', 'pickup-test@example.invalid', '09171234567', 'BK-DOORQUOTE-1', 'pending',
           v_vehicle, b_lat, b_lng, 'Surf shop')
   RETURNING id, pickup_fee, total_amount INTO v_booking, v_fee, v_total;
   q := tours_quote_door_pickup(v_pkg, v_vehicle, b_lat, b_lng, 2, v_variant);
   IF v_fee = 36 AND v_total = (q->>'grand_total')::numeric THEN pass := pass + 1;
   ELSE fails := fails || format('booking charged %s / %s, quote %s; ', v_fee, v_total, q); END IF;
+  -- One booking per tourist per date: clear it so the next checks reach the pickup rules.
+  DELETE FROM tours_bookings WHERE id = v_booking;
 
   -- 4. A refused quote refuses the booking, with the reason in the hint.
   BEGIN
     INSERT INTO tours_bookings (package_id, user_id, price_variant_id, tour_date, number_of_pax, contact_name, contact_email, contact_phone, booking_reference, status,
                                 pickup_vehicle_id, pickup_lat, pickup_lng)
-    VALUES (v_pkg, v_tourist, v_variant, v_date, 2, 'Pickup Test', 'pickup-test2@example.invalid', '0917', 'BK-DOORQUOTE-2', 'pending',
+    VALUES (v_pkg, v_tourist, v_variant, v_date, 2, 'Pickup Test', 'pickup-test2@example.invalid', '09171234567', 'BK-DOORQUOTE-2', 'pending',
             v_vehicle, 13.6218, 123.1948);
     ok := false;
   EXCEPTION WHEN check_violation THEN ok := true;
@@ -94,7 +96,7 @@ BEGIN
   BEGIN
     INSERT INTO tours_bookings (package_id, user_id, price_variant_id, tour_date, number_of_pax, contact_name, contact_email, contact_phone, booking_reference, status,
                                 pickup_point_id, pickup_vehicle_id, pickup_lat, pickup_lng)
-    VALUES (v_pkg, v_tourist, v_variant, v_date, 2, 'Pickup Test', 'pickup-test3@example.invalid', '0917', 'BK-DOORQUOTE-3', 'pending',
+    VALUES (v_pkg, v_tourist, v_variant, v_date, 2, 'Pickup Test', 'pickup-test3@example.invalid', '09171234567', 'BK-DOORQUOTE-3', 'pending',
             v_point, v_vehicle, b_lat, b_lng);
     ok := false;
   EXCEPTION WHEN check_violation THEN ok := true;
@@ -104,7 +106,7 @@ BEGIN
   -- 6. A pickup point alone still adds its fee once.
   INSERT INTO tours_bookings (package_id, user_id, price_variant_id, tour_date, number_of_pax, contact_name, contact_email, contact_phone, booking_reference, status,
                               pickup_point_id)
-  VALUES (v_pkg, v_tourist, v_variant, v_date, 1, 'Pickup Test', 'pickup-test4@example.invalid', '0917', 'BK-DOORQUOTE-4', 'pending', v_point)
+  VALUES (v_pkg, v_tourist, v_variant, v_date, 2, 'Pickup Test', 'pickup-test4@example.invalid', '09171234567', 'BK-DOORQUOTE-4', 'pending', v_point)
   RETURNING pickup_fee INTO v_fee;
   IF v_fee = 50 THEN pass := pass + 1; ELSE fails := fails || format('pickup point fee %s; ', v_fee); END IF;
 
