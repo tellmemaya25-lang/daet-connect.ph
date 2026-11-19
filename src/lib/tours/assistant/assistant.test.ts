@@ -4,7 +4,7 @@ import { fakeSupabase, type Tables } from "@/lib/tours/assistant/__fixtures__/fa
 import { basicReply, isOffTopic, OFF_TOPIC, readAboutQuestion } from "@/lib/tours/assistant/basic";
 import { FAQS, matchFaq } from "@/lib/tours/assistant/knowledge";
 import { assistantSystemPrompt } from "@/lib/tours/assistant/prompt";
-import { cleanHistory, respond, type AssistantEvent, type RespondDeps } from "@/lib/tours/assistant/respond";
+import { AI_DEADLINE_MS, cleanHistory, respond, type AssistantEvent, type RespondDeps } from "@/lib/tours/assistant/respond";
 import { bookingCard, durationText, handoff, myBookings, searchTours, tourDetails, type ToolContext } from "@/lib/tours/assistant/tools";
 import { FREE_CANCELLATION_HOURS } from "@/lib/tours/cancellation";
 
@@ -284,6 +284,38 @@ describe("respond", () => {
     expect(events.map((e) => e.t)).toEqual(["mode", "mode", "text", "cards", "done"]);
     expect(events[1]).toEqual({ t: "mode", mode: "basic" });
     expect((events[2] as { v: string }).v).toMatch(/PayMongo/);
+  });
+
+  it("falls back to basic mode when the model ends without saying anything", async () => {
+    // Gemini does return an empty or whitespace-only turn. It is not an answer:
+    // the chat used to show a blank bubble, then "Sorry, I couldn't answer that."
+    for (const silent of [async () => ({ stopReason: "end_turn" }), async (_c: unknown, _h: unknown, onText: (d: string) => void) => { onText("\n\n"); return { stopReason: "end_turn" }; }]) {
+      const events = await collect(respond(ask("how do I pay?"), deps({ runAi: silent as RespondDeps["runAi"] })));
+      expect(events).toContainEqual({ t: "mode", mode: "basic" });
+      const said = events.filter((e) => e.t === "text").map((e) => (e as { v: string }).v).join("");
+      expect(said.trim()).not.toBe("");
+      expect(said).toMatch(/PayMongo/);
+      expect(events[events.length - 1]).toEqual({ t: "done" });
+    }
+  });
+
+  it("gives the traveller an answer when the model overruns its deadline", async () => {
+    // A model that never answers used to run the function out of time, so the
+    // reply stream was cut with nothing written: the chat showed an empty
+    // bubble. Now the turn gives up and answers in basic mode.
+    jest.useFakeTimers();
+    try {
+      const events: AssistantEvent[] = [];
+      const turn = respond(ask("how do I pay?"), deps({ runAi: () => new Promise(() => {}) }));
+      const collected = collect(turn);
+      await jest.advanceTimersByTimeAsync(AI_DEADLINE_MS + 1);
+      events.push(...(await collected));
+      expect(events).toContainEqual({ t: "mode", mode: "basic" });
+      expect(events.filter((e) => e.t === "text").map((e) => (e as { v: string }).v).join("")).toMatch(/PayMongo/);
+      expect(events[events.length - 1]).toEqual({ t: "done" });
+    } finally {
+      jest.useRealTimers();
+    }
   });
 
   it("falls back on a refusal, and uses basic mode when AI isn't allowed", async () => {
