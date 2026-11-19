@@ -13,7 +13,11 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 - Domain terms (Ability, Basic mode, ...) are in `CONTEXT.md`. New assistant capabilities go in `src/lib/tours/assistant/abilities.ts`.
 - Form controls use `src/components/ui/field.tsx`; `form-controls.test.ts` fails when a file gains raw `<input>`, `<select>` or `<textarea>`.
 - E2E: `npm run test:e2e:tours` (mock Supabase). The default Playwright config has no Supabase and renders nothing. If the bundled Chromium is missing, set `PW_CHROMIUM_PATH=/opt/pw-browsers/chromium`.
-- Typecheck: `npm run typecheck`. `next-env.d.ts` is generated and ignored.
+- Typecheck: `npm run typecheck`. `next-env.d.ts` is generated and ignored. After moving or deleting a route, clear `.next` first (`rm -rf <absolute path>/.next`); stale generated types fail typecheck.
+- Before pushing, run `npm run check` (CI's `verify` without the build). Each push cancels the CI run in progress, so push once the checks pass.
+- Table columns: `src/lib/supabase/database.types.ts`. Migrations hold only changes.
+- Admin, operator and guide shells (sidebar, top bar, which frame a page gets): `docs/ROLE_SHELLS.md`.
+- E2E viewport, mock RPCs and log noise: `docs/E2E.md`.
 - Database migrations are applied by the user in the Supabase SQL editor.
 - After a PR merges, reset the work branch to `origin/main`, then push.
 
