@@ -59,7 +59,8 @@ for (const role of Object.keys(pages) as Role[]) {
     test("navigation leads to every dashboard section", async ({ page }) => {
       await page.goto(pages[role][0], { waitUntil: "networkidle" });
       if (role === "admin") {
-        // The admin shell has no bottom tab bar: on a phone its menu opens the drawer of admin areas.
+        // Admins get the bottom tab bar too, but most admin areas live only in the menu drawer,
+        // so on a phone check the drawer: each area listed once, the current one marked.
         await page.getByRole("button", { name: "Open menu" }).click();
         const areas = page.getByRole("dialog", { name: "Admin menu" }).getByRole("navigation", { name: "Admin areas" }).getByRole("link");
         await expect(areas.first()).toHaveAttribute("aria-current", "page");
@@ -367,4 +368,46 @@ test("the admin top bar has notifications, and the account menu has messages and
   const bell = page.getByRole("button", { name: /^Notifications/ });
   await bell.click();
   await expect(page.getByText("Notifications", { exact: true })).toBeVisible();
+});
+
+test.describe("phone keyboard order", () => {
+  const homes: Record<Role, string> = {
+    tourist: "/tours/me",
+    operator: "/tours/operator/dashboard",
+    guide: "/tours/guide/dashboard",
+    admin: "/tours/admin",
+  };
+  for (const [role, path] of Object.entries(homes) as [Role, string][]) {
+    test(`${role}: the first Tab focuses the skip link at 375px, before the tab bar`, async ({ context, page }) => {
+      await signInAs(context, role);
+      await page.setViewportSize({ width: 375, height: 800 });
+      await visit(page, path);
+      await expect(page.getByRole("navigation", { name: "Dashboard" })).toBeVisible();
+      await page.locator("body").focus();
+      await page.keyboard.press("Tab");
+      await expect(page.getByRole("link", { name: "Skip to main content" })).toBeFocused();
+    });
+  }
+
+  for (const role of ["operator", "guide", "admin"] as const) {
+    test(`${role}: the open menu drawer covers the tab bar`, async ({ context, page }) => {
+      await signInAs(context, role);
+      await page.setViewportSize({ width: 375, height: 800 });
+      await visit(page, homes[role]);
+      const bar = page.getByRole("navigation", { name: "Dashboard" });
+      await expect(bar).toBeVisible();
+      await page.getByRole("button", { name: "Open menu" }).click();
+      const drawer = page.getByRole("dialog", { name: /menu$/ });
+      await expect(drawer).toBeVisible();
+      // Whatever is on top over the bar, under the drawer and right of it under the scrim, is not the bar.
+      const box = (await bar.boundingBox())!;
+      for (const x of [20, 355]) {
+        const onBar = await page.evaluate(
+          ([px, py]) => !!document.elementFromPoint(px, py)?.closest('nav[aria-label="Dashboard"]'),
+          [x, box.y + box.height / 2],
+        );
+        expect(onBar).toBe(false);
+      }
+    });
+  }
 });

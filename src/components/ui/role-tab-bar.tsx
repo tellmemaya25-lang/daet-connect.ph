@@ -15,8 +15,15 @@ import { activeTab, type Tab } from "@/lib/tours/dashboards";
 export function RoleTabBar({
   tabs,
   account,
+  belowOverlays = false,
 }: {
   tabs: Tab[];
+  /**
+   * Layer the bar one step lower (z-30), so a z-40 overlay drawn earlier in the
+   * page, like the role shell's menu drawer, still covers it. Lets the bar come
+   * after the shell in the DOM, keeping the skip link the first tab stop.
+   */
+  belowOverlays?: boolean;
   account?: {
     initial: string;
     name: string;
@@ -36,7 +43,7 @@ export function RoleTabBar({
   return (
     <nav
       aria-label="Dashboard"
-      className="fixed inset-x-0 bottom-0 z-40 border-t border-line bg-surface pb-[env(safe-area-inset-bottom)] dark:border-white/15 shadow-[0_-4px_16px_rgba(15,23,42,0.08)] sm:hidden print:hidden"
+      className={`fixed inset-x-0 bottom-0 ${belowOverlays ? "z-30" : "z-40"} border-t border-line bg-surface pb-[env(safe-area-inset-bottom)] dark:border-white/15 shadow-[0_-4px_16px_rgba(15,23,42,0.08)] sm:hidden print:hidden`}
     >
       {pending ? (
         <span aria-hidden="true" className="absolute inset-x-0 top-0 h-0.5 overflow-hidden bg-blue-100 dark:bg-blue-950">
