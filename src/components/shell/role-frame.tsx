@@ -42,8 +42,6 @@ export async function RoleFrame({
   const tabs = roleTabs(role);
   const content = (
     <>
-      {/* Before the shell, so the menu drawer (same layer, later in the page) covers it. */}
-      <RoleTabBar tabs={tabs} />
       <AppShell
         config={config}
         search={search}
@@ -59,6 +57,9 @@ export async function RoleFrame({
       >
         {children}
       </AppShell>
+      {/* After the shell, so its skip link is the first tab stop; one layer under
+          the menu drawer (z-40), so the open drawer still covers the bar. */}
+      <RoleTabBar tabs={tabs} belowOverlays />
       {viewer.roleSource === "claim" && viewer.role ? (
         <RoleClaimSync shownRole={viewer.role} />
       ) : null}
