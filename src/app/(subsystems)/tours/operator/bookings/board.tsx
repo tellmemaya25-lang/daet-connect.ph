@@ -129,14 +129,14 @@ export function BookingBoard({ rows, selectableIds }: { rows: BoardRow[]; select
     <div>
       {/* Column headings: a table's labels, without a table's rigidity on a phone. */}
       <div className="mb-3 hidden rounded-2xl card-edge bg-surface px-5 py-3 text-sm font-bold text-daet-ink/80 lg:flex lg:items-center lg:gap-4">
-        <span className="flex w-11 items-center justify-center">
+        <label className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full hover:bg-muted">
           <Checkbox
             checked={allChosen}
             onChange={(event) => selectAll(event.target.checked)}
             aria-label="Select every pending booking on this page"
             disabled={selectableIds.length === 0}
           />
-        </span>
+        </label>
         <span className="flex-1">Tour Package &amp; Ref</span>
         <span className="grid w-[30rem] shrink-0 grid-cols-4 gap-x-6">
           <span>Guest</span>

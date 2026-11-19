@@ -777,3 +777,10 @@ html.js [data-reveal]:not([data-revealed]) {
 @media (prefers-reduced-motion: reduce) {
   [class*="animate-[tab-progress"] { animation: none; width: 100%; }
 }
+
+/* Leaflet's attribution links are ~15px tall; give each a 24px tap target (WCAG 2.5.8). */
+.leaflet-control-attribution a {
+  display: inline-block;
+  min-height: 24px;
+  line-height: 24px;
+}
