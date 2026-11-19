@@ -291,6 +291,71 @@ test("an operator has an activity log and can open a guide's earnings from the t
   await expect(page.getByRole("link", { name: "Juan Dela Cruz" }).first()).toHaveAttribute("href", /\/tours\/operator\/guides\/f66b1fe2-a997-4c0b-be13-22d62cf0dba6$/);
 });
 
+/** Opens the backup page's form, unticks what is named, downloads as JSON, and returns the saved sections. */
+async function downloadBackupJson(page: import("@playwright/test").Page, untick: RegExp[] = []) {
+  const section = page.getByRole("region", { name: "Data backup" });
+  await expect(section.getByLabel("Format")).toHaveValue("zip");
+  for (const name of untick) await section.getByRole("checkbox", { name }).uncheck();
+  await section.getByLabel("Format").selectOption("json");
+  const [download] = await Promise.all([page.waitForEvent("download"), section.getByRole("button", { name: "Download backup" }).click()]);
+  expect(download.suggestedFilename()).toMatch(/^connect-daet-backup-\d{4}-\d{2}-\d{2}\.json$/);
+  const body = JSON.parse(await (await import("node:fs/promises")).readFile((await download.path())!, "utf8"));
+  return Object.keys(body.data);
+}
+
+test("an operator saves their data from Data backup in the sidebar", async ({ context, page }) => {
+  await signInAs(context, "operator");
+  await page.setViewportSize({ width: 1400, height: 900 });
+  await visit(page, "/tours/operator/dashboard");
+  await page.getByRole("navigation", { name: "Operator areas" }).getByRole("link", { name: "Data backup" }).click();
+  await expect(page).toHaveURL(/\/tours\/operator\/backup$/);
+  const section = page.getByRole("region", { name: "Data backup" });
+  await expect(section.getByRole("checkbox")).toHaveCount(6);
+  await expect(section.getByRole("checkbox", { name: /Bookings/ })).toBeChecked();
+  expect(await downloadBackupJson(page, [/Payments/])).toEqual(["bookings", "packages", "guides", "merchandise", "reviews"]);
+  // Nothing ticked is refused, and the zip is a real archive.
+  expect((await page.request.get("/tours/operator/backup/download")).status()).toBe(400);
+  const zip = await page.request.get("/tours/operator/backup/download?items=packages&items=reviews&format=zip");
+  expect(zip.headers()["content-type"]).toContain("application/zip");
+  expect((await zip.body()).subarray(0, 2).toString()).toBe("PK");
+});
+
+test("a guide saves their own work from Data backup in the sidebar", async ({ context, page }) => {
+  await signInAs(context, "guide");
+  await page.setViewportSize({ width: 1400, height: 900 });
+  await visit(page, "/tours/guide/dashboard");
+  await page.getByRole("navigation", { name: "Guide areas" }).getByRole("link", { name: "Data backup" }).click();
+  await expect(page).toHaveURL(/\/tours\/guide\/backup$/);
+  const section = page.getByRole("region", { name: "Data backup" });
+  await expect(section.getByRole("checkbox")).toHaveCount(4);
+  expect(await downloadBackupJson(page, [/Availability/])).toEqual(["tours", "operators", "reviews"]);
+  // An operator may not use the guide's download.
+  const other = await context.browser()!.newContext();
+  await signInAs(other, "operator");
+  expect((await other.request.get("/tours/guide/backup/download?items=tours")).status()).toBe(403);
+  await other.close();
+});
+
+test("an admin saves records from Data backup in the sidebar, with the personal ones off by default", async ({ context, page }) => {
+  await signInAs(context, "admin");
+  await page.setViewportSize({ width: 1400, height: 900 });
+  await visit(page, "/tours/admin");
+  await page.getByRole("navigation", { name: "Admin areas" }).getByRole("link", { name: "Data backup" }).click();
+  await expect(page).toHaveURL(/\/tours\/admin\/backup$/);
+  const section = page.getByRole("region", { name: "Data backup" });
+  await expect(section.getByRole("checkbox")).toHaveCount(15);
+  await expect(section.getByRole("checkbox", { name: /Accounts and roles/ })).not.toBeChecked();
+  await expect(section.getByRole("checkbox", { name: /Activity log/ })).not.toBeChecked();
+  expect(await downloadBackupJson(page, [/Bookings/, /Payments/, /Reports/])).toEqual([
+    "packages", "operators", "guides", "attractions", "events", "places", "fares", "merchandise", "emergency", "reviews",
+  ]);
+  // Only an admin may use the admin download.
+  const other = await context.browser()!.newContext();
+  await signInAs(other, "operator");
+  expect((await other.request.get("/tours/admin/backup/download?items=operators")).status()).toBe(403);
+  await other.close();
+});
+
 test("the admin top bar has notifications, and the account menu has messages and the public site", async ({ context, page }) => {
   await signInAs(context, "admin");
   await visit(page, "/tours/admin");

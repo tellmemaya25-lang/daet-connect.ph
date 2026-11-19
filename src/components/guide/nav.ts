@@ -20,6 +20,7 @@ export const GUIDE_GROUPS: NavGroup[] = [
       { href: `${base}/operators`, label: "Operators", icon: "building" },
       { href: `${base}/activity`, label: "Activity log", icon: "note" },
       { href: `${base}/messages`, label: "Messages", icon: "message" },
+      { href: `${base}/backup`, label: "Data backup", icon: "download" },
     ],
   },
   {

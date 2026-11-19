@@ -18,6 +18,7 @@ export const ADMIN_GROUPS: NavGroup[] = [
       A("", "Dashboard", "dashboard"),
       A("/analytics", "Analytics", "chart"),
       A("/activity", "Activity log", "receipt"),
+      A("/backup", "Data backup", "download"),
     ],
   },
   {

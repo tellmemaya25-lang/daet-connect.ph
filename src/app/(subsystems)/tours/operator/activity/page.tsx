@@ -15,12 +15,11 @@ const BASE = "/tours/operator/activity";
 const PAGE = 50;
 const one = (v: string | string[] | undefined) => (Array.isArray(v) ? v[0] : v) ?? "";
 const when = (iso: string) => new Date(iso).toLocaleString("en-PH", { dateStyle: "medium", timeStyle: "medium", timeZone: "Asia/Manila" });
-const ROLE_LABEL: Record<string, string> = { admin: "Admin", operator: "You or your staff", guide: "Guide", tourist: "Traveller", system: "System" };
 
 /**
- * The operator's audit log: every change to their packages, bookings, payments, package
- * guides and guide applications, with who made it, newest first, 50 at a time. The database
- * function limits it to the operator's own records.
+ * The operator's audit log: what they changed on their own packages, bookings, payments,
+ * package guides and guide applications, newest first, 50 at a time. The database function
+ * returns only entries the signed-in operator made, on their own records.
  */
 export default async function OperatorActivityPage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
   const session = await getAuthenticatedSession();
@@ -54,7 +53,7 @@ export default async function OperatorActivityPage({ searchParams }: { searchPar
       </Link>
       <h1 className="display-2 mb-2 text-daet-ink">Activity log</h1>
       <p className="mb-4 max-w-3xl text-sm text-daet-ink/65">
-        Every change to your packages, bookings, payments, package guides and guide applications, with who made it. Bank and GCash numbers are never recorded.
+        What you changed on your packages, bookings, payments, package guides and guide applications. Changes made by travellers, guides and the Tourism Office are not shown. Bank and GCash numbers are never recorded.
       </p>
 
       <form action={BASE} className="mb-6 grid gap-3 rounded-2xl card-edge bg-surface p-4 sm:grid-cols-2 lg:grid-cols-4 lg:items-end">
@@ -90,12 +89,11 @@ export default async function OperatorActivityPage({ searchParams }: { searchPar
         <p className="rounded-2xl bg-surface p-4 text-daet-ink/70">Nothing recorded for these filters.</p>
       ) : (
         <div className="overflow-x-auto rounded-2xl card-edge bg-surface" tabIndex={0} role="group" aria-label="Activity table">
-          <table className="w-full min-w-[40rem] text-left text-sm">
+          <table className="w-full min-w-[32rem] text-left text-sm">
             <caption className="sr-only">Activity, newest first</caption>
             <thead>
               <tr className="border-b border-line">
                 <th scope="col" className="px-4 py-2">When</th>
-                <th scope="col" className="px-4 py-2">Who</th>
                 <th scope="col" className="px-4 py-2">Area</th>
                 <th scope="col" className="px-4 py-2">What happened</th>
               </tr>
@@ -104,10 +102,6 @@ export default async function OperatorActivityPage({ searchParams }: { searchPar
               {rows.map((r) => (
                 <tr key={r.id} className="border-b border-line/60 align-top">
                   <td className="whitespace-nowrap px-4 py-2 text-daet-ink/80">{when(r.at)}</td>
-                  <td className="px-4 py-2">
-                    <span className="font-bold text-daet-ink">{r.actorId ? (r.actorRole === "tourist" ? "Traveller" : (r.actorName ?? "Unknown")) : "System"}</span>
-                    <span className="block text-xs text-daet-ink/70">{ROLE_LABEL[r.actorRole] ?? r.actorRole}</span>
-                  </td>
                   <td className="px-4 py-2">{entityLabel(r.entity)}</td>
                   <td className="px-4 py-2 [overflow-wrap:anywhere]">
                     {describeActivity(r)}
