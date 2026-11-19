@@ -1986,6 +1986,7 @@ export type Database = {
         Row: {
           cover_image_url: string | null
           created_at: string
+          daily_capacity: number
           description: string | null
           duration_type: Database["public"]["Enums"]["duration_type"]
           duration_value: number
@@ -2008,6 +2009,7 @@ export type Database = {
         Insert: {
           cover_image_url?: string | null
           created_at?: string
+          daily_capacity?: number
           description?: string | null
           duration_type?: Database["public"]["Enums"]["duration_type"]
           duration_value: number
@@ -2030,6 +2032,7 @@ export type Database = {
         Update: {
           cover_image_url?: string | null
           created_at?: string
+          daily_capacity?: number
           description?: string | null
           duration_type?: Database["public"]["Enums"]["duration_type"]
           duration_value?: number
@@ -2474,6 +2477,7 @@ export type Database = {
     }
     Functions: {
       tours_set_pickup_vehicles: { Args: { p_package_id: string; p_vehicles: Json }; Returns: undefined }
+      tours_set_daily_capacity: { Args: { p_capacity: number; p_package: string }; Returns: undefined }
       tours_quote_door_pickup: { Args: { p_lat: number; p_lng: number; p_package_id: string; p_pax: number; p_variant_id?: string; p_vehicle_id: string }; Returns: Json }
       tours_admin_activity: { Args: { p_actor?: string; p_before?: string; p_entity?: string; p_from?: string; p_limit?: number; p_role?: string; p_to?: string }; Returns: Json }
       tours_admin_ban: { Args: { p_days: number | null; p_reason: string; p_user_id: string }; Returns: string | null }

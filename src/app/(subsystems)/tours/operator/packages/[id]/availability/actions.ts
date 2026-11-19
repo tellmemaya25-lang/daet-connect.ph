@@ -117,3 +117,21 @@ export async function closeDate(formData: FormData): Promise<AvailabilityResult>
   revalidate(owned.packageId);
   return { success: true, message: "Date closed." };
 }
+
+export async function setDailyCapacity(formData: FormData): Promise<AvailabilityResult> {
+  const supabase = await createSupabaseServerClient();
+  const owned = await requireOwnPackage(supabase, formData.get("packageId"));
+  if ("error" in owned) return { success: false, error: owned.error };
+
+  const capacityText = String(formData.get("dailyCapacity") ?? "").trim();
+  const capacity = Number(capacityText);
+  if (!/^\d+$/.test(capacityText) || capacity < 1 || capacity > MAX_CAPACITY) {
+    return { success: false, error: `Seats per day must be a whole number from 1 to ${MAX_CAPACITY}.` };
+  }
+
+  const { error } = await supabase.rpc("tours_set_daily_capacity", { p_package: owned.packageId, p_capacity: capacity });
+  if (error) return { success: false, error: userFacingDbError(error, "Seats per day could not be saved.") };
+
+  revalidate(owned.packageId);
+  return { success: true, message: `Up to ${capacity} guests can book each day.` };
+}
