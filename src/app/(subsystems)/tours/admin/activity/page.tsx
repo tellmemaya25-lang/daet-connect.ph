@@ -122,7 +122,7 @@ export default async function AdminActivityPage({ searchParams }: { searchParams
                   <td className="whitespace-nowrap px-4 py-2 text-daet-ink/80">{when(r.at)}</td>
                   <td className="px-4 py-2">
                     {r.actorId ? (
-                      <Link href={`/tours/admin/activity?${new URLSearchParams({ actor: r.actorId })}`} className="font-bold text-daet-ink hover:underline">
+                      <Link href={`/tours/admin/activity?${new URLSearchParams({ actor: r.actorId })}`} className="inline-block min-h-6 py-1 font-bold text-daet-ink hover:underline">
                         {r.actorName ?? "Unknown"}
                       </Link>
                     ) : (

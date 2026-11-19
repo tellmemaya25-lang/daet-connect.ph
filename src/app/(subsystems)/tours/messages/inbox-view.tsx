@@ -116,7 +116,7 @@ async function Inbox({ searchParams, basePath = "/tours/messages" }: InboxProps)
                 <span className="text-sm font-bold text-daet-ink">
                   {operator.business_name} <span className="font-normal text-daet-ink/70">· {String(operator.accreditation_status)}</span>
                 </span>
-                <OpenChatButton target={{ kind: "operator_admin", operatorId: operator.id }} label="Message" variant="ghost" />
+                <OpenChatButton target={{ kind: "operator_admin", operatorId: operator.id }} label="Message" srSuffix={` ${operator.business_name}`} variant="ghost" />
               </li>
             ))}
           </ul>
@@ -132,7 +132,7 @@ async function Inbox({ searchParams, basePath = "/tours/messages" }: InboxProps)
             {friendsToMessage.map((friend) => (
               <li key={friend.id} className="flex flex-wrap items-center justify-between gap-2 py-2">
                 <span className="text-sm font-bold text-daet-ink">{friend.name}</span>
-                <OpenChatButton target={{ kind: "friends", friendId: friend.id }} label="Message" variant="ghost" />
+                <OpenChatButton target={{ kind: "friends", friendId: friend.id }} label="Message" srSuffix={` ${friend.name}`} variant="ghost" />
               </li>
             ))}
           </ul>

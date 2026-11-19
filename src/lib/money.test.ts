@@ -11,6 +11,13 @@ describe("formatPeso (R3)", () => {
     expect(formatPeso("1500")).toBe("₱1,500.00");
   });
 
+  it("puts the minus sign before the peso symbol", () => {
+    expect(formatPeso(-932)).toBe("-₱932.00");
+    expect(formatPeso("-1234.5")).toBe("-₱1,234.50");
+    expect(formatPeso(-0)).toBe("₱0.00");
+    expect(formatPeso(-0.001)).toBe("₱0.00");
+  });
+
   it("shows unreadable amounts as zero", () => {
     expect(formatPeso(null)).toBe("₱0.00");
     expect(formatPeso(undefined)).toBe("₱0.00");

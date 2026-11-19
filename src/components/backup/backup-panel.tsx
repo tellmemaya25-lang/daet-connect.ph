@@ -12,9 +12,9 @@ export function BackupPanel({ action, items, intro }: { action: string; items: r
   const groups = [...new Set(items.map((i) => i.group ?? ""))];
   return (
     <section aria-labelledby="backup-heading" className="max-w-4xl rounded-2xl card-edge bg-surface p-6">
-      {/* The page's own title says "Data backup"; this names the region for screen readers and tests. */}
+      {/* The page's own h1 says "Data backup"; this names the form's region for screen readers and tests. */}
       <h2 id="backup-heading" className="sr-only">
-        Data backup
+        Choose what to save
       </h2>
       <p className="text-sm text-daet-ink/70">{intro}</p>
       <form action={action} method="get" className="mt-4 space-y-4">
@@ -27,7 +27,7 @@ export function BackupPanel({ action, items, intro }: { action: string; items: r
                 .map((item) => (
                   <li key={item.id} className="min-w-0">
                     <label className="flex min-h-11 cursor-pointer items-start gap-3 rounded-xl border border-line px-3 py-2 hover:bg-muted">
-                      <Checkbox name="items" value={item.id} defaultChecked={item.defaultOn !== false} className="mt-1" />
+                      <Checkbox name="items" value={item.id} defaultChecked={item.defaultOn !== false} className="h-6! w-6!" />
                       <span className="min-w-0">
                         <span className="block text-sm font-bold text-daet-ink">{item.label}</span>
                         <span className="block text-xs text-daet-ink/70">{item.hint}</span>

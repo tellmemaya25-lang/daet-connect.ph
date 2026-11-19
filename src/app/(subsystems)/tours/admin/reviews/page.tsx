@@ -107,7 +107,7 @@ export default async function AdminReviewsPage({ searchParams }: { searchParams:
                   ) : null}
                   {review.is_hidden && review.hidden_reason ? <p className="mt-2 text-xs font-bold text-red-700 dark:text-red-300">Reason: {review.hidden_reason}</p> : null}
                   <div className="mt-3">
-                    <ModerateForm reviewId={review.id} hidden={review.is_hidden} />
+                    <ModerateForm reviewId={review.id} hidden={review.is_hidden} itemName={`review of ${pkg?.title ?? "tour"} from ${date(review.created_at)}`} />
                   </div>
                 </Card>
               </li>

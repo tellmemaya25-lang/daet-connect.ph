@@ -294,7 +294,7 @@ test("an operator has an activity log and can open a guide's earnings from the t
 
 /** Opens the backup page's form, unticks what is named, downloads as JSON, and returns the saved sections. */
 async function downloadBackupJson(page: import("@playwright/test").Page, untick: RegExp[] = []) {
-  const section = page.getByRole("region", { name: "Data backup" });
+  const section = page.getByRole("region", { name: "Choose what to save" });
   await expect(section.getByLabel("Format")).toHaveValue("zip");
   for (const name of untick) await section.getByRole("checkbox", { name }).uncheck();
   await section.getByLabel("Format").selectOption("json");
@@ -310,7 +310,7 @@ test("an operator saves their data from Data backup in the sidebar", async ({ co
   await visit(page, "/tours/operator/dashboard");
   await page.getByRole("navigation", { name: "Operator areas" }).getByRole("link", { name: "Data backup" }).click();
   await expect(page).toHaveURL(/\/tours\/operator\/backup$/);
-  const section = page.getByRole("region", { name: "Data backup" });
+  const section = page.getByRole("region", { name: "Choose what to save" });
   await expect(section.getByRole("checkbox")).toHaveCount(6);
   await expect(section.getByRole("checkbox", { name: /Bookings/ })).toBeChecked();
   expect(await downloadBackupJson(page, [/Payments/])).toEqual(["bookings", "packages", "guides", "merchandise", "reviews"]);
@@ -327,7 +327,7 @@ test("a guide saves their own work from Data backup in the sidebar", async ({ co
   await visit(page, "/tours/guide/dashboard");
   await page.getByRole("navigation", { name: "Guide areas" }).getByRole("link", { name: "Data backup" }).click();
   await expect(page).toHaveURL(/\/tours\/guide\/backup$/);
-  const section = page.getByRole("region", { name: "Data backup" });
+  const section = page.getByRole("region", { name: "Choose what to save" });
   await expect(section.getByRole("checkbox")).toHaveCount(4);
   expect(await downloadBackupJson(page, [/Availability/])).toEqual(["tours", "operators", "reviews"]);
   // An operator may not use the guide's download.
@@ -343,7 +343,7 @@ test("an admin saves records from Data backup in the sidebar, with the personal 
   await visit(page, "/tours/admin");
   await page.getByRole("navigation", { name: "Admin areas" }).getByRole("link", { name: "Data backup" }).click();
   await expect(page).toHaveURL(/\/tours\/admin\/backup$/);
-  const section = page.getByRole("region", { name: "Data backup" });
+  const section = page.getByRole("region", { name: "Choose what to save" });
   await expect(section.getByRole("checkbox")).toHaveCount(15);
   await expect(section.getByRole("checkbox", { name: /Accounts and roles/ })).not.toBeChecked();
   await expect(section.getByRole("checkbox", { name: /Activity log/ })).not.toBeChecked();

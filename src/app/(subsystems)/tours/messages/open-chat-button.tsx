@@ -13,11 +13,14 @@ export function OpenChatButton({
   bookingId,
   target,
   label,
+  srSuffix,
   variant = "secondary",
 }: {
   bookingId?: string;
   target?: ChatTarget;
   label: string;
+  /** Extra words for screen readers when several identical buttons sit in a list, e.g. " Ana Cruz". */
+  srSuffix?: string;
   variant?: ButtonVariant;
 }) {
   const router = useRouter();
@@ -43,6 +46,7 @@ export function OpenChatButton({
       >
         <LineIcon name="chat" className="h-4 w-4 shrink-0" />
         {label}
+        {srSuffix ? <span className="sr-only">{srSuffix}</span> : null}
       </Button>
       {error ? (
         <p role="alert" className="mt-1 text-sm font-semibold text-red-700 dark:text-red-300">

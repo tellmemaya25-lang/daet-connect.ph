@@ -69,7 +69,7 @@ export default async function AdminEventsPage({
                 </div>
                 <div className="flex gap-2">
                   <Link href={`/tours/admin/events/${event.id}/edit`} className="inline-flex min-h-11 flex-1 items-center justify-center rounded-full border border-daet-forest/30 px-5 text-sm font-bold text-daet-leaf dark:text-blue-300 hover:bg-daet-forest/5 sm:flex-none">
-                    Edit
+                    Edit<span className="sr-only"> {event.title}</span>
                   </Link>
                   <form action={deleteEvent} className="flex-1 sm:flex-none">
                     <input type="hidden" name="id" value={event.id} />
@@ -77,7 +77,7 @@ export default async function AdminEventsPage({
                       message={`Delete "${event.title}"? This cannot be undone.`}
                       className="inline-flex min-h-11 w-full items-center justify-center rounded-full px-5 text-sm font-bold text-red-700 dark:text-red-300 hover:bg-red-50 dark:hover:bg-red-950/40"
                     >
-                      Delete
+                      Delete<span className="sr-only"> {event.title}</span>
                     </ConfirmSubmitButton>
                   </form>
                 </div>

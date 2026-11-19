@@ -216,13 +216,13 @@ export function MoneyEarningsView({ data, perOperator }: { data: MoneyEarnings; 
                 <tbody>
                   {data.operators.map((o) => (
                     <tr key={o.id} className="border-b border-line/60">
-                      <td className="py-2 pr-3 font-bold"><Link href={`/tours/admin/earnings/operators/${o.id}`} className="text-blue-700 underline dark:text-blue-300">{o.name}</Link></td>
+                      <td className="py-2 pr-3 font-bold"><Link href={`/tours/admin/earnings/operators/${o.id}`} className="inline-block min-h-6 py-1 text-blue-700 underline dark:text-blue-300">{o.name}</Link></td>
                       <td className="py-2 pr-3 text-right">{o.bookings}</td>
                       <td className="py-2 pr-3 text-right">{formatPeso(o.collected)}</td>
                       <td className="py-2 pr-3 text-right">{formatPeso(o.refunded)}</td>
                       <td className="py-2 pr-3 text-right">{formatPeso(o.guideFees)}</td>
                       <td className="py-2 pr-3 text-right font-bold">{formatPeso(o.net)}</td>
-                      <td className="whitespace-nowrap py-2 text-right"><Link href={`/tours/admin/earnings/operators/${o.id}`} className="font-bold text-blue-700 underline dark:text-blue-300">View earnings<span className="sr-only"> for {o.name}</span> →</Link></td>
+                      <td className="whitespace-nowrap py-2 text-right"><Link href={`/tours/admin/earnings/operators/${o.id}`} className="inline-block min-h-6 py-1 font-bold text-blue-700 underline dark:text-blue-300">View earnings<span className="sr-only"> for {o.name}</span> →</Link></td>
                     </tr>
                   ))}
                 </tbody>
@@ -251,11 +251,11 @@ export function MoneyEarningsView({ data, perOperator }: { data: MoneyEarnings; 
               <tbody>
                 {data.guides.map((g) => (
                   <tr key={g.id} className="border-b border-line/60">
-                    <td className="py-2 pr-3 font-bold">{perOperator ? <Link href={`/tours/admin/earnings/guides/${g.id}`} className="text-blue-700 underline dark:text-blue-300">{g.name}</Link> : g.name}</td>
+                    <td className="py-2 pr-3 font-bold">{perOperator ? <Link href={`/tours/admin/earnings/guides/${g.id}`} className="inline-block min-h-6 py-1 text-blue-700 underline dark:text-blue-300">{g.name}</Link> : g.name}</td>
                     <td className="py-2 pr-3 text-right">{g.completedTours}</td>
                     <td className="py-2 pr-3 text-right">{formatPeso(g.earned)}</td>
                     <td className="py-2 pr-3 text-right">{formatPeso(g.expected)}</td>
-                    {perOperator ? <td className="whitespace-nowrap py-2 text-right"><Link href={`/tours/admin/earnings/guides/${g.id}`} className="font-bold text-blue-700 underline dark:text-blue-300">View earnings<span className="sr-only"> for {g.name}</span> →</Link></td> : null}
+                    {perOperator ? <td className="whitespace-nowrap py-2 text-right"><Link href={`/tours/admin/earnings/guides/${g.id}`} className="inline-block min-h-6 py-1 font-bold text-blue-700 underline dark:text-blue-300">View earnings<span className="sr-only"> for {g.name}</span> →</Link></td> : null}
                   </tr>
                 ))}
               </tbody>

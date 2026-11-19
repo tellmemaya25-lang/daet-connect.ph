@@ -105,7 +105,7 @@ export default async function AdminAnalyticsPage({ searchParams }: { searchParam
         <Card>
           <CardHeader title="Top attractions in trip plans" />
           <BarList
-            items={a.topAttractions.map((t) => ({ key: t.id, label: <Link href={`/tours/attractions/${t.slug}`} className="hover:underline">{t.name}</Link>, value: t.planned, note: "plans" }))}
+            items={a.topAttractions.map((t) => ({ key: t.id, label: <Link href={`/tours/attractions/${t.slug}`} className="inline-block min-h-6 py-1 hover:underline">{t.name}</Link>, value: t.planned, note: "plans" }))}
             empty="No saved trip plans in this range."
           />
         </Card>

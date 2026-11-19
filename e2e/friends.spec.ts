@@ -39,8 +39,8 @@ test.describe("friends", () => {
     await tabs.getByRole("link", { name: "Friends" }).click();
     await expect(page).toHaveURL(/kind=friends/);
     const start = page.getByRole("region", { name: "Message a friend" });
-    await expect(start.getByText("Bea Santos")).toBeVisible();
-    await expect(start.getByRole("button", { name: "Message" })).toBeVisible();
+    await expect(start.getByText("Bea Santos").first()).toBeVisible();
+    await expect(start.getByRole("button", { name: "Message Bea Santos" })).toBeVisible();
     await checkA11y(page, "messages friends tab");
   });
 
