@@ -203,3 +203,71 @@ export function clashMessage(clash: Clash): string {
 export function bookingWindowText(booking: TourTiming, day = 1): string {
   return windowText(bookingWindow(booking, day));
 }
+
+/** One tour already in the tourist's day, as the booking form lists it. */
+export type DayEntry = {
+  booking: OccupiedBooking;
+  /** The window this booking takes on the chosen date. */
+  window: [number, number];
+  /** True when the tour starts that day, false when a multi-day trip is passing through. */
+  startsHere: boolean;
+};
+
+/**
+ * Everything this tourist already has on `date`, in clock order.
+ *
+ * The booking guard needs only to know *that* a clash exists; the person booking
+ * needs to see the whole day to judge whether another date would work. This is
+ * the same rule as findTouristClash(), reported instead of merely refused.
+ */
+export function dayPlan(date: string, bookings: readonly OccupiedBooking[], excludeBookingId?: string | null): DayEntry[] {
+  const wanted = dateKeyToDays(date);
+  if (wanted === null) return [];
+
+  const entries: DayEntry[] = [];
+  for (const booking of bookings) {
+    if (excludeBookingId && booking.id === excludeBookingId) continue;
+    if (booking.status != null && !ACTIVE.has(booking.status)) continue;
+    if (!occupiesDate(booking, booking.tour_date, date)) continue;
+
+    const start = dateKeyToDays(booking.tour_date);
+    if (start === null) continue;
+    const day = wanted - start + 1;
+    entries.push({ booking, window: bookingWindow(booking, day), startsHere: day === 1 });
+  }
+
+  // Earliest first; a tie falls back to the title so the list is stable.
+  entries.sort((a, b) => a.window[0] - b.window[0] || a.booking.title.localeCompare(b.booking.title));
+  return entries;
+}
+
+/** Total minutes of the day the entries already take. Whole days win outright. */
+export function dayMinutesTaken(entries: readonly DayEntry[]): number {
+  if (entries.length === 0) return 0;
+  // Merge overlapping windows so a whole-day tour plus a short one does not add to 1440+60.
+  const spans = [...entries].map((e) => e.window).sort((a, b) => a[0] - b[0]);
+  let total = 0;
+  let [start, end] = spans[0];
+  for (const [from, to] of spans.slice(1)) {
+    if (from > end) {
+      total += end - start;
+      start = from;
+      end = to;
+    } else {
+      end = Math.max(end, to);
+    }
+  }
+  return total + (end - start);
+}
+
+/** "no time left" / "4 hours free" — the sentence under the timeline. */
+export function freeTimeText(entries: readonly DayEntry[]): string {
+  const taken = dayMinutesTaken(entries);
+  if (taken >= DAY) return "no time left that day";
+  const free = DAY - taken;
+  const hours = Math.floor(free / 60);
+  const minutes = free % 60;
+  if (hours === 0) return `${minutes} minute${minutes === 1 ? "" : "s"} free`;
+  if (minutes === 0) return `${hours} hour${hours === 1 ? "" : "s"} free`;
+  return `${hours}h ${minutes}m free`;
+}
