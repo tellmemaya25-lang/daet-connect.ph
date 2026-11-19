@@ -243,7 +243,23 @@ test("an operator gets the sidebar on desktop and the menu drawer and tab bar on
   // Phone: menu drawer, plus the bottom tab bar.
   await page.setViewportSize({ width: 375, height: 800 });
   await visit(page, "/tours/operator/dashboard");
-  await expect(page.getByRole("navigation", { name: "Dashboard" }).getByRole("link")).toHaveCount(5);
+  const bar = page.getByRole("navigation", { name: "Dashboard" });
+  await expect(bar.getByRole("link")).toHaveCount(5);
+  // The profile is the bar's last item, not the top bar's avatar.
+  const you = bar.getByRole("button", { name: /^You, your account/ });
+  await expect(you).toBeVisible();
+  await expect(page.getByRole("banner").getByRole("button", { name: /account/ })).toHaveCount(0);
+  await expect(bar.getByRole("listitem").last().getByRole("button")).toHaveAccessibleName(/^You, your account/);
+  const box = await you.boundingBox();
+  expect(box!.height).toBeGreaterThanOrEqual(44);
+  expect(box!.width).toBeGreaterThanOrEqual(44);
+  await you.click();
+  const menu = page.getByRole("navigation", { name: "Your account" });
+  for (const name of ["Profile settings", "Payment settings", "View public site"]) {
+    await expect(menu.getByRole("link", { name })).toBeVisible();
+  }
+  await expect(menu.getByRole("button", { name: "Sign out" })).toBeVisible();
+  await you.click();
   await page.getByRole("button", { name: "Open menu" }).click();
   const drawer = page.getByRole("dialog", { name: "Operator menu" });
   await expect(drawer.getByRole("link", { name: "Dashboard" })).toHaveAttribute("aria-current", "page");

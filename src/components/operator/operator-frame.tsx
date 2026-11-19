@@ -7,6 +7,7 @@ import type { loadNotifications } from "@/lib/tours/notifications-server";
 /**
  * The operator sidebar and top bar around a page. PageFrame uses it for an approved
  * operator on every signed-in page, so an operator sees one frame everywhere.
+ * On phones the account menu is the tab bar's last tab (You), not the top bar's avatar.
  */
 export function OperatorFrame({
   viewer,
@@ -24,6 +25,7 @@ export function OperatorFrame({
       viewer={viewer}
       notifications={notifications}
       search={<OperatorSearch />}
+      accountInTabBar
     >
       {children}
     </RoleFrame>

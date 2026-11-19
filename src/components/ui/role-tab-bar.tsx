@@ -10,7 +10,8 @@ import { activeTab, type Tab } from "@/lib/tours/dashboards";
 
 /**
  * Bottom tab bar on phones for signed-in users; hidden from sm up, where the
- * header has room. With `account` the last tab is You, the account menu.
+ * header has room. With `account` the last tab is You, the account menu
+ * (a sixth column when the role already has five tabs).
  */
 export function RoleTabBar({
   tabs,
@@ -43,7 +44,9 @@ export function RoleTabBar({
           <span className="block h-full w-1/3 animate-[tab-progress_1s_ease-in-out_infinite] bg-blue-600 dark:bg-blue-300" />
         </span>
       ) : null}
-      <ul className="mx-auto grid max-w-md grid-cols-5">
+      <ul
+        className={`mx-auto grid max-w-md ${tabs.length + (account ? 1 : 0) > 5 ? "grid-cols-6" : "grid-cols-5"}`}
+      >
         {tabs.map((tab) => {
           const active = tab.href === shown;
           return (
