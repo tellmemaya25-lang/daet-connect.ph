@@ -28,6 +28,7 @@ export async function RoleFrame({
   notifications,
   counts = {},
   search,
+  accountInTabBar = false,
   children,
 }: {
   role: "admin" | "operator" | "guide";
@@ -36,14 +37,29 @@ export async function RoleFrame({
   notifications: Awaited<ReturnType<typeof loadNotifications>>;
   counts?: Record<string, number>;
   search?: ReactNode;
+  /** Phones get the account menu as the tab bar's last item instead of in the top bar (guide). */
+  accountInTabBar?: boolean;
   children: ReactNode;
 }) {
   const collapsed = (await cookies()).get(config.cookie.name)?.value === "1";
   const tabs = roleTabs(role);
+  const links = accountLinks(role, tabs);
   const content = (
     <>
       {/* Before the shell, so the menu drawer (same layer, later in the page) covers it. */}
-      <RoleTabBar tabs={tabs} />
+      <RoleTabBar
+        tabs={tabs}
+        account={
+          accountInTabBar
+            ? {
+                initial: viewer.initial,
+                name: viewer.name,
+                avatarUrl: viewer.avatarUrl,
+                links: [...links, { href: "/", label: "View public site" }],
+              }
+            : undefined
+        }
+      />
       <AppShell
         config={config}
         search={search}
@@ -55,7 +71,8 @@ export async function RoleFrame({
           name: viewer.name,
           avatarUrl: viewer.avatarUrl,
         }}
-        accountLinks={accountLinks(role, tabs)}
+        accountLinks={links}
+        accountInTabBar={accountInTabBar}
       >
         {children}
       </AppShell>

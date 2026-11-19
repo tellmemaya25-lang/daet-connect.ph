@@ -168,6 +168,7 @@ export function AppShell({
   initialCollapsed,
   account,
   accountLinks,
+  accountInTabBar = false,
   counts,
   notifications,
 }: {
@@ -178,6 +179,8 @@ export function AppShell({
   initialCollapsed: boolean;
   account: { initial: string; name: string; avatarUrl: string | null };
   accountLinks: AccountLink[];
+  /** The tab bar carries the account menu on phones, so the top bar shows it from sm up only. */
+  accountInTabBar?: boolean;
   counts: Record<string, number>;
   notifications: LoadedNotifications | null;
 }) {
@@ -214,6 +217,15 @@ export function AppShell({
     setCollapsed(next);
     document.cookie = `${config.cookie.name}=${next ? "1" : "0"}; path=${config.cookie.path}; max-age=31536000; samesite=lax`;
   }
+
+  const accountMenu = (
+    <AccountMenu
+      initial={account.initial}
+      name={account.name}
+      avatarUrl={account.avatarUrl}
+      links={[...accountLinks, { href: "/", label: "View public site" }]}
+    />
+  );
 
   return (
     <div className="flex min-h-screen bg-muted text-daet-ink">
@@ -282,12 +294,11 @@ export function AppShell({
             <div className="flex items-center gap-1">
               <NotificationBell initial={notifications} />
             </div>
-            <AccountMenu
-              initial={account.initial}
-              name={account.name}
-              avatarUrl={account.avatarUrl}
-              links={[...accountLinks, { href: "/", label: "View public site" }]}
-            />
+            {accountInTabBar ? (
+              <div className="hidden sm:block">{accountMenu}</div>
+            ) : (
+              accountMenu
+            )}
           </div>
         </header>
         <main
