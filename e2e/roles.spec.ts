@@ -251,6 +251,35 @@ test("an operator gets the sidebar on desktop and the menu drawer and tab bar on
   expect(noSideways).toBe(true);
 });
 
+test("a guide gets the sidebar on desktop and the menu drawer and tab bar on a phone", async ({ context, page }) => {
+  await signInAs(context, "guide");
+  await page.setViewportSize({ width: 1400, height: 900 });
+  for (const path of ["/tours/guide/dashboard", "/tours/guide/earnings", "/tours/guide/messages", "/tours/notifications"]) {
+    await visit(page, path);
+    await expect(page.getByRole("navigation", { name: "Guide areas" }).first()).toBeVisible();
+  }
+  await visit(page, "/tours/guide/earnings");
+  await expect(page.getByRole("navigation", { name: "Guide areas" }).getByRole("link", { name: "Earnings" })).toHaveAttribute("aria-current", "page");
+  await page.keyboard.press("Control+Space");
+  const search = page.getByRole("searchbox", { name: "Search records" });
+  await expect(search).toBeFocused();
+  await search.fill("Jane");
+  await search.press("Enter");
+  await expect(page).toHaveURL(/\/tours\/guide\/search\?q=Jane/);
+  await expect(page.getByRole("heading", { name: "Results for “Jane”" })).toBeVisible();
+  await expect(page.getByRole("button", { name: /^Your account/ })).toBeVisible();
+  await visit(page, "/tours/messages");
+  await expect(page).toHaveURL(/\/tours\/guide\/messages/);
+  await page.setViewportSize({ width: 375, height: 800 });
+  await visit(page, "/tours/guide/dashboard");
+  await expect(page.getByRole("navigation", { name: "Dashboard" }).getByRole("link")).toHaveCount(5);
+  await page.getByRole("button", { name: "Open menu" }).click();
+  const drawer = page.getByRole("dialog", { name: "Guide menu" });
+  await expect(drawer.getByRole("link", { name: "Dashboard" })).toHaveAttribute("aria-current", "page");
+  const noSideways = await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth);
+  expect(noSideways).toBe(true);
+});
+
 test("an operator has an activity log and can open a guide's earnings from the team table", async ({ context, page }) => {
   await signInAs(context, "operator");
   await page.setViewportSize({ width: 1400, height: 900 });
