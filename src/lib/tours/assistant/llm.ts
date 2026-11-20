@@ -2,7 +2,7 @@ import "server-only";
 import { ABILITIES } from "@/lib/tours/assistant/abilities";
 import type { Content, FunctionCall, Part } from "@google/genai";
 import { z } from "zod/v4";
-import { createGeminiClient, GEMINI_DEFAULT_MODEL, isGeminiConfigured, stopReasonOf, toJsonSchema, withBusyFallback, type GeminiClient } from "@/lib/ai/gemini";
+import { createGeminiClient, GEMINI_DEFAULT_MODEL, isGeminiConfigured, stopReasonOf, thinkingConfig, toJsonSchema, withBusyFallback, type GeminiClient } from "@/lib/ai/gemini";
 import { createLeakGuard } from "@/lib/tours/assistant/leak-guard";
 import { assistantSystemPrompt } from "@/lib/tours/assistant/prompt";
 import type { ChatTurn } from "@/lib/tours/assistant/respond";
@@ -36,6 +36,8 @@ const MODEL = () => process.env.ASSISTANT_MODEL || GEMINI_DEFAULT_MODEL;
 const MAX_RESULT_CHARS = 6000;
 const MAX_ITERATIONS = 6;
 const MAX_OUTPUT_TOKENS = 4000;
+/** Thinking per round: enough to pick tools, without the several seconds dynamic thinking took. */
+const THINKING_BUDGET = 512;
 
 
 /** Tool results go back as data, trimmed so one big result can't flood the context. */
@@ -233,7 +235,7 @@ export async function runAssistant(
       client.models.generateContentStream({
         model,
         contents,
-        config: { systemInstruction: system, tools: [{ functionDeclarations: declarations }], maxOutputTokens: MAX_OUTPUT_TOKENS },
+        config: { systemInstruction: system, tools: [{ functionDeclarations: declarations }], maxOutputTokens: MAX_OUTPUT_TOKENS, thinkingConfig: thinkingConfig(THINKING_BUDGET) },
       }),
     );
 
@@ -258,12 +260,14 @@ export async function runAssistant(
     // A cut-off turn may carry a truncated tool call; don't run it.
     if (!calls.length || stopReason === "max_tokens") break;
 
-    const results: Part[] = [];
-    for (const call of calls) {
-      const tool = call.name ? byName.get(call.name) : undefined;
-      const output = tool ? await tool.run(call.args ?? {}) : JSON.stringify({ error: "Unknown tool." });
-      results.push({ functionResponse: { id: call.id, name: call.name, response: { result: output } } });
-    }
+    // The tools only read, so a round's calls run at once; results keep the calls' order.
+    const results: Part[] = await Promise.all(
+      calls.map(async (call): Promise<Part> => {
+        const tool = call.name ? byName.get(call.name) : undefined;
+        const output = tool ? await tool.run(call.args ?? {}) : JSON.stringify({ error: "Unknown tool." });
+        return { functionResponse: { id: call.id, name: call.name, response: { result: output } } };
+      }),
+    );
     contents.push({ role: "model", parts: modelParts }, { role: "user", parts: results });
     stopReason = "tool_limit";
   }

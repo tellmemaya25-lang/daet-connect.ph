@@ -126,6 +126,18 @@ export function createGeminiClient({ timeoutMs }: { timeoutMs: number }): Gemini
   };
 }
 
+/**
+ * How many tokens the model may spend thinking before it answers. Flash thinks
+ * dynamically by default, which added several seconds to every call; these
+ * steps are extraction or tool routing, so a small budget is enough.
+ * GEMINI_THINKING_BUDGET overrides every caller's default (-1 is Google's dynamic).
+ */
+export function thinkingConfig(defaultBudget: number): { thinkingBudget: number } {
+  const raw = process.env.GEMINI_THINKING_BUDGET;
+  const parsed = raw !== undefined && raw.trim() !== "" ? Number(raw) : NaN;
+  return { thinkingBudget: Number.isInteger(parsed) ? parsed : defaultBudget };
+}
+
 /** JSON Schema for a zod schema, in the shape Gemini takes (no $schema key). */
 export function toJsonSchema(schema: z.ZodType): Record<string, unknown> {
   const { $schema: _ignored, ...rest } = z.toJSONSchema(schema) as Record<string, unknown>;
@@ -159,6 +171,8 @@ export async function generateJson<S extends z.ZodType>(input: {
   model: string;
   timeoutMs: number;
   label: string;
+  /** Tokens the model may think before answering (see thinkingConfig); 0 by default. */
+  thinkingBudget?: number;
   client?: GeminiClient;
 }): Promise<z.infer<S> | null> {
   try {
@@ -172,6 +186,7 @@ export async function generateJson<S extends z.ZodType>(input: {
         responseMimeType: "application/json",
         responseJsonSchema: toJsonSchema(input.schema),
         maxOutputTokens: input.maxOutputTokens,
+        thinkingConfig: thinkingConfig(input.thinkingBudget ?? 0),
       },
       }),
     );
