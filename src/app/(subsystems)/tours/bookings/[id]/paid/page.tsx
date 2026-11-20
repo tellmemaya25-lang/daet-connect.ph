@@ -1,4 +1,5 @@
-import { hasTicket } from "@/lib/tours/ticket";
+import { hasUsableTicket } from "@/lib/tours/ticket";
+import { toManilaDateKey } from "@/lib/tours/events-calendar";
 import Link from "next/link";
 import { cookies } from "next/headers";
 import { notFound, redirect } from "next/navigation";
@@ -114,7 +115,7 @@ export default async function PaymentSuccessPage({ params }: PageProps) {
               </div>
             </dl>
             <div className="mt-6 flex flex-wrap justify-center gap-2">
-              {hasTicket(booking) && booking.status === "confirmed" ? <ButtonLink href={`/tours/bookings/${id}/ticket`}>Show my ticket QR</ButtonLink> : null}
+              {hasUsableTicket(booking, toManilaDateKey(new Date())) ? <ButtonLink href={`/tours/bookings/${id}/ticket`}>Show my ticket QR</ButtonLink> : null}
               <ButtonLink href={`/tours/bookings/${id}`} variant="secondary">
                 View booking
               </ButtonLink>

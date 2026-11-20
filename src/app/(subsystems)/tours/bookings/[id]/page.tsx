@@ -1,5 +1,5 @@
 import { maskEmail } from "@/lib/tours/mask-email";
-import { hasTicket } from "@/lib/tours/ticket";
+import { hasUsableTicket } from "@/lib/tours/ticket";
 import Image from "next/image";
 import { LineIcon } from "@/components/ui/icons";
 import { Badge } from "@/components/ui/badge";
@@ -209,7 +209,7 @@ export default async function BookingDetailPage({ params, searchParams }: PagePr
             ) : null}
             <div className="mt-4 flex flex-wrap gap-2 sm:mt-5">
               {/* The ticket QR appears once the booking is paid in full; until then paying is the next step. */}
-              {hasTicket(booking) && booking.status === "confirmed" ? (
+              {hasUsableTicket(booking, todayKey) ? (
                 <ButtonLink href={`/tours/bookings/${booking.id}/ticket`}>
                   <LineIcon name="ticket" className="h-4 w-4" /> Show my ticket QR
                 </ButtonLink>

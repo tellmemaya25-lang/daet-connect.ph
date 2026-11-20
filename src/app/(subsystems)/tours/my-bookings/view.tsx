@@ -1,4 +1,4 @@
-import { hasTicket } from "@/lib/tours/ticket";
+import { hasUsableTicket } from "@/lib/tours/ticket";
 import Image from "next/image";
 import Link from "next/link";
 import { cache, Suspense } from "react";
@@ -233,7 +233,7 @@ function BookingRow({ booking: b, today, quiet = false }: { booking: Row; today:
               {b.payment_status === "partial" ? "Pay the balance" : "Pay now"}
             </ButtonLink>
           ) : null}
-          {hasTicket(b) && b.status === "confirmed" ? (
+          {hasUsableTicket(b, today) ? (
             <ButtonLink href={`/tours/bookings/${b.id}/ticket`} variant="secondary">
               Ticket
             </ButtonLink>

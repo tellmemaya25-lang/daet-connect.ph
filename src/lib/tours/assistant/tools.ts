@@ -1,7 +1,7 @@
 import { durationText } from "@/lib/tours/duration";
 import type { MissingInput, TripContext } from "@/lib/tours/assistant/context";
 import type { ItineraryResult } from "@/lib/tours/assistant/plan-tool";
-import { hasTicket } from "@/lib/tours/ticket";
+import { hasUsableTicket } from "@/lib/tours/ticket";
 import { formatPeso } from "@/lib/money";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { toAttraction, ATTRACTION_COLUMNS } from "@/lib/tours/attractions";
@@ -240,7 +240,7 @@ export function bookingCard(row: BookingRow, today: string): BookingCard {
   } else if (row.status === "confirmed") nextStep = row.tour_date >= today ? "Confirmed and paid. Show your ticket QR on the tour day." : "Confirmed. The operator will mark it completed.";
   else if (row.status === "completed") nextStep = "Completed. You can leave a review.";
   else nextStep = row.status === "rejected" ? "Declined by the operator; the reason is on the booking." : "Cancelled. Any refund is arranged by the operator.";
-  if (hasTicket(row) && row.status === "confirmed") links.push({ href: `/tours/bookings/${row.id}/ticket`, label: "Show ticket QR" });
+  if (hasUsableTicket(row, today)) links.push({ href: `/tours/bookings/${row.id}/ticket`, label: "Show ticket QR" });
   links.push(view);
   return {
     type: "booking",

@@ -20,7 +20,8 @@ import { ShareWithFriends } from "./share-with-friends";
 import { parseFriendLists } from "@/lib/tours/friends";
 import { SaveTripOffline } from "@/components/tours/save-trip-offline";
 import { callOffState } from "@/lib/tours/call-off";
-import { hasTicket } from "@/lib/tours/ticket";
+import { hasUsableTicket } from "@/lib/tours/ticket";
+import { toManilaDateKey } from "@/lib/tours/events-calendar";
 
 const PACE_LABEL: Record<string, string> = { relaxed: "Relaxed pace", normal: "Balanced pace", packed: "Packed pace" };
 const monthDay = (date: string) => new Date(`${date}T00:00:00Z`).toLocaleDateString("en-PH", { month: "short", day: "numeric", timeZone: "UTC" });
@@ -120,7 +121,7 @@ export default async function ItineraryPage({ params }: { params: Promise<{ id: 
         .order("tour_date")
     : { data: [] };
   const bookings = (tripBookings ?? []).map((b) => ({ ...b, title: (Array.isArray(b.tours_packages) ? b.tours_packages[0] : b.tours_packages)?.title ?? "Tour" }));
-  const tickets = bookings.filter((b) => hasTicket(b));
+  const tickets = bookings.filter((b) => hasUsableTicket(b, toManilaDateKey(new Date())));
   const calledOff = bookings.filter((b) => callOffState(b) === "awaiting");
 
   return (
