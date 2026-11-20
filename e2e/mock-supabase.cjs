@@ -1551,13 +1551,6 @@ http
           kind: "recover",
           redirectTo: url.searchParams.get("redirect_to"),
         });
-        if (payload.email === "quota@example.ph") {
-          return send(429, {
-            code: 429,
-            error_code: "over_email_send_rate_limit",
-            msg: "email rate limit exceeded",
-          });
-        }
         return send(200, {});
       }
 
