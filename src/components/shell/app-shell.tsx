@@ -189,6 +189,9 @@ export function AppShell({
   const [drawer, setDrawer] = useState(false);
   // The drawer stays mounted for the length of its slide-out, then goes.
   const [closing, setClosing] = useState(false);
+  // The fade under the drawer's header shows only once its links scroll under
+  // it; at rest it would wash out the first group's title.
+  const [drawerScrolled, setDrawerScrolled] = useState(false);
   const closeTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
   const closeDrawer = useCallback(() => {
     setClosing(true);
@@ -209,7 +212,14 @@ export function AppShell({
       }
     };
     document.addEventListener("keydown", onKey);
-    return () => document.removeEventListener("keydown", onKey);
+    // The page behind the scrim stays put while the drawer is open.
+    const root = document.documentElement;
+    const overflow = root.style.overflow;
+    root.style.overflow = "hidden";
+    return () => {
+      document.removeEventListener("keydown", onKey);
+      root.style.overflow = overflow;
+    };
   }, [drawer, closeDrawer]);
 
   function toggle() {
@@ -270,6 +280,7 @@ export function AppShell({
                 onClick={() => {
                   clearTimeout(closeTimer.current);
                   setClosing(false);
+                  setDrawerScrolled(false);
                   setDrawer(true);
                 }}
                 aria-expanded={drawer}
@@ -318,9 +329,14 @@ export function AppShell({
             aria-modal="true"
             aria-label={`${config.label} menu`}
             data-closing={closing ? "" : undefined}
-            className="motion-drawer absolute inset-y-0 left-0 flex w-72 max-w-[85vw] flex-col overflow-y-auto [scrollbar-width:thin] [scrollbar-color:var(--color-line)_transparent] bg-muted"
+            onScroll={(e) => setDrawerScrolled(e.currentTarget.scrollTop > 0)}
+            className="motion-drawer absolute inset-y-0 left-0 flex w-72 max-w-[85vw] flex-col overflow-y-auto overscroll-contain [scrollbar-width:thin] [scrollbar-color:var(--color-line)_transparent] bg-muted"
           >
-            <div className="sticky top-0 z-10 flex items-center justify-between gap-2 bg-muted px-4 pb-3 pt-4 after:pointer-events-none after:absolute after:inset-x-0 after:top-full after:h-6 after:bg-gradient-to-b after:from-muted after:to-transparent">
+            <div
+              data-drawer-header=""
+              data-scrolled={drawerScrolled ? "" : undefined}
+              className="sticky top-0 z-10 flex items-center justify-between gap-2 bg-muted px-4 pb-3 pt-4 after:pointer-events-none after:absolute after:inset-x-0 after:top-full after:h-6 after:bg-gradient-to-b after:from-muted after:to-transparent after:opacity-0 after:transition-opacity data-[scrolled]:after:opacity-100"
+            >
               <Wordmark href={config.homeHref} />
               <button
                 type="button"
