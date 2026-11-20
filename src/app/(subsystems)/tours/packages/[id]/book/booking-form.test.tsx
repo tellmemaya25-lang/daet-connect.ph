@@ -16,6 +16,7 @@ function renderForm() {
   return render(
     <BookingForm
       packageId="pkg-1"
+      tourTiming={{ duration_type: "hours", duration_value: 4, meeting_time: "08:00" } as never}
       priceVariants={[{ id: "v1", variant_name: "Standard", price_per_pax: 1000, flat_price: null, min_pax: 1, max_pax: 20, is_default: true }]}
       dateOptions={[{ date: "2099-01-10", seatsLeft: 10, full: false } as never]}
       userProfile={{ fullName: "Ana Cruz", email: "ana@example.com" }}
