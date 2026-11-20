@@ -7,12 +7,14 @@ import { Field, Input } from "@/components/ui/field";
 import { PasswordInput } from "@/components/ui/password-input";
 import { GoogleSignIn, OrDivider } from "@/components/ui/google-sign-in";
 import { Notice } from "@/components/ui/notice";
+import { useSingleSubmit } from "@/components/ui/use-single-submit";
 import { INITIAL_AUTH_STATE } from "@/lib/auth/action-state";
 import { PASSWORD_MIN } from "@/lib/auth/validation";
 import { signUpWithPassword } from "./actions";
 
 export function SignupForm({ nextUrl = "/" }: { nextUrl?: string }) {
   const [state, formAction, pending] = useActionState(signUpWithPassword, INITIAL_AUTH_STATE);
+  const onSubmit = useSingleSubmit(pending, state);
   const loginHref = nextUrl && nextUrl !== "/" ? `/login?next=${encodeURIComponent(nextUrl)}` : "/login";
 
   // The account exists but is not usable yet: the form would only invite a
@@ -49,7 +51,7 @@ export function SignupForm({ nextUrl = "/" }: { nextUrl?: string }) {
       <GoogleSignIn nextUrl={nextUrl} />
       <OrDivider />
 
-      <form action={formAction} className="space-y-5" noValidate>
+      <form action={formAction} onSubmit={onSubmit} className="space-y-5" noValidate>
         <input type="hidden" name="next" value={nextUrl} />
 
         <Field id="fullName" label="Full name" required error={state.fieldErrors?.fullName}>

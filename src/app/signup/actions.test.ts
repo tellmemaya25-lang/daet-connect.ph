@@ -190,4 +190,65 @@ describe("signing up", () => {
     expect(refused.length).toBeGreaterThan(0);
     expect(answers[answers.length - 1].status).toBe("error");
   });
+
+  it("explains Supabase's hourly email limit and says when to try again", async () => {
+    clientWith({
+      signUp: jest.fn(async () => ({
+        data: { user: null, session: null },
+        error: { status: 429, code: "over_email_send_rate_limit", message: "email rate limit exceeded" },
+      })),
+    });
+
+    const state = await signUpWithPassword({ status: "idle" }, form());
+
+    expect(state.status).toBe("error");
+    expect(state.message).toMatch(/email limit for the hour/i);
+    expect(state.message).toMatch(/try again in about an hour/i);
+    expect(state.message).not.toMatch(/that address/i);
+    // Kept, so the visitor does not retype it when they come back.
+    expect(state.email).toBe("juan@example.ph");
+  });
+
+  it("treats Supabase's one-minute cooldown as the link that was just sent", async () => {
+    clientWith({
+      signUp: jest.fn(async () => ({
+        data: { user: null, session: null },
+        error: {
+          status: 429,
+          code: "over_email_send_rate_limit",
+          message: "For security purposes, you can only request this after 37 seconds.",
+        },
+      })),
+    });
+
+    const state = await signUpWithPassword({ status: "idle" }, form());
+
+    expect(state.status).toBe("check-email");
+  });
+
+  it("does not ask Supabase for a second email when the form is sent twice", async () => {
+    const client = clientWith();
+
+    const first = await signUpWithPassword({ status: "idle" }, form());
+    const second = await signUpWithPassword({ status: "idle" }, form());
+
+    expect(client.auth.signUp).toHaveBeenCalledTimes(1);
+    expect(second).toEqual(first);
+  });
+
+  it("lets a corrected form through after a refused one", async () => {
+    const client = clientWith({
+      signUp: jest
+        .fn()
+        .mockResolvedValueOnce({
+          data: { user: null, session: null },
+          error: { status: 422, code: "weak_password", message: "Password is too weak" },
+        })
+        .mockResolvedValue({ data: { user: { id: "u1", identities: [{}] }, session: null }, error: null }),
+    });
+
+    expect((await signUpWithPassword({ status: "idle" }, form())).status).toBe("error");
+    expect((await signUpWithPassword({ status: "idle" }, form())).status).toBe("check-email");
+    expect(client.auth.signUp).toHaveBeenCalledTimes(2);
+  });
 });

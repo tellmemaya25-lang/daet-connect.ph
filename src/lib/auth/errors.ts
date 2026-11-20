@@ -24,10 +24,52 @@ export function isUnconfirmedEmail(error: AuthErrorLike): boolean {
   return value.includes("email not confirmed") || value.includes("email_not_confirmed") || value.includes("not confirmed");
 }
 
-/** The mailer is being hammered; Supabase refuses to send another message. */
+/**
+ * Supabase refused because of a rate limit: its email quota, the per-address
+ * cooldown between emails, or its per-IP request limit (HTTP 429).
+ */
 export function isEmailRateLimited(error: AuthErrorLike): boolean {
   const value = text(error);
-  return value.includes("over_email_send_rate_limit") || value.includes("rate limit") || value.includes("too many requests");
+  return (
+    error?.status === 429 ||
+    value.includes("over_email_send_rate_limit") ||
+    value.includes("over_request_rate_limit") ||
+    value.includes("rate limit") ||
+    value.includes("too many requests") ||
+    emailCooldownSeconds(error) !== null
+  );
+}
+
+/**
+ * Supabase waits a minute between two emails to the same address and says so:
+ * "For security purposes, you can only request this after 42 seconds." The
+ * number of seconds left, or null when the error is not that one.
+ */
+export function emailCooldownSeconds(error: AuthErrorLike): number | null {
+  const match = /only request this after (\d+) seconds?/i.exec(error?.message ?? "");
+  return match ? Math.max(1, Number(match[1])) : null;
+}
+
+/** The project-wide email quota ran out, as opposed to a request-rate limit. */
+function isEmailQuota(error: AuthErrorLike): boolean {
+  const value = text(error);
+  return value.includes("over_email_send_rate_limit") || value.includes("email rate limit");
+}
+
+/**
+ * What to tell a visitor when Supabase would not send an email. The quota is
+ * shared by every visitor of the site, so the copy never blames their address,
+ * and it says when trying again will work.
+ */
+export function emailRateLimitMessage(error: AuthErrorLike, sending: string): string {
+  const cooldown = emailCooldownSeconds(error);
+  if (cooldown !== null) {
+    return `We just sent ${sending} to that address. Please wait ${cooldown} second${cooldown === 1 ? "" : "s"}, then try again if it has not arrived.`;
+  }
+  if (isEmailQuota(error)) {
+    return `We could not send ${sending}: Daet Connect has reached its email limit for the hour. Nothing is wrong with your details. Please try again in about an hour.`;
+  }
+  return "We are getting a lot of requests right now. Please wait a few minutes, then try again.";
 }
 
 /**
@@ -43,11 +85,13 @@ export function isRecipientNotAuthorized(error: AuthErrorLike): boolean {
 export const GENERIC_SIGN_IN = "That email and password do not match an account.";
 
 export function signUpErrorMessage(error: AuthErrorLike): string {
-  // Both are the site's mail limits, not the visitor's fault: Supabase caps the
-  // whole project's email (2 an hour on the built-in service) and counts every
-  // sign-up from our server as one IP. See docs/SIGNUP_LIMITS.md.
-  if (isEmailRateLimited(error) || isRecipientNotAuthorized(error)) {
-    return "We cannot send confirmation emails right now. Please try again in an hour, or contact the Daet Tourism Office.";
+  if (isRecipientNotAuthorized(error)) {
+    // Supabase's built-in mailer only delivers to the project's team until
+    // custom SMTP is set up. See docs/SIGNUP_LIMITS.md.
+    return "We cannot send confirmation emails right now. Please try again later, or contact the Daet Tourism Office.";
+  }
+  if (isEmailRateLimited(error)) {
+    return emailRateLimitMessage(error, "your confirmation email");
   }
   const value = text(error);
   if (value.includes("password")) return "That password was not accepted. Choose a longer one, or one that is not common.";

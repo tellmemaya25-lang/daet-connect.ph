@@ -458,5 +458,28 @@ test.describe("phone keyboard order", () => {
         expect(onBar).toBe(false);
       }
     });
+
+    test(`${role}: the menu drawer's first section title is not faded, and the page behind does not scroll`, async ({ context, page }) => {
+      await signInAs(context, role);
+      await page.setViewportSize({ width: 375, height: 600 });
+      await visit(page, homes[role]);
+      await page.getByRole("button", { name: "Open menu" }).click();
+      const drawer = page.getByRole("dialog", { name: /menu$/ });
+      await expect(drawer).toBeVisible();
+
+      const fade = () =>
+        drawer.locator("[data-drawer-header]").evaluate((el) => getComputedStyle(el, "::after").opacity);
+      // At rest nothing sits under the header, so its fade is off.
+      expect(await fade()).toBe("0");
+      expect(await page.evaluate(() => getComputedStyle(document.documentElement).overflow)).toBe("hidden");
+
+      // Once the links scroll under the header, the fade comes back.
+      await drawer.evaluate((el) => el.scrollTo(0, 80));
+      await expect.poll(fade).toBe("1");
+
+      await page.keyboard.press("Escape");
+      await expect(drawer).toBeHidden();
+      expect(await page.evaluate(() => getComputedStyle(document.documentElement).overflow)).not.toBe("hidden");
+    });
   }
 });

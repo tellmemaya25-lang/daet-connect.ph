@@ -5,14 +5,16 @@ import { useActionState } from "react";
 import { Button } from "@/components/ui/button";
 import { Field, Input } from "@/components/ui/field";
 import { Notice } from "@/components/ui/notice";
+import { useSingleSubmit } from "@/components/ui/use-single-submit";
 import { INITIAL_AUTH_STATE } from "@/lib/auth/action-state";
 import { resendVerification } from "./actions";
 
 export function ResendVerificationForm({ email = "", next }: { email?: string; next: string }) {
   const [state, formAction, pending] = useActionState(resendVerification, INITIAL_AUTH_STATE);
+  const onSubmit = useSingleSubmit(pending, state);
 
   return (
-    <form action={formAction} className="mt-6 space-y-5" noValidate>
+    <form action={formAction} onSubmit={onSubmit} className="mt-6 space-y-5" noValidate>
       <input type="hidden" name="next" value={next} />
 
       {state.status === "success" ? (

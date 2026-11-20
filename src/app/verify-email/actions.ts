@@ -5,6 +5,7 @@ import { DEFAULT_AFTER_AUTH, nextPathFrom, rememberNextPath } from "@/lib/auth/n
 import { AUTH_LIMITS, takeAttempt, tooManyMessage } from "@/lib/auth/rate-limit";
 import { authCallbackUrl, authRequestContext } from "@/lib/auth/request";
 import { emailOnlySchema, fieldErrorsOf, formString } from "@/lib/auth/validation";
+import { emailCooldownSeconds, emailRateLimitMessage, isEmailRateLimited } from "@/lib/auth/errors";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
@@ -54,9 +55,16 @@ export async function resendVerification(_previous: AuthActionState, formData: F
       options: { emailRedirectTo: authCallbackUrl(origin) },
     });
 
-    // "Already confirmed", "no such user" and "rate limited by Supabase" are
-    // all logged, never shown.
-    if (error) console.error("resend failed", error.code, error.message);
+    if (error) console.error("resend failed", error.status, error.code, error.message);
+    // The site-wide email quota (or Supabase's request limit) ran out: no link
+    // is coming, and saying "on its way" would only send the visitor back to
+    // this button. That limit is the same for every address, so naming it says
+    // nothing about who is registered. The per-address one-minute cooldown is
+    // different: it only happens to an address waiting for its link, so it gets
+    // the same answer as everything else ("already confirmed", "no such user").
+    if (error && isEmailRateLimited(error) && emailCooldownSeconds(error) === null) {
+      return { status: "error", email, message: emailRateLimitMessage(error, "a new link") };
+    }
     await rememberNextPath(next);
   } catch (error) {
     console.error("resend threw", error);
