@@ -46,6 +46,8 @@ export type ToolContext = {
   image?: { mimeType: string; data: string } | null;
   /** Set by plan_trip: the drafted plan the panel shows. */
   itinerary?: ItineraryResult | null;
+  /** A plan drafted before the model ran (plan requests): plan_trip's result, for the model to explain. */
+  drafted?: unknown;
   /** Set by plan_trip when the form still needs answers. */
   questions?: MissingInput[] | null;
   /** Short progress labels while a tool runs ("Checking operators"). */

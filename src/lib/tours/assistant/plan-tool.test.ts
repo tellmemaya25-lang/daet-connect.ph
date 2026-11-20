@@ -69,19 +69,21 @@ describe("respond with a plan", () => {
   const deps = (overrides: Partial<RespondDeps> = {}): RespondDeps => ({ supabase: fakeSupabase(tables()), userId: null, today: TODAY, aiAllowed: true, tripQuestions: true, runAi: async () => ({ stopReason: "end_turn" }), ...overrides });
   const ask = { messages: [{ role: "user", content: "Plan 2 days of beaches for us" }], context: trip };
 
-  it("streams status, the explanation, then the plan from the tool result and follow-ups", async () => {
+  it("shows the plan before the model answers, then hands the model the drafted result to explain", async () => {
+    let handed: unknown = null;
     const events = await collect(
       respond(ask, deps({
         runAi: async (c, _h, onText) => {
-          await planTrip(c, { interests: ["beach"], budgetPerDay: null, pace: null });
+          handed = c.drafted;
           onText("Two easy beach days.");
           return { stopReason: "end_turn" };
         },
       })),
     );
     const kinds = events.map((e) => e.t);
-    expect(kinds).toEqual(["mode", "status", "status", "text", "itinerary", "choices", "cards", "done"]);
+    expect(kinds).toEqual(["mode", "status", "itinerary", "text", "itinerary", "choices", "cards", "done"]);
     expect(events.find((e) => e.t === "itinerary")).toMatchObject({ itinerary: { packages: [{ id: "pkg1" }] } });
+    expect(handed).toMatchObject({ days: expect.any(Array) });
   });
 
   it("drafts the plan anyway when the model answers a plan request without the tool", async () => {

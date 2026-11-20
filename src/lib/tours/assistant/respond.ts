@@ -179,6 +179,23 @@ export async function* respond(raw: unknown, deps: RespondDeps): AsyncGenerator<
   }
 
   if (deps.aiAllowed) {
+    // A plan request with a complete form: draft it with the rule engine now and
+    // show it at once, so the panel fills in about a second instead of waiting
+    // for the model to choose plan_trip, run it, and come back for a second round.
+    // The model then only explains the result it is handed.
+    yield { t: "mode", mode: "ai" };
+    if (planning) {
+      try {
+        yield { t: "status", label: "Drafting your plan" };
+        const result = await planTrip(ctx, wantsFromText(latest, ctx));
+        if (ctx.itinerary) {
+          ctx.drafted = result;
+          yield { t: "itinerary", itinerary: ctx.itinerary };
+        }
+      } catch (error) {
+        console.error("Assistant early plan error:", error);
+      }
+    }
     type Item = { t: "text"; v: string } | { t: "status"; label: string };
     const queue: Item[] = [];
     let streamed = false;
@@ -229,7 +246,6 @@ export async function* respond(raw: unknown, deps: RespondDeps): AsyncGenerator<
       }, AI_DEADLINE_MS);
     });
 
-    yield { t: "mode", mode: "ai" };
     if (formNotice) yield { t: "text", v: formNotice };
     while (!finished || queue.length) {
       if (queue.length) {
