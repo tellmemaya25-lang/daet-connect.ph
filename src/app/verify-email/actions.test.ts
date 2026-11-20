@@ -80,4 +80,36 @@ describe("resending the confirmation email", () => {
 
     expect(answers.some((state) => /too many attempts/i.test(state.message ?? ""))).toBe(true);
   });
+
+  it("says plainly when the site's email quota has run out, instead of promising a link", async () => {
+    clientWith(
+      jest.fn(async () => ({
+        data: {},
+        error: { status: 429, code: "over_email_send_rate_limit", message: "email rate limit exceeded" },
+      })),
+    );
+
+    const state = await resendVerification({ status: "idle" }, form("juan@example.ph"));
+
+    expect(state.status).toBe("error");
+    expect(state.message).toMatch(/email limit for the hour.*about an hour/i);
+    expect(state.email).toBe("juan@example.ph");
+  });
+
+  it("keeps the per-address cooldown indistinguishable from any other address", async () => {
+    clientWith(
+      jest.fn(async () => ({
+        data: {},
+        error: {
+          status: 429,
+          code: "over_email_send_rate_limit",
+          message: "For security purposes, you can only request this after 50 seconds.",
+        },
+      })),
+    );
+
+    const state = await resendVerification({ status: "idle" }, form("juan@example.ph"));
+
+    expect(state.status).toBe("success");
+  });
 });

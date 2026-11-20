@@ -2,10 +2,10 @@
 
 import { DEFAULT_AFTER_AUTH, nextPathFrom, rememberNextPath } from "@/lib/auth/next-cookie";
 import { authCallbackUrl, authRequestContext } from "@/lib/auth/request";
-import { AUTH_LIMITS, takeAttempt, tooManyMessage } from "@/lib/auth/rate-limit";
+import { AUTH_LIMITS, takeAttempt, tooManyMessage, wouldAllow } from "@/lib/auth/rate-limit";
 import type { ZodError } from "zod";
 import { fieldErrorsOf, formString, signUpSchema } from "@/lib/auth/validation";
-import { isAlreadyRegistered, signUpErrorMessage } from "@/lib/auth/errors";
+import { emailCooldownSeconds, isAlreadyRegistered, signUpErrorMessage } from "@/lib/auth/errors";
 import type { AuthActionState } from "@/lib/auth/action-state";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
@@ -43,10 +43,6 @@ export async function signUpWithPassword(_previous: AuthActionState, formData: F
     return { status: "error", message: "Sign-ups are not available yet. Please contact the Daet Tourism Office." };
   }
 
-  const { ip, origin } = await authRequestContext();
-  const allowed = takeAttempt(`signup:ip:${ip}`, AUTH_LIMITS.signUpIp);
-  if (!allowed.ok) return { status: "error", message: tooManyMessage(allowed.retryAfterSeconds) };
-
   const { fullName, email, password } = parsed.data;
   // The one answer for "link sent" and "that address already has an account".
   const checkInbox = (): AuthActionState => ({
@@ -54,6 +50,15 @@ export async function signUpWithPassword(_previous: AuthActionState, formData: F
     email,
     message: `Open the link we sent to ${email} to finish creating your account. If that address already had an account, nothing was changed — sign in instead.`,
   });
+
+  // A link went to this address seconds ago (a double click, a re-posted form):
+  // say so again rather than spend another email from the hourly quota.
+  const sentKey = `signup:sent:${email}`;
+  if (!wouldAllow(sentKey, AUTH_LIMITS.signUpEmailSent)) return checkInbox();
+
+  const { ip, origin } = await authRequestContext();
+  const allowed = takeAttempt(`signup:ip:${ip}`, AUTH_LIMITS.signUpIp);
+  if (!allowed.ok) return { status: "error", message: tooManyMessage(allowed.retryAfterSeconds), email };
 
   try {
     const supabase = await createSupabaseServerClient();
@@ -70,8 +75,11 @@ export async function signUpWithPassword(_previous: AuthActionState, formData: F
 
     if (error) {
       if (isAlreadyRegistered(error)) return checkInbox();
-      console.error("sign-up failed", error.code, error.message);
-      return { status: "error", message: signUpErrorMessage(error) };
+      // Supabase's one-email-a-minute cooldown for this address: a link went out
+      // moments ago, so this is the same answer, not an error to explain.
+      if (emailCooldownSeconds(error) !== null) return checkInbox();
+      console.error("sign-up failed", error.status, error.code, error.message);
+      return { status: "error", message: signUpErrorMessage(error), email };
     }
 
     // Supabase hands back a session only when the project has email
@@ -94,6 +102,7 @@ export async function signUpWithPassword(_previous: AuthActionState, formData: F
       return { status: "error", message: "We could not create the account just now. Please try again in a moment." };
     }
 
+    takeAttempt(sentKey, AUTH_LIMITS.signUpEmailSent);
     await rememberNextPath(next);
     return checkInbox();
   } catch (error) {

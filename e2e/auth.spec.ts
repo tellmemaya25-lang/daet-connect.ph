@@ -82,6 +82,35 @@ test.describe("signing up, signing in and proving the address", () => {
     expect(await authLog(page)).toEqual([]);
   });
 
+  test("explains the site's email limit on sign-up and keeps what was typed", async ({ page }) => {
+    await clearAuthLog(page);
+    await visit(page, "/signup", /create account/i);
+
+    await page.getByLabel("Full name").fill("Juan Dela Cruz");
+    await page.getByLabel("Email address").fill("quota@example.ph");
+    await page.getByLabel(/^Password/i).fill(PASSWORD);
+    await page.getByLabel(/confirm password/i).fill(PASSWORD);
+    await page.getByRole("button", { name: "Create account" }).dblclick();
+
+    const alert = page.getByRole("alert").filter({ hasText: "email limit for the hour" });
+    await expect(alert).toBeVisible();
+    await expect(alert).toContainText(/try again in about an hour/i);
+    await expect(page.getByText("Check your inbox")).toHaveCount(0);
+    await expect(page.getByLabel("Email address")).toHaveValue("quota@example.ph");
+    // A double click is one request to Supabase, not two.
+    expect((await authLog(page)).filter((entry) => entry.kind === "signup")).toHaveLength(1);
+  });
+
+  test("does not promise a new link when the email limit has run out", async ({ page }) => {
+    await clearAuthLog(page);
+    await visit(page, "/verify-email?email=quota%40example.ph", /verify your email/i);
+
+    await page.getByRole("button", { name: "Send me a new link" }).click();
+
+    await expect(page.getByRole("alert").filter({ hasText: "email limit for the hour" })).toBeVisible();
+    await expect(page.getByText("Check your inbox")).toHaveCount(0);
+  });
+
   test("rejects a mismatched confirmation before sending anything to Supabase", async ({ page }) => {
     await clearAuthLog(page);
     await visit(page, "/signup", /create account/i);

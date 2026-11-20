@@ -30,6 +30,12 @@ export const AUTH_LIMITS = {
   /** One account, any number of addresses: the targeted case. */
   signInEmail: { limit: 6, windowMs: 15 * 60_000 },
   signUpIp: { limit: 10, windowMs: 60 * 60_000 },
+  /**
+   * A confirmation email just went to this address: a repeat sign-up (a double
+   * click, a refresh that re-posts) answers "check your inbox" again instead of
+   * asking Supabase for a second email from the shared hourly quota.
+   */
+  signUpEmailSent: { limit: 1, windowMs: 60_000 },
   /** Re-sends cost an email each, so they are the tightest. */
   resendIp: { limit: 10, windowMs: 60 * 60_000 },
   resendEmail: { limit: 3, windowMs: 15 * 60_000 },
@@ -69,6 +75,12 @@ export function takeAttempt(
   }
   buckets.set(key, hits);
   return { ok: true, remaining: limit - hits.length };
+}
+
+/** Whether `key` would be allowed now, without counting an attempt. */
+export function wouldAllow(key: string, { limit, windowMs }: RateLimit, now = Date.now()): boolean {
+  const cutoff = now - windowMs;
+  return (buckets.get(key) ?? []).filter((at) => at > cutoff).length < limit;
 }
 
 /** For tests, and for a deliberate "you may try again now" reset. */
