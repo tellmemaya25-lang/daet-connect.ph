@@ -30,11 +30,24 @@ export function isEmailRateLimited(error: AuthErrorLike): boolean {
   return value.includes("over_email_send_rate_limit") || value.includes("rate limit") || value.includes("too many requests");
 }
 
+/**
+ * The project's mailer refused the recipient. Supabase's built-in email service
+ * only delivers to members of the project's team ("Email address not
+ * authorized"), so every stranger's sign-up fails this way until custom SMTP is
+ * set up. See docs/SIGNUP_LIMITS.md.
+ */
+export function isRecipientNotAuthorized(error: AuthErrorLike): boolean {
+  return text(error).includes("not authorized");
+}
+
 export const GENERIC_SIGN_IN = "That email and password do not match an account.";
 
 export function signUpErrorMessage(error: AuthErrorLike): string {
-  if (isEmailRateLimited(error)) {
-    return "We have sent a lot of email to that address in the last hour. Wait a little, then try again.";
+  // Both are the site's mail limits, not the visitor's fault: Supabase caps the
+  // whole project's email (2 an hour on the built-in service) and counts every
+  // sign-up from our server as one IP. See docs/SIGNUP_LIMITS.md.
+  if (isEmailRateLimited(error) || isRecipientNotAuthorized(error)) {
+    return "We cannot send confirmation emails right now. Please try again in an hour, or contact the Daet Tourism Office.";
   }
   const value = text(error);
   if (value.includes("password")) return "That password was not accepted. Choose a longer one, or one that is not common.";
