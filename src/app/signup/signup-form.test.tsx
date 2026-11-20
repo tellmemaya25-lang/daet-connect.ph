@@ -122,4 +122,25 @@ describe("the sign-up form", () => {
 
     expect(await screen.findByRole("alert")).toHaveTextContent(/confirm their email address first/i);
   });
+
+  it("sends the form once, however many times it is submitted while waiting", async () => {
+    let finish: (value: { status: "error"; message: string }) => void = () => {};
+    mockSignUp.mockImplementation(() => new Promise((resolve) => (finish = resolve)));
+    render(<SignupForm />);
+    const form = screen.getByRole("button", { name: "Create account" }).closest("form")!;
+
+    fireEvent.submit(form);
+    fireEvent.submit(form);
+    fireEvent.submit(form);
+    await waitFor(() => expect(mockSignUp).toHaveBeenCalledTimes(1));
+
+    finish({ status: "error", message: "We could not send your confirmation email." });
+    expect(await screen.findByRole("alert")).toHaveTextContent(/could not send/i);
+    expect(mockSignUp).toHaveBeenCalledTimes(1);
+
+    // Once the answer is in, the visitor may try again.
+    mockSignUp.mockResolvedValue({ status: "idle" });
+    fireEvent.submit(form);
+    await waitFor(() => expect(mockSignUp).toHaveBeenCalledTimes(2));
+  });
 });

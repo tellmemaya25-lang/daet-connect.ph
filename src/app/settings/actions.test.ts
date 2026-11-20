@@ -332,7 +332,7 @@ describe("asking for a reset link", () => {
     const state = await sendPasswordReset(idle, new FormData());
 
     expect(state.status).toBe("error");
-    expect(state.message).toMatch(/wait a little/i);
+    expect(state.message).toMatch(/email limit for the hour.*about an hour/i);
   });
 
   it("sends nothing without a session", async () => {

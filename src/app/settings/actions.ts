@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import type { AuthActionState } from "@/lib/auth/action-state";
-import { isEmailRateLimited } from "@/lib/auth/errors";
+import { emailRateLimitMessage, isEmailRateLimited } from "@/lib/auth/errors";
 import {
   AUTH_LIMITS,
   takeAttempt,
@@ -434,8 +434,7 @@ export async function sendPasswordReset(
       if (isEmailRateLimited(error)) {
         return {
           status: "error",
-          message:
-            "We have sent a lot of email to that address in the last hour. Wait a little, then try again.",
+          message: emailRateLimitMessage(error, "the reset link"),
         };
       }
       return {

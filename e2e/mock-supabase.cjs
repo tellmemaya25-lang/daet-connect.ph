@@ -1407,6 +1407,15 @@ http
           redirectTo,
           data: payload.data,
         });
+        // The project's hourly email quota has run out: Supabase sends nothing
+        // and answers 429, whatever the address.
+        if (payload.email === "quota@example.ph") {
+          return send(429, {
+            code: 429,
+            error_code: "over_email_send_rate_limit",
+            msg: "email rate limit exceeded",
+          });
+        }
         // Supabase answers an existing address with a user that has no identities
         // and sends no mail. The app must not let that show.
         if (payload.email === "taken@example.ph") {
@@ -1527,6 +1536,13 @@ http
           type: payload.type,
           redirectTo: url.searchParams.get("redirect_to"),
         });
+        if (payload.email === "quota@example.ph") {
+          return send(429, {
+            code: 429,
+            error_code: "over_email_send_rate_limit",
+            msg: "email rate limit exceeded",
+          });
+        }
         return send(200, {});
       }
 
