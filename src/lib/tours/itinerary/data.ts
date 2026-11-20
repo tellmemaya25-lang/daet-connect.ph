@@ -122,9 +122,15 @@ async function loadRatings(supabase: SupabaseClient, ids: string[]): Promise<Map
 }
 
 /** Packages near the planned places, best match first, with their Bookable details. */
-export async function bookablePackages(supabase: SupabaseClient, places: Array<{ name: string; lat: number; lng: number }>, limit = 3): Promise<BookablePackage[]> {
+export async function bookablePackages(
+  supabase: SupabaseClient,
+  places: Array<{ name: string; lat: number; lng: number }>,
+  limit = 3,
+  /** Candidates already being loaded (the planner starts them alongside the attractions). */
+  preloaded?: ReturnType<typeof loadPackageCandidates>,
+): Promise<BookablePackage[]> {
   if (!places.length) return [];
-  const candidates = await loadPackageCandidates(supabase);
+  const candidates = await (preloaded ?? loadPackageCandidates(supabase));
   const byId = new Map(candidates.map((c) => [c.id, c]));
   const priceOf = (id: string) => byId.get(id)?.price?.amount ?? Infinity;
   // Verified operators first, then the cheaper offer.

@@ -5,7 +5,7 @@ import type { ToolContext } from "@/lib/tours/assistant/tools";
 import { faresBetween } from "@/lib/tours/guide/fares";
 import { parseTripRequest } from "@/lib/tours/itinerary/assistant";
 import { ratingText } from "@/lib/tours/itinerary/compare";
-import { bookablePackages, loadAttractions, type BookablePackage } from "@/lib/tours/itinerary/data";
+import { bookablePackages, loadAttractions, loadPackageCandidates, type BookablePackage } from "@/lib/tours/itinerary/data";
 import { contextToInput } from "@/lib/tours/itinerary/edit";
 import { parsePreferences, type PlannerInput } from "@/lib/tours/itinerary/form";
 import { generatePlan } from "@/lib/tours/itinerary/schedule";
@@ -84,6 +84,10 @@ export async function planTrip(ctx: ToolContext, wants: PlanWants) {
   if (!input || !parsed?.ok) return { error: "The trip details are not valid. Ask the tourist to check their dates." };
 
   ctx.onStatus?.("Checking places");
+  // Tours, fares and places don't depend on each other: load them together.
+  const candidates = loadPackageCandidates(ctx.supabase);
+  candidates.catch(() => {});
+  const gettingThereSoon = gettingThereFrom(ctx, ctx.trip.origin?.city);
   const attractions = await loadAttractions(ctx.supabase);
   if (!attractions.length) return { error: "No places with a map location are listed yet." };
   const plan = generatePlan(attractions, parsed.prefs);
@@ -95,7 +99,7 @@ export async function planTrip(ctx: ToolContext, wants: PlanWants) {
   });
 
   ctx.onStatus?.("Checking operators");
-  const [packages, gettingThere] = await Promise.all([bookablePackages(ctx.supabase, stops).catch(() => []), gettingThereFrom(ctx, ctx.trip.origin?.city)]);
+  const [packages, gettingThere] = await Promise.all([bookablePackages(ctx.supabase, stops, 3, candidates).catch(() => []), gettingThereSoon]);
   ctx.itinerary = { plan, input, stops, packages, travelers: ctx.trip.travelers, gettingThere, generatedAt: new Date().toISOString(), ...(ctx.trip.sample ? { sample: true } : {}) };
 
   // What the model gets back to explain: names and times only, from the plan itself.

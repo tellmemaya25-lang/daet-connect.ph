@@ -228,6 +228,12 @@ export async function runAssistant(
   // The photo goes with the latest message only.
   if (ctx.image) contents[contents.length - 1].parts!.push({ inlineData: { mimeType: ctx.image.mimeType, data: ctx.image.data } });
 
+  // A plan already drafted for this turn goes in with the message: the model
+  // explains it in one round, with no thinking, instead of calling plan_trip.
+  if (ctx.drafted) {
+    contents[contents.length - 1].parts!.push({ text: `\n\n[plan_trip already ran for this message; its result is below. Explain it as you would after calling plan_trip, without calling it again unless they asked for something it does not cover.]\n${asResult(ctx.drafted)}` });
+  }
+
   let stopReason: string | null = null;
   for (let round = 0; round < MAX_ITERATIONS; round++) {
     // Google's "high demand" errors come when the stream opens, before any text, so another try is safe.
@@ -235,7 +241,7 @@ export async function runAssistant(
       client.models.generateContentStream({
         model,
         contents,
-        config: { systemInstruction: system, tools: [{ functionDeclarations: declarations }], maxOutputTokens: MAX_OUTPUT_TOKENS, thinkingConfig: thinkingConfig(THINKING_BUDGET) },
+        config: { systemInstruction: system, tools: [{ functionDeclarations: declarations }], maxOutputTokens: MAX_OUTPUT_TOKENS, thinkingConfig: thinkingConfig(ctx.drafted && round === 0 ? 0 : THINKING_BUDGET) },
       }),
     );
 
