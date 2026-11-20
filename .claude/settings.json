@@ -1,0 +1,17 @@
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "mcp__Supabase__execute_sql",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/readonly-sql.mjs\"",
+            "timeout": 10,
+            "statusMessage": "Checking the SQL is read-only..."
+          }
+        ]
+      }
+    ]
+  }
+}

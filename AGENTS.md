@@ -18,6 +18,6 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 - Table columns: `src/lib/supabase/database.types.ts`. Migrations hold only changes.
 - Admin, operator and guide shells (sidebar, top bar, which frame a page gets): `docs/ROLE_SHELLS.md`.
 - E2E viewport, mock RPCs and log noise: `docs/E2E.md`.
-- Database migrations are applied by the user in the Supabase SQL editor.
+- Database migrations are applied by the user in the Supabase SQL editor. `.claude/hooks/readonly-sql.mjs` lets plain read-only `SELECT`s through the Supabase MCP without a prompt; any write, secrets schema (`auth`, `vault`) or project RPC call still asks.
 - After a PR merges, reset the work branch to `origin/main`, then push.
 
