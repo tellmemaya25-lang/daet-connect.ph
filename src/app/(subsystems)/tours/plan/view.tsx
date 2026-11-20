@@ -70,9 +70,16 @@ async function Planner({ searchParams, inAdmin }: ViewProps & { inAdmin: boolean
   // The merged chat + plan planner. TRIP_PLANNER_V2=off brings back the old form.
   if (process.env.TRIP_PLANNER_V2 !== "off") {
     return (
-      <Body>
-        <PlannerV2 signedIn={signedIn} canBook={canBook} initialDescription={initialDescription} />
-      </Body>
+      // Full width outside the admin shell: the chat is pinned to the left edge and the map fills the right.
+      inAdmin ? (
+        <AdminPage>
+          <PlannerV2 signedIn={signedIn} canBook={canBook} initialDescription={initialDescription} />
+        </AdminPage>
+      ) : (
+        <PageBody bleed>
+          <PlannerV2 signedIn={signedIn} canBook={canBook} initialDescription={initialDescription} />
+        </PageBody>
+      )
     );
   }
 
