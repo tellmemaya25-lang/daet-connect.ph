@@ -39,10 +39,8 @@ export async function POST(request: Request) {
   // Booking links follow the same rule as the pages: a visitor may start the
   // flow, a signed-in staff account is never offered it, and a failed role
   // lookup fails closed.
-  const { data: role, error: roleError } = user
-    ? await supabase.rpc("get_my_role")
-    : { data: null, error: null };
-  const canBook = canStartBooking({ user, role, error: roleError ? roleError.message : null });
+  // Started now, awaited below with the daily count: the two lookups don't depend on each other.
+  const rolePromise = user ? supabase.rpc("get_my_role").then((r) => r) : Promise.resolve({ data: null, error: null });
   // A day's allowance of full answers (3 without an account, 20 with one),
   // counted per account or per device; then basic mode.
   const jar = await cookies();
@@ -53,7 +51,11 @@ export async function POST(request: Request) {
   }
   const today = toManilaDateKey(new Date());
   const valid = !("error" in cleanHistory(body));
-  const count = valid ? await countAiMessage(adminOrNull(), usageCaller(user?.id ?? null, deviceId), today) : null;
+  const [{ data: role, error: roleError }, count] = await Promise.all([
+    rolePromise,
+    valid ? countAiMessage(adminOrNull(), usageCaller(user?.id ?? null, deviceId), today) : Promise.resolve(null),
+  ]);
+  const canBook = canStartBooking({ user, role, error: roleError ? roleError.message : null });
   const { withinDay, askSignIn } = dailyDecision(Boolean(user), count);
   const aiAllowed = withinDay && isAssistantLlmEnabled() && allowAiCall("assistant", aiCallerKey(user?.id, (await headers()).get("x-forwarded-for")));
 

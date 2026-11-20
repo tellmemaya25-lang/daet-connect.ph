@@ -1,7 +1,7 @@
 "use client";
 
 import { formatPeso } from "@/lib/money";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import type { DateOption } from "@/lib/tours/availability";
 import { createBooking } from "./actions";
@@ -54,6 +54,10 @@ const formatOpenDate = (dateKey: string) =>
 export function BookingForm({ packageId, priceVariants, meetingPoint = null, pickupVehicles = [], pickupShortcuts = [], meetingLatLng = null, dateOptions, tourTiming, diary = [], userProfile, prefill = {} }: BookingFormProps) {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  // Set synchronously, so a double tap or Enter + click sends one booking even
+  // before React re-renders the disabled button. Stays set after success while
+  // the page navigates away.
+  const submittingRef = useRef(false);
   const [error, setError] = useState<string | null>(null);
 
   // Form state
@@ -141,6 +145,8 @@ export function BookingForm({ packageId, priceVariants, meetingPoint = null, pic
       setError(!doorPin ? "Choose where we should pick you up." : "This pickup can't be done: see the note under Pick me up.");
       return;
     }
+    if (submittingRef.current) return;
+    submittingRef.current = true;
     setIsSubmitting(true);
     setError(null);
 
@@ -160,6 +166,7 @@ export function BookingForm({ packageId, priceVariants, meetingPoint = null, pic
 
       if (!result.success) {
         setError(result.error || "We could not send your booking. Please try again.");
+        submittingRef.current = false;
         setIsSubmitting(false);
         return;
       }
@@ -168,6 +175,7 @@ export function BookingForm({ packageId, priceVariants, meetingPoint = null, pic
       router.push(`/tours/bookings/${result.bookingId}`);
     } catch {
       setError("We could not reach the server. Check your connection and try again. Nothing was booked.");
+      submittingRef.current = false;
       setIsSubmitting(false);
     }
   }

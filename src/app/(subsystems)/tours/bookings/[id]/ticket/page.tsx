@@ -1,5 +1,6 @@
 import { ButtonLink } from "@/components/ui/button";
-import { hasTicket } from "@/lib/tours/ticket";
+import { hasTicket, hasUsableTicket } from "@/lib/tours/ticket";
+import { toManilaDateKey } from "@/lib/tours/events-calendar";
 import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
 import { Notice } from "@/components/ui/notice";
@@ -67,6 +68,21 @@ export default async function BookingTicketPage({ params }: PageProps) {
               Pay the balance
             </ButtonLink>
           ) : null}
+        </div>
+      </PageFrame>
+    );
+  }
+
+  // Past its tour day (Manila) the signed QR no longer verifies: say so instead of showing a dead code.
+  if (!hasUsableTicket(booking, toManilaDateKey(new Date()))) {
+    return (
+      <PageFrame>
+        <div className="mx-auto max-w-md">
+          {back}
+          <h1 className="display-2 mt-4 text-daet-ink">Your ticket</h1>
+          <Notice variant="info" className="mt-4" title="This ticket has expired">
+            Tickets are valid until the end of the tour day ({tourDate(booking.tour_date)}). Your booking {booking.booking_reference} stays in My bookings as a record.
+          </Notice>
         </div>
       </PageFrame>
     );

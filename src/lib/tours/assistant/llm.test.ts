@@ -56,6 +56,25 @@ describe("runAssistant", () => {
     expect(second.contents[2].parts[0].functionResponse.name).toBe("policy");
   });
 
+  it("runs a round's tool calls together and answers them in the calls' order", async () => {
+    const parts = [
+      { functionCall: { id: "1", name: "policy", args: { topic: "cancel" } } },
+      { functionCall: { id: "2", name: "policy", args: { topic: "pay" } } },
+      { functionCall: { id: "3", name: "no_such_tool", args: {} } },
+    ];
+    const client = clientWith([[{ candidates: [{ content: { parts }, finishReason: "STOP" }] }], [text("Done.", "STOP")]]);
+    await runAssistant(ctx, [{ role: "user", content: "refund and pay?" }], () => {}, client);
+    const results = client.models.generateContentStream.mock.calls[1][0].contents[2].parts;
+    expect(results.map((p: { functionResponse: { id: string } }) => p.functionResponse.id)).toEqual(["1", "2", "3"]);
+    expect(results[2].functionResponse.response.result).toMatch(/Unknown tool/);
+  });
+
+  it("caps thinking so each round answers quickly", async () => {
+    const client = clientWith([[text("Hi.", "STOP")]]);
+    await runAssistant(ctx, [{ role: "user", content: "hi" }], () => {}, client);
+    expect(client.models.generateContentStream.mock.calls[0][0].config.thinkingConfig).toEqual({ thinkingBudget: 512 });
+  });
+
   it("stops on a refusal and does not run a cut-off tool call", async () => {
     const blocked = await runAssistant(ctx, [{ role: "user", content: "x" }], () => {}, clientWith([[{ promptFeedback: { blockReason: "SAFETY" } }]]));
     expect(blocked.stopReason).toBe("refusal");
