@@ -1,6 +1,7 @@
 import {
   emailCooldownSeconds,
   emailRateLimitMessage,
+  isRecipientNotAuthorized,
   isEmailRateLimited,
   signUpErrorMessage,
 } from "@/lib/auth/errors";
@@ -42,5 +43,13 @@ describe("Supabase rate-limit errors", () => {
     const message = signUpErrorMessage(QUOTA);
     expect(message).toMatch(/could not send your confirmation email/i);
     expect(message).toMatch(/try again in about an hour/i);
+  });
+});
+
+describe("recipient not authorized", () => {
+  it("recognises the built-in mailer refusing a non-team address", () => {
+    const error = { message: "Email address not authorized", status: 400 };
+    expect(isRecipientNotAuthorized(error)).toBe(true);
+    expect(signUpErrorMessage(error)).toMatch(/cannot send confirmation emails/i);
   });
 });

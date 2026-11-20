@@ -72,9 +72,24 @@ export function emailRateLimitMessage(error: AuthErrorLike, sending: string): st
   return "We are getting a lot of requests right now. Please wait a few minutes, then try again.";
 }
 
+/**
+ * The project's mailer refused the recipient. Supabase's built-in email service
+ * only delivers to members of the project's team ("Email address not
+ * authorized"), so every stranger's sign-up fails this way until custom SMTP is
+ * set up. See docs/SIGNUP_LIMITS.md.
+ */
+export function isRecipientNotAuthorized(error: AuthErrorLike): boolean {
+  return text(error).includes("not authorized");
+}
+
 export const GENERIC_SIGN_IN = "That email and password do not match an account.";
 
 export function signUpErrorMessage(error: AuthErrorLike): string {
+  if (isRecipientNotAuthorized(error)) {
+    // Supabase's built-in mailer only delivers to the project's team until
+    // custom SMTP is set up. See docs/SIGNUP_LIMITS.md.
+    return "We cannot send confirmation emails right now. Please try again later, or contact the Daet Tourism Office.";
+  }
   if (isEmailRateLimited(error)) {
     return emailRateLimitMessage(error, "your confirmation email");
   }
