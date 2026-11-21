@@ -1740,9 +1740,10 @@ http
         ]);
       if (url.pathname === "/rest/v1/rpc/tours_admin_activity")
         return send(200, [
-          { id: "3", at: "2026-11-15T03:00:00Z", actor_id: "d3000000-0000-4000-8000-000000000002", actor_role: "operator", actor_name: "Mark Operator", action: "update", entity: "tours_bookings", entity_id: "b1", changes: { status: "confirmed" }, notes: null },
-          { id: "a2", at: "2026-11-15T02:00:00Z", actor_id: null, actor_role: "admin", actor_name: "Tourism Office", action: "ban_user", entity: "admin_action", entity_id: "user:x", changes: {}, notes: "Spam reports" },
-          { id: "1", at: "2026-11-15T01:00:00Z", actor_id: null, actor_role: "system", actor_name: null, action: "insert", entity: "tours_payments", entity_id: "p1", changes: { amount: 1200 }, notes: null },
+          { id: "3", at: "2026-11-15T03:00:45Z", actor_id: "d3000000-0000-4000-8000-000000000002", actor_role: "operator", actor_name: "Mark Operator", action: "update", entity: "tours_bookings", entity_id: LIVE_BID, changes: { status: "confirmed" }, notes: null },
+          { id: "a2", at: "2026-11-15T02:00:00Z", actor_id: "9b7e5a5e-0000-4000-8000-000000000001", actor_role: "admin", actor_name: "Tourism Office", action: "ban_user", entity: "admin_action", entity_id: "user:d3000000-0000-4000-8000-000000000002", changes: {}, notes: "Spam reports" },
+          { id: "1", at: "2026-11-15T01:00:00Z", actor_id: null, actor_role: "system", actor_name: null, action: "insert", entity: "tours_payments", entity_id: "p1", changes: { amount: 1200, recorded_by: "9b7e5a5e-0000-4000-8000-000000000001" }, notes: null },
+          { id: "0", at: "2026-11-15T00:30:00Z", actor_id: null, actor_role: "system", actor_name: null, action: "update", entity: "tours_packages", entity_id: "aa000000-0000-4000-8000-000000000001", changes: { status: "published" }, notes: null },
         ]);
       if (url.pathname === "/rest/v1/rpc/tours_operator_activity")
         return send(200, [

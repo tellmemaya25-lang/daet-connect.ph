@@ -22,7 +22,15 @@ test.describe("admin moderation", () => {
     const table = page.getByRole("table", { name: "Activity, newest first" });
     await expect(table.getByText("changed a booking: status → confirmed")).toBeVisible();
     await expect(table.getByText("ban user: Spam reports")).toBeVisible();
+    // Ids are resolved to names, admin actions name the admin, and times drop the seconds.
+    await expect(table.getByText("Booking BK-20261023-7F3K2Q")).toBeVisible();
+    await expect(table.getByText("Tourism Office")).toBeVisible();
+    await expect(table.getByText("₱1,200 payment")).toBeVisible();
+    await expect(table.getByText("user:")).toHaveCount(0);
+    await expect(table.getByText("Nov 15, 2026, 11:00 AM")).toBeVisible();
+    await expect(table.locator("time").first()).toHaveAttribute("title", /11:00:45/);
     await checkA11y(page, "activity log");
+    await page.getByRole("button", { name: /^Filters/ }).click();
     await page.getByLabel("What").selectOption("tours_bookings");
     await page.getByRole("button", { name: "Show" }).click();
     await expect(page).toHaveURL(/entity=tours_bookings/);

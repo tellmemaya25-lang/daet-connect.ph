@@ -79,3 +79,16 @@ describe("activity", () => {
     expect(describeActivity(wide)).toBe("changed a package: title, description");
   });
 });
+
+describe("activity labels", () => {
+  const base = { id: "1", at: "2026-11-15T01:00:00Z", actorRole: "system", actorName: null, action: "insert", changes: {}, notes: null };
+  it("names the record behind an entry, including admin actions", async () => {
+    const { entryRef, entryActorId } = await import("@/lib/tours/activity-labels");
+    expect(entryRef({ entity: "tours_bookings", entityId: ID })).toEqual({ table: "tours_bookings", id: ID });
+    expect(entryRef({ entity: "admin_action", entityId: `user:${ID}` })).toEqual({ table: "profiles", id: ID });
+    expect(entryRef({ entity: "tours_bookings", entityId: "b1" })).toBeNull();
+    expect(entryActorId({ actorId: null, changes: { recorded_by: ID } })).toBe(ID);
+    expect(entryActorId({ actorId: null, changes: {} })).toBeNull();
+    expect(base.id).toBe("1");
+  });
+});
