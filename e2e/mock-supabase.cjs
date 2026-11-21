@@ -1704,6 +1704,24 @@ http
         const refunded = rows.reduce((sum, row) => sum + Number(row.amount || 0), 0);
         return send(200, Math.max(0, Math.round((500 - refunded) * 100) / 100));
       }
+      // Admin guide-assignments board: the published package, two approved guides on Bagasbas Coast Tours' team, one booking waiting.
+      if (url.pathname === "/rest/v1/rpc/tours_admin_guide_coverage") {
+        const team = ["f66b1fe2-a997-4c0b-be13-22d62cf0dba6", "b2000000-0000-4000-8000-000000000002"];
+        return send(200, {
+          areas: [{ municipality: "Daet", guides: 2, packages: 1 }],
+          unplaced_packages: 0,
+          guides: [
+            { id: team[0], name: "Jeremiah Sabihon", areas: ["Daet"] },
+            { id: team[1], name: "Liza Bautista", areas: ["Daet"] },
+          ],
+          packages: [
+            { id: "aa000000-0000-4000-8000-000000000001", title: "Bagasbas Sunrise Surf Lesson", operator: "Bagasbas Coast Tours", municipality: "Daet", guide_ids: [team[0]], team_ids: team },
+          ],
+          bookings: [
+            { id: "b1", booking_reference: "DC-TEST01", tour_date: "2026-12-05", status: "confirmed", number_of_pax: 2, title: "Bagasbas Sunrise Surf Lesson", municipality: "Daet", guide_proposal_status: "proposed", guide_proposed_by: "auto", proposed_guide_id: team[1], proposed_guide_name: "Liza Bautista", operator_name: "Bagasbas Coast Tours", team_ids: team },
+          ],
+        });
+      }
       if (url.pathname === "/rest/v1/rpc/tours_guides_free_on")
         return send(200, [
           {

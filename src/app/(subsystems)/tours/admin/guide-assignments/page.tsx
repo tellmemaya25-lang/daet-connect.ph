@@ -22,7 +22,7 @@ export default async function GuideAssignmentsPage() {
     <AdminPage>
       <AdminPageHeading title="Guide assignments" backHref="/tours/admin" backLabel="Admin dashboard" />
       <p className="mb-6 max-w-3xl text-slate-600 dark:text-slate-400">
-        Each new booking is proposed a free guide automatically from the guides on its operator&apos;s team: first the guides chosen for that package, then the rest of the team, the least busy first. You can assign someone yourself below. Either way, the operator approves the guide before the tour.
+        New bookings are proposed a free guide from the operator&apos;s team automatically. Assign someone yourself below; the operator approves either way.
       </p>
 
       {error ? (
