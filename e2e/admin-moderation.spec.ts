@@ -16,6 +16,21 @@ test.describe("admin moderation", () => {
     await expect(page.getByText("Dismissed.")).toBeVisible();
   });
 
+  test("the admin hides a review only after giving a reason", async ({ context, page }) => {
+    await signInAs(context, "admin");
+    await page.goto("/tours/admin/reviews", { waitUntil: "networkidle" });
+    await expect(page.getByRole("link", { name: "All" })).toHaveAttribute("aria-current", "page");
+    await expect(page.getByLabel(/Reason for hiding/)).toHaveCount(0);
+    await page.getByRole("button", { name: /^Hide…/ }).first().click();
+    const reason = page.getByLabel(/Reason for hiding/);
+    await expect(reason).toBeFocused();
+    await expect(reason).toHaveAttribute("required", "");
+    await expect(page.getByText("Required, at least 3 characters.")).toBeVisible();
+    await checkA11y(page, "review hide form");
+    await page.getByRole("button", { name: "Cancel" }).click();
+    await expect(page.getByLabel(/Reason for hiding/)).toHaveCount(0);
+  });
+
   test("the admin reads the activity log and filters it", async ({ context, page }) => {
     await signInAs(context, "admin");
     await page.goto("/tours/admin/activity", { waitUntil: "networkidle" });

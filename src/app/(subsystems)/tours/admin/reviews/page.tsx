@@ -54,13 +54,13 @@ export default async function AdminReviewsPage({ searchParams }: { searchParams:
         Hidden reviews disappear from the public pages and no longer count toward ratings. The traveller and the operator still see them, with your reason.
       </p>
 
-      <nav aria-label="Filter reviews" className="mb-6 flex flex-wrap gap-2">
+      <nav aria-label="Filter reviews" className="mb-6 -mx-4 flex gap-2 overflow-x-auto px-4 pb-1 sm:mx-0 sm:flex-wrap sm:overflow-visible sm:px-0">
         {tabs.map((tab) => (
           <Link
             key={tab.key}
             href={tab.key === "all" ? "/tours/admin/reviews" : `/tours/admin/reviews?show=${tab.key}`}
             aria-current={filter === tab.key ? "page" : undefined}
-            className={`inline-flex min-h-11 items-center rounded-full px-5 text-sm font-bold ${filter === tab.key ? "bg-daet-forest text-white" : "border border-daet-ink/15 bg-surface text-daet-ink hover:bg-daet-sand"}`}
+            className={`inline-flex min-h-11 shrink-0 items-center whitespace-nowrap rounded-full px-4 text-sm sm:px-5 font-bold ${filter === tab.key ? "bg-daet-forest text-white" : "border border-daet-ink/15 bg-surface text-daet-ink hover:bg-daet-sand"}`}
           >
             {tab.label}
           </Link>
@@ -122,15 +122,15 @@ export default async function AdminReviewsPage({ searchParams }: { searchParams:
 /** Operators or guides ranked by 1–2 star reviews, with their open reports and quick moderation. */
 function WatchTable({ title, rows }: { title: string; rows: WatchRow[] }) {
   return (
-    <section aria-label={title} className="rounded-2xl card-edge bg-surface p-5">
-      <h2 className="text-lg font-bold text-daet-ink">{title}</h2>
+    <section aria-label={title} className="rounded-2xl card-edge bg-surface p-4 sm:p-5">
+      <h2 className="text-base font-bold text-daet-ink sm:text-lg">{title}</h2>
       {rows.length === 0 ? (
         <p className="mt-2 text-sm text-daet-ink/70">No one has low reviews in this period.</p>
       ) : (
         <ul className="mt-3 divide-y divide-line">
           {rows.map((r) => (
             <li key={r.id} className="flex flex-wrap items-start justify-between gap-3 py-3">
-              <div>
+              <div className="min-w-0 flex-1 basis-56">
                 <p className="font-bold text-daet-ink">
                   {r.name} {r.suspended ? <Badge tone="danger">Banned</Badge> : null}
                 </p>
