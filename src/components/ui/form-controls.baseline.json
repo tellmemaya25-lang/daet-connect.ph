@@ -7,7 +7,7 @@
   "src/app/(subsystems)/tours/admin/emergency/page.tsx": 2,
   "src/app/(subsystems)/tours/admin/events/event-form.tsx": 10,
   "src/app/(subsystems)/tours/admin/events/page.tsx": 1,
-  "src/app/(subsystems)/tours/admin/fares/fare-form.tsx": 12,
+  "src/app/(subsystems)/tours/admin/fares/fare-form.tsx": 1,
   "src/app/(subsystems)/tours/admin/fares/page.tsx": 1,
   "src/app/(subsystems)/tours/admin/guide-places/guide-place-form.tsx": 18,
   "src/app/(subsystems)/tours/admin/guide-places/page.tsx": 1,

@@ -1,6 +1,6 @@
-import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
-import { Card } from "@/components/ui/card";
+import { ButtonLink } from "@/components/ui/button";
+import { CollapsibleCard } from "@/components/ui/collapsible-card";
 import { Notice } from "@/components/ui/notice";
 import { AdminPage } from "@/components/admin/admin-page";
 import { ConfirmSubmitButton } from "@/components/tours/confirm-submit-button";
@@ -24,6 +24,8 @@ export default async function AdminFaresPage({ searchParams }: { searchParams: P
   const { data, error } = await admin.supabase.from("tours_fares").select(FARE_COLUMNS).order("from_name").order("to_name").limit(500);
   const fares = (data ?? []).map((row) => toFare(row as Record<string, unknown>));
 
+  const unverifiedCount = fares.filter((fare) => !fare.verified).length;
+
   return (
     <AdminPage>
       <AdminPageHeading title="Fares and travel times" backHref="/tours/admin/guide-places" backLabel="Local guide places" action={{ href: "/tours/admin/fares/new", label: "+ New fare" }} />
@@ -35,6 +37,12 @@ export default async function AdminFaresPage({ searchParams }: { searchParams: P
       {params.deleted ? <Notice variant="success" className="mb-4">Fare deleted.</Notice> : null}
       {params.error ? <Notice variant="error" className="mb-4">That action could not be completed.</Notice> : null}
       {error ? <Notice variant="error" className="mb-4">Fares could not be loaded.</Notice> : null}
+
+      {unverifiedCount > 0 ? (
+        <Notice variant="warning" className="mb-4">
+          Fares without a “Verified” badge have not been confirmed by the Tourism Office. The assistant tells travellers to verify them locally.
+        </Notice>
+      ) : null}
 
       {fares.length === 0 ? (
         <p className="rounded-2xl card-edge bg-surface p-8 text-center text-daet-ink">No fares yet. Add one or import a spreadsheet.</p>
@@ -50,14 +58,12 @@ export default async function AdminFaresPage({ searchParams }: { searchParams: P
                   {[FARE_MODES[fare.mode], fareLabel(fare, formatPeso) ?? "Fare unknown", minutesLabel(fare.minutes_min, fare.minutes_max)].filter(Boolean).join(" · ")}
                 </p>
                 <div className="mt-1 flex flex-wrap gap-1.5">
-                  {fare.verified ? <Badge tone="success">Verified</Badge> : <Badge tone="warning">Verify locally</Badge>}
+                  {fare.verified ? <Badge tone="success">Verified</Badge> : null}
                   {!fare.is_active ? <Badge tone="neutral">Hidden</Badge> : null}
                 </div>
               </div>
               <div className="grid shrink-0 grid-cols-2 gap-2 sm:flex">
-                <Link href={`/tours/admin/fares/${fare.id}/edit`} className="inline-flex min-h-11 items-center justify-center rounded-full bg-blue-50 dark:bg-blue-950/40 px-5 font-bold text-blue-700 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-900/40">
-                  Edit
-                </Link>
+                <ButtonLink href={`/tours/admin/fares/${fare.id}/edit`} variant="ghost">Edit</ButtonLink>
                 <form action={deleteFare}>
                   <input type="hidden" name="id" value={fare.id} />
                   <ConfirmSubmitButton message={`Delete the ${FARE_MODES[fare.mode].toLowerCase()} fare from ${fare.from_name} to ${fare.to_name}?`} className="inline-flex min-h-11 w-full items-center justify-center rounded-full px-5 font-bold text-red-600 dark:text-red-300 hover:bg-red-50 dark:hover:bg-red-950/40">
@@ -70,10 +76,9 @@ export default async function AdminFaresPage({ searchParams }: { searchParams: P
         </ul>
       )}
 
-      <Card className="mt-8">
-        <h2 className="mb-3 text-xl font-bold text-daet-ink">Import from a spreadsheet</h2>
+      <CollapsibleCard title="Import from a spreadsheet" className="mt-8">
         <CsvImportForm action={importFaresCsv} columns={FARE_CSV_COLUMNS} required="mode, from, to, source" template={TEMPLATE} templateName="fares-template.csv" />
-      </Card>
+      </CollapsibleCard>
     </AdminPage>
   );
 }
