@@ -73,6 +73,10 @@ async function Planner({ searchParams, inAdmin }: ViewProps & { inAdmin: boolean
       // Full width outside the admin shell: the chat is pinned to the left edge and the map fills the right.
       inAdmin ? (
         <AdminPage>
+          <div className="mx-auto flex w-full max-w-[75rem] flex-wrap items-center gap-x-3 gap-y-1 px-4 pt-4 text-sm text-slate-600 dark:text-slate-400 sm:px-8">
+            <span className="font-bold text-daet-ink">Admin: trip planner</span>
+            <span>This is the visitor assistant, shown here so you can try it as a visitor would.</span>
+          </div>
           <PlannerV2 signedIn={signedIn} canBook={canBook} initialDescription={initialDescription} />
         </AdminPage>
       ) : (

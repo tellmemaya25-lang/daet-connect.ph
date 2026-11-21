@@ -85,14 +85,14 @@ export function PlanStart({ signedIn, initialText = "", onSend }: { signedIn: bo
               onClick={speech.toggle}
               aria-pressed={speech.listening}
               aria-label={speech.listening ? "Stop listening" : "Speak your message"}
-              className={`inline-flex h-9 w-9 items-center justify-center rounded-full ${speech.listening ? "bg-red-600 text-white motion-safe:animate-pulse" : "text-blue-700 hover:bg-blue-50 dark:text-blue-300 dark:hover:bg-blue-950/40"}`}
+              className={`inline-flex h-11 w-11 items-center justify-center rounded-full ${speech.listening ? "bg-red-600 text-white motion-safe:animate-pulse" : "text-blue-700 hover:bg-blue-50 dark:text-blue-300 dark:hover:bg-blue-950/40"}`}
             >
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                 <path d={MIC_PATH} />
               </svg>
             </button>
           ) : null}
-          <button type="submit" aria-label="Send" disabled={!text.trim()} className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-60">
+          <button type="submit" aria-label="Send" disabled={!text.trim()} className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-60">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
               <path d="M12 19V5M6 11l6-6 6 6" />
             </svg>
@@ -143,12 +143,12 @@ export function PlanStart({ signedIn, initialText = "", onSend }: { signedIn: bo
         <h2 id="try-asking" className="font-[family-name:var(--font-display)] text-[1.75rem] font-semibold leading-8 text-daet-ink">
           Try asking
         </h2>
-        <ul className="mt-5 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+        <ul className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-6 lg:grid-cols-4">
           {TRY_ASKING.map((t, i) => (
             <li key={t.prompt}>
-              <button type="button" onClick={() => send(t.prompt)} className="block w-full overflow-hidden rounded-2xl bg-surface text-left text-daet-ink hover:bg-muted">
-                <Image src={t.photo} alt={t.alt} width={600} height={300} loading={i < 2 ? "eager" : "lazy"} className="h-[150px] w-full object-cover" />
-                <span className="block px-4 pb-4 pt-3">
+              <button type="button" onClick={() => send(t.prompt)} className="flex w-full items-center overflow-hidden rounded-2xl bg-surface text-left text-daet-ink hover:bg-muted sm:block">
+                <Image src={t.photo} alt={t.alt} width={600} height={300} loading={i < 2 ? "eager" : "lazy"} className="h-20 w-24 shrink-0 object-cover sm:h-[150px] sm:w-full" />
+                <span className="block min-w-0 px-4 py-2 sm:pb-4 sm:pt-3">
                   <span className="block font-bold">{t.prompt}</span>
                   <span className="block text-sm text-slate-600 dark:text-slate-400">{t.note}</span>
                 </span>
