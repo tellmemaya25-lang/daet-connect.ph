@@ -1,7 +1,9 @@
 import Link from "next/link";
 import { Notice } from "@/components/ui/notice";
 import { AdminPage } from "@/components/admin/admin-page";
-import { Input, Select } from "@/components/ui/field";
+import { ButtonLink } from "@/components/ui/button";
+import { EmptyState } from "@/components/ui/empty-state";
+import { Field, Input, Select } from "@/components/ui/field";
 import { AdminPageHeading, PromoAdminDenied } from "@/components/tours/promo-admin-denied";
 import { ACCOUNTS_PAGE_SIZE, parseAccountFilters, parseAccounts, ROLE_LABEL, ROLES } from "@/lib/tours/accounts";
 import { requirePromoAdmin } from "@/lib/tours/promo-admin";
@@ -23,6 +25,7 @@ export default async function AdminAccountsPage({ searchParams }: { searchParams
     p_offset: (filters.page - 1) * ACCOUNTS_PAGE_SIZE,
   });
   const list = parseAccounts(data);
+  const filtered = Boolean(filters.q || filters.role);
   const pages = Math.max(1, Math.ceil(list.total / ACCOUNTS_PAGE_SIZE));
   const pageHref = (page: number) => `/tours/admin/accounts?${new URLSearchParams({ ...(filters.q ? { q: filters.q } : {}), ...(filters.role ? { role: filters.role } : {}), page: String(page) })}`;
 
@@ -33,14 +36,12 @@ export default async function AdminAccountsPage({ searchParams }: { searchParams
         {ROLES.map((r) => `${list.counts[r] ?? 0} ${ROLE_LABEL[r].toLowerCase()}${(list.counts[r] ?? 0) === 1 ? "" : "s"}`).join(" · ")}
       </p>
 
-      <form action="/tours/admin/accounts" className="mb-6 flex flex-wrap items-end gap-2">
-        <label className="min-w-0 flex-1 text-sm font-bold text-daet-ink">
-          Name or email
+      <form action="/tours/admin/accounts" className="mb-6 grid grid-cols-1 gap-3 sm:flex sm:flex-wrap sm:items-end">
+        <Field id="accounts-q" label="Name or email" className="min-w-0 sm:flex-1">
           <Input name="q" defaultValue={filters.q} placeholder="Search accounts" />
-        </label>
-        <label className="text-sm font-bold text-daet-ink">
-          Show
-          <Select name="role" defaultValue={filters.role} className="w-44">
+        </Field>
+        <Field id="accounts-role" label="Show" className="sm:w-44">
+          <Select name="role" defaultValue={filters.role}>
             <option value="">Everyone</option>
             {ROLES.map((r) => (
               <option key={r} value={r}>
@@ -49,10 +50,15 @@ export default async function AdminAccountsPage({ searchParams }: { searchParams
             ))}
             <option value="suspended">Suspended</option>
           </Select>
-        </label>
+        </Field>
         <button type="submit" className="min-h-12 rounded-full bg-blue-600 px-6 text-sm font-bold text-white hover:bg-blue-700">
           Search
         </button>
+        {filtered ? (
+          <Link href="/tours/admin/accounts" className="inline-flex min-h-12 items-center justify-center px-2 text-sm font-bold text-blue-700 hover:underline dark:text-blue-300">
+            Clear filters
+          </Link>
+        ) : null}
       </form>
 
       {error ? (
@@ -60,7 +66,15 @@ export default async function AdminAccountsPage({ searchParams }: { searchParams
           {error.code === "PGRST202" ? "The database update for account management has not been applied yet." : "Please try again in a moment."}
         </Notice>
       ) : list.accounts.length === 0 ? (
-        <p className="rounded-2xl bg-surface p-4 text-slate-600 dark:text-slate-400">No accounts match.</p>
+        filtered ? (
+        <EmptyState
+          title="No accounts match these filters"
+          description="Try a different name or email, or show everyone."
+          action={<ButtonLink href="/tours/admin/accounts" variant="secondary">Clear filters</ButtonLink>}
+        />
+      ) : (
+        <EmptyState title="No accounts yet" description="Accounts appear here once people sign up." />
+      )
       ) : (
         <ul className="space-y-3">
           {list.accounts.map((account) => (

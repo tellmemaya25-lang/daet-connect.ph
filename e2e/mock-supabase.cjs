@@ -1773,6 +1773,21 @@ http
           months: [{ month: "2026-10", booked: 18681, collected: 27770, refunded: 8200 }, { month: "2026-11", booked: 38443, collected: 63044, refunded: 11900 }],
           top_packages: [{ id: "aa000000-0000-4000-8000-000000000001", title: "Bagasbas Sunrise Surf Lesson", operator: "Bagasbas Coast Tours", bookings: 6, booked: 14400 }],
         });
+      if (url.pathname === "/rest/v1/rpc/tours_admin_list_accounts") {
+        let args = {};
+        try { args = JSON.parse(body || "{}"); } catch {}
+        const q = String(args.p_query ?? "").toLowerCase();
+        const role = args.p_role ?? "";
+        const all = [
+          { id: "9b7e5a5e-0000-4000-8000-000000000001", full_name: "Juan dela Cruz", email: "juan@example.ph", role: "admin", created_at: "2026-01-05T00:00:00Z", last_sign_in_at: "2026-11-20T00:00:00Z", is_suspended: false, has_operator: false, has_guide: false },
+          { id: "9b7e5a5e-0000-4000-8000-000000000002", full_name: "Maria Santos", email: "maria@example.ph", role: "tourist", created_at: "2026-02-10T00:00:00Z", last_sign_in_at: null, is_suspended: false, has_operator: false, has_guide: false },
+          { id: "9b7e5a5e-0000-4000-8000-000000000003", full_name: "Pedro Reyes", email: "pedro@example.ph", role: "operator", created_at: "2026-03-01T00:00:00Z", last_sign_in_at: null, is_suspended: true, suspended_reason: "Test", has_operator: true, has_guide: false },
+        ];
+        const accounts = all.filter((a) => (!role || a.role === role || (role === "suspended" && a.is_suspended)) && (!q || a.full_name.toLowerCase().includes(q) || a.email.includes(q)));
+        const counts = {};
+        for (const a of all) counts[a.role] = (counts[a.role] ?? 0) + 1;
+        return send(200, { total: accounts.length, counts, accounts });
+      }
       if (url.pathname === "/rest/v1/rpc/tours_admin_clear_expired_bans") return send(200, 0);
       if (url.pathname === "/rest/v1/rpc/tours_submit_report") return send(200, "d1000000-0000-4000-8000-000000000009");
       if (["tours_admin_resolve_report", "tours_admin_ban"].includes(url.pathname.slice("/rest/v1/rpc/".length))) return send(200, null);
