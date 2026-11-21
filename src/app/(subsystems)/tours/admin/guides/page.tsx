@@ -100,13 +100,15 @@ export default async function AdminGuideQueuePage({ searchParams }: { searchPara
           <h1 className="display-2 mt-2 text-daet-ink">Guide applications</h1>
           <p className="mt-2 max-w-2xl text-sm leading-6 text-daet-ink/65">Review public profile details and verify the submitted ID through a short-lived private document link.</p>
         </div>
-        <span className="inline-flex min-h-10 items-center self-start rounded-full bg-yellow-50 dark:bg-yellow-950/40 px-4 text-sm font-bold text-yellow-900 dark:text-yellow-200 sm:self-auto">Pending · page {page}</span>
+        {page > 1 ? <p className="text-sm font-bold text-daet-ink/65">Page {page}</p> : null}
       </div>
-      <SearchBox action="/tours/admin/guides" label="Search pending guide applications" placeholder="Guide name, phone or introduction" value={q} className="mb-6" />
+      <SearchBox action="/tours/admin/guides" label="Search pending guide applications" placeholder="Name, phone or intro" value={q} className="mb-6" />
       {profileSearch.error ? <Notice variant="warning" className="mb-4">Guide names could not be searched, but phone numbers and introductions can still be matched.</Notice> : null}
-      <Notice variant="warning" className="mb-6">
-        Government ID files are highly sensitive. Open them only when needed for verification. Links expire after 3 minutes; do not forward or retain copies outside approved systems.
-      </Notice>
+      {guides.length > 0 ? (
+        <Notice variant="warning" className="mb-6">
+          Government ID files are highly sensitive. Open them only when needed for verification. Links expire after 3 minutes; do not forward or retain copies outside approved systems.
+        </Notice>
+      ) : null}
       {guides.length === 0 ? (
         <section className="rounded-2xl card-edge bg-surface px-6 py-14 text-center">
           <span className="mx-auto grid h-14 w-14 place-items-center rounded-2xl bg-green-50 dark:bg-green-950/40 text-2xl text-green-700 dark:text-green-300" aria-hidden="true">✓</span>
