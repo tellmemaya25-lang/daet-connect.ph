@@ -27,6 +27,9 @@ export default async function AdminEventsPage({
     .limit(200);
   const events = (data ?? []) as TourEvent[];
   const now = Date.now();
+  // Upcoming (still running or not started) soonest first; past most recent first.
+  const upcoming = events.filter((e) => Date.parse(e.ends_at) >= now).sort((x, y) => Date.parse(x.starts_at) - Date.parse(y.starts_at));
+  const past = events.filter((e) => Date.parse(e.ends_at) < now).sort((x, y) => Date.parse(y.starts_at) - Date.parse(x.starts_at));
 
   return (
     <AdminPage>
@@ -49,43 +52,58 @@ export default async function AdminEventsPage({
           <p className="text-sm text-daet-ink/70">Add festivals, cultural shows and markets for tourists to discover.</p>
         </div>
       ) : (
-        <ul className="space-y-3">
-          {events.map((event) => {
-            const isPast = Date.parse(event.ends_at) < now;
-            return (
-              <li key={event.id} className="flex flex-col gap-3 rounded-2xl card-edge bg-surface p-4 sm:flex-row sm:items-center">
-                <div className="min-w-0 flex-1">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <span className="rounded-full bg-daet-sand px-2 py-0.5 text-xs font-bold text-daet-forest dark:text-blue-300">{EVENT_CATEGORIES[event.category]}</span>
-                    {event.is_published ? (
-                      <span className="rounded-full bg-green-50 dark:bg-green-950/40 px-2 py-0.5 text-xs font-bold text-green-700 dark:text-green-300">Published</span>
-                    ) : (
-                      <span className="rounded-full bg-yellow-50 dark:bg-yellow-950/40 px-2 py-0.5 text-xs font-bold text-yellow-800 dark:text-yellow-200">Draft</span>
-                    )}
-                    {isPast ? <span className="rounded-full bg-muted px-2 py-0.5 text-xs font-bold text-slate-600 dark:text-slate-400">Past</span> : null}
-                  </div>
-                  <p className="mt-1 truncate font-bold text-daet-ink">{event.title}</p>
-                  <p className="text-sm text-daet-ink/70">{formatEventRange(event.starts_at, event.ends_at)} · {event.venue}</p>
-                </div>
-                <div className="flex gap-2">
-                  <Link href={`/tours/admin/events/${event.id}/edit`} className="inline-flex min-h-11 flex-1 items-center justify-center rounded-full border border-daet-forest/30 px-5 text-sm font-bold text-daet-leaf dark:text-blue-300 hover:bg-daet-forest/5 sm:flex-none">
-                    Edit<span className="sr-only"> {event.title}</span>
-                  </Link>
-                  <form action={deleteEvent} className="flex-1 sm:flex-none">
-                    <input type="hidden" name="id" value={event.id} />
-                    <ConfirmSubmitButton
-                      message={`Delete "${event.title}"? This cannot be undone.`}
-                      className="inline-flex min-h-11 w-full items-center justify-center rounded-full px-5 text-sm font-bold text-red-700 dark:text-red-300 hover:bg-red-50 dark:hover:bg-red-950/40"
-                    >
-                      Delete<span className="sr-only"> {event.title}</span>
-                    </ConfirmSubmitButton>
-                  </form>
-                </div>
-              </li>
-            );
-          })}
-        </ul>
+        <div className="space-y-8">
+          <EventGroup id="upcoming" title="Upcoming" events={upcoming} empty="No upcoming events. Add one with “+ New event”." />
+          {past.length > 0 ? <EventGroup id="past" title="Past" events={past} /> : null}
+        </div>
       )}
     </AdminPage>
+  );
+}
+
+function EventGroup({ id, title, events, empty }: { id: string; title: string; events: TourEvent[]; empty?: string }) {
+  return (
+    <section aria-labelledby={`${id}-heading`}>
+      <h2 id={`${id}-heading`} className="mb-3 text-lg font-bold text-daet-ink">
+        {title} <span className="text-sm font-semibold text-daet-ink/70">({events.length})</span>
+      </h2>
+      {events.length === 0 ? (
+        <p className="rounded-2xl border border-dashed border-line bg-surface p-5 text-sm text-daet-ink/70">{empty}</p>
+      ) : (
+        <ul className="space-y-3">
+          {events.map((event) => (
+            <li key={event.id} className={`flex flex-col gap-3 rounded-2xl card-edge bg-surface p-4 sm:flex-row sm:items-center ${id === "past" ? "opacity-80" : ""}`}>
+              <div className="min-w-0 flex-1">
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="rounded-full bg-daet-sand px-2 py-0.5 text-xs font-bold text-daet-forest dark:text-blue-300">{EVENT_CATEGORIES[event.category]}</span>
+                  {event.is_published ? (
+                    <span className="rounded-full bg-green-50 dark:bg-green-950/40 px-2 py-0.5 text-xs font-bold text-green-700 dark:text-green-300">Published</span>
+                  ) : (
+                    <span className="rounded-full bg-yellow-50 dark:bg-yellow-950/40 px-2 py-0.5 text-xs font-bold text-yellow-800 dark:text-yellow-200">Draft</span>
+                  )}
+                </div>
+                <p className="mt-1 truncate font-bold text-daet-ink">{event.title}</p>
+                <p className="text-sm text-daet-ink/70">{formatEventRange(event.starts_at, event.ends_at)} · {event.venue}</p>
+              </div>
+              <div className="flex gap-2">
+                <Link href={`/tours/admin/events/${event.id}/edit`} className="inline-flex min-h-11 flex-1 items-center justify-center rounded-full border border-daet-forest/30 px-5 text-sm font-bold text-daet-leaf dark:text-blue-300 hover:bg-daet-forest/5 sm:flex-none">
+                  Edit<span className="sr-only"> {event.title}</span>
+                </Link>
+                <form action={deleteEvent} className="flex-1 sm:flex-none">
+                  <input type="hidden" name="id" value={event.id} />
+                  <ConfirmSubmitButton
+                    message={`Delete "${event.title}"? This cannot be undone.`}
+                    confirmLabel="Delete event"
+                    className="inline-flex min-h-11 w-full items-center justify-center rounded-full border border-red-300 dark:border-red-700 px-5 text-sm font-bold text-red-700 dark:text-red-300 hover:bg-red-50 dark:hover:bg-red-950/40"
+                  >
+                    Delete<span className="sr-only"> {event.title}</span>
+                  </ConfirmSubmitButton>
+                </form>
+              </div>
+            </li>
+          ))}
+        </ul>
+      )}
+    </section>
   );
 }

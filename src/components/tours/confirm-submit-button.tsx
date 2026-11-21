@@ -6,10 +6,12 @@ import { useFeedback } from "@/components/ui/feedback";
 /** Submit button that asks for confirmation (in a dialog) before a destructive action. */
 export function ConfirmSubmitButton({
   message,
+  confirmLabel = "Yes, continue",
   className,
   children,
 }: {
   message: string;
+  confirmLabel?: string;
   className?: string;
   children: ReactNode;
 }) {
@@ -24,7 +26,7 @@ export function ConfirmSubmitButton({
         // Hold the submit, ask, then submit this same button once confirmed.
         event.preventDefault();
         if (!form) return;
-        if (await confirm({ title: message, confirmLabel: "Yes, continue" })) form.requestSubmit(button);
+        if (await confirm({ title: message, confirmLabel, confirmVariant: "danger" })) form.requestSubmit(button);
       }}
     >
       {children}

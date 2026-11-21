@@ -950,6 +950,20 @@ function build(role) {
       attraction_id: bagasbasAttr ? bagasbasAttr.id : null,
       source: "Tourism Office memo",
     },
+    {
+      id: "e1000000-0000-4000-8000-000000000002",
+      title: "Daet Pineapple Fair",
+      description: "Market stalls and food tasting.",
+      category: "festival",
+      venue: "Daet Plaza",
+      organizer: null,
+      starts_at: new Date(Date.now() + 10 * 86400000).toISOString(),
+      ends_at: new Date(Date.now() + 11 * 86400000).toISOString(),
+      image_url: null,
+      is_published: false,
+      attraction_id: null,
+      source: null,
+    },
   ];
   const surf = {
     id: PKG,

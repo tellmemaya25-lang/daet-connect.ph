@@ -1,22 +1,50 @@
 "use client";
 
 import Link from "next/link";
+import { useState, type FormEvent } from "react";
 import { Notice } from "@/components/ui/notice";
 import { usePromoForm } from "@/components/tours/use-promo-form";
 import { PromoCheckbox, PromoField, PromoImageField, promoInputClass } from "@/components/tours/promo-fields";
-import { isoToManilaLocal } from "@/lib/tours/events-calendar";
+import { isoToManilaLocal, manilaLocalToIso } from "@/lib/tours/events-calendar";
 import { EVENT_CATEGORIES, type TourEvent } from "@/lib/tours/promo-validation";
 import { saveEvent } from "./actions";
+
+const DEFAULT_DURATION_HOURS = 3;
+
+/** Starts + a few hours, as a `datetime-local` value (Manila wall-clock, so plain UTC math is fine). */
+function suggestEnd(startsAt: string): string {
+  const iso = manilaLocalToIso(startsAt);
+  if (!iso) return "";
+  return isoToManilaLocal(new Date(Date.parse(iso) + DEFAULT_DURATION_HOURS * 3600_000).toISOString());
+}
 
 export type AttractionOption = { id: string; name: string };
 
 export function EventForm({ event, attractions = [] }: { event?: TourEvent; attractions?: AttractionOption[] }) {
   const { state, pending, onSubmit } = usePromoForm(saveEvent);
-  const errors = state.errors;
+  const [startsAt, setStartsAt] = useState(event ? isoToManilaLocal(event.starts_at) : "");
+  const [endsAt, setEndsAt] = useState(event ? isoToManilaLocal(event.ends_at) : "");
+  // Follow the start with a suggested end until the admin sets the end themselves.
+  const [endEdited, setEndEdited] = useState(Boolean(event));
+  const [endError, setEndError] = useState<string | undefined>();
+  const errors: Record<string, string | undefined> = { ...state.errors, ...(endError ? { endsAt: endError } : {}) };
   const invalid = (field: string) => (errors[field] ? true : undefined);
 
   return (
-    <form onSubmit={onSubmit} className="space-y-5" noValidate>
+    <form
+      onSubmit={(e: FormEvent<HTMLFormElement>) => {
+        const start = manilaLocalToIso(startsAt);
+        const end = manilaLocalToIso(endsAt);
+        if (start && end && Date.parse(end) < Date.parse(start)) {
+          e.preventDefault();
+          setEndError("End must be on or after the start.");
+          document.getElementById("endsAt")?.focus();
+          return;
+        }
+        setEndError(undefined);
+        onSubmit(e);
+      }}
+      className="space-y-5" noValidate>
       {event ? <input type="hidden" name="id" value={event.id} /> : null}
 
       {state.message ? <Notice variant="error">{state.message}</Notice> : null}
@@ -57,10 +85,37 @@ export function EventForm({ event, attractions = [] }: { event?: TourEvent; attr
 
       <div className="grid gap-5 sm:grid-cols-2">
         <PromoField id="startsAt" label="Starts" hint="Philippine time" required error={errors.startsAt}>
-          <input id="startsAt" name="startsAt" type="datetime-local" defaultValue={event ? isoToManilaLocal(event.starts_at) : ""} required aria-invalid={invalid("startsAt")} className={promoInputClass} />
+          <input
+            id="startsAt"
+            name="startsAt"
+            type="datetime-local"
+            value={startsAt}
+            onChange={(e) => {
+              setStartsAt(e.target.value);
+              setEndError(undefined);
+              if (!endEdited) setEndsAt(suggestEnd(e.target.value));
+            }}
+            required
+            aria-invalid={invalid("startsAt")}
+            className={promoInputClass}
+          />
         </PromoField>
-        <PromoField id="endsAt" label="Ends" hint="Philippine time" required error={errors.endsAt}>
-          <input id="endsAt" name="endsAt" type="datetime-local" defaultValue={event ? isoToManilaLocal(event.ends_at) : ""} required aria-invalid={invalid("endsAt")} className={promoInputClass} />
+        <PromoField id="endsAt" label="Ends" hint={`Philippine time. Cannot be before the start; suggested ${DEFAULT_DURATION_HOURS} hours later.`} required error={errors.endsAt}>
+          <input
+            id="endsAt"
+            name="endsAt"
+            type="datetime-local"
+            value={endsAt}
+            min={startsAt || undefined}
+            onChange={(e) => {
+              setEndsAt(e.target.value);
+              setEndEdited(true);
+              setEndError(undefined);
+            }}
+            required
+            aria-invalid={invalid("endsAt")}
+            className={promoInputClass}
+          />
         </PromoField>
       </div>
 
