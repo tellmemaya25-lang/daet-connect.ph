@@ -15,6 +15,7 @@ export default async function AdminBackupPage() {
       <BackupPanel
         action="/tours/admin/backup/download"
         items={ADMIN_BACKUP_ITEMS}
+        privacyNote="This file includes personal contact details for bookings, operators, guides and accounts. Keep it private. Bank, GCash, permit and ID details are never included."
         intro="Download records across the whole system. Choose what to save. Bookings, operators, guides and accounts include personal contact details, so keep the file private. Bank, GCash, permit and ID details are never included."
       />
     </AdminPage>

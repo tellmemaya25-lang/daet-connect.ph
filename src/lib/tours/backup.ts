@@ -52,8 +52,8 @@ export type GuideBackupItem = (typeof GUIDE_BACKUP_ITEMS)[number]["id"];
 export type AdminBackupItem = (typeof ADMIN_BACKUP_ITEMS)[number]["id"];
 
 export const BACKUP_FORMATS = [
-  { id: "zip", label: "ZIP of CSV files (opens in Excel or Sheets)" },
-  { id: "json", label: "One JSON file (for archiving or moving data)" },
+  { id: "zip", label: "ZIP of CSV files", hint: "Opens in Excel or Google Sheets" },
+  { id: "json", label: "One JSON file", hint: "For archiving or moving data" },
 ] as const;
 export type BackupFormat = (typeof BACKUP_FORMATS)[number]["id"];
 
