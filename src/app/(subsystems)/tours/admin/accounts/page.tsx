@@ -16,13 +16,33 @@ export default async function AdminAccountsPage({ searchParams }: { searchParams
   const filters = parseAccountFilters(await searchParams);
   // Timed bans that have run out show as active again (Auth already lets them sign in).
   await admin.supabase.rpc("tours_admin_clear_expired_bans");
-  const { data, error } = await admin.supabase.rpc("tours_admin_list_accounts", {
-    p_query: filters.q || null,
-    p_role: filters.role || null,
-    p_limit: ACCOUNTS_PAGE_SIZE,
-    p_offset: (filters.page - 1) * ACCOUNTS_PAGE_SIZE,
-  });
+  
+  // Select the correct RPC based on the filter role
+  let data: unknown = null;
+  let error: unknown = null;
+  
+  if (filters.role === "archived") {
+    const { data: archData, error: archError } = await admin.supabase.rpc("tours_admin_list_archived_accounts", {
+      p_query: filters.q || null,
+      p_limit: ACCOUNTS_PAGE_SIZE,
+      p_offset: (filters.page - 1) * ACCOUNTS_PAGE_SIZE,
+    });
+    data = archData;
+    error = archError;
+  } else {
+    const { data: normData, error: normError } = await admin.supabase.rpc("tours_admin_list_accounts", {
+      p_query: filters.q || null,
+      p_role: filters.role || null,
+      p_limit: ACCOUNTS_PAGE_SIZE,
+      p_offset: (filters.page - 1) * ACCOUNTS_PAGE_SIZE,
+    });
+    data = normData;
+    error = normError;
+  }
+
   const list = parseAccounts(data);
+  
+  // Adjust counts for archived view if needed (the RPC returns total but not counts for archived)
   const pages = Math.max(1, Math.ceil(list.total / ACCOUNTS_PAGE_SIZE));
   const pageHref = (page: number) => `/tours/admin/accounts?${new URLSearchParams({ ...(filters.q ? { q: filters.q } : {}), ...(filters.role ? { role: filters.role } : {}), page: String(page) })}`;
 
@@ -30,7 +50,11 @@ export default async function AdminAccountsPage({ searchParams }: { searchParams
     <AdminPage>
       <AdminPageHeading title="Accounts and roles" backHref="/tours/admin" backLabel="Admin dashboard" />
       <p className="mb-4 text-sm text-slate-600 dark:text-slate-400">
-        {ROLES.map((r) => `${list.counts[r] ?? 0} ${ROLE_LABEL[r].toLowerCase()}${(list.counts[r] ?? 0) === 1 ? "" : "s"}`).join(" · ")}
+        {filters.role === "archived" ? (
+          `${list.total} archived account${list.total === 1 ? "" : "s"}`
+        ) : (
+          ROLES.map((r) => `${list.counts[r] ?? 0} ${ROLE_LABEL[r].toLowerCase()}${(list.counts[r] ?? 0) === 1 ? "" : "s"}`).join(" · ")
+        )}
       </p>
 
       <form action="/tours/admin/accounts" className="mb-6 flex flex-wrap items-end gap-2">
@@ -48,6 +72,7 @@ export default async function AdminAccountsPage({ searchParams }: { searchParams
               </option>
             ))}
             <option value="suspended">Suspended</option>
+            <option value="archived">Archived</option>
           </Select>
         </label>
         <button type="submit" className="min-h-12 rounded-full bg-blue-600 px-6 text-sm font-bold text-white hover:bg-blue-700">
