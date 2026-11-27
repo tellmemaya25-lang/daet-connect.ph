@@ -31,7 +31,7 @@ export async function setAccountSuspended(userId: string, suspend: boolean, reas
   const why = (reason ?? "").trim().slice(0, 300);
   if (suspend && why.length < 3) return { ok: false, message: "Give a reason for the suspension." };
 
-  const { error } = await admin.supabase.rpc("tours_admin_set_suspended", { p_user_id: userId, p_suspended: suspend, p_reason: why });
+  const { error } = await admin.supabase.rpc("tours_admin_suspend_and_archive", { p_user_id: userId, p_suspended: suspend, p_reason: why });
   if (error) return { ok: false, message: userFacingDbError(error, "The account could not be updated.") };
 
   try {
@@ -43,5 +43,46 @@ export async function setAccountSuspended(userId: string, suspend: boolean, reas
     return { ok: false, message: suspend ? "Marked suspended, but sign-in could not be blocked. Try again." : "Marked active, but sign-in could not be allowed again. Try again." };
   }
   revalidatePath("/tours/admin/accounts");
-  return { ok: true, message: suspend ? "Account suspended. They can no longer sign in." : "Account restored. They can sign in again." };
+  return { ok: true, message: suspend ? "Account suspended and moved to the archive. They can no longer sign in." : "Account restored. They can sign in again." };
 }
+
+/**
+ * Restores an archived account: removes the archive state and reactivates the account.
+ */
+export async function restoreAccount(userId: string): Promise<AccountActionResult> {
+  const admin = await requirePromoAdmin();
+  if (!admin.ok) return { ok: false, message: admin.error };
+  if (!isUuid(userId)) return { ok: false, message: "Account not found." };
+
+  const { error } = await admin.supabase.rpc("tours_admin_restore_account", { p_user_id: userId });
+  if (error) return { ok: false, message: userFacingDbError(error, "The account could not be restored from archive.") };
+
+  // Also lift the sign-in ban in Supabase Auth
+  try {
+    const { error: banError } = await createSupabaseAdminClient().auth.admin.updateUserById(userId, { ban_duration: "none" });
+    if (banError) throw banError;
+  } catch (err) {
+    console.error("Auth ban lift failed during restore:", err);
+    revalidatePath("/tours/admin/accounts");
+    return { ok: false, message: "Account restored in database, but sign-in could not be allowed. Try again." };
+  }
+
+  revalidatePath("/tours/admin/accounts");
+  return { ok: true, message: "Account restored from archive. They can sign in again." };
+}
+
+/**
+ * Permanently deletes an archived account from the system.
+ */
+export async function deleteAccount(userId: string): Promise<AccountActionResult> {
+  const admin = await requirePromoAdmin();
+  if (!admin.ok) return { ok: false, message: admin.error };
+  if (!isUuid(userId)) return { ok: false, message: "Account not found." };
+
+  const { error } = await admin.supabase.rpc("tours_admin_delete_account", { p_user_id: userId });
+  if (error) return { ok: false, message: userFacingDbError(error, "The account could not be permanently deleted.") };
+
+  revalidatePath("/tours/admin/accounts");
+  return { ok: true, message: "Account permanently deleted from archive." };
+}
+

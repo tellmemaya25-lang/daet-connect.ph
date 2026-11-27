@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input, Select } from "@/components/ui/field";
 import { allowedRoles, ROLE_LABEL, type Account } from "@/lib/tours/accounts";
-import { setAccountRole, setAccountSuspended, type AccountActionResult } from "./actions";
+import { setAccountRole, setAccountSuspended, restoreAccount, deleteAccount, type AccountActionResult } from "./actions";
 
 const when = (iso: string | null) => (iso ? new Date(iso).toLocaleDateString("en-PH", { month: "short", day: "numeric", year: "numeric", timeZone: "Asia/Manila" }) : "Never");
 
@@ -43,6 +43,9 @@ export function AccountRow({ account, isSelf }: { account: Account; isSelf: bool
           {account.suspended ? (
             <p className="mt-1 text-sm font-bold text-red-700 dark:text-red-300">Suspended{account.suspendedReason ? `: ${account.suspendedReason}` : ""}</p>
           ) : null}
+          {account.archived ? (
+            <p className="mt-1 text-sm font-bold text-amber-700 dark:text-amber-300">Archived since {when(account.archivedAt)}</p>
+          ) : null}
         </div>
         {isSelf ? (
           <p className="text-sm font-bold text-daet-ink">{ROLE_LABEL[account.role]}</p>
@@ -61,19 +64,35 @@ export function AccountRow({ account, isSelf }: { account: Account; isSelf: bool
             <Button variant="secondary" disabled={pending || role === account.role} onClick={() => run(() => setAccountRole(account.id, role))}>
               Save role
             </Button>
-            {account.suspended ? (
+            
+            {account.archived ? (
+              <>
+                <Button variant="ghost" disabled={pending} onClick={() => run(() => restoreAccount(account.id))}>
+                  Restore from Archive
+                </Button>
+                <Button variant="danger" disabled={pending} onClick={() => {
+                  if (window.confirm("Permanently delete this archived account? This cannot be undone.")) {
+                    run(() => deleteAccount(account.id));
+                  }
+                }}>
+                  Delete Permanently
+                </Button>
+              </>
+            ) : account.suspended ? (
               <Button variant="ghost" disabled={pending} onClick={() => run(() => setAccountSuspended(account.id, false, ""))}>
                 Restore
               </Button>
             ) : (
-              <Button variant="danger" disabled={pending} onClick={() => setAskReason((v) => !v)} aria-expanded={askReason}>
-                Suspend
-              </Button>
+              <>
+                <Button variant="danger" disabled={pending} onClick={() => setAskReason((v) => !v)} aria-expanded={askReason}>
+                  Suspend
+                </Button>
+              </>
             )}
           </div>
         )}
       </div>
-      {askReason && !account.suspended ? (
+      {askReason && !account.suspended && !account.archived ? (
         <div className="mt-3 flex flex-wrap items-end gap-2">
           <label className="min-w-0 flex-1 text-sm font-bold text-daet-ink">
             Reason (shown to admins)
