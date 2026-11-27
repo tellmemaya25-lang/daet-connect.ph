@@ -35,7 +35,7 @@ export async function setAccountSuspended(userId: string, suspend: boolean, reas
   if (error) return { ok: false, message: userFacingDbError(error, "The account could not be updated.") };
 
   try {
-    const { error: banError } = await createSupabaseAdminClient().auth.admin.updateUser(userId, { ban_duration: suspend ? "876000h" : "none" });
+    const { error: banError } = await createSupabaseAdminClient().auth.admin.updateUserById(userId, { ban_duration: suspend ? "876000h" : "none" });
     if (banError) throw banError;
   } catch (err) {
     console.error("Auth ban update failed:", err);
@@ -74,8 +74,9 @@ export async function restoreAccount(userId: string): Promise<AccountActionResul
   if (error) return { ok: false, message: userFacingDbError(error, "The account could not be restored from archive.") };
 
   // Also lift the sign-in ban in Supabase Auth
+  // Trigger Vercel build: updated comment to ensure redeploy after TS2339 fix
   try {
-    const { error: banError } = await createSupabaseAdminClient().auth.admin.updateUser(userId, { ban_duration: "none" });
+    const { error: banError } = await createSupabaseAdminClient().auth.admin.updateUserById(userId, { ban_duration: "none" });
     if (banError) throw banError;
   } catch (err) {
     console.error("Auth ban lift failed during restore:", err);
