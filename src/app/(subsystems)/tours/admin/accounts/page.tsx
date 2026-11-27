@@ -80,9 +80,9 @@ export default async function AdminAccountsPage({ searchParams }: { searchParams
         </button>
       </form>
 
-      {error ? (
+      {error && typeof error === "object" && "code" in error ? (
         <Notice variant="error" title="Accounts could not be loaded">
-          {error.code === "PGRST202" ? "The database update for account management has not been applied yet." : "Please try again in a moment."}
+          {(error as any).code === "PGRST202" ? "The database update for account management has not been applied yet." : "Please try again in a moment."}
         </Notice>
       ) : list.accounts.length === 0 ? (
         <p className="rounded-2xl bg-surface p-4 text-slate-600 dark:text-slate-400">No accounts match.</p>

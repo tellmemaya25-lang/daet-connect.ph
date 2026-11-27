@@ -87,7 +87,7 @@ export function AccountRow({ account, isSelf }: { account: Account; isSelf: bool
                 <Button variant="danger" disabled={pending} onClick={() => setAskReason((v) => !v)} aria-expanded={askReason}>
                   Suspend
                 </Button>
-                {!account.archived && <Button variant="warning" disabled={pending || !account.suspended} onClick={() => run(() => archiveAccount(account.id))}>
+                {!account.archived && <Button variant="accent" disabled={pending || !account.suspended} onClick={() => run(() => archiveAccount(account.id))}>
                   Archive
                 </Button>}
               </>
