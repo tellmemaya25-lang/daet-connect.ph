@@ -35,7 +35,7 @@ export async function setAccountSuspended(userId: string, suspend: boolean, reas
   if (error) return { ok: false, message: userFacingDbError(error, "The account could not be updated.") };
 
   try {
-    const { error: banError } = await createSupabaseAdminClient().auth.admin.updateUserById(userId, { ban_duration: suspend ? "876000h" : "none" });
+    const { error: banError } = await createSupabaseAdminClient().auth.admin.updateUser(userId, { ban_duration: suspend ? "876000h" : "none" });
     if (banError) throw banError;
   } catch (err) {
     console.error("Auth ban update failed:", err);
@@ -75,7 +75,7 @@ export async function restoreAccount(userId: string): Promise<AccountActionResul
 
   // Also lift the sign-in ban in Supabase Auth
   try {
-    const { error: banError } = await createSupabaseAdminClient().auth.admin.updateUserById(userId, { ban_duration: "none" });
+    const { error: banError } = await createSupabaseAdminClient().auth.admin.updateUser(userId, { ban_duration: "none" });
     if (banError) throw banError;
   } catch (err) {
     console.error("Auth ban lift failed during restore:", err);
@@ -100,7 +100,7 @@ export async function deleteAccount(userId: string): Promise<AccountActionResult
 
   // Also delete from Supabase Auth
   try {
-    const { error: deleteError } = await createSupabaseAdminClient().auth.admin.deleteUserById(userId);
+    const { error: deleteError } = await createSupabaseAdminClient().auth.admin.deleteUser(userId);
     if (deleteError) throw deleteError;
   } catch (err) {
     console.error("Auth user deletion failed:", err);
