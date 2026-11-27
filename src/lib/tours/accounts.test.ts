@@ -20,8 +20,12 @@ describe("parseAccounts", () => {
         { id: "u2", full_name: " ", role: "wizard" },
       ],
     });
-    expect(list.accounts[0]).toMatchObject({ name: "Ana", role: "guide", suspended: true, hasGuide: true });
+    expect(list.accounts[0]).toMatchObject({ name: "Ana", role: "guide", suspended: true, archived: false, hasGuide: true });
     expect(list.accounts[1]).toMatchObject({ name: "No name", role: "tourist", suspended: false, email: null });
+  });
+  it("marks only rows with an archive timestamp as archived", () => {
+    const list = parseAccounts({ accounts: [{ id: "1", archived_at: null }, { id: "2", archived_at: "2026-11-27T00:00:00Z" }] });
+    expect(list.accounts.map((account) => account.archived)).toEqual([false, true]);
   });
 });
 

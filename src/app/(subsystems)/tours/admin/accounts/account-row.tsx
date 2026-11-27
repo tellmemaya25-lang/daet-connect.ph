@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input, Select } from "@/components/ui/field";
 import { allowedRoles, ROLE_LABEL, type Account } from "@/lib/tours/accounts";
-import { setAccountRole, setAccountSuspended, archiveAccount, restoreAccount, deleteAccount, type AccountActionResult } from "./actions";
+import { setAccountRole, setAccountSuspended, restoreAccount, deleteAccount, type AccountActionResult } from "./actions";
 
 const when = (iso: string | null) => (iso ? new Date(iso).toLocaleDateString("en-PH", { month: "short", day: "numeric", year: "numeric", timeZone: "Asia/Manila" }) : "Never");
 
@@ -87,9 +87,6 @@ export function AccountRow({ account, isSelf }: { account: Account; isSelf: bool
                 <Button variant="danger" disabled={pending} onClick={() => setAskReason((v) => !v)} aria-expanded={askReason}>
                   Suspend
                 </Button>
-                {!account.archived && <Button variant="accent" disabled={pending || !account.suspended} onClick={() => run(() => archiveAccount(account.id))}>
-                  Archive
-                </Button>}
               </>
             )}
           </div>

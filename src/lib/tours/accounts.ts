@@ -56,7 +56,7 @@ export function parseAccounts(data: unknown): AccountList {
       lastSignInAt: typeof r.last_sign_in_at === "string" ? r.last_sign_in_at : null,
       suspended: r.is_suspended === true,
       suspendedReason: typeof r.suspended_reason === "string" ? r.suspended_reason : null,
-      archived: r.archived_at !== null,
+      archived: typeof r.archived_at === "string" && r.archived_at.length > 0,
       archivedAt: typeof r.archived_at === "string" ? r.archived_at : null,
       hasOperator: r.has_operator === true,
       hasGuide: r.has_guide === true,

@@ -31,7 +31,7 @@ export async function setAccountSuspended(userId: string, suspend: boolean, reas
   const why = (reason ?? "").trim().slice(0, 300);
   if (suspend && why.length < 3) return { ok: false, message: "Give a reason for the suspension." };
 
-  const { error } = await admin.supabase.rpc("tours_admin_set_suspended", { p_user_id: userId, p_suspended: suspend, p_reason: why });
+  const { error } = await admin.supabase.rpc("tours_admin_suspend_and_archive", { p_user_id: userId, p_suspended: suspend, p_reason: why });
   if (error) return { ok: false, message: userFacingDbError(error, "The account could not be updated.") };
 
   try {
@@ -43,23 +43,7 @@ export async function setAccountSuspended(userId: string, suspend: boolean, reas
     return { ok: false, message: suspend ? "Marked suspended, but sign-in could not be blocked. Try again." : "Marked active, but sign-in could not be allowed again. Try again." };
   }
   revalidatePath("/tours/admin/accounts");
-  return { ok: true, message: suspend ? "Account suspended. They can no longer sign in." : "Account restored. They can sign in again." };
-}
-
-/**
- * Archives a suspended account: moves it to the archive table/state so it can be
- * browsed separately, restored later, or permanently deleted.
- */
-export async function archiveAccount(userId: string): Promise<AccountActionResult> {
-  const admin = await requirePromoAdmin();
-  if (!admin.ok) return { ok: false, message: admin.error };
-  if (!isUuid(userId)) return { ok: false, message: "Account not found." };
-
-  const { error } = await admin.supabase.rpc("tours_admin_archive_account", { p_user_id: userId });
-  if (error) return { ok: false, message: userFacingDbError(error, "The account could not be archived.") };
-
-  revalidatePath("/tours/admin/accounts");
-  return { ok: true, message: "Account archived successfully. It can now be viewed in the archive." };
+  return { ok: true, message: suspend ? "Account suspended and moved to the archive. They can no longer sign in." : "Account restored. They can sign in again." };
 }
 
 /**
@@ -74,7 +58,6 @@ export async function restoreAccount(userId: string): Promise<AccountActionResul
   if (error) return { ok: false, message: userFacingDbError(error, "The account could not be restored from archive.") };
 
   // Also lift the sign-in ban in Supabase Auth
-  // Trigger Vercel build: updated comment to ensure redeploy after TS2339 fix
   try {
     const { error: banError } = await createSupabaseAdminClient().auth.admin.updateUserById(userId, { ban_duration: "none" });
     if (banError) throw banError;
@@ -99,30 +82,7 @@ export async function deleteAccount(userId: string): Promise<AccountActionResult
   const { error } = await admin.supabase.rpc("tours_admin_delete_account", { p_user_id: userId });
   if (error) return { ok: false, message: userFacingDbError(error, "The account could not be permanently deleted.") };
 
-  // Also delete from Supabase Auth
-  try {
-    const { error: deleteError } = await createSupabaseAdminClient().auth.admin.deleteUser(userId);
-    if (deleteError) throw deleteError;
-  } catch (err) {
-    console.error("Auth user deletion failed:", err);
-    revalidatePath("/tours/admin/accounts");
-    return { ok: false, message: "Account removed from database, but Auth user could not be deleted. Try again." };
-  }
-
   revalidatePath("/tours/admin/accounts");
   return { ok: true, message: "Account permanently deleted from archive." };
 }
 
-/**
- * Triggers automatic deletion of archived accounts older than 90 days.
- */
-export async function autoDeleteArchive(): Promise<{ ok: boolean; message: string; deletedCount: number }> {
-  const admin = await requirePromoAdmin();
-  if (!admin.ok) return { ok: false, message: admin.error, deletedCount: 0 };
-
-  const { data: deletedCount, error } = await admin.supabase.rpc("tours_admin_auto_delete_archive");
-  if (error) return { ok: false, message: userFacingDbError(error, "Automatic deletion failed."), deletedCount: 0 };
-
-  revalidatePath("/tours/admin/accounts");
-  return { ok: true, message: `Automatically deleted ${deletedCount} archived accounts older than 90 days.`, deletedCount };
-}
