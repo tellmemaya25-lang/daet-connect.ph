@@ -102,7 +102,7 @@ export async function deleteAccount(userId: string): Promise<AccountActionResult
   // Also delete from Supabase Auth
   // Trigger Vercel build: updated comment to ensure redeploy after TS2551 fix
   try {
-    const { error: deleteError } = await createSupabaseAdminClient().auth.admin.deleteUser(userId);
+    const { error: deleteError } = await createSupabaseAdminClient().auth.admin.deleteUserById(userId);
     if (deleteError) throw deleteError;
   } catch (err) {
     console.error("Auth user deletion failed:", err);
