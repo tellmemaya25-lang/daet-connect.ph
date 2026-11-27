@@ -100,9 +100,8 @@ export async function deleteAccount(userId: string): Promise<AccountActionResult
   if (error) return { ok: false, message: userFacingDbError(error, "The account could not be permanently deleted.") };
 
   // Also delete from Supabase Auth
-  // Trigger Vercel build: updated comment to ensure redeploy after TS2551 fix
   try {
-    const { error: deleteError } = await createSupabaseAdminClient().auth.admin.deleteUserById(userId);
+    const { error: deleteError } = await createSupabaseAdminClient().auth.admin.deleteUser(userId);
     if (deleteError) throw deleteError;
   } catch (err) {
     console.error("Auth user deletion failed:", err);
